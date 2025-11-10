@@ -1,0 +1,19 @@
+﻿@model SwamiSamarthSyn8.Models.DeptDesigAuthortiy
+@{
+    ViewBag.Title = "HR";
+}
+
+<div>
+    @using (Html.BeginForm("EditDepartment", "OrgnizationMatrix", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.DeptId) <!-- Add this line to include UomId -->
+        <div class="form-group">
+            @Html.LabelFor(model => model.Department_Name)
+            @Html.TextBoxFor(model => model.Department_Name, new { @class = "form-control", oninput = "this.value = this.value.toUpperCase()" })
+            @Html.ValidationMessageFor(model => model.Department_Name)
+        </div>
+
+        <button type="submit" style="height: 40px; width: 80px; border-radius: 15px; margin-top: 5px; background-color: #5cb85c;color:white;">Save</button>}
+</div>
+

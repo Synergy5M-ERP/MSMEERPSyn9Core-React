@@ -1,0 +1,383 @@
+﻿@model IEnumerable<SwamiSamarthSyn8.Models.UserListWIthSelectedTools>
+
+@{
+    ViewBag.Title = "HR";
+    string empCode = ViewBag.EmpCode as string;
+
+    TempData.Keep();
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<style>
+    .btn {
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: black;
+    }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+    .new-user {
+        background-color: lightgreen; /* Change to your preferred shade of green */
+    }
+
+    .row {
+        margin-bottom: 10px;
+        font-family: Cambria;
+    }
+
+    #tblUserdata_length, #tblUserdata_filter, #tblUserdata_info, #tblUserdata_paginate {
+        display: inline-block !important;
+    }
+
+    #tblUserdata_filter, #tblUserdata_paginate {
+        float: right !important;
+        margin-bottom: 15px;
+    }
+
+    #tblUserdata tbody tr td {
+        font-size: small !important;
+        border: 1px solid lightgray;
+        width: 80px !important;
+        text-align: center;
+    }
+
+    #tblUserdata {
+        border-collapse: collapse;
+        margin-top: 10px;
+        width: 100%;
+        background: white;
+    }
+
+        #tblUserdata thead th {
+            background: #4348cc color: white;
+            font-weight: bold;
+        }
+
+        #tblUserdata tbody tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+
+        #tblUserdata thead tr th {
+            font-size: small !important;
+            width: 80px !important;
+            border: 1px solid lightgray;
+            text-align: center;
+            background-color: #5f81e5;
+            color: white;
+        }
+
+    #usedata {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-top: 10px !important;
+        margin-bottom: 15px !important;
+        color: #0d6efd; /* Bootstrap Primary Blue */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+
+    h2 {
+        color: #007bff; /* Blue */
+        text-align: center;
+        margin-top: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Added text shadow */
+    }
+</style>
+
+
+<h2 id="usedata" style="text-align: center; color: navy; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2; margin-top: 20px; ">USER MANAGEMENT PANEL</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <table id="tblUserdata">
+                <thead>
+                    <tr>
+                        <th>EMP_CODE</th>
+                        <th>NAME</th>
+                        <th>SURNAME</th>
+                        <th>GENDER</th>
+                        <th>CONTACT_NO</th>
+                        <th>EMAIL</th>
+                        <th>PASSWORD</th>
+                        <th>PERMANENT_ADDRESS</th>
+                        <th>COUNTRY</th>
+                        <th>STATE</th>
+                        <th>CITY</th>
+                        <th>JIONING_DATE</th>
+                        <th>DEPARTMENT</th>
+                        <th>DESIGNATION</th>
+                        <th>AUTHORITY</th>
+                        <th>ACTION</th>
+                        <th>ACTION</th>
+                        <th>ACTION</th>
+                        <th>ACTION</th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbodyUserData">
+
+                    @foreach (var item in Model)
+                    {
+                        if (item.MaterialManagement == true || item.SalesAndMarketing == true || item.HRAndAdmin == true || item.AccountAndFinance == true || item.Masters == true || item.Dashboard == true || item.ProductionAndQuality == true || item.External_buyer_seller == true)
+                        {
+                            <tr>
+                                <td>@item.Emp_Code</td>
+                                <td>@item.Name</td>
+                                <td>@item.Surname</td>
+                                <td>@item.Gender</td>
+                                <td>@item.Contact_NO</td>
+                                <td>@item.Email</td>
+                                <td>@item.password</td>
+                                <td>@item.permanent_Address</td>
+                                <td>@item.Country</td>
+                                <td>@item.State</td>
+                                <td>@item.City</td>
+                                <td>@DateTime.Parse(item.Date_Of_Joing.ToString()).ToString("dd/MM/yyyy")</td>
+                                <td>@item.Department</td>
+                                <td>@item.Current_Designation</td>
+                                <td>@item.Current_Authoritylevel</td>
+                                <td>
+                                    <a href="/Login/Viewdata?Id=@item.id&empcode=@item.Emp_Code"
+                                       class="btn btn-sm" style="color: blue;"
+                                       data-toggle="tooltip" data-placement="top" title="View Data">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <a href="/Login/ModuleDashborad?Id=@item.id&empcode=@item.Emp_Code"
+                                       class="btn btn-sm" style="color: green;"
+                                       data-toggle="tooltip" data-placement="top" title="User Approval">
+                                        <i class="fas fa-user-check"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm " style="color: orange;"
+                                       href="/Login/UpdateModuleDashborad?empcode=@item.Emp_Code"
+                                       data-toggle="tooltip"
+                                       title="Update Approval">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+
+
+                                <td>
+                                    <button onclick="showrejectpopup('@item.Emp_Code','@item.Email')"
+                                            class="btn btn-sm" style="color: red;"
+                                            data-toggle="tooltip" data-placement="top" title="Reject User">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+
+
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr class="new-user" style="background-color: #f3e8ff; ">
+                                <td>@item.Emp_Code</td>
+                                <td>@item.Name</td>
+                                <td>@item.Surname</td>
+                                <td>@item.Gender</td>
+                                <td>@item.Contact_NO</td>
+                                <td>@item.Email</td>
+                                <td>@item.password</td>
+
+                                <td>@item.permanent_Address</td>
+                                <td>@item.Country</td>
+                                <td>@item.State</td>
+                                <td>@item.City</td>
+                                <td>@DateTime.Parse(item.Date_Of_Joing.ToString()).ToString("dd/MM/yyyy")</td>
+                                <td>@item.Department</td>
+                                <td>@item.Current_Designation</td>
+                                <td>@item.Current_Authoritylevel</td>
+                                <td>
+                                    <a href="/Login/Viewdata?Id=@item.id&empcode=@item.Emp_Code"
+                                       class="btn btn-sm" style="color: blue;"
+                                       data-toggle="tooltip" data-placement="top" title="View Data">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <a href="/Login/ModuleDashborad?Id=@item.id&empcode=@item.Emp_Code"
+                                       class="btn btn-sm" style="color: green;"
+                                       data-toggle="tooltip" data-placement="top" title="User Approval">
+                                        <i class="fas fa-user-check"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm " style="color: orange;"
+                                       href="/Login/UpdateModuleDashborad?empcode=@item.Emp_Code"
+                                       data-toggle="tooltip"
+                                       title="Update Approval">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+
+
+                                <td>
+                                    <button onclick="showrejectpopup('@item.Emp_Code','@item.Email')"
+                                            class="btn btn-sm" style="color: red;"
+                                            data-toggle="tooltip" data-placement="top" title="Reject User">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+
+
+                            </tr>
+                        }
+                    }
+                </tbody>
+
+
+
+            </table>
+
+        </div>
+    </div>
+
+    @*ApproveMail*@
+
+    <div class="modal fade" id="SampleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title" id="myModalLabel">Approve User</h5>
+                </div>
+                <div class="modal-body">
+                    <label>Subscribe for days :</label>
+                    <select id="dropdown">
+                        <option value="30">30 Days</option>
+                        <option value="60">60 Days</option>
+                        <option value="90">90 Days</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="closeModal()">Close</button>
+
+                    <button type="button" class="btn btn-primary" onclick="ApproveMail($('#dropdown').val())">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*RejectMail*@
+
+    <div class="modal fade" id="RejectModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title" id="myModalLabel1">Reject User</h5>
+                </div>
+                <div class="modal-body">
+                    <label>Rejected field :</label>
+                    <textarea rows="5" id="txtRejectReason"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="closeModal()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="RejectMail($('textarea#txtRejectReason').val())">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        $('#tblUserdata').DataTable({
+            "paging": true,          // Enable pagination
+            "pageLength": 10,        // Number of rows per page
+            "lengthMenu": [5, 10, 25, 50, 100], // Dropdown for rows per page
+            "searching": true,       // Enable search box
+            "ordering": true,        // Enable sorting
+            "info": true             // Show table info (e.g., "Showing 1 to 10 of 50 entries")
+        });
+    });
+</script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var _userid = 0;
+        var _useremail = "";
+        var _noofdays = 0;
+        $('#tblUserdata').DataTable();
+
+    });
+    function showpopup(userid, email_id) {
+        _userid = userid;
+        _useremail = email_id;
+        $('#SampleModal').modal('show');
+    }
+
+    function ApproveMail(days) {
+        window.location.href = "/Login/Approve?Id=" + _userid + "&Email=" + _useremail + "&days=" + parseInt(days)
+    }
+    function closeModal() {
+        $('#SampleModal').modal('hide');
+    }
+
+    /*Rejectmodal*/
+
+
+    function showrejectpopup(userid, email_id) {
+        _userid = userid;
+
+        _useremail = email_id;
+        $('#RejectModal').modal('show');
+    }
+
+    function RejectMail(message) {
+        window.location.href = "/Login/Reject?Id=" + _userid + "&Email=" + _useremail + "&msg=" + message
+    }</script>
+

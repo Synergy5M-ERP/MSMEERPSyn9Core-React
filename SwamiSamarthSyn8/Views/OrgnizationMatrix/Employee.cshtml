@@ -1,0 +1,1366 @@
+﻿@model SwamiSamarthSyn8.Models.Employee
+@{
+    ViewBag.Title = "HR";
+
+    var country = ViewBag.CountryList;
+    var date = ViewBag.dateOfJoining;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+
+}
+<head>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Include Bootstrap JS (make sure it's the bundle version) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</head>
+
+
+
+<style>
+
+    /* Merge existing styles with the updated container styles */
+    .container {
+        max-width: 1462px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px rgba(0, 0, 0, 0.1);
+        font-family: Cambria;
+        font-size: initial;
+        font-display: block;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        height: 100%;
+    }
+
+    .form-label {
+        text-transform: uppercase;
+        margin-top: 20px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .row {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    label {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .form-control {
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .btn-success1 {
+        color: #f9f9f9;
+        background-color: #69ba71;
+        border-color: #4d6066ee;
+        width: 150px;
+        height: 45px;
+        font-weight: bold;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    label {
+        color: #555;
+        text-align: left;
+        width: 100%;
+    }
+
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .accordion-header-grey {
+        background-color: lightgray;
+        color: black;
+        font-weight: bold;
+    }
+
+    .accordion-header-font {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .accordion-button {
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+</style>
+@using (Html.BeginForm("Employee", "OrgnizationMatrix", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="container" id="employeeForm">
+        <div class="form-horizontal">
+            @if (ViewBag.Message != null)
+            {
+                <span>
+                    @ViewBag.Message
+                </span>
+            }
+        </div>
+        <h2 class="text-center" style="color: navy; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);">
+            NEW EMPLOYEE REGISTRATION FORM
+        </h2>
+        <br />
+        <div class="accordion" id="employeeAccordion">
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingEmployee">
+                    <button class="accordion-button accordion-header-grey accordion-header-font" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapseEmployee"
+                            aria-expanded="true"
+                            aria-controls="collapseEmployee">
+                        <span class="w-100 text-center">EMPLOYEE INFORMATION</span>
+                    </button>
+                </h2>
+                <div id="collapseEmployee" class="accordion-collapse collapse show" aria-labelledby="headingEmployee">
+                    <div class="accordion-body">
+
+                        <!-- First Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Title, "TITLE", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.Title, new List<SelectListItem>
+                            {
+                            new SelectListItem { Text = "SELECT", Value = "" },
+                            new SelectListItem { Text = "MR", Value = "MR" },
+                            new SelectListItem { Text = "MS", Value = "MS" },
+                            new SelectListItem { Text = "MRS", Value = "MRS" }
+                            }, new { @class = "form-control validate", id = "Title" })
+                                @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Name, "NAME", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Name, new { @class = "form-control validate", id = "Name" })
+                                <span class="text-danger" id="NameError"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Middle_Name, "MIDDLE NAME", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Middle_Name, new { @class = "form-control validate", id = "MiddleName" })
+                                <span class="text-danger" id="MiddleNameError"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Surname, "SURNAME", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Surname, new { @class = "form-control validate", id = "Surname" })
+                                <span class="text-danger" id="SurnameError"></span>
+                            </div>
+                        </div>
+
+                        <!-- Second Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Gender, "GENDER", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.Gender, new List<SelectListItem>
+                            {
+                            new SelectListItem{ Text="SELECT", Value="" },
+                            new SelectListItem{ Text="MALE", Value="MALE" },
+                            new SelectListItem{ Text="FEMALE", Value="FEMALE" }
+                            }, new { @class = "form-control validate", id = "Gender" })
+                                @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.DOB, "DOB", new { @class = "form-label" })
+                                <label id="validdob" style="color:red;display:none;font-weight:bold">*</label>
+                                @Html.TextBoxFor(model => model.DOB, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", id = "DOB" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Blood_Group, "BLOOD GROUP", new { @class = "form-label" })
+                                <label id="validdebldgroup" style="color:red;display:none;font-weight:bold">*</label>
+                                @Html.DropDownListFor(model => model.Blood_Group, new List<SelectListItem>
+                            {
+                            new SelectListItem{Text="SELECT BLOODGROUP",Value="0"},
+                            new SelectListItem{Text="A+",Value="A+"},
+                            new SelectListItem{Text="A-",Value="A-"},
+                            new SelectListItem{Text="B+",Value="B+"},
+                            new SelectListItem{Text="B-",Value="B-"},
+                            new SelectListItem{Text="AB+",Value="AB+"},
+                            new SelectListItem{Text="AB-",Value="AB-"},
+                            new SelectListItem{Text="O+",Value="O+"},
+                            new SelectListItem{Text="O-",Value="O-"}
+                            }, new { @class = "form-control DDL_Custom", id = "Blood_Group" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Email, "EMAIL", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Email, new { @class = "form-control", id = "Email" })
+                                <label id="validemail" class="text-danger" style="display:none;font-weight:bold"></label>
+                            </div>
+                        </div>
+
+                        <!-- Third Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Contact_NO, "CONTACT NO", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Contact_NO, new { @class = "form-control", id = "Contact_NO", maxlength = "10" })
+                                <span id="validcontactno" style="color:red;display:none;font-weight:bold"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Married_Status, "MARRIED STATUS", new { @class = "form-label" })
+                                <label id="validmarridestatus" style="color:red;display:none;font-weight:bold">*</label>
+                                @Html.DropDownListFor(model => model.Married_Status, new List<SelectListItem>
+                            {
+                            new SelectListItem{Text="SELECT STATUS",Value="0"},
+                            new SelectListItem{Text="MARRIED",Value="MARRIED"},
+                            new SelectListItem{Text="UNMARRIED",Value="UNMARRIED"},
+                            }, new { @class = "form-control DDL_Custom", id = "Married_Status" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Address, "ADDRESS", new { @class = "form-label" })
+                                @Html.TextAreaFor(m => m.Address, new { @class = "form-control validate", id = "Address", rows = "3" })
+                                @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="sameAddressCheckbox" value="same" />
+                                    <label class="form-check-label" for="sameAddressCheckbox">SAME AS ADDRESS</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fourth Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.Permanent_Address, "PERMANENT ADDRESS", new { @class = "form-label" })
+                                @Html.TextAreaFor(m => m.Permanent_Address, new { @class = "form-control validate", id = "PermanentAddress", rows = "3" })
+                                @Html.ValidationMessageFor(m => m.Permanent_Address, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Quallification, "QUALIFICATION", new { @class = "form-label" })
+                                <label id="validqllification" style="color:red;display:none;font-weight:bold">*</label>
+                                @Html.TextBoxFor(model => model.Quallification, new { @class = "form-control", id = "Quallification" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.SelectedCountryId, "COUNTRY", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedCountryId, (IEnumerable<SelectListItem>)ViewBag.CountryList, "SELECT COUNTRY", new { @class = "form-control", id = "country" })
+                                @Html.HiddenFor(m => m.SelectedCountryName)
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.SelectedStateId, "STATE", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedStateId, new List<SelectListItem>(), "SELECT STATE", new { @class = "form-control", id = "state" })
+                                @Html.HiddenFor(m => m.SelectedStateName)
+                            </div>
+                        </div>
+
+                        <!-- Fifth Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.SelectedCityId, "CITY", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedCityId, new List<SelectListItem>(), "SELECT CITY", new { @class = "form-control", id = "city" })
+                                @Html.HiddenFor(m => m.SelectedCityName)
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.AdharNO, "AADHAR NO", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.AdharNO, new { @class = "form-control", id = "AdharNo", maxlength = "12" })
+                                <span id="validadhar" style="color:red;display:none;font-weight:bold"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.PanNo, "PAN NO", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.PanNo, new { @class = "form-control", id = "Panno", maxlength = "10" })
+                                <span id="validpanno" style="color:red;display:none;font-weight:bold"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.BankAccountNo, "BANK ACCOUNT NO", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.BankAccountNo, new { @class = "form-control", id = "BankAccount", maxlength = "12" })
+                                <span id="validbank" style="color:red;display:none;font-weight:bold"></span>
+                            </div>
+                        </div>
+
+                        <!-- Sixth Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.BankName, "BANK NAME", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.BankName, new { @class = "form-control validate", id = "BankName" })
+                                @Html.ValidationMessageFor(m => m.BankName, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.IFSC_Code, "IFSC CODE", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.IFSC_Code, new { @class = "form-control", id = "IFSC" })
+                                <span id="validifsc" class="text-danger" style="display:none;"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Nominee, "NOMINEE", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Nominee, new { @class = "form-control", id = "Nominee" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Relation, "RELATION", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Relation, new { @class = "form-control", id = "Relation" })
+                                <span id="validrelation" class="text-danger" style="display:none;"></span>
+                            </div>
+                        </div>
+
+                        <!-- Seventh Row -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.UAN, "UAN", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.UAN, new { @class = "form-control", id = "UAN" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.EPFO_A_C_NO, "EPFO A/C NO", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.EPFO_A_C_NO, new { @class = "form-control", id = "EPFO_A_C_NO" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Past_Experience, "PREVIOUS EXPERIENCE", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Past_Experience, new { @class = "form-control", id = "exprince" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(model => model.Previous_Industry_Title, "PREVIOUS INDUSTRY", new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.Previous_Industry_Title, new { @class = "form-control", id = "previousindustry" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <br />
+                <div class="accordion" id="employeeAccordion">
+                    <div class="accordion-item">
+                        <!-- Accordion Header -->
+                        <h2 class="accordion-header" id="headingEmployer">
+                            <button class="accordion-button collapsed accordion-header-grey accordion-header-font" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseEmployer" aria-expanded="false"
+                                    aria-controls="collapseEmployer">
+                                <span class="w-100 text-center"> EMPLOYER INFORMATION</span>
+                            </button>
+                        </h2>
+
+                        <!-- Accordion Body -->
+                        <div id="collapseEmployer" class="accordion-collapse collapse" aria-labelledby="headingEmployer">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <!-- CATEGORY -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.SalaryStatus, "CATEGORY", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.SalaryStatus, new SelectList(new[] {
+                                    new SelectListItem { Text = "SELECT CATEGORY", Value = "" },
+                                    new SelectListItem { Text = "STAFF", Value = "STAFF" },
+                                    new SelectListItem { Text = "EMPLOYEE", Value = "EMPLOYEE" }
+                                    }, "Value", "Text"), new { @class = "form-select validateDropdown", id = "SalaryStatus" })
+                                    </div>
+
+                                    <!-- DATE OF JOINING -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Date_Of_Joing, "DATE OF JOINING", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Date_Of_Joing, "{0:yyyy-MM-dd}",
+                                                 new { @class = "form-control", type = "date", id = "Date_Of_Joining", onchange = "updateHiddenDate()" })
+                                        @Html.HiddenFor(m => m.Date_Of_Joing, new { id = "Date_Of_Joining_Hidden" })
+                                    </div>
+
+                                    <!-- NOTICE PERIOD -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Notices_Period, "NOTICE PERIOD", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Notices_Period, new { @class = "form-control", id = "Notices" })
+                                        <span id="validnotices" class="text-danger"></span>
+                                    </div>
+
+                                    <!-- WEEKLY OFF -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Weekly_Off, "WEEKLY OFF", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.Weekly_Off, new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Text = "SELECT", Value = "" },
+                                    new SelectListItem { Text = "YES", Value = "YES" },
+                                    new SelectListItem { Text = "NO", Value = "NO" }
+                                    }, new { @class = "form-control", id = "WeeklyOff", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.Weekly_Off, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- DATE OF LEAVING -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.DOL, "DATE OF LEAVING", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.DOL, new { @class = "form-control", type = "date", id = "DOL" })
+                                    </div>
+
+                                    <!-- DATE OF RELEAVING -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.DOR, "DATE OF RELEAVING", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.DOR, new { @class = "form-control", type = "date", id = "DOR" })
+                                    </div>
+
+                                    <!-- SHIFT HOURS -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Shift_Hours, "SHIFT HOURS", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.Shift_Hours, new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Text = "SELECT HOURS", Value = "" },
+                                    new SelectListItem { Text = "8", Value = "8" },
+                                    new SelectListItem { Text = "12", Value = "12" }
+                                    }, new { @class = "form-control", id = "ShiftHours", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.Shift_Hours, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <!-- DEPARTMENT -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Department, "DEPARTMENT", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.Department, ViewBag.Department as IEnumerable<SelectListItem>,
+                                                 "SELECT DEPARTMENT", new { @class = "form-control", id = "departmentDropdown" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- OT CALCULATION -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.OT_calculation, "OT CALCULATION", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.OT_calculation, new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Text = "SELECT OT CALCULATION", Value = "" },
+                                    new SelectListItem { Text = "DAILY", Value = "daily" },
+                                    new SelectListItem { Text = "HOURLY", Value = "hourly" }
+                                    }, new { @class = "form-control", id = "OTDropdown", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.OT_calculation, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <!-- ESIC -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.ESIC, "ESIC", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.ESIC, new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Text = "SELECT", Value = "" },
+                                    new SelectListItem { Text = "YES", Value = "YES" },
+                                    new SelectListItem { Text = "NO", Value = "NO" }
+                                    }, new { @class = "form-control", id = "ESICDropdown", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.ESIC, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <!-- PF CONTRIBUTION -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.PFContri, "PF CONTRIBUTION", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.PFContri, new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Text = "SELECT", Value = "" },
+                                    new SelectListItem { Text = "YES", Value = "YES" },
+                                    new SelectListItem { Text = "NO", Value = "NO" }
+                                    }, new { @class = "form-control", id = "PFDropdown", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.PFContri, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <!-- CURRENCY -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Currency, "CURRENCY", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Currency, new { @class = "form-control", id = "Currency", required = "required" })
+                                        @Html.ValidationMessageFor(m => m.Currency, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- PF NO -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.PF_No, "PF NO", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.PF_No, new { @class = "form-control", id = "pfno" })
+                                    </div>
+
+                                    <!-- ESIC NO -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.ESIC_No, "ESIC NO", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.ESIC_No, new { @class = "form-control", id = "esicno" })
+                                    </div>
+
+                                    <!-- AUTHORITY LEVEL -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(model => model.AuthorityLevel, "AUTHORITY LEVEL", new { @class = "form-label" })
+                                        <select id="authorityDropdown" class="form-select validateDropdown" onchange="showRelevantAuthorityDropdown()">
+                                            <option value="select">SELECT AUTHORITY LEVEL</option>
+                                            <option value="joining">JOINING AUTHORITY LEVEL</option>
+                                            <option value="current">CURRENT AUTHORITY LEVEL</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- DESIGNATION -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Position, "DESIGNATION", new { @class = "form-label" })
+                                        @Html.DropDownListFor(m => m.Position, ViewBag.Positions as IEnumerable<SelectListItem>,
+                                                 "SELECT POSITION", new { @class = "form-control", id = "joiningDesignationDropdown" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div id="joiningAuthorityDiv" class="col-md-3 hidden">
+                                        <label for="joiningAuthority" class="form-label">JOINING AUTHORITY LEVEL<span class="text-danger">*</span></label>
+                                        @Html.DropDownListFor(model => model.JoiningAuthorityId, (SelectList)ViewBag.Authorities, "SELECT JOINING AUTHORITY LEVEL", new { @class = "form-control validateDropdown", id = "joiningAuthority" })
+                                        @Html.ValidationMessageFor(model => model.JoiningAuthorityId, "", new { @class = "text-danger" })
+                                        @Html.HiddenFor(model => model.SelectedJoiningAuthorityId)
+                                    </div>
+
+                                    <div id="currentAuthorityDiv" class="col-md-3 hidden">
+                                        <label for="currentAuthority" class="form-label">CURRENT AUTHORITY LEVEL<span class="text-danger">*</span></label>
+                                        @Html.DropDownListFor(model => model.CurrentAuthorityId, (SelectList)ViewBag.Authorities, "SELECT CURRENT AUTHORITY LEVEL", new { @class = "form-control validateDropdown", id = "currentAuthority" })
+                                        @Html.ValidationMessageFor(model => model.CurrentAuthorityId, "", new { @class = "text-danger" })
+                                        @Html.HiddenFor(model => model.SelectedCurrentAuthorityId)
+                                    </div>
+
+                                    <!-- CTC -->
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(model => model.SelectedCTC, "CTC", new { @class = "form-label" })
+                                        <select id="ctcDropdown" class="form-select validateDropdown">
+                                            <option value="select">SELECT CTC</option>
+                                            <option value="joining" id="joinctc">JOINING CTC</option>
+                                            <option value="current" id="currentctc">CURRENT CTC</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- FILE UPLOAD -->
+                                    <div class="col-md-3">
+                                        <label for="attachment" class="form-label">AADHAR/PANCARD</label>
+                                        <input type="file" id="attachment" name="AdhaarFile" class="form-control" />
+                                    </div>
+                                    <div class="col-md-3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <br />
+                <div class="accordion" id="salaryAccordion">
+                    <div class="accordion-item">
+                        <!-- Accordion Header -->
+                        <h2 class="accordion-header" id="headingSalary">
+                            <button class="accordion-button accordion-header-grey accordion-header-font" type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSalary"
+                                    aria-expanded="false"
+                                    aria-controls="collapseSalary">
+                                <span class="w-100 text-center"> SALARY STRUCTURE</span>
+
+                            </button>
+                        </h2>
+
+
+                        <!-- Accordion Body -->
+                        <div id="collapseSalary" class="accordion-collapse collapse" aria-labelledby="headingSalary">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Monthly_Gross_Salary, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Monthly_Gross_Salary, new { @class = "form-control", id = "Monthly_Gross_Salary" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.Label("Basic_Salary", "Monthly basic salary", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic_Salary, new { @class = "form-control", id = "Basic_Salary" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.DA, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.DA, new { @class = "form-control", id = "DA" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Daily_Salary, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Daily_Salary, new { @class = "form-control", id = "Daily_Salary" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Month_ofSalary, "MONTHLY SALARY", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Month_ofSalary, new { @class = "form-control", id = "Month_ofSalary" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Leave_travel_Allowance, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Leave_travel_Allowance, new { @class = "form-control", id = "Leave_travel_Allowance" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Additional_Benefits, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Additional_Benefits, new { @class = "form-control", id = "Additional_Benefits" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Performance_Incentive, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Performance_Incentive, new { @class = "form-control", id = "Performance_Incentive" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.PF_Conrtibution, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.PF_Conrtibution, new { @class = "form-control", id = "PF_Conrtibution" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.EST_Conrtibution, "ESIC", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.EST_Conrtibution, new { @class = "form-control", id = "EST_Conrtibution" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Stock_Option, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Stock_Option, new { @class = "form-control", id = "Stock_Option" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Car, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Car, new { @class = "form-control", id = "Car" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Telephone, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Telephone, new { @class = "form-control", id = "Telephone" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Medical_Allownce, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Medical_Allownce, new { @class = "form-control", id = "Medical_Allownce" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Total_Deduction, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Total_Deduction, new { @class = "form-control", id = "Total_Deduction" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.House_rent_Allownce, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.House_rent_Allownce, new { @class = "form-control", id = "House_rent_Allownce" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Hourly_Salary, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Hourly_Salary, new { @class = "form-control", id = "Hourly_Salary" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Annual_Increment, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Annual_Increment, new { @class = "form-control", id = "Annual_Increment" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Annual_Inc_Date, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Annual_Inc_Date, new { @class = "form-control", id = "Annual_Inc_Date", type = "date" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Total_Month, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Total_Month, new { @class = "form-control", id = "Total_Month" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="professionaltax" class="form-label">Professional Tax</label>
+                                        @Html.TextBoxFor(m => m.Professional_Tax, new { @class = "form-control", id = "professionaltax", type = "number", step = "0.01" })
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        @Html.LabelFor(m => m.Annual_CTC_Rs_, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Annual_CTC_Rs_, new { @class = "form-control", id = "Annual_CTC_Rs_" })
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 text-center mt-3">
+                                        <input type="submit" style="background-color:green;" class="btn btn-success" value="SUBMIT" onclick="btnSubmit()" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function calculateSalaryComponents() {
+            debugger;
+            var grossSalary = parseFloat($('#Monthly_Gross_Salary').val()) || 0;
+            var basicSalary = parseFloat($('#Basic_Salary').val()) || 0;
+            var da = parseFloat($('#Special_Allowance').val().replace(/,/g, '')) || 0;
+            var medicalAllowance = parseFloat($('#Medical_Allownce').val()) || 0;
+            var leaveTravelAllowance = parseFloat($('#Leave_travel_Allowance').val()) || 0;
+            var performanceIncentive = parseFloat($('#Performance_Incentive').val()) || 0;
+            var dailysalary = parseFloat($('#Daily_Salary').val()) || 0;
+            var Hourlysalary = parseFloat($('#Hourly_Salary').val()) || 0;
+            var stockOption = parseFloat($('#Stock_Option').val()) || 0;
+            var car = parseFloat($('#Car').val()) || 0;
+            var telephone = parseFloat($('#Telephone').val()) || 0;
+
+            // Set OT values to 0
+            var otdaily = 0;
+            var othourly = 0;
+            var grossmonthlysalarywithot = 0;
+
+            // Calculate HRA & Additional Benefits
+
+            var houseRentAllowance = (basicSalary + da) * 0.22;
+            var additionalBenefits = grossSalary - basicSalary - da - houseRentAllowance;
+
+            // Check dropdown values
+            var pfOption = $('#PFDropdown').val();       // YES or NO
+            var esicOption = $('#ESICDropdown').val();   // YES or NO
+
+            // Conditionally calculate PF & ESIC
+            var pfContribution = (pfOption === "YES") ? (basicSalary * 0.12) : 0;
+            var esicContribution = (esicOption === "YES") ? (grossSalary * 0.0075) : 0;
+
+            // Final salary after deductions
+            var monthlySalary = grossSalary - pfContribution - esicContribution;
+
+            // Update form fields
+            $('#House_rent_Allownce').val(houseRentAllowance.toFixed(2));
+            $('#Additional_Benefits').val(additionalBenefits.toFixed(2));
+            $('#PF_Conrtibution').val(pfContribution.toFixed(2));
+            $('#EST_Conrtibution').val(esicContribution.toFixed(2));
+            $('#Month_ofSalary').val(monthlySalary.toFixed(2));
+            $('#otgrosssalary').val(grossmonthlysalarywithot.toFixed(2));
+            $('#otdaily').val(otdaily.toFixed(2));
+            $('#othourly').val(othourly.toFixed(2));
+
+            calculateAnnualCTC();
+        }
+
+        function calculateAnnualCTC() {
+            var grossSalary = parseFloat($('#Monthly_Gross_Salary').val()) || 0;
+            var totalMonths = parseFloat($('#Total_Month').val()) || 12; // Default to 12 months
+
+            // Annual CTC = Gross Salary × Total Months
+            var annualCTC = grossSalary * totalMonths;
+
+            // Update Annual CTC field
+            $('#Annual_CTC_Rs_').val(annualCTC.toFixed(2));
+        }
+
+        // Auto trigger when Total Months changes
+        $(document).ready(function () {
+            $('#Total_Month').on('input change', function () {
+                calculateAnnualCTC();
+            });
+        });
+
+        // Attach event handlers
+        $(document).ready(function () {
+            $('#Monthly_Gross_Salary, #Basic_Salary,#Special_Allowance, #Total_Month, #Medical_Allownce, #Leave_travel_Allowance, #Performance_Incentive, #Stock_Option, #Car, #Telephone')
+                .on('input', function () {
+                    calculateSalaryComponents();
+                });
+
+            // Initial calculation
+            calculateSalaryComponents();
+        });
+    </script>
+
+
+
+
+
+    <script>
+
+        function showRelevantAuthorityDropdown() {
+            var selectedValue = document.getElementById('authorityDropdown').value;
+            var joiningDiv = document.getElementById('joiningAuthorityDiv');
+            var currentDiv = document.getElementById('currentAuthorityDiv');
+
+            if (selectedValue === 'joining') {
+                joiningDiv.classList.remove('hidden');
+                currentDiv.classList.add('hidden');
+            } else if (selectedValue === 'current') {
+                currentDiv.classList.remove('hidden');
+                joiningDiv.classList.add('hidden');
+            } else {
+                joiningDiv.classList.add('hidden');
+                currentDiv.classList.add('hidden');
+            }
+        }
+
+        // Initial call to ensure the correct dropdown is displayed on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            showRelevantAuthorityDropdown();
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Country change → Get States
+            $('#country').change(function () {
+                var countryCode = $(this).val();
+                var countryText = $("#country option:selected").text();
+                $('#SelectedCountryId').val(countryCode);
+                $('#SelectedCountryName').val(countryText);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetStates", "OrgnizationMatrix")',
+                    data: { countryCode: countryCode },
+                    success: function (states) {
+                        $('#state').empty().append('<option value="">Select State</option>');
+                        $.each(states, function (i, state) {
+                            $('#state').append('<option value="' + state.value + '">' + state.text + '</option>');
+                        });
+
+                        // Clear city dropdown
+                        $('#city').empty().append('<option value="">Select City</option>');
+                    },
+                    error: function () {
+                        alert("Error loading states.");
+                    }
+                });
+            });
+
+            // State change → Get Cities
+            $('#state').change(function () {
+                var stateCode = $(this).val();
+                var stateText = $("#state option:selected").text();
+                $('#SelectedStateId').val(stateCode);
+                $('#SelectedStateName').val(stateText);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetCities", "OrgnizationMatrix")',
+                    data: { stateCode: stateCode },
+                    success: function (cities) {
+                        $('#city').empty().append('<option value="">Select City</option>');
+                        $.each(cities, function (i, city) {
+                            $('#city').append('<option value="' + city.value + '">' + city.text + '</option>');
+                        });
+                    },
+                    error: function () {
+                        alert("Error loading cities.");
+                    }
+                });
+            });
+
+            // City change → Set selected
+            $('#city').change(function () {
+                var cityCode = $(this).val();
+                var cityText = $("#city option:selected").text();
+                $('#SelectedCityId').val(cityCode);
+                $('#SelectedCityName').val(cityText);
+            });
+
+            // Current Authority
+            $('#CurrentAuthorityId').change(function () {
+                var selectedID = $(this).val() || 0;
+                $('#SelectedCurrentAuthorityId').val(selectedID);
+            });
+
+            // Current Designation
+            $('#CurrentDesignationId').change(function () {
+                var selectedID = $(this).val() || 0;
+                $('#SelectedCurrentDesignationId').val(selectedID);
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#ctcDropdown').change(function () {
+                var selectedOption = $(this).val();
+                $('#selectedCtc').val(selectedOption);
+                if (selectedOption === 'joining' || selectedOption === 'current') {
+                    $('#salaryctc').show(); // Show the container
+                } else {
+                    $('#salaryctc').hide(); // Hide the container for other options
+                }
+            });
+            // Convert input to uppercase as the user types
+            $('#Name, #Surname,#Quallification,#Notices,#exprince,#BankName,#Address,#PermanentAddress,#MiddleName,#Nominee,#Relation,#Panno,#IFSC').on('input', function () {
+                this.value = this.value.toUpperCase();
+            });
+        });
+    </script>
+    <script>
+        // Function to update the hidden field with the selected date
+        function updateHiddenDate() {
+            var selectedDate = document.getElementById("Date_Of_Joining").value;
+            document.getElementById("Date_Of_Joining_Hidden").value = selectedDate;
+        }
+
+        // Function to set the date fields to the current date when the page loads
+        function setDate() {
+            var currentDate = new Date();
+            var year = currentDate.getFullYear();
+            var month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+            var day = ('0' + currentDate.getDate()).slice(-2);
+            var formattedDate = year + "-" + month + "-" + day;
+
+            // Set visible date picker
+            document.getElementById("Date_Of_Joining").value = formattedDate;
+
+            // Set hidden field
+            document.getElementById("Date_Of_Joining_Hidden").value = formattedDate;
+        }
+
+        // Call the function to set the current date when the page loads
+        window.onload = function () {
+            setDate();
+        };
+    </script>
+    <script>
+                  $("#departmentDropdown").change(function () {
+                    var selectedDepartment = $(this).val(); // Get the selected department
+
+                      if (selectedDepartment) {
+                          // Make AJAX call to get the Department Code
+                          $.ajax({
+                              url: '@Url.Action("GetDepartmentCodeByDepartment", "OrgnizationMatrix")', // URL to action method
+                              type: 'GET',
+                              data: { departmentName: selectedDepartment }, // Pass the selected department
+                              success: function (data) {
+                                  if (data.success) {
+                                      // Set the department code in the input field
+                                      $("#DepartmentCode").val(data.departmentCode);
+                                      if (data.Filled === 1) {
+                                          $('#status').text('Filled').removeClass('text-danger').addClass('text-success');
+                                      } else {
+                                          $('#status').text('Vacant').removeClass('text-success').addClass('text-danger');
+                                      }
+                                  } else {
+                                      // Display error message if the department code is not found
+                                      alert(data.message);
+                                  }
+                              },
+                              error: function () {
+                                  alert("Failed to fetch department code. Please try again.");
+                              }
+                          });
+                      } else {
+                          // Clear department code if no department is selected
+                          $("#DepartmentCode").val("");
+                      }
+                  });
+        // Function to get the Position_Code based on the selected position and set it to the hidden field
+                  $("#joiningDesignationDropdown").change(function () {
+                var selectedPosition = $(this).val(); // Get selected position name
+
+                $.ajax({
+                    url: '@Url.Action("GetPositionCodeEMP", "OrgnizationMatrix")',
+                    type: 'GET',
+                    data: { positionName: selectedPosition },
+                    success: function (data) {
+                        if (data.success) {
+                            // Display position code in the hidden field
+                            $("#DesignationCode").val(data.positionCode);
+                            // Optionally, display the position name elsewhere if needed
+                            $("#PositionNameDisplay").text(data.positionName); // Example display area
+                        } else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while fetching the position code.');
+                    }
+                });
+            });
+    </script>
+    <script>
+          $(document).ready(function () {
+            $('#departmentDropdown').change(function () {
+                var department = $(this).val(); // Get the selected department
+
+                $.ajax({
+                    url: '@Url.Action("GetPositionsByDepartment", "OrgnizationMatrix")', // Action to fetch positions
+                    data: { department: department }, // Pass selected department to the action
+                    type: 'GET',
+                    success: function (data) {
+                        var positionDropdown = $('#joiningDesignationDropdown');
+                        positionDropdown.empty(); // Clear the current options
+
+                        // Check if any positions were returned
+                        if (data.length > 0) {
+                            // Populate the dropdown with vacant positions
+                            $.each(data, function (i, item) {
+                                positionDropdown.append('<option value="' + item.Value + '">' + item.Text + '</option>');
+                            });
+                        } else {
+                            // Optionally, add a default "No vacant positions available" option if no positions found
+                            positionDropdown.append('<option value="">No vacant positions available</option>');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while fetching positions.');
+                    }
+                });
+            });
+              document.getElementById("sameAddressCheckbox").addEventListener('change', function () {
+                  // If checkbox is checked, copy Address to Permanent Address
+                  if (this.checked) {
+                      const address = document.getElementById("Address").value;
+                      document.getElementById("PermanentAddress").value = address;
+                  } else {
+                      // Clear Permanent Address when checkbox is unchecked
+                      document.getElementById("PermanentAddress").value = '';
+                  }
+              });
+
+        });
+
+
+    </script>
+    <script>
+        function updatePositionStatus(positionCode) {
+            $.ajax({
+                url: '@Url.Action("UpdatePositionStatus", "OrgnizationMatrix")', // Action to update status
+                data: { positionCode: positionCode },
+                type: 'POST',
+                success: function (data) {
+                    if (data.success) {
+                        alert('Position status updated successfully!');
+                    } else {
+                        alert('Error updating position status.');
+                    }
+                }
+            });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+
+            $('#employeeForm').submit(function (e) {
+                var isValid = true;
+                $('.error-msg').remove(); // Remove previous error messages
+
+                // Validate text fields
+                $('.validate').each(function () {
+                    if ($.trim($(this).val()) === '') {
+                        $(this).css('border', '2px solid red');
+                        $(this).after('<span class="error-msg text-danger">This field is required.</span>');
+                        isValid = false;
+                    } else {
+                        $(this).css('border', '1px solid #ced4da');
+                    }
+                });
+
+                // Validate dropdowns
+                $('.validateDropdown').each(function () {
+                    if ($(this).val() === "select" || $(this).val() === "" || $(this).val() === null) {
+                        $(this).css('border', '2px solid red');
+                        $(this).after('<span class="error-msg text-danger">Please select an option.</span>');
+                        isValid = false;
+                    } else {
+                        $(this).css('border', '1px solid #ced4da');
+                    }
+                });
+
+                // Validate specific authority dropdown based on selected authority level
+                var authorityLevel = $('#authorityDropdown').val();
+
+                if (authorityLevel === 'joining') {
+                    if ($('#joiningAuthority').val() === "" || $('#joiningAuthority').val() === "SELECT JOINING AUTHORITY LEVEL") {
+                        $('#joiningAuthority').css('border', '2px solid red');
+                        $('#joiningAuthority').after('<span class="error-msg text-danger">Please select Joining Authority Level.</span>');
+                        isValid = false;
+                    }
+                }
+
+                if (authorityLevel === 'current') {
+                    if ($('#currentAuthority').val() === "" || $('#currentAuthority').val() === "SELECT CURRENT AUTHORITY LEVEL") {
+                        $('#currentAuthority').css('border', '2px solid red');
+                        $('#currentAuthority').after('<span class="error-msg text-danger">Please select Current Authority Level.</span>');
+                        isValid = false;
+                    }
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            const nameRegex = /^[A-Za-z ]+$/;       // Only letters and spaces
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            const contactRegex = /^[0-9]{10}$/;     // Exactly 10 digits
+            const aadharRegex = /^[0-9]{16}$/;      // Exactly 16 digits
+            const panRegex = /^[A-Za-z0-9]{10}$/;   // 10 alphanumeric
+            const bankRegex = /^[0-9]{12}$/;        // Exactly 12 digits
+            const ifscRegex = /^[A-Za-z0-9]{11}$/;  // Exactly 11 alphanumeric
+
+            // 🔹 Real-time validation for name fields
+            $('.validate').on('input', function () {
+                const value = $(this).val();
+                const fieldId = $(this).attr('id');
+                let errorSpan = $('#' + fieldId + 'Error');
+
+                if (value === '') {
+                    errorSpan.text('This field is required.').css('color', 'red');
+                } else if (!nameRegex.test(value)) {
+                    errorSpan.text('Enter characters only.').css('color', 'red');
+                } else {
+                    errorSpan.text('');
+                }
+            });
+
+            // 🔹 Real-time validation for Email
+            $('#Email').on('input', function () {
+                const value = $(this).val().trim();
+                if (value === '') {
+                    $('#validemail').text('Email is required.').show();
+                } else if (!emailRegex.test(value)) {
+                    $('#validemail').text('Enter a valid email address.').show();
+                } else {
+                    $('#validemail').hide();
+                }
+            });
+
+            // 🔹 Real-time validation for Contact Number
+            $('#Contact_NO').on('input', function () {
+                let value = $(this).val().replace(/\D/g, ''); // only digits
+                $(this).val(value);
+
+                if (value === '') {
+                    $('#validcontactno').text('Contact number is required.').show();
+                } else if (!contactRegex.test(value)) {
+                    $('#validcontactno').text('Contact number must be 10 digits.').show();
+                } else {
+                    $('#validcontactno').hide();
+                }
+            });
+
+            // 🔹 Real-time validation for Aadhar
+            $('#AdharNo').on('input', function () {
+                let value = $(this).val().replace(/\D/g, ''); // only digits
+                $(this).val(value);
+
+                if (value === '') {
+                    $('#validadhar').text('Aadhar number is required.').show();
+                } else if (!aadharRegex.test(value)) {
+                    $('#validadhar').text('Aadhar must be 16 digits.').show();
+                } else {
+                    $('#validadhar').hide();
+                }
+            });
+
+            // 🔹 Real-time validation for PAN
+            $('#Panno').on('input', function () {
+                let value = $(this).val().toUpperCase(); // uppercase
+                $(this).val(value);
+
+                if (value === '') {
+                    $('#validpanno').text('PAN number is required.').show();
+                } else if (!panRegex.test(value)) {
+                    $('#validpanno').text('PAN must be 10 alphanumeric characters.').show();
+                } else {
+                    $('#validpanno').hide();
+                }
+            });
+
+            // 🔹 Real-time validation for Bank Account
+            $('#BankAccount').on('input', function () {
+                let value = $(this).val().replace(/\D/g, ''); // only digits
+                $(this).val(value);
+
+                if (value === '') {
+                    $('#validbank').text('Bank account number is required.').show();
+                } else if (!bankRegex.test(value)) {
+                    $('#validbank').text('Bank account must be 12 digits.').show();
+                } else {
+                    $('#validbank').hide();
+                }
+            });
+
+            // 🔹 Real-time validation for IFSC
+            $('#IFSC').on('input', function () {
+                let value = $(this).val().toUpperCase(); // convert to uppercase
+                $(this).val(value);
+
+                if (value === '') {
+                    $('#validifsc').text('IFSC code is required.').show();
+                } else if (!ifscRegex.test(value)) {
+                    $('#validifsc').text('IFSC must be 11 alphanumeric characters.').show();
+                } else {
+                    $('#validifsc').hide();
+                }
+            });
+
+            $('#Relation').on('input', function () {
+                let value = $(this).val();
+                if (value === '') {
+                    $('#validrelation').text('Relation is required.').show();
+                } else if (!nameRegex.test(value)) {
+                    $('#validrelation').text('Relation must contain only letters.').show();
+                } else {
+                    $('#validrelation').hide();
+                }
+            });
+            // 🔹 Real-time validation for Notice Period
+            $('#Notices').on('input', function () {
+                let value = $(this).val().trim();
+
+                if (value === '') {
+                    $('#validnotices').text('Notice period is required.').show();
+                } else if (!/^\d+$/.test(value)) {
+                    $('#validnotices').text('Notice period must be a number.').show();
+                } else if (parseInt(value) > 90) {
+                    $('#validnotices').text('Notice period cannot exceed 90 days.').show();
+                } else {
+                    $('#validnotices').hide();
+                }
+            });
+
+
+            // 🔹 Final check on form submission
+            $('#employeeForm').on('submit', function (e) {
+                let isValid = true;
+
+                // Validate name fields
+                $('.validate').each(function () {
+                    const value = $(this).val().trim();
+                    const fieldId = $(this).attr('id');
+                    let errorSpan = $('#' + fieldId + 'Error');
+
+                    if (value === '') {
+                        errorSpan.text('This field is required.').css('color', 'red');
+                        isValid = false;
+                    } else if (!nameRegex.test(value)) {
+                        errorSpan.text('Enter characters only.').css('color', 'red');
+                        isValid = false;
+                    } else {
+                        errorSpan.text('');
+                    }
+                });
+
+                // Validate email
+                const emailVal = $('#Email').val().trim();
+                if (!emailRegex.test(emailVal)) {
+                    $('#validemail').text(emailVal === '' ? 'Email is required.' : 'Enter a valid email address.').show();
+                    isValid = false;
+                }
+
+                // Validate contact number
+                const contactVal = $('#Contact_NO').val().trim();
+                if (!contactRegex.test(contactVal)) {
+                    $('#validcontactno').text(contactVal === '' ? 'Contact number is required.' : 'Contact number must be 10 digits.').show();
+                    isValid = false;
+                }
+
+                // Validate Aadhar
+                const aadharVal = $('#AdharNo').val().trim();
+                if (!aadharRegex.test(aadharVal)) {
+                    $('#validadhar').text(aadharVal === '' ? 'Aadhar number is required.' : 'Aadhar must be 16 digits.').show();
+                    isValid = false;
+                }
+
+                // Validate PAN
+                const panVal = $('#Panno').val().trim();
+                if (!panRegex.test(panVal)) {
+                    $('#validpanno').text(panVal === '' ? 'PAN number is required.' : 'PAN must be 10 alphanumeric characters.').show();
+                    isValid = false;
+                }
+
+                // Validate Bank Account
+                const bankVal = $('#BankAccount').val().trim();
+                if (!bankRegex.test(bankVal)) {
+                    $('#validbank').text(bankVal === '' ? 'Bank account number is required.' : 'Bank account must be 12 digits.').show();
+                    isValid = false;
+                }
+
+                // Validate IFSC
+                const ifscVal = $('#IFSC').val().trim();
+                if (!ifscRegex.test(ifscVal)) {
+                    $('#validifsc').text(ifscVal === '' ? 'IFSC code is required.' : 'IFSC must be 11 alphanumeric characters.').show();
+                    isValid = false;
+                }
+
+                const relationVal = $('#Relation').val().trim();
+                if (!nameRegex.test(relationVal)) {
+                    $('#validrelation').text(relationVal === '' ? 'Relation is required.' : 'Relation must contain only letters.').show();
+                    isValid = false;
+                }
+                // Validate Notice Period
+                const noticeVal = $('#Notices').val().trim();
+                if (noticeVal === '' || !/^\d+$/.test(noticeVal) || parseInt(noticeVal) > 90) {
+                    $('#validnotices').text(
+                        noticeVal === '' ? 'Notice period is required.' :
+                            !/^\d+$/.test(noticeVal) ? 'Notice period must be a number.' :
+                                'Notice period cannot exceed 90 days.'
+                    ).show();
+                    isValid = false;
+                }
+
+                if (!isValid) e.preventDefault();
+            });
+        });
+
+    </script>
+    @section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    }
+
+}

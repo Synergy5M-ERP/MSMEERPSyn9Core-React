@@ -1,0 +1,221 @@
+﻿@model IEnumerable<SwamiSamarthSyn8.Models.HRM_EmpInfoTbl>
+@{
+    ViewBag.Title = "HR";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<style>
+    table.dataTable th,
+    table.dataTable td {
+        text-align: center;
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+
+    table.dataTable th {
+        background-color: #6d91e3;
+        color: white;
+        font-weight: bold;
+    }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background-color: forestgreen;
+    }
+
+    .btn-danger {
+        background-color: darkred;
+    }
+
+    /* Optional: Center the DataTable controls */
+    div.dataTables_wrapper {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .dataTables_wrapper {
+        overflow-x: auto !important;
+    }
+</style>
+
+<div class="container-fluid mt-5">
+    <div style="overflow-x:auto; width:100%;">
+        <table id="List" class="display " style="width: 100% !important; white-space: nowrap !important;">
+            <thead>
+                <tr>
+                    <th>EMP_CODE</th>
+                    <th>NAME</th>
+                    <th>EMAIL</th>
+                    <th>CONTACT NO</th>
+                    <th>ADDRESS</th>
+                    <th>STATE</th>
+                    <th>CITY</th>
+                    <th>AADHAR NO</th>
+                    <th>PAN NO</th>
+                    <th>BANK ACCOUNT NO</th>
+                    <th>BANK NAME</th>
+                    <th>DEPARTMENT</th>
+                    <th>DATE OF JOINING</th>
+                    <th>CTC</th>
+                    <th>VIEW</th>
+                    <th>EDIT</th>
+                    <th>RESIGN</th>
+                    <th>DELETE</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Emp_Code</td>
+                            <td>@($"{item.Name} {item.Middle_Name} {item.Surname}")</td>
+                            <td>@item.Email</td>
+                            <td>@item.Contact_NO</td>
+                            <td>@item.Address</td>
+                            <td>@item.State</td>
+                            <td>@item.City</td>
+                            <td>@item.AdharNO</td>
+                            <td>@item.PanNo</td>
+                            <td>@item.BankAccountNo</td>
+                            <td>@item.BankName</td>
+                            <td>@item.Department</td>
+                            <td>@(item.Date_Of_Joing?.ToString("yyyy-MM-dd"))</td>
+                            <td>@item.Annual_CTC_Rs_</td>
+
+                            <td>
+                                <a href="@Url.Action("EmployeeViewProfile", "OrgnizationMatrix", new { empcode = item.Emp_Code })"
+                                   class="text-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("AmendRecordEmployeeinfo", "OrgnizationMatrix")"
+                                   class="text-success editBtn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-icon text-warning resignBtn"
+                                        data-empcode="@item.Emp_Code" title="Resign">
+                                    <i class="fas fa-user-slash"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-icon text-danger"
+                                        onclick="deleteRow(@item.Id)" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#List').DataTable({
+            searching: true,
+            paging: true,
+            info: true,
+            ordering: true,
+            lengthChange: true,
+            pageLength: 10,
+            autoWidth: false,
+            scrollX: true   // ✅ horizontal scrollbar
+            // responsive: true ❌ remove this line
+        });
+    });
+    function deleteRow(id) {
+        if (confirm('Are you sure you want to delete this row?')) {
+            $.ajax({
+                url: '@Url.Action("EmpDeleteConfirmed", "OrgnizationMatrix")',
+                type: 'POST',
+                data: { id: id },
+                dataType: 'json',
+                success: function (result) {
+                    if (result.success) {
+                        console.log('Row with ID ' + id + ' deleted successfully.');
+                        location.reload(); // Reload the table or remove the row
+                    } else {
+                        console.error('Failed to delete row with ID ' + id + ': ' + result.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error deleting row with ID ' + id + ': ' + error);
+                    console.error('Server response: ' + xhr.responseText); // Log the server response
+                }
+            });
+        }
+    }
+
+    $('.resignBtn').click(function () {
+        var empCode = $(this).data('empcode');
+
+        if (confirm("Are you sure you want to resign this employee?")) {
+            $.ajax({
+                url: '/OrgnizationMatrix/ResignEmployee',
+                type: 'POST',
+                data: { empCode: empCode },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload(); // optional: reload to update table
+                    } else {
+                        alert("Error: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Something went wrong: " + error);
+                }
+            });
+        }
+    });
+
+
+    function deleteRow(id) {
+    if (confirm("Are you sure you want to delete this record?")) {
+        $.ajax({
+            url: '@Url.Action("DeleteEmployeerecord", "OrgnizationMatrix")',
+            type: 'POST',
+            data: { id: id },
+            success: function(response) {
+                if (response.success) {
+                    alert('Record deleted successfully');
+                    location.reload(); // or redirect to list page
+                } else {
+                    alert('Delete failed: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('An error occurred:', status, error);
+                alert('An error occurred: ' + xhr.responseText);
+            }
+        });
+    } else {
+        alert('Delete action canceled.');
+    }
+}
+
+
+
+
+</script>

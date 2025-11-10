@@ -1,0 +1,483 @@
+﻿@model SwamiSamarthSyn8.Models.Register
+
+@{
+    ViewBag.Title = "RegistrationForm";
+    string msg = ViewBag.userpresent != null ? ViewBag.userpresent : "";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<style>
+    body {
+        background-color: #f2f2f2;
+        font-family: Arial, sans-serif;
+    }
+
+    .btn-success {
+        display: inline-block;
+        padding: 10px 30px;
+        background-color: #4caf50;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        text-align: center
+    }
+
+    .row {
+        margin-bottom: 10px;
+        font-family: Cambria;
+        font-size: initial;
+        font-display: block;
+        /* text-align:center;*/
+    }
+
+    label {
+        font-weight: 300;
+        font-size: 12px;
+        color: #000000;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: auto;
+        margin-top: 30px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<h2 style="text-align: center; color: navy; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);">CHIEF ADMIN REGISTRATION FORM</h2>
+<div class="container" style="width: 80%; border: 2px solid navy;">
+    @using (Html.BeginForm("RegistrationForm", "Login", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <div id="myfrm" style="background-color:#f5f5f5; padding: 20px;">
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label>COMPANY NAME<span style="color:red;">*</span></label>
+                    @Html.TextBoxFor(a => a.company_name, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(a => a.company_name, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>CONTACT PERSON<span style="color:red;">*</span></label>
+                    @Html.TextBoxFor(a => a.contact_person, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(a => a.contact_person, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label> EMAIL ID<span style="color:red;">*</span></label>
+                    @Html.TextBoxFor(a => a.email_id, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(a => a.email_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>CONTACT NO<span style="color:red;">*</span></label>
+                    @Html.TextBoxFor(a => a.contact_no, new
+                        {
+                            @class = "form-control",
+                            type = "text",
+                            maxlength = 10,
+                            oninput = "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                        })
+                    @Html.ValidationMessageFor(a => a.contact_no, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label>GST NO<span style="color:red;">*</span></label>
+                    @Html.TextBoxFor(a => a.gst_no, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(a => a.gst_no, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>SOURCE<span style="color:red;">*</span></label>
+                    <select name="source1" id="source1" class="form-control" onchange="SelectedTextValue8(this)">
+                        <option selected="selected" hidden></option>
+                    </select>
+                    @Html.ValidationMessageFor(a => a.source, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>CONTINENT<span style="color:red;">*</span></label>
+                    <select name="continent1" id="continent1" class="form-control" onchange="SelectedTextValue9(this)">
+                        <option selected="selected" hidden></option>
+                    </select>
+                    @Html.ValidationMessageFor(a => a.continent, "", new { @class = "text-danger" })
+                    <input type="text" id="continent" name="continent" hidden />
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>COUNTRY<span style="color:red;">*</span></label>
+                    <select name="country1" id="country1" class="form-control" onchange="SelectedTextValue13(this)">
+                        <option selected="selected" hidden></option>
+                    </select>
+                    @Html.ValidationMessageFor(a => a.country, "", new { @class = "text-danger" })
+                    <input type="text" id="country" name="country" hidden />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label>STATE / PROVINCE<span style="color:red;">*</span></label>
+                    <select name="state1" id="state1" class="form-control" onchange="SelectedTextValue14(this)">
+                        <option selected="selected" hidden></option>
+                    </select>
+                    @Html.ValidationMessageFor(a => a.state, "", new { @class = "text-danger" })
+                    <input type="text" id="state" name="state" hidden />
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>CITY<span style="color:red;">*</span></label>
+                    <select name="city1" id="city1" class="form-control" onchange="SelectedTextValue15(this)">
+                        <option selected="selected" hidden></option>
+                    </select>
+                    @Html.ValidationMessageFor(a => a.city, "", new { @class = "text-danger" })
+                    <input type="text" id="city" name="city" hidden />
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>AUTHORITY<span style="color:red;">*</span></label>
+                    @Html.DropDownListFor(a => a.authority,
+                             (SelectList)ViewBag.AuthorityList,
+                             "Select Authority",
+                             new { @class = "form-control" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>DESIGNATION<span style="color:red;">*</span></label>
+                    @Html.DropDownListFor(a => a.designation,
+                             (SelectList)ViewBag.DesignationList,
+                             "Select Designation",
+                             new { @class = "form-control" })
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label>PASSWORD<span style="color:red;">*</span></label>
+                    @Html.PasswordFor(a => a.password, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>CONFIRM PASSWORD<span style="color:red;">*</span></label>
+                    @Html.PasswordFor(a => a.comfirmpassword, new { @class = "form-control" })
+                </div>
+
+                <div class="col-md-6">
+                    <label id="lblpassword" style="color:red;"></label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <label id="lblerr" style="color: red;">@TempData["userpresent"]</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <input type="submit" class="btn btn-success" value="Submit" onclick="return btnSubmit()" />
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* @section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+ *@
+@*<script src="~/Scripts/ExternalForm.js"></script>*@
+<script src="~/Scripts/CustomJs/Latestjs.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.19.3/jquery.validate.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.7/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/Scripts/jquery-3.6.0.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+<script type="text/javascript">
+            $('#company_name').on('keyup', function () {
+                $('#company_name').val($('#company_name').val().toUpperCase())
+            });
+
+            $('#contact_person').on('keyup', function () {
+                $('#contact_person').val($('#contact_person').val().toUpperCase())
+            });
+            function btnSubmit() {
+                var flag = 0;
+                var specialChar = false;
+                var password = $("#password").val();
+
+                if (password !== "" && typeof (password) !== 'undefined') {
+                    if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[!#|$%|^&|*|@Html.Raw("@")|]/.test(password)) {
+                        $('#lblpassword').html("Password must be at least 8 characters<br/>Password must contain at least one lowercase letter<br/>Password must contain at least one uppercase letter<br/>Password must contain at least one number<br/>Password must contain at least one special character (!#|$%|^&|*)<br/>");
+                        flag++;
+                    }
+
+                    var confirmPassword = $("#comfirmpassword").val();
+                    if (confirmPassword !== password) {
+                        flag++;
+                        $('#lblpassword').append("Password and Confirm Password must be the same.");
+                    }
+
+                    if (flag === 0) {
+                        $('#lblpassword').text('');
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+
+            }
+
+    $('#gst_no').change(function () {
+        var gstValue = $(this).val();
+        var isValidGST = /^[0-9]{15}$/.test(gstValue);
+        if (!isValidGST) {
+            $('#validcompnayname').show();
+        } else {
+            $('#validcompnayname').hide();
+        }
+    });
+
+</script>
+<script>
+    $(document).ready(function () {
+        // Load authorities
+       // Load authorities
+        $.ajax({
+            url: '@Url.Action("GetAuthorities", "Login")',
+            type: 'GET',
+            success: function (data) {
+                var dropdown = $('#authority1');
+                dropdown.empty();
+                dropdown.append($('<option>').text('Select Authority').val('')); // Default option
+
+                var selectedValue = null;
+
+                $.each(data, function (index, item) {
+                    var option = $('<option>').text(item.AuthorityName).val(item.Authority_code);
+
+                    // If CHIEF_ADMIN is selected, preselect it
+                    if (item.IsSelected === "Yes") {
+                        option.prop('selected', true);
+                        selectedValue = item.Authority_code;
+                    }
+
+                    dropdown.append(option);
+                });
+
+                // Set hidden input value
+                if (selectedValue) {
+                    $("#authority").val(selectedValue);
+                }
+            }
+        });
+
+        // Update hidden input when dropdown changes
+        $("#authority1").change(function () {
+            $("#authority").val($(this).val());
+        });
+    });
+
+    function SelectedTextValueAuthority(select) {
+        $("#authority").val(select.value);
+    }
+
+        // Load designations
+        $.ajax({
+            url: '@Url.Action("GetDesignations", "Login")',
+            type: 'GET',
+            success: function (data) {
+                populateDropdown('#designation1', data, 'DesignationName', 'Designation_code');
+            }
+        });
+
+
+    function populateDropdown(dropdownId, data, textField, valueField) {
+        var dropdown = $(dropdownId);
+        dropdown.empty();
+        dropdown.append($('<option>').text('').val('')); // Add an empty option
+
+        $.each(data, function (index, item) {
+            dropdown.append($('<option>').text(item[textField]).val(item[valueField]));
+        });
+
+        dropdown.prop('disabled', false); // Enable the dropdown after populating data
+    }
+
+    //function SelectedTextValueAuthority(select) {
+    //    $("#authority").val(select.value);
+    //}
+
+    function SelectedTextValueDesignation(select) {
+        $("#designation").val(select.value);
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        // Populate Source dropdown on page load
+        $.ajax({
+            url: '@Url.Action("GetSource", "Login")',
+            type: 'GET',
+            success: function (data) {
+                console.log("Source Data:", data); // Debugging
+                populateDropdown('#source1', data);
+            }
+        });
+
+        // Handle Source dropdown change event
+        $('#source1').change(function () {
+            var selectedSource = $(this).val();
+            if (selectedSource) {
+                $.ajax({
+                    url: '@Url.Action("GetContinent", "Login")',
+                    type: 'GET',
+                    data: { source: selectedSource },
+                    success: function (data) {
+                        console.log("Continent Data:", data); // Debugging
+                        populateDropdown('#continent1', data);
+                        $('#country1, #state1, #city1').empty().prop('disabled', true);
+                    }
+                });
+            } else {
+                $('#continent1, #country1, #state1, #city1').empty().prop('disabled', true);
+            }
+        });
+
+        // Handle Continent dropdown change event
+        $('#continent1').change(function () {
+            var selectedSource = $('#source1').val();
+            var selectedContinent = $(this).val();
+            if (selectedContinent) {
+                $.ajax({
+                    url: '@Url.Action("GetCountry", "Login")',
+                    type: 'GET',
+                    data: { source: selectedSource, continent: selectedContinent },
+                    success: function (data) {
+                        console.log("Country Data:", data); // Debugging
+                        populateDropdown('#country1', data);
+                        $('#state1, #city1').empty().prop('disabled', true);
+                    }
+                });
+            } else {
+                $('#country1, #state1, #city1').empty().prop('disabled', true);
+            }
+        });
+
+        // Handle Country dropdown change event
+        $('#country1').change(function () {
+            var selectedSource = $('#source1').val();
+            var selectedContinent = $('#continent1').val();
+            var selectedCountry = $(this).val();
+            if (selectedCountry) {
+                $.ajax({
+                    url: '@Url.Action("GetState", "Login")',
+                    type: 'GET',
+                    data: { source: selectedSource, continent: selectedContinent, country: selectedCountry },
+                    success: function (data) {
+                        console.log("State Data:", data); // Debugging
+                        populateDropdown('#state1', data);
+                        $('#city1').empty().prop('disabled', true);
+                    }
+                });
+            } else {
+                $('#state1, #city1').empty().prop('disabled', true);
+            }
+        });
+
+        // Handle State dropdown change event
+        $('#state1').change(function () {
+            var selectedSource = $('#source1').val();
+            var selectedContinent = $('#continent1').val();
+            var selectedCountry = $('#country1').val();
+            var selectedState = $(this).val();
+            if (selectedState) {
+                $.ajax({
+                    url: '@Url.Action("GetCity", "Login")',
+                    type: 'GET',
+                    data: { source: selectedSource, continent: selectedContinent, country: selectedCountry, state: selectedState },
+                    success: function (data) {
+                        console.log("City Data:", data); // Debugging
+                        populateDropdown('#city1', data);
+                    }
+                });
+            } else {
+                $('#city1').empty().prop('disabled', true);
+            }
+        });
+
+        // Function to populate a dropdown with data
+        function populateDropdown(dropdownId, data) {
+            var dropdown = $(dropdownId);
+            dropdown.empty();
+            dropdown.append($('<option>').text('Select an option').val(''));
+            $.each(data, function (index, item) {
+                dropdown.append($('<option>').text(item).val(item));
+            });
+            dropdown.prop('disabled', false);
+        }
+    });
+</script>
+
+<script>
+
+    function SelectedTextValue8(ele) {
+
+        if (ele.selectedIndex > 0) {
+            var selectedText = ele.options[ele.selectedIndex].innerHTML;
+            var selectedValue = ele.value;
+            document.getElementById("source").value = selectedText;
+        } else {
+            document.getElementById("source").value = "";
+        }
+    }
+    function SelectedTextValue9(ele) {
+        if (ele.selectedIndex > 0) {
+            var selectedText = ele.options[ele.selectedIndex].innerHTML;
+            var selectedValue = ele.value;
+            document.getElementById("continent").value = selectedText;
+        } else {
+            document.getElementById("continent").value = "";
+        }
+    }
+    function SelectedTextValue13(ele) {
+        if (ele.selectedIndex > 0) {
+            var selectedText = ele.options[ele.selectedIndex].innerHTML;
+            var selectedValue = ele.value;
+            document.getElementById("country").value = selectedText;
+        } else {
+            document.getElementById("country").value = "";
+        }
+    }
+    function SelectedTextValue14(ele) {
+        if (ele.selectedIndex > 0) {
+            var selectedText = ele.options[ele.selectedIndex].innerHTML;
+            var selectedValue = ele.value;
+            document.getElementById("state").value = selectedText;
+        } else {
+            document.getElementById("state").value = "";
+        }
+    }
+    function SelectedTextValue15(ele) {
+        if (ele.selectedIndex > 0) {
+            var selectedText = ele.options[ele.selectedIndex].innerHTML;
+            var selectedValue = ele.value;
+            document.getElementById("city").value = selectedText;
+        } else {
+            document.getElementById("city").value = "";
+        }
+    }
+
+
+
+</script>
+

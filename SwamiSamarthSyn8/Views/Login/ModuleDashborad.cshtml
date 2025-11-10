@@ -1,0 +1,241 @@
+﻿@model SwamiSamarthSyn8.Models.AdminBorad
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewBag.Title = "HR";
+
+    // Retrieve selected tools from TempData
+    List<string> selectTools = TempData["SelectedTools"] as List<string> ?? new List<string>();
+    TempData.Keep();
+
+    // Retrieve username from session
+    string userName = HttpContextAccessor.HttpContext.Session.GetString("UserName") ?? "";
+}
+
+<style>
+    /* Body Styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa; /* Light gray background */
+        color: #333; /* Dark text color */
+    }
+
+    /* Container Styling */
+    .container {
+        padding: 20px;
+        background-color: #fff; /* White background for the container */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Box shadow for a subtle effect */
+        max-width: 100%;
+    }
+
+    /* Checkbox Styling */
+    .checkbox-list {
+        display: flex;
+        flex-direction: column;
+        margin-left: 150px;
+    }
+
+    .checkbox-item {
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+
+    /* Optional: Make selected user text bold and larger */
+    #selectedUserName {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    /* Optional: Increase and bold 'Select user' label */
+    label {
+        font-size: 20px;
+        text-transform: uppercase; /* Convert all label text to uppercase */
+    }
+
+    .checkbox-item label {
+        margin-left: 5px;
+        font-size: 15px;
+        text-transform: uppercase; /* Convert all label text to uppercase */
+    }
+
+    /* Button Styling */
+    .text-center {
+        text-align: center;
+        margin-bottom: 20px; /* Increase margin for spacing */
+        margin: 10px;
+    }
+
+    .btn-submit {
+        background-color: #28a745; /* Green */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px; /* Rounded corners */
+        transition: background-color 0.3s ease; /* Smooth transition */
+    }
+
+        .btn-submit:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+
+    .btn-reject {
+        background-color: #dc3545; /* Red */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px; /* Rounded corners */
+        transition: background-color 0.3s ease; /* Smooth transition */
+        font-weight: bold;
+    }
+
+        .btn-reject:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+
+    h2 {
+        color: #007bff; /* Blue */
+        text-align: center;
+        margin-top: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Added text shadow */
+    }
+</style>
+<h2 style="text-align: center; color: navy; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);">USER MODULE ACCESS APPROVAL</h2>
+
+@using (Html.BeginForm("ModuleDashborad", "Login", FormMethod.Post))
+{
+    @Html.Hidden("Emp_Code", (string)ViewBag.EmpCode) <!-- Cast ViewBag.EmpCode to string -->
+
+
+    <div class="container">
+        <div class="row" style="margin-bottom: 20px; margin-left: 150px;">
+            @*<div class="col-md-3">
+        <label><b>SELECTED USER</b></label>
+        </div>*@
+            <div class="col-md-3 ml-auto">
+                <label style="font-size:15px;">@ViewBag.SelectedUserName</label>
+                <input type="hidden" id="userid" name="userid" value="@ViewBag.UserId" />
+
+            </div>
+
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-6" style="margin-bottom: 10px; margin-left: 150px; ">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="selectAllColumn1" class="selectAllCheckbox" />
+                    <label for="selectAllColumn1">Select All</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="checkbox-list">
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.MaterialManagementModule, new { @class = "checkbox", id = "chkMaterialManagement" })
+                        <label for="chkItemMaster">Material Management Module</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.SalesAndMarketingModule, new { @class = "checkbox", id = "chkSalesAndMarketing" })
+                        <label for="chkInventoryMaster">Sales And Marketing Module</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.HRAndAdminModule, new { @class = "checkbox", id = "chkHRAndAdmin" })
+                        <label for="chkVendorMaster">HR And Admin Module</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.AccountAndFinanceModule, new { @class = "checkbox", id = "chkAccountAndFinance" })
+                        <label for="chkLocationMaster">Account And Finance Module</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="checkbox-list">
+
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.MastersModule, new { @class = "checkbox", id = "chkMasters" })
+                        <label for="chkLocationMaster">Masters</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.DashboardModule, new { @class = "checkbox", id = "chkDashboard" })
+                        <label for="chkLocationMaster">Dashboard</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.ProductionAndQualityModule, new { @class = "checkbox", id = "chkProductionAndQuality" })
+                        <label for="chkLocationMaster">Production And Quality Module</label>
+                    </div>
+                    <div class="checkbox-item">
+                        @Html.CheckBoxFor(Model => Model.External_buyer_seller, new { @class = "checkbox", id = "chkQuality" })
+                        <label for="chkLocationMaster">Quality Module</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="text-center">
+            <button type="submit" id="btnSendApprovalEmailForModule" class="btn btn-submit">SUBMIT</button>
+            <button type="button" class="btn btn-reject">REJECT</button>
+
+        </div>
+    </div>
+
+    @Html.HiddenFor(model => model.MaterialManagementModule)
+    @Html.HiddenFor(model => model.SalesAndMarketingModule)
+    @Html.HiddenFor(model => model.HRAndAdminModule)
+    @Html.HiddenFor(model => model.AccountAndFinanceModule)
+    @Html.HiddenFor(model => model.MastersModule)
+
+}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".selectAllCheckbox").change(function () {
+            var checkboxes = $(this).closest('.container').find('.checkbox-list :checkbox');
+            checkboxes.prop('checked', $(this).prop('checked'));
+        });
+
+        $("#userlist").on("change", function () {
+            var id = $("#userlist").val();
+            $("#userid").val(id);
+        });
+        $("#btnSendApprovalEmailForModule").click(function () {
+                // Make an AJAX call to the controller action to send the approval email
+                $.ajax({
+                    url: "@Url.Action("SendApprovalEmailForModule", "Login")",
+                    type: "POST",
+                    success: function (response) {
+                        if (response.success) {
+                            // Show a success message or perform any other actions
+                            alert("Approval email sent successfully.");
+                        } else {
+                            // Show an error message or handle the error condition
+                            alert("Failed to send approval email.");
+                        }
+                    },
+
+                });
+            });
+
+    });
+
+
+
+
+
+
+</script>
+
+

@@ -1,0 +1,446 @@
+﻿@model SwamiSamarthSyn8.Models.DeptDesigAuthortiy
+
+@{
+    ViewBag.Title = "HR";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        #dynamicList th {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            text-align: center;
+            padding: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .text-input input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #btnsubmit {
+            background-color: forestgreen;
+            color: white;
+            height: 40px;
+            width: 80px;
+            border-radius: 20px;
+            border: none;
+        }
+
+        #cancelButton {
+            background-color: red;
+            color: white;
+            height: 40px;
+            width: 100px;
+            border-radius: 20px;
+            border: none;
+        }
+
+        .list-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+            .list-container h2 {
+                margin-top: 0;
+                color: #333;
+                font-size: 22px;
+                font-weight: bold;
+            }
+
+            .list-container table {
+                width: 50%;
+                margin: 0 auto;
+                border-collapse: collapse;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .list-container th {
+                background-color: #4CAF50;
+                color: white;
+            }
+
+        .delete-btn {
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: none;
+        }
+
+        .edit-btn {
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <script type="text/javascript">
+            alert('@ViewBag.SuccessMessage');
+        </script>
+    }
+
+    <div>
+        @using (Html.BeginForm("Create", "OrgnizationMatrix", FormMethod.Post, new { @id = "createForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <table>
+                <tr>
+                    <th>SELECT OPTION</th>
+                    <td>
+                        @Html.DropDownList("selectedOption", new SelectList(
+                                 new[] {
+                    new SelectListItem { Text = "DEPARTMENT", Value = "Department" },
+                    new SelectListItem { Text = "DESIGNATION", Value = "Designation" },
+                    new SelectListItem { Text = "AUTHORITY MATRIX", Value = "AuthorityMatrix" },
+                    new SelectListItem { Text = "ORGANIZATION", Value = "OrganizationBuild" }
+                    }, "Value", "Text"), "SELECT OPTION", new { @id = "optionSelect", @class = "form-control" })
+                    </td>
+                </tr>
+
+                <tr class="text-input" id="departmentInput" style="display:none;">
+                    <th>DEPARTMENT NAME:</th>
+                    <td>@Html.TextBoxFor(m => m.Department.DepartmentName, new { @class = "capitalize" })</td>
+                </tr>
+
+                <tr class="text-input" id="designationInput" style="display:none;">
+                    <th>DESIGNATION NAME:</th>
+                    <td>@Html.TextBoxFor(m => m.Designation.DesignationName, new { @class = "capitalize" })</td>
+                </tr>
+
+                <tr class="text-input" id="matrixInput" style="display:none;">
+                    <th>AUTHORITY ROLE:</th>
+                    <td>@Html.TextBoxFor(m => m.AuthorityMatrix.AuthorityName, new { @class = "capitalize" })</td>
+                </tr>
+
+                <tr id="submitButtonRow" style="display:none;">
+                    <td colspan="2" style="text-align:center;">
+                        <button type="button" id="btnsubmit">ADD</button>
+                        &nbsp;
+                        <button type="button" id="cancelButton">CANCEL</button>
+                    </td>
+                </tr>
+                <tr id="listRow" style="display:none;">
+                    <td colspan="2" style="text-align: center;">
+                        <table id="dynamicList" style="width: 50%; margin: 0 auto; border-collapse: collapse; text-align: center;">
+                            <thead>
+                                <tr>
+                                    <th>VALUE</th>
+                                    <th>CODE</th>
+                                    <th colspan="2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </td>
+                </tr>
+
+            </table>
+        }
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">UPDATE</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="editModalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+            document.getElementById("btnsubmit").addEventListener("click", function () {
+                let option = document.getElementById("optionSelect").value;
+                let inputValue = "";
+
+
+        if (option === "Department") {
+            inputValue = $("#Department_DepartmentName").val();
+        } else if (option === "Designation") {
+            inputValue = $("#Designation_DesignationName").val();
+        } else if (option === "AuthorityMatrix") {
+            inputValue = $("#AuthorityMatrix_AuthorityName").val();
+
+         } else if (option === "OrganizationBuild") {
+            // 🚀 redirect directly to your controller/action
+            window.location.href = '@Url.Action("OrgchartwithBudget", "OrgnizationMatrix")';
+            return; // stop execution so it won’t run validation below
+        }
+
+            if (inputValue.trim() === "") {
+                alert("Please enter a value!");
+                return;
+            }
+                document.getElementById("listRow").style.display = "table-row";
+
+                let tbody = document.querySelector("#dynamicList tbody");
+                let newRow = document.createElement("tr");
+
+                newRow.innerHTML = `
+                                                    <td>${inputValue}</td>
+                                                    <td>${option}</td>
+                                                    <td><button class="edit-btn">Edit</button></td>
+                                                    <td><button class="delete-btn">Delete</button></td>
+                                                `;
+
+                tbody.appendChild(newRow);
+            });
+    </script>
+
+    <input type="hidden" id="currentOption" value="" />
+
+    <script>
+                $(document).ready(function () {
+            $("#btnsubmit").click(function () {
+            var option = $("#optionSelect").val();
+            var inputValue = "";
+
+
+            if (option === "Department") {
+                inputValue = $("#Department_DepartmentName").val();
+            } else if (option === "Designation") {
+                inputValue = $("#Designation_DesignationName").val();
+            } else if (option === "AuthorityMatrix") {
+                inputValue = $("#AuthorityMatrix_AuthorityName").val();
+
+             } else if (option === "OrganizationBuild") {
+                // 🚀 redirect directly to your controller/action
+                window.location.href = '@Url.Action("OrgchartwithBudget", "OrgnizationMatrix")';
+                return; // stop execution so it won’t run validation below
+            }
+
+                if (inputValue.trim() === "") {
+                    alert("Please enter a value!");
+                    return;
+                }
+
+        $.ajax({
+            url: '@Url.Action("Create", "OrgnizationMatrix")',
+            type: "POST",
+            data: $("#createForm").serialize(), // ✅ Don't forget this!
+            success: function (response) {
+                if (response.success === false) {
+                    alert(response.message || "Something went wrong!");
+                } else {
+                    if (response.redirectUrl) {
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        alert(response.message || "Saved successfully!");
+                        loadList(option);
+                        $("#Department_DepartmentName").val("");
+                        $("#Designation_DesignationName").val("");
+                        $("#AuthorityMatrix_AuthorityName").val("");
+                    }
+                }
+            },
+            error: function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+
+        });
+        });
+
+            // Store current selected option in hidden input
+            $("#optionSelect").change(function () {
+                var selectedOption = $(this).val();
+                $("#currentOption").val(selectedOption);
+                $(".text-input").hide();
+                $("#submitButtonRow").hide();
+                $("#listRow").hide();
+
+                if (selectedOption === "Department") $("#departmentInput").show();
+                else if (selectedOption === "Designation") $("#designationInput").show();
+                else if (selectedOption === "AuthorityMatrix") $("#matrixInput").show();
+
+                if (selectedOption) {
+                    $("#submitButtonRow").show();
+                    loadList(selectedOption);
+                }
+            });
+
+            // Delete record
+            $(document).on("click", ".delete-btn", function () {
+                var id = $(this).data("id");
+                var option = $(this).data("option");
+                if (confirm("Are you sure to delete?")) {
+                    $.post('@Url.Action("DeleteRecord", "OrgnizationMatrix")',
+                        { id: id, selectedOption: option, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        function () {
+                            // After deletion, reload the same option list
+                            $("#optionSelect").val(option); // restore dropdown selection
+                            $("#currentOption").val(option);
+
+                            // Show input fields and submit button
+                            $(".text-input").hide();
+                            $("#submitButtonRow").hide();
+                            $("#listRow").hide();
+                            if (option === "Department") $("#departmentInput").show();
+                            else if (option === "Designation") $("#designationInput").show();
+                            else if (option === "AuthorityMatrix") $("#matrixInput").show();
+
+                            $("#submitButtonRow").show();
+
+                            // Reload the list for same option
+                            loadList(option);
+                        });
+                }
+            });
+
+            // Function to load list dynamically
+            function loadList(selectedOption) {
+                $.ajax({
+                    url: '/OrgnizationMatrix/List',
+                    type: "GET",
+                    data: { selectedOption: selectedOption },
+                    success: function (data) {
+                        var thead = $("#dynamicList thead");
+                        var tbody = $("#dynamicList tbody");
+                        tbody.empty();
+                        thead.empty();
+
+                        if (selectedOption === "Department" && data.DepartmentName) {
+                            thead.append(`<tr>
+                                <th>DEPARTMENT NAME</th>
+                                <th>DEPARTMENT CODE</th>
+                                <th colspan="2">ACTION</th>
+                            </tr>`);
+                            $.each(data.DepartmentName, function (i, dept) {
+                                tbody.append(`<tr>
+                                    <td>${dept.DepartmentName}</td>
+                                    <td>${dept.Department_code}</td>
+                                    <td>
+                                    <a href="#" class='edit-btn' data-id='${dept.Id}' title="Edit">
+                                        <i class="fa fa-edit" style="color:blue; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" class='delete-btn' data-option='Department' data-id='${dept.Id}' title="Delete">
+                                        <i class="fa fa-trash" style="color:red; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                </tr>`);
+                            });
+                        }
+                        else if (selectedOption === "Designation" && data.DesignationsName) {
+                            thead.append(`<tr>
+                                <th>DESIGNATION NAME</th>
+                                <th>DESIGANTION CODE</th>
+                                <th colspan="2">ACTION</th>
+                            </tr>`);
+                            $.each(data.DesignationsName, function (i, des) {
+                                tbody.append(`<tr>
+                                    <td>${des.DesignationName}</td>
+                                    <td>${des.Designation_code}</td>
+                                    <td>
+                                    <a href="#" class='edit-btn' data-id='${des.Id}' title="Edit">
+                                        <i class="fa fa-edit" style="color:blue; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" class='delete-btn' data-option='Designation' data-id='${des.Id}' title="Delete">
+                                        <i class="fa fa-trash" style="color:red; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                </tr>`);
+                            });
+                        }
+                        else if (selectedOption === "AuthorityMatrix" && data.AuthorityName) {
+                            thead.append(`<tr>
+                                <th>AUTHORITY NAME</th>
+                                <th>AUTHORITY CODE</th>
+                                <th colspan="2">ACTION</th>
+                            </tr>`);
+                            $.each(data.AuthorityName, function (i, auth) {
+                                tbody.append(`<tr>
+                                    <td>${auth.AuthorityName}</td>
+                                    <td>${auth.Authority_code}</td>
+                                  <td>
+                                    <a href="#" class='edit-btn' data-id='${auth.Id}' title="Edit">
+                                        <i class="fa fa-edit" style="color:blue; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" class='delete-btn' data-option='AuthorityMatrix' data-id='${auth.Id}' title="Delete">
+                                        <i class="fa fa-trash" style="color:red; cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                </tr>`);
+                            });
+                        }
+
+                        $("#listRow").show();
+                    }
+                });
+            }
+
+                    $("#cancelButton").click(function () {
+                        // Hide all input rows
+                        $(".text-input").hide();
+
+                        // Hide submit row and list
+                        $("#submitButtonRow").hide();
+                        $("#listRow").hide();
+
+                        // Reset dropdown
+                        $("#optionSelect").val("");
+
+                        // Clear textboxes
+                        $("#Department_DepartmentName").val("");
+                        $("#Designation_DesignationName").val("");
+                        $("#AuthorityMatrix_AuthorityName").val("");
+                    });
+
+            // Open Edit modal
+            $(document).on("click", ".edit-btn", function () {
+            var id = $(this).data("id");
+            var option = $("#optionSelect").val();
+            var url = '/OrgnizationMatrix/Edit?option=' + option + '&id=' + id;
+            $("#editModalBody").load(url, function () {
+            $("#editModal").modal("show");
+            });
+            });
+
+            // Capitalize input
+            $(".capitalize").on("input", function () {
+            this.value = this.value.toUpperCase();
+            });
+            });
+    </script>
+</body>
+</html>

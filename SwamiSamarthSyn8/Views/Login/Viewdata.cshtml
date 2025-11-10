@@ -1,0 +1,103 @@
+﻿@model SwamiSamarthSyn8.Models.Userdetails
+@{
+    ViewBag.Title = "HR";
+    string empCode = ViewBag.EmpCode as string;
+}
+
+<style>
+    .row {
+        margin-bottom: 10px;
+        font-family: Cambria;
+        text-align: left;
+    }
+
+    h2 {
+        text-align: center;
+        text-decoration-thickness: 2px;
+        text-decoration-style: solid;
+        text-decoration-color: #596cef;
+        margin-bottom: 15px;
+        font-family: Cambria;
+        color: #fb0d56;
+    }
+
+    .label-title {
+        color: #333;
+    }
+
+    .user-box {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+        max-width: 100%
+    }
+</style>
+
+<h2 style="text-align: center; color: navy; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);">USER DETAILS</h2>
+
+<div class="container user-box">
+    @using (Html.BeginForm("Viewdata", "Login", FormMethod.Post, new { enctype = "multipart/form-data", Id = Model.id, empcode = Model.Emp_Code }))
+    {
+        @Html.HiddenFor(model => model.id)
+
+        <div class="row">
+            <div class="col-md-3 label-title">USERNAME:</div>
+            <div class="col-md-3">@Model.Email</div>
+
+            <div class="col-md-3 label-title">PASSWORD:</div>
+            <div class="col-md-3">@Model.password</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">NAME:</div>
+            <div class="col-md-3">@Model.Name</div>
+
+            <div class="col-md-3 label-title">SURNAME:</div>
+            <div class="col-md-3">@Model.Surname</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">CONTACT PERSON:</div>
+            <div class="col-md-3">@Model.Contact_NO</div>
+
+            <div class="col-md-3 label-title">EMAIL ID:</div>
+            <div class="col-md-3">@Model.Email</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">GENDER:</div>
+            <div class="col-md-3">@Model.Gender</div>
+
+            <div class="col-md-3 label-title">ADDRESS:</div>
+            <div class="col-md-3">@Model.permanent_Address</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">DEPARTMENT:</div>
+            <div class="col-md-3">@Model.Department</div>
+
+            <div class="col-md-3 label-title">DESIGNATION:</div>
+            <div class="col-md-3">@Model.Joining_Designation</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">AUTHORITY:</div>
+            <div class="col-md-3">@Model.Joining_AuthorityLevel</div>
+
+            <div class="col-md-3 label-title">DATE OF JOINING:</div>
+            <div class="col-md-3"> @(Model.Date_Of_Joing?.ToString("dd/MM/yyyy"))</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 label-title">EMP CODE:</div>
+            <div class="col-md-3">@Model.Emp_Code</div>
+        </div>
+
+        <div class="row text-center mt-4">
+            <div class="col-md-12">
+                <a href="/Login/ModuleUserData" class="btn btn-primary" style="background-color:#4a58ec">PROCEED</a>
+            </div>
+        </div>
+    }
+</div>

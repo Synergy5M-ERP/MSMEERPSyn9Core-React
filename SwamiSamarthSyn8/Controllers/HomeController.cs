@@ -11,10 +11,10 @@ namespace SwamiSamarthSyn8.Controllers
         //{
         //    _context = context;
         //}
-        public IActionResult Index()
-        {
-            return View();
-        }
+        //public IActionResult Index()
+        //{
+        //  //  return View();
+        //}
 
         
     }

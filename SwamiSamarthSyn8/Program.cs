@@ -1,4 +1,92 @@
-﻿//using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using SwamiSamarthSyn8.Data;
+using SwamiSamarthSyn8.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ----------------------------
+// Configure Logging
+// ----------------------------
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// ----------------------------
+// Add services to the container
+// ----------------------------
+builder.Services.AddControllers();
+
+// Add DbContext for Azure SQL
+builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+
+// CORS policy for React frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// Distributed memory cache (required for session)
+builder.Services.AddDistributedMemoryCache();
+
+// Session configuration
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
+    options.Cookie.HttpOnly = true;                 // Protect cookie
+    options.Cookie.IsEssential = true;             // Required for GDPR
+});
+
+// HttpContextAccessor and HttpClient
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
+
+var app = builder.Build();
+
+// ----------------------------
+// Middleware pipeline
+// ----------------------------
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+// CORS must come before session and authorization
+app.UseCors("AllowReact");
+
+// Session middleware
+app.UseSession();
+
+// Authorization
+app.UseAuthorization();
+
+// Map controllers and default route
+app.MapControllers();
+app.MapDefaultControllerRoute();
+
+// ----------------------------
+// Run application with error handling
+// ----------------------------
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
+    var logger = loggerFactory.CreateLogger<Program>();
+    logger.LogError(ex, "Application failed to start");
+    throw; // rethrow so Azure App Service sees the startup failure
+}
+
+
+//using Microsoft.EntityFrameworkCore;
 //using SwamiSamarthSyn8.Data;
 //using SwamiSamarthSyn8.Models;
 
@@ -43,59 +131,60 @@
 //app.Run();
 
 
-using Microsoft.EntityFrameworkCore;
-using SwamiSamarthSyn8.Data;
-using SwamiSamarthSyn8.Models;
+//using Microsoft.EntityFrameworkCore;
+//using SwamiSamarthSyn8.Data;
+//using SwamiSamarthSyn8.Models;
 
-try { 
-var builder = WebApplication.CreateBuilder(args);
+//try { 
+//var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers();
+//// Add services to the container
+//builder.Services.AddControllers();
 
-// Add DbContext
-builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+//// Add DbContext
+//builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
-// Add CORS policy
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReact", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") // React app
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+//// Add CORS policy
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReact", policy =>
+//    {
+//        policy.WithOrigins("http://localhost:3000") // React app
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials();
+//    });
+//});
 
-// Add session and HttpContextAccessor if needed
-builder.Services.AddSession();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient();
+//    // Add session and HttpContextAccessor if needed
+//    builder.Services.AddDistributedMemoryCache();
+//    builder.Services.AddSession();
+//builder.Services.AddHttpContextAccessor();
+//builder.Services.AddHttpClient();
 
-var app = builder.Build();
+//var app = builder.Build();
 
-// Middleware
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+//// Middleware
+//app.UseHttpsRedirection();
+//app.UseStaticFiles();
 
-app.UseRouting();
+//app.UseRouting();
 
-// CORS must come before Authorization and Endpoint mapping
-app.UseCors("AllowReact");
+//// CORS must come before Authorization and Endpoint mapping
+//app.UseCors("AllowReact");
 
-app.UseSession();
-app.UseAuthorization();
+//app.UseSession();
+//app.UseAuthorization();
 
-// Map API controllers
-app.MapControllers();
-app.MapDefaultControllerRoute();
+//// Map API controllers
+//app.MapControllers();
+//app.MapDefaultControllerRoute();
 
-app.Run();
-}
-catch (Exception ex)
-{
-    Console.WriteLine("Startup exception: " + ex);
-throw;
-}
+//app.Run();
+//}
+//catch (Exception ex)
+//{
+//    Console.WriteLine("Startup exception: " + ex);
+//throw;
+//}

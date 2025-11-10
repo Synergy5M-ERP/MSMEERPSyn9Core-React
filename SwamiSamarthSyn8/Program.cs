@@ -47,6 +47,7 @@ using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models;
 
+try { 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -92,3 +93,9 @@ app.MapControllers();
 app.MapDefaultControllerRoute();
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Startup exception: " + ex);
+throw;
+}

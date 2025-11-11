@@ -16,7 +16,7 @@ jobs:
 
       # Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '22.x'
 
@@ -49,9 +49,13 @@ jobs:
           name: react-build
           path: build
 
+      - name: 'Azure Login'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v4
+        uses: azure/webapps-deploy@v3
         with:
           app-name: 'MSMEERP-Syn9ReactApp'        # Your Azure App Service name
           slot-name: 'Production'

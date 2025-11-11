@@ -12,15 +12,13 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // ----------------------------
-// Add services to the container
+// Add services
 // ----------------------------
 builder.Services.AddControllers();
 
-// Add DbContext for Azure SQL
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
-// CORS policy for React frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
@@ -35,10 +33,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Distributed memory cache (required for session)
 builder.Services.AddDistributedMemoryCache();
 
-// Session configuration
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -46,7 +42,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// HttpContextAccessor and HttpClient
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
@@ -60,33 +55,47 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// CORS must come before session and authorization
 app.UseCors("AllowReact");
 
 app.UseSession();
 app.UseAuthorization();
 
-// Map controllers
+// ----------------------------
+// ✅ Diagnostic routes (helpful for Azure testing)
+// ----------------------------
+app.MapGet("/api/ping", () =>
+{
+    return Results.Json(new { status = "ok", message = "Ping successful! 🚀" });
+});
+
+app.MapGet("/api/hello", () =>
+{
+    return Results.Json(new
+    {
+        success = true,
+        message = "✅ API is running fine on Azure!",
+        serverTime = DateTime.UtcNow
+    });
+});
+
+// ----------------------------
+// Controllers
+// ----------------------------
 app.MapControllers();
 app.MapDefaultControllerRoute();
 
 // ----------------------------
-// Logging after build ✅
-// ----------------------------
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("✅ Application startup: API is running on Azure environment.");
-
-// ----------------------------
-// Run application with error handling
+// Logging + Run
 // ----------------------------
 try
 {
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("✅ Application startup: API is running on Azure environment.");
     app.Run();
 }
 catch (Exception ex)
 {
-    var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
-    var log = loggerFactory.CreateLogger<Program>();
-    log.LogError(ex, "❌ Application failed to start");
+    Console.WriteLine("❌ Fatal error starting application: " + ex.Message);
+    Console.WriteLine(ex);
     throw;
 }

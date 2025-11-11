@@ -55,6 +55,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// CORS must come before session and authorization
 app.UseCors("AllowReact");
 
 app.UseSession();
@@ -79,10 +80,25 @@ app.MapGet("/api/hello", () =>
 });
 
 // ----------------------------
-// Controllers
+// Map your API controllers
 // ----------------------------
 app.MapControllers();
 app.MapDefaultControllerRoute();
+
+// ----------------------------
+// Use Azure-assigned port if running on App Service
+// ----------------------------
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port) && int.TryParse(port, out var parsedPort))
+{
+    app.Urls.Clear();
+    app.Urls.Add($"http://*:{parsedPort}");
+}
+else
+{
+    // fallback for local testing
+    app.Urls.Add("http://localhost:5000");
+}
 
 // ----------------------------
 // Logging + Run

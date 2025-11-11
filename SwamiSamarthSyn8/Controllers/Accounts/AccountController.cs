@@ -17,6 +17,19 @@ namespace SwamiSamarthSyn8.Controllers
         {
             _context = context;
         }
+
+
+        [HttpGet("Hello")]
+        public IActionResult Hello()
+        {
+            return Ok(new
+            {
+                success = true,
+                message = "✅ API is running fine on Azure!",
+                serverTime = DateTime.UtcNow
+            });
+        }
+
         [HttpGet("CheckDb")]
         public IActionResult CheckDb()
         {

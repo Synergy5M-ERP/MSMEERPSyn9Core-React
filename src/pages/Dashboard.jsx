@@ -93,10 +93,10 @@ function Dashboard() {
     cards = (
       <>
         <div className='row'>
-          <div className='col-6'> <Card label="Total Profit in Lakhs" value={totals.profitLoss.totalProfit} />
+          <div className='col-6'> <Card label="Total Profit in Lacs" value={totals.profitLoss.totalProfit} />
 
           </div>
-          <div className='col-6'>     <Card label="Total Loss in Lakhs " value={totals.profitLoss.totalLoss} /></div>
+          <div className='col-6'>     <Card label="Total Loss in Lacs " value={totals.profitLoss.totalLoss} /></div>
         </div>
 
       </>
@@ -111,9 +111,9 @@ function Dashboard() {
     cards = (
       <>
         <div className='row'>
-          <div className='col-6'>   <Card label="Total Debits in Lakhs" value={totals.trialBalance.totalDebits} />
+          <div className='col-6'>   <Card label="Total Debits in Lacs" value={totals.trialBalance.totalDebits} />
           </div>
-          <div className='col-6'>  <Card label="Total Credits in Lakhs" value={totals.trialBalance.totalCredits} />
+          <div className='col-6'>  <Card label="Total Credits in Lacs" value={totals.trialBalance.totalCredits} />
           </div>
         </div>
       </>

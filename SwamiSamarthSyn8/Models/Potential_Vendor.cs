@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -46,7 +47,7 @@ public partial class Potential_Vendor
     [StringLength(500)]
     public string? Address { get; set; }
 
-    public int? Pin { get; set; }
+    public String? Pin { get; set; }
 
     [StringLength(500)]
     public string? Contact_Person { get; set; }
@@ -65,14 +66,6 @@ public partial class Potential_Vendor
 
     [StringLength(500)]
     public string? Website { get; set; }
-
-    [StringLength(500)]
-    public string? Type_Of_Business { get; set; }
-
-    [StringLength(500)]
-    public string? Product_Catalouge { get; set; }
-
-    public int? User_Id { get; set; }
 
     [StringLength(500)]
     public string? CurrentAcNo { get; set; }
@@ -100,4 +93,5 @@ public partial class Potential_Vendor
 
     [StringLength(50)]
     public string? PAN_No { get; set; }
+
 }

@@ -17,6 +17,20 @@ namespace SwamiSamarthSyn8.Controllers
         {
             _context = context;
         }
+        [HttpGet("CheckDb")]
+        public IActionResult CheckDb()
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection().ConnectionString;
+                var total = _context.AccountType.Count();
+                return Ok(new { connectedTo = connection, totalAccountTypes = total });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
         // ---------------- ACCOUNT TYPE ----------------
         [HttpGet("AccountType")]

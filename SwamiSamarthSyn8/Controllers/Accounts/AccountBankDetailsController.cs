@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace SwamiSamarthSyn8.Accounts.Controller
 {
-    [Route("api/")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AccountBankDetailsController : ControllerBase
     {
@@ -13,7 +14,47 @@ namespace SwamiSamarthSyn8.Accounts.Controller
         {
             _context = context;
         }
+        // -------------------- VENDOR LIST --------------------
+        [HttpGet("Vendors")]
+        public async Task<IActionResult> GetVendors()
+        {
+            try
+            {
+                var vendors = await _context.Potential_Vendor
+                    .Select(v => new
+                    {
+                        v.Id,
+                        VendorCode = v.Vendor_Code,
+                        CompanyName = v.Company_Name,
+                        v.Contact_Person,
+                        v.Email,
+                        v.Contact_Number,
+                        v.Bank_Name,
+                        v.CurrentAcNo,
+                        v.Branch,
+                        v.IFSC_No,
+                        v.GST_Number,
+                        v.Country,
+                        v.State_Province,
+                        v.City,
+                        v.Address,
+                        v.industry,
+                        v.Category,
+                        v.Sub_Category,
 
+                    })
+                    .ToListAsync();
+
+                if (vendors == null || vendors.Count == 0)
+                    return NotFound(new { success = false, message = "No vendors found" });
+
+                return Ok(new { success = true, data = vendors });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
         // ---------- AccountBankDetails APIs ----------
 
         // ✅ GET all bank details
@@ -31,7 +72,7 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                 .Select(x => new
                 {
                     x.AccountBankDetailId,
-                    x.Vendor_Code,
+                    x.VendorId,
                     x.BranchName,
                     x.BankName,
                     x.AccountNo,
@@ -43,28 +84,38 @@ namespace SwamiSamarthSyn8.Accounts.Controller
             return Ok(data);
         }
 
-        // ✅ POST create bank details
+        // ✅ POST: api/AccountBankDetails
         [HttpPost("AccountBankDetails")]
-        public IActionResult CreateAccountBankDetails([FromBody] AccountBankDetails model)
+        public async Task<IActionResult> PostAccountBankDetails([FromBody] List<AccountBankDetails> bank)
         {
-            if (model == null)
-                return BadRequest("Invalid data.");
+            if (bank == null)
+                return BadRequest(new { success = false, message = "No data received" });
 
-            var bankdetail = new AccountBankDetails
+            try
             {
-                BankName = model.BankName,
-                AccountNo = model.AccountNo,
-                BranchName = model.BranchName,
-                IFSCCode = model.IFSCCode,
-                Vendor_Code=model.Vendor_Code,
-                IsActive = true
-            };
+                foreach (var bank_ in bank)
+                {
+                    if (string.IsNullOrEmpty(bank_.BankName) || bank_.VendorId <= 0)
+                        return BadRequest(new { success = false, message = "Missing required fields" });
 
-            _context.AccountBankDetails.Add(bankdetail);
-            _context.SaveChanges();
-
-            return Ok(new { success = true, message = "Bank Details added successfully!" });
+                    // ✅ verify vendor exists
+                    var vendorExists = await _context.Potential_Vendor.AnyAsync(v => v.Id == bank_.VendorId);
+                    if (!vendorExists)
+                        return BadRequest(new { success = false, message = $"Vendor ID {bank_.VendorId} not found." });
+                    var vendorDetail = _context.Potential_Vendor.Where(v => v.Id == bank_.VendorId).FirstOrDefault();
+                    bank_.IsActive = true;
+                    bank_.Vendor = vendorDetail;
+                    _context.AccountBankDetails.Add(bank_);
+                    await _context.SaveChangesAsync();
+                }
+                return Ok(new { success = true, message = "Bank Details added successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.InnerException?.Message ?? ex.Message });
+            }
         }
+
 
         [HttpPut("AccountBankDetails/{id}")]
         public IActionResult UpdateAccountBankDetails(int id, [FromBody] AccountBankDetails accountBankDetails)

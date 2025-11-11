@@ -9,47 +9,41 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: read  # Required for actions/checkout
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.x'
 
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build with dotnet
+      - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Publish app
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet-app
-          path: ${{ env.DOTNET_ROOT }}/myapp
+          name: published-app
+          path: ./publish
 
   deploy:
     runs-on: windows-latest
     needs: build
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: dotnet-app
+          name: published-app
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'MSMEERP-Syn9Core' # Your Azure Web App name
-          slot-name: 'Production'
-          package: .
+          app-name: 'MSMEERP-Syn9Core'  # Your Azure App Service name
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_CORE }}
+          package: .

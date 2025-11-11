@@ -21,16 +21,16 @@ builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
 // CORS policy for React frontend
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowReact", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:3000")
-//              .AllowAnyHeader()
-//              .AllowAnyMethod()
-//              .AllowCredentials();
-//    });
-//});
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "https://msmeerp-syn9reactapp.azurewebsites.net/")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 // Distributed memory cache (required for session)
 builder.Services.AddDistributedMemoryCache();

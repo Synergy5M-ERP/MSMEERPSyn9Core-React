@@ -24,8 +24,6 @@ function AccountGroupSubgroup() {
   const [editingId, setEditingId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("active");
 
- // const API_BASE = "https://msmeerp-syn9core.azurewebsites.net/api/Account";
-
   // ✅ Fetch Table Data
   const fetchTableData = useCallback(
     async (type = formType, status = activeFilter) => {

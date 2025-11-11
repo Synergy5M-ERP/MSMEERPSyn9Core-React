@@ -27,6 +27,8 @@ jobs:
       # Build the React app
       - name: Build React App
         run: npm run build
+        env:
+          CI:false
 
       # Upload the build folder for deployment
       - name: Upload build artifact

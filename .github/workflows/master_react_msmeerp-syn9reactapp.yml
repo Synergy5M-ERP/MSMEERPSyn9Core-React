@@ -1,0 +1,14 @@
+echo "name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master_react
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Say Hello
+        run: echo 'Hello from master_react branch!'" > .github/workflows/master_react_msmeerp-syn9reactapp.yml

@@ -49,15 +49,12 @@ jobs:
           name: react-build
           path: build
 
-      - name: 'Azure Login'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+     
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'MSMEERP-Syn9ReactApp'        # Your Azure App Service name
-          slot-name: 'Production'
+          slot-name: 'Production'                 # this is production
           package: './build'                       # Path to the React build folder
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }} # Add this secret in GitHub

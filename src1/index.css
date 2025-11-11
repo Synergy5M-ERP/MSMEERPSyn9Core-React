@@ -11,14 +11,3 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-th {
-  color: 'red'
-}
-
-.scrollbar {
-  height: 400px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  padding-right: 8px;
-}

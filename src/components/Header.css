@@ -1,0 +1,143 @@
+/* ===== Header Container ===== */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 70px;
+  background: linear-gradient(to right, #002b5b, #00509e);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  z-index: 10;
+}
+.header-right .dropdown-menu {
+  position: absolute;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  min-width: 220px;
+  z-index: 2000; /* above modules bar */
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-left { 
+  display: flex; 
+  align-items: center; 
+}
+.header-center { 
+  flex: 1; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+}
+.header-logo { 
+  width: 50px; 
+  height: auto; 
+}
+.header-title { 
+  font-weight: 700; 
+  font-size: 24px; 
+  color: #f2f2f2; 
+  letter-spacing: 1px; 
+}
+.header-right { 
+  display: flex; 
+  align-items: center; 
+  position: relative; 
+  z-index: 100; 
+}
+
+/* ===== Dropdown Button ===== */
+.dropdown-btn {
+  background-color: #00509e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.dropdown-btn:hover { 
+  background-color: #007bff; 
+}
+
+/* ===== Dropdown Menu ===== */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 5px); /* Below the button */
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
+  z-index: 1000;
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dropdown items */
+.dropdown-item {
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dropdown-item:hover { 
+  background-color: #f2f2f2; 
+  color: #007bff; 
+  font-weight: 600; 
+}
+
+/* Divider */
+.dropdown-divider { 
+  height: 1px; 
+  background-color: #ddd; 
+  margin: 5px 0; 
+}
+
+/* ===== Modules Bar ===== */
+.module-bar {
+  display: flex;
+  justify-content: center;
+  background-color: #003366;
+  padding: 12px 10px;
+  gap: 15px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+/* Module buttons */
+.module-btn {
+  background: #00509e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+.module-btn:hover {
+  background: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Fix z-index for dropdown over modules bar ===== */
+.header-right .dropdown-menu {
+  top: 70px; /* header height */
+}

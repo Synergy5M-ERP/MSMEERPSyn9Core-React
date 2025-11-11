@@ -1,0 +1,172 @@
+.accounttype-container {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  background-color: #f4f6f8;
+  min-height: 90vh;
+}
+
+/* Left Panel */
+.left-panel {
+  flex: 1;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.left-panel h3 {
+  font-size: 24px;
+  text-align: center;  /* Center the header */
+  margin-bottom: 20px;
+}
+
+.left-panel .form-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;  /* Vertical center for checkbox and inputs */
+  justify-content: center;
+  flex-wrap: wrap;      /* Allows wrap on small screens */
+  width: 100%;
+}
+
+.left-panel .form-row input.form-control {
+  flex: 1;
+  min-width: 150px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.left-panel .form-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;  /* Prevent checkbox from stretching */
+}
+
+/* Buttons below form */
+.left-panel .form-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-save, .btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-save {
+  background-color: #28a745;
+  color: #fff;
+}
+.btn-save:hover { background-color: #218838; }
+
+.btn-cancel {
+  background-color: #da1136;
+  color: #fff;
+}
+.btn-cancel:hover { background-color: #5a6268; }
+
+/* Right Panel */
+.right-panel {
+  flex: 2;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+.right-panel h3 {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Table Buttons */
+.btn-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+.btn-icon.edit {
+  color: white !important;
+  background-color: green !important;
+}
+.btn-icon.delete {
+  color: white !important;
+  background-color: red !important;
+}
+.btn-icon:hover { transform: scale(1.1); }
+
+/* DataTable Styling */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  max-width: 800px; /* increase width to fit horizontal row */
+}
+
+.form-row {
+  display: flex;
+  align-items: center; /* vertically center elements */
+  gap: 16px; /* space between input and checkbox */
+}
+
+.form-control {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  flex: 1; /* inputs take equal space */
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-save {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  padding: 8px 16px;
+  background-color: #f44336;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  background-color: #45a049;
+}
+
+.btn-cancel:hover {
+  background-color: #da190b;
+}

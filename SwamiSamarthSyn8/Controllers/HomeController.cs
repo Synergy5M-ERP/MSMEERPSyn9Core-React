@@ -13,9 +13,7 @@ namespace SwamiSamarthSyn8.Controllers
         //}
         public IActionResult Index()
         {
-            return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!");
+            return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!", "text/plain; charset=utf-8");
         }
-      
-
     }
 }

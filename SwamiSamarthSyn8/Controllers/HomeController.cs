@@ -1,13 +1,16 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Plugins;
 
 namespace SwamiSamarthSyn8.Controllers
 {
     public class HomeController : Controller
     {
+        [HttpGet]
         public IActionResult Index()
         {
-            return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!", "text/plain; charset=utf-8");
+            var result=new {Message="Welcome to SwamiSamarthSyn8 — the app is running successfully!"};
+            return Ok(result);
         }
     }
 }

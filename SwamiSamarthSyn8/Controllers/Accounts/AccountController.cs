@@ -32,20 +32,42 @@ namespace SwamiSamarthSyn8.Controllers
             });
         }
 
+        //[HttpGet("CheckDb")]
+        //public IActionResult CheckDb()
+        //{
+        //    try
+        //    {
+        //        var connection = _context.Database.GetDbConnection().ConnectionString;
+        //        var total = _context.AccountType.Count();
+        //        return Ok(new { connectedTo = connection, totalAccountTypes = total });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { success = false, message = ex.Message });
+        //    }
+        //}
         [HttpGet("CheckDb")]
         public IActionResult CheckDb()
         {
             try
             {
                 var connection = _context.Database.GetDbConnection().ConnectionString;
-                var total = _context.AccountType.Count();
-                return Ok(new { connectedTo = connection, totalAccountTypes = total });
+                var totalGroups = _context.AccountGroup.Count();
+                var totalTypes = _context.AccountType.Count();
+
+                return Ok(new
+                {
+                    connectedTo = connection,
+                    totalGroups,
+                    totalTypes
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, new { message = ex.Message });
             }
         }
+
 
         //// ---------------- ACCOUNT TYPE ----------------
         //[HttpGet("AccountType")]

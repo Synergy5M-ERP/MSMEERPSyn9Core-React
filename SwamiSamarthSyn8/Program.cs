@@ -30,18 +30,28 @@ builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
 
-// CORS (for React frontend)
+//// CORS (for React frontend)
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReact", policy =>
+//    {
+//        policy.WithOrigins("http://localhost:3000",
+//             "https://msmeerp-syn9reactapp.azurewebsites.net")
+
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials();
+//    });
+//});
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReact", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000",
-             "https://msmeerp-syn9reactapp.azurewebsites.net")
-
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("https://msmeerp-syn9reactapp.azurewebsites.net") // your React app URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
 // Swagger

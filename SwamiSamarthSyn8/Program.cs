@@ -35,7 +35,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000",
+             "https://msmeerp-syn9reactapp.azurewebsites.net")
+
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -69,7 +71,7 @@ else
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8_API_v1");
     c.RoutePrefix = string.Empty; // opens Swagger at "/"
 });
 
@@ -88,6 +90,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
+
 
 app.Run();
 

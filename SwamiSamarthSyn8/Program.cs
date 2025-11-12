@@ -1,70 +1,59 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
 using SwamiSamarthSyn8.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------- Serilog Logging -----------------
-try
-{
-    Log.Logger = new LoggerConfiguration()
-        .ReadFrom.Configuration(builder.Configuration)
-        .Enrich.FromLogContext()
-        .WriteTo.Console()
-        // ✅ Use Azure's writable log folder
-        .WriteTo.File("D:\\home\\LogFiles\\app\\log-.txt", rollingInterval: RollingInterval.Day)
-        .CreateLogger();
+// ----------------- Logging -----------------
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-    builder.Host.UseSerilog();
-    Log.Information("Serilog configured successfully.");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Serilog initialization failed: {ex.Message}");
-}
+builder.Host.UseSerilog();
 
 // ----------------- Services -----------------
 builder.Services.AddControllersWithViews();
 
-// ✅ Database Connection
+// DbContext
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
-// ✅ CORS Policy for React Frontend
+// ✅ Add distributed cache required for session
+builder.Services.AddDistributedMemoryCache();
+
+// ✅ Add session service
+builder.Services.AddSession();
+
+builder.Services.AddHttpContextAccessor();
+
+// CORS (for React frontend)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "https://msmeerp-syn9reactapp.azurewebsites.net")
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-builder.Services.AddSession();
-builder.Services.AddHttpContextAccessor();
-
-// ✅ Swagger Configuration
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "SwamiSamarthSyn8 API",
-        Version = "v1",
-        Description = "API documentation for SwamiSamarthSyn8 system"
+        Version = "v1"
     });
 });
 
 var app = builder.Build();
-
-// ----------------- Logging -----------------
-Log.Information("Application building complete. Environment: {env}", app.Environment.EnvironmentName);
 
 // ----------------- Middleware -----------------
 if (app.Environment.IsDevelopment())
@@ -76,21 +65,22 @@ else
     app.UseExceptionHandler("/error");
 }
 
+// ✅ Swagger enabled for all environments
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
+    c.RoutePrefix = string.Empty; // opens Swagger at "/"
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors("AllowReact");
+
 app.UseSession();
 app.UseAuthorization();
-
-// ✅ Enable Swagger (moved to /swagger so root shows HomeController)
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
-    c.RoutePrefix = "swagger"; // ✅ Avoid blank root page
-});
 
 // ----------------- Routes -----------------
 app.MapControllerRoute(
@@ -99,40 +89,7 @@ app.MapControllerRoute(
 
 app.MapControllers();
 
-// ----------------- App Lifecycle Logging -----------------
-var lifetime = app.Lifetime;
-lifetime.ApplicationStarted.Register(() =>
-{
-    Log.Information("✅ SwamiSamarthSyn8 application started successfully at {time}", DateTime.UtcNow);
-});
-lifetime.ApplicationStopping.Register(() =>
-{
-    Log.Information("⚠️ SwamiSamarthSyn8 application is stopping at {time}", DateTime.UtcNow);
-});
-lifetime.ApplicationStopped.Register(() =>
-{
-    Log.Information("🛑 SwamiSamarthSyn8 application stopped at {time}", DateTime.UtcNow);
-});
-
 app.Run();
-
-// ----------------- Example Controller Actions -----------------
-
-public partial class HomeController : Controller
-{
-    public IActionResult Index()
-    {
-        return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!");
-    }
-
-    [HttpGet("AccountType")]
-    public IActionResult GetAccountType()
-    {
-        return Ok(new { message = "Account type API is working ✅" });
-    }
-}
-
-
 
 
 //--------------------------------------------------------------------------------------------------------------------

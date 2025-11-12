@@ -5,12 +5,6 @@ namespace SwamiSamarthSyn8.Controllers
 {
     public class HomeController : Controller
     {
-        //private readonly SwamiSamarthDbContext _context;
-
-        //public HomeController(SwamiSamarthDbContext context)
-        //{
-        //    _context = context;
-        //}
         public IActionResult Index()
         {
             return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!", "text/plain; charset=utf-8");

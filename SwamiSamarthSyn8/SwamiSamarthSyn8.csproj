@@ -32,6 +32,7 @@
 	<ItemGroup>
 	  <Folder Include="Content\" />
 	  <Folder Include="Scripts\" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
 	</ItemGroup>
 	<ProjectExtensions><VisualStudio><UserProperties content_4bootstrap_1css_1map__JsonSchema="https://www.schemastore.org/sublime-syntax.json" /></VisualStudio></ProjectExtensions>
 

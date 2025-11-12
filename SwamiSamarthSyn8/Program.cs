@@ -116,12 +116,10 @@
 //    throw;
 //}
 
-
 using Microsoft.EntityFrameworkCore;
-using SwamiSamarthSyn8.Data;
-using Serilog;
-using SwamiSamarthSyn8.Models;
 using Microsoft.OpenApi;
+using Serilog;
+using SwamiSamarthSyn8.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -142,18 +140,17 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
-// CORS
+// CORS (for React frontend)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins(
-            "http://localhost:3000",
-            "https://msmeerp-syn9reactapp.azurewebsites.net"
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials();
+        policy.WithOrigins("http://localhost:3000", // React app URL
+                    "https://msmeerp-syn9reactapp.azurewebsites.net"
+                    )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -166,18 +163,18 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Swami API",
-        Version = "v1"
+        Title = "SwamiSamarthSyn8 API",
+        Version = "v1",
+        Description = "API documentation for SwamiSamarthSyn8 system"
     });
 });
 
 var app = builder.Build();
 
-// Log app started event
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Application building complete. Environment: {env}", app.Environment.EnvironmentName);
+// ----------------- Logging -----------------
+Log.Information("Application building complete. Environment: {env}", app.Environment.EnvironmentName);
 
-// Middleware
+// ----------------- Middleware -----------------
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -187,33 +184,45 @@ else
     app.UseExceptionHandler("/error");
 }
 
+// Enable Swagger for all environments (so it also works in Azure)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
+    c.RoutePrefix = string.Empty; // ✅ Root Swagger UI (https://localhost:7145/)
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 app.UseCors("AllowReact");
+
 app.UseSession();
 app.UseAuthorization();
 
-// Swagger UI
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Swami API V1");
-    c.RoutePrefix = "swagger";
-});
-// Map MVC default route
+// ----------------- Routes -----------------
+// ✅ Change default route to avoid Swagger conflict
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
-// Log when app starts
+// ----------------- App Lifecycle Logging -----------------
 var lifetime = app.Lifetime;
 lifetime.ApplicationStarted.Register(() =>
 {
-    logger.LogInformation("ApplicationStarted event fired at {time}", DateTime.UtcNow);
+    Log.Information("✅ SwamiSamarthSyn8 application started successfully at {time}", DateTime.UtcNow);
+});
+lifetime.ApplicationStopping.Register(() =>
+{
+    Log.Information("⚠️ SwamiSamarthSyn8 application is stopping at {time}", DateTime.UtcNow);
+});
+lifetime.ApplicationStopped.Register(() =>
+{
+    Log.Information("🛑 SwamiSamarthSyn8 application stopped at {time}", DateTime.UtcNow);
 });
 
 app.Run();

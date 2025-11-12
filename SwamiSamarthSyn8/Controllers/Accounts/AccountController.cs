@@ -57,40 +57,48 @@ namespace SwamiSamarthSyn8.Controllers
 
         //    return Ok(query.ToList());
         //}
+        //[HttpGet("AccountType")]
+        //public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
+
+        //        var query = _context.AccountType.AsQueryable();
+
+        //        if (isActive.HasValue)
+        //            query = query.Where(x => x.IsActive == isActive.Value);
+
+        //        var list = await query.ToListAsync();
+
+        //        if (list == null || list.Count == 0)
+        //        {
+        //            _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
+        //            // return 204 No Content OR 200 with empty array depending on your API contract
+        //            return NoContent(); // -> HTTP 204
+        //                                // OR: return Ok(new object[0]); -> HTTP 200 with []
+        //        }
+
+        //        _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
+        //        return Ok(list); // 200 + JSON
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Important: log the exception with context
+        //        _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
+
+        //        // Return a safe error message and 500
+        //        return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
+        //    }
+        //}
+
         [HttpGet("AccountType")]
-        public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
+        public IActionResult GetAccountType()
         {
-            try
-            {
-                _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
-
-                var query = _context.AccountType.AsQueryable();
-
-                if (isActive.HasValue)
-                    query = query.Where(x => x.IsActive == isActive.Value);
-
-                var list = await query.ToListAsync();
-
-                if (list == null || list.Count == 0)
-                {
-                    _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
-                    // return 204 No Content OR 200 with empty array depending on your API contract
-                    return NoContent(); // -> HTTP 204
-                                        // OR: return Ok(new object[0]); -> HTTP 200 with []
-                }
-
-                _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
-                return Ok(list); // 200 + JSON
-            }
-            catch (Exception ex)
-            {
-                // Important: log the exception with context
-                _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
-
-                // Return a safe error message and 500
-                return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
-            }
+            return Ok(new { message = "Account type API is working ✅" });
         }
+
+
         [HttpPost("AccountType")]
         public IActionResult CreateAccountType([FromBody] AccountType accountType)
         {

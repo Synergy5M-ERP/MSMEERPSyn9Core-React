@@ -1,4 +1,4 @@
-name: Build and deploy ASP.NET Core app to Azure Web App - MSMEERP-Syn9Core
+name: Build and deploy ASP.NET Core app to Azure Web App - msmeerpsyn9-core
 
 on:
   push:
@@ -45,5 +45,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'MSMEERP-Syn9Core'  # Your Azure App Service name
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_CORE }}
+          publish-profile: ${{ secrets.AzureCredentialsReactCore}}
           package: .
+

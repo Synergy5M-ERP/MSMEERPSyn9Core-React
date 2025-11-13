@@ -31,18 +31,6 @@ builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
 //// CORS (for React frontend)
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowReact", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:3000",
-//             "https://msmeerp-syn9reactapp.azurewebsites.net")
-
-//              .AllowAnyHeader()
-//              .AllowAnyMethod()
-//              .AllowCredentials();
-//    });
-//});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -82,14 +70,14 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8_API_v1");
-    c.RoutePrefix = string.Empty; // opens Swagger at "/"
+    c.RoutePrefix = string.Empty;
 });
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseCors("AllowReact");
+app.UseCors("AllowReactApp");
 
 app.UseSession();
 app.UseAuthorization();

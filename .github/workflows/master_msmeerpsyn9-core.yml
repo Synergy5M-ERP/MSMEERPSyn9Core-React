@@ -52,4 +52,4 @@ jobs:
           app-name: 'msmeerpsyn9-core'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1AE6F2B7472C43EF85C74E98F61127C0 }}
+          publish-profile: ${{ secrets.AzureCredentialsReactCore }}

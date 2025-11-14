@@ -93,7 +93,7 @@ function Dashboard() {
     cards = (
       <>
         <div className='row'>
-          <div className='col-6'> <Card label="Total Profit in Lacs" value={totals.profitLoss.totalProfit} />
+          <div className='col-6'> <Card label="Total Profit in lacs" value={totals.profitLoss.totalProfit} />
 
           </div>
           <div className='col-6'>     <Card label="Total Loss in Lacs " value={totals.profitLoss.totalLoss} /></div>

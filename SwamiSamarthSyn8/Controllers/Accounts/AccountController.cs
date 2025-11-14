@@ -20,107 +20,45 @@ namespace SwamiSamarthSyn8.Controllers
             _logger = logger;
 
         }
-
-        [HttpGet("Hello")]
-        public IActionResult Hello()
-        {
-            return Ok(new
-            {
-                success = true,
-                message = "✅ API is running fine on Azure!",
-                serverTime = DateTime.UtcNow
-            });
-        }
-
-        //[HttpGet("CheckDb")]
-        //public IActionResult CheckDb()
+        //[HttpGet("AccountType")]
+        //public IActionResult GetAccountType()
         //{
-        //    try
-        //    {
-        //        var connection = _context.Database.GetDbConnection().ConnectionString;
-        //        var total = _context.AccountType.Count();
-        //        return Ok(new { connectedTo = connection, totalAccountTypes = total });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { success = false, message = ex.Message });
-        //    }
+        //    return Ok(new { message = "Account type API is working ✅" });
         //}
-        [HttpGet("CheckDb")]
-        public IActionResult CheckDb()
+        [HttpGet("AccountType")]
+        public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
         {
             try
             {
-                var connection = _context.Database.GetDbConnection().ConnectionString;
-                var totalGroups = _context.AccountGroup.Count();
-                var totalTypes = _context.AccountType.Count();
+                _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
 
-                return Ok(new
+                var query = _context.AccountType.AsQueryable();
+
+                if (isActive.HasValue)
+                    query = query.Where(x => x.IsActive == isActive.Value);
+
+                var list = await query.ToListAsync();
+
+                if (list == null || list.Count == 0)
                 {
-                    connectedTo = connection,
-                    totalGroups,
-                    totalTypes
-                });
+                    _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
+                    // return 204 No Content OR 200 with empty array depending on your API contract
+                    return NoContent(); // -> HTTP 204
+                                        // OR: return Ok(new object[0]); -> HTTP 200 with []
+                }
+
+                _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
+                return Ok(list); // 200 + JSON
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                // Important: log the exception with context
+                _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
+
+                // Return a safe error message and 500
+                return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
             }
         }
-
-
-        //// ---------------- ACCOUNT TYPE ----------------
-        //[HttpGet("AccountType")]
-        //public IActionResult GetAllAccountTypes([FromQuery] bool? isActive)
-        //{
-        //    var query = _context.AccountType.AsQueryable();
-        //    if (isActive.HasValue)
-        //        query = query.Where(x => x.IsActive == isActive.Value);
-
-        //    return Ok(query.ToList());
-        //}
-        //[HttpGet("AccountType")]
-        //public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
-
-        //        var query = _context.AccountType.AsQueryable();
-
-        //        if (isActive.HasValue)
-        //            query = query.Where(x => x.IsActive == isActive.Value);
-
-        //        var list = await query.ToListAsync();
-
-        //        if (list == null || list.Count == 0)
-        //        {
-        //            _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
-        //            // return 204 No Content OR 200 with empty array depending on your API contract
-        //            return NoContent(); // -> HTTP 204
-        //                                // OR: return Ok(new object[0]); -> HTTP 200 with []
-        //        }
-
-        //        _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
-        //        return Ok(list); // 200 + JSON
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Important: log the exception with context
-        //        _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
-
-        //        // Return a safe error message and 500
-        //        return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
-        //    }
-        //}
-
-        [HttpGet("AccountType")]
-        public IActionResult GetAccountType()
-        {
-            return Ok(new { message = "Account type API is working ✅" });
-        }
-
-
         [HttpPost("AccountType")]
         public IActionResult CreateAccountType([FromBody] AccountType accountType)
         {
@@ -400,47 +338,7 @@ namespace SwamiSamarthSyn8.Controllers
             return Ok(existing);
         }
 
-        // -------------------- VENDOR LIST --------------------
-        [HttpGet("Vendors")]
-        public async Task<IActionResult> GetVendors()
-        {
-            try
-            {
-                var vendors = await _context.Potential_Vendor
-                    .Select(v => new
-                    {
-                        v.Id,
-                        VendorCode = v.Vendor_Code,
-                        CompanyName = v.Company_Name,
-                        v.Contact_Person,
-                        v.Email,
-                        v.Contact_Number,
-                        v.Bank_Name,
-                        v.CurrentAcNo,
-                        v.Branch,
-                        v.IFSC_No,
-                        v.GST_Number,
-                        v.Country,
-                        v.State_Province,
-                        v.City,
-                        v.Address,
-                        v.industry,
-                        v.Category,
-                        v.Sub_Category,
 
-                    })
-                    .ToListAsync();
-
-                if (vendors == null || vendors.Count == 0)
-                    return NotFound(new { success = false, message = "No vendors found" });
-
-                return Ok(new { success = true, data = vendors });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
     }
 }
 

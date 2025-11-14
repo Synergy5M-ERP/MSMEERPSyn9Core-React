@@ -1,60 +1,55 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
-using Serilog;
 using SwamiSamarthSyn8.Data;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
+using System.Collections.ObjectModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------- Logging -----------------
+// ----------------- Configure Serilog -----------------
+var columnOptions = new ColumnOptions
+{
+    AdditionalColumns = new Collection<SqlColumn>
+    {
+        new SqlColumn("ThreadId", System.Data.SqlDbType.NVarChar, dataLength: 50)
+    }
+};
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
 // ----------------- Services -----------------
 builder.Services.AddControllersWithViews();
 
-// DbContext
+// ✅ Register DbContext
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 
-// ✅ Add distributed cache required for session
-builder.Services.AddDistributedMemoryCache();
+Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection"));
 
-// ✅ Add session service
-builder.Services.AddSession();
-
-builder.Services.AddHttpContextAccessor();
-
-//// CORS (for React frontend)
+// ✅ CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("https://msmeerp-syn9reactapp.azurewebsites.net") // your React app URL
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowReact",
+        policy => policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
-// Swagger
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
+
+// ✅ Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "SwamiSamarthSyn8 API",
-        Version = "v1"
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-//
+
 // ----------------- Middleware -----------------
 if (app.Environment.IsDevelopment())
 {
@@ -65,32 +60,149 @@ else
     app.UseExceptionHandler("/error");
 }
 
-// ✅ Swagger enabled for all environments
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8_API_v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
     c.RoutePrefix = string.Empty;
 });
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-app.UseCors("AllowReactApp");
-
+app.UseCors("AllowReact");
 app.UseSession();
 app.UseAuthorization();
 
-// ----------------- Routes -----------------
+// ----------------- Default Route -----------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
+// ----------------- Lifecycle Logging -----------------
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    Log.Information("✅ Application started successfully at {time}", DateTime.UtcNow);
+});
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    Log.Warning("⚠️ Application is stopping at {time}", DateTime.UtcNow);
+});
+app.Lifetime.ApplicationStopped.Register(() =>
+{
+    Log.Information("🛑 Application stopped at {time}", DateTime.UtcNow);
+});
 
-app.Run();
+// ----------------- Run App -----------------
+try
+{
+    Log.Information("🚀 Starting the application...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "❌ Application failed to start.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.OpenApi;
+//using Serilog;
+//using SwamiSamarthSyn8.Data;
+
+//var builder = WebApplication.CreateBuilder(args);
+
+//// ----------------- Logging -----------------
+//Log.Logger = new LoggerConfiguration()
+//    .ReadFrom.Configuration(builder.Configuration)
+//    .Enrich.FromLogContext()
+//    .WriteTo.Console()
+//    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+//    .CreateLogger();
+
+//builder.Host.UseSerilog();
+
+//// ----------------- Services -----------------
+//builder.Services.AddControllersWithViews();
+
+//// DbContext
+//builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+
+//// ✅ Add distributed cache required for session
+//builder.Services.AddDistributedMemoryCache();
+
+//// ✅ Add session service
+//builder.Services.AddSession();
+
+//builder.Services.AddHttpContextAccessor();
+
+////// CORS (for React frontend)
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReactApp",
+//        policy =>
+//        {
+//            policy.WithOrigins("https://msmeerp-syn9reactapp.azurewebsites.net") // your React app URL
+//                  .AllowAnyHeader()
+//                  .AllowAnyMethod();
+//        });
+//});
+
+//// Swagger
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new OpenApiInfo
+//    {
+//        Title = "SwamiSamarthSyn8 API",
+//        Version = "v1"
+//    });
+//});
+
+//var app = builder.Build();
+////
+//// ----------------- Middleware -----------------
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage();
+//}
+//else
+//{
+//    app.UseExceptionHandler("/error");
+//}
+
+//// ✅ Swagger enabled for all environments
+//app.UseSwagger();
+//app.UseSwaggerUI(c =>
+//{
+//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8_API_v1");
+//    c.RoutePrefix = string.Empty;
+//});
+
+//app.UseHttpsRedirection();
+//app.UseStaticFiles();
+
+//app.UseRouting();
+//app.UseCors("AllowReactApp");
+
+//app.UseSession();
+//app.UseAuthorization();
+
+//// ----------------- Routes -----------------
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+//app.MapControllers();
+
+
+//app.Run();
 
 
 //--------------------------------------------------------------------------------------------------------------------

@@ -10,4 +10,6 @@ export const API_ENDPOINTS = {
   Comapny: `${BASE_URL}/AccountCompany/`,
   FiscalPeriod: `${BASE_URL}/AccountFiscalPeriod/`,
   BankDetails: `${BASE_URL}/AccountBankDetails/`,
+   CreditNote: `${BASE_URL}/credit-note`,
+  DebitNote: `${BASE_URL}/Debit-note`,
 };

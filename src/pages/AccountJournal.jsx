@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 
 // Configurable API Base URL - CHANGE THIS TO YOUR BACKEND URL
-const API_BASE_URL = 'https://localhost:7026/api'; // e.g., 'https://your-api.com/api'
+const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api'; // e.g., 'https://your-api.com/api'
 
 function AccountJournal() {
   // Journal form state

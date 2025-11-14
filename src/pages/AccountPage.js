@@ -14,7 +14,7 @@ function AccountPage() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const apiBase = "https://localhost:7145/api/Account";
+  const apiBase = "https://msmeerpsyn9-core.azurewebsites.net/api/Account";
 
   useEffect(() => {
     fetchAccounts();

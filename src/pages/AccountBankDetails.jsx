@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, Save, Trash2, Loader2, X } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = 'https://localhost:7026/api';
+const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api';
 
 function AccountBankDetails({ view = 'active' }) {
     const [vendorName, setVendorName] = useState('');

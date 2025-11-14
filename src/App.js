@@ -11,6 +11,8 @@ import AccountLedger from "./pages/AccountLedger";
 import AccountCompany from "./pages/AccountCompany";
 import AccountConfiguration from "./pages/AccountConfiguration";
 import AccountGroupSubgroup from "./pages/AccountGroupSubgroup";
+import Nullify from "./pages/Nullify";
+import CreditDebitNote from "./pages/CreditDebitNote";
 
 import AccountAndFinanceDashboard from "./pages/AccountAndFinanceDashboard";
 
@@ -39,6 +41,8 @@ function App() {
         <Route path="/AccountConfiguration" element={<AccountConfiguration/>}/>
         <Route path="/AccFinancedashboard" element={<AccountAndFinanceDashboard/>}/>
          <Route path="/AccountGroupSubgroup" element={<AccountGroupSubgroup/>}/>
+         <Route path="/CreditDebitNote" element={<CreditDebitNote/>}/>
+         <Route path="/Nullify" element={<Nullify/>}/>
           <Route path="/Masters" element={<Masters/>}/>
 
 <Route path="/createvendor" element={<CreateVendor/>}/>

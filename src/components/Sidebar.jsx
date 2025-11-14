@@ -11,7 +11,7 @@ import {
   LocalPostOffice,
   VolunteerActivismSharp,
 } from '@mui/icons-material';
-import { SheetIcon } from 'lucide-react';
+import { CreditCardIcon, SheetIcon } from 'lucide-react';
 import { RiMastercardFill } from 'react-icons/ri';
 
 const Sidebar = ({ selected, onSelect }) => {
@@ -27,9 +27,9 @@ const Sidebar = ({ selected, onSelect }) => {
     { label: 'Account Configuration', icon: <AccountCircle />, key: 'Account' },
     { label: 'Financial Configuration', icon: <CurrencyRupeeOutlined />, key: 'FinancialConfiguration' },
     { label: 'Account Voucher', icon: <VolunteerActivismSharp />, key: 'AccountVoucher' },
-    // { label: 'Account Journal', icon: <LocalPostOffice />, key: 'AccountJournal' },
+    { label: 'Credit Debit Note', icon: <CreditCardIcon />, key: 'CreditDebitNote' },
     { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
-
+  { label: 'Nullify', icon: <GppGoodSharp />, key: 'nullify' },
     {
       label: 'Report',
       icon: <SheetIcon />,

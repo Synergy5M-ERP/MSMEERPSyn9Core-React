@@ -6,8 +6,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Pagination from "../components/Pagination";
 
-const API_BASE_URL = "https://localhost:7026/api";
-
+const API_BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//
 // Initial new item row structure
 const emptyItem = {
     itemName: "",

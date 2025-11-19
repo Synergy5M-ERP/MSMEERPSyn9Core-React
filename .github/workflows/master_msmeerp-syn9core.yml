@@ -45,6 +45,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'MSMEERP-Syn9Core'  # Your Azure App Service name
-          publish-profile: ${{ secrets.AzureCredentialsReactCore}}
+          publish-profile: ${{ secrets.AZURECREDENTIALSREACTCORE}}
           package: .
+
 

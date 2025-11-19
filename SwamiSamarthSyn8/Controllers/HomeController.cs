@@ -1,16 +1,21 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Protocol.Plugins;
 
 namespace SwamiSamarthSyn8.Controllers
 {
     public class HomeController : Controller
     {
-        [HttpGet]
+        private readonly ILogger<HomeController> _logger;
+
+        public HomeController(ILogger<HomeController> logger)
+        {
+            _logger = logger;
+        }
+
         public IActionResult Index()
         {
-            var result=new {Message="Welcome to SwamiSamarthSyn8 — the app is running successfully!"};
-            return Ok(result);
+            _logger.LogInformation("HomeController Index called at {time}", DateTime.UtcNow);
+            return Content("Welcome to SwamiSamarthSyn8 — the app is running successfully!");
         }
     }
 }

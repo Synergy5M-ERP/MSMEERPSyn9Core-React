@@ -12,7 +12,7 @@ public partial class MMM_GRNProductTbl
     [Key]
     public int G_Product_Id { get; set; }
 
-    public int? G_Id { get; set; }
+    public int G_Id { get; set; }
 
     [StringLength(200)]
     [Unicode(false)]

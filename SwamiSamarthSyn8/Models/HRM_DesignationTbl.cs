@@ -18,4 +18,6 @@ public partial class HRM_DesignationTbl
 
     [StringLength(2)]
     public string? Designation_code { get; set; }
+    public bool IsActive { get; set; } = true;
+
 }

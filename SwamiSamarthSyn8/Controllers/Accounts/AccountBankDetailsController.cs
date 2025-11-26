@@ -2,6 +2,7 @@
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace SwamiSamarthSyn8.Accounts.Controller
 {
@@ -10,11 +11,15 @@ namespace SwamiSamarthSyn8.Accounts.Controller
     public class AccountBankDetailsController : ControllerBase
     {
         private readonly SwamiSamarthDbContext _context;
+
         public AccountBankDetailsController(SwamiSamarthDbContext context)
         {
             _context = context;
         }
-        // -------------------- VENDOR LIST --------------------
+        
+        // -----------------------------------------------------
+        // ✅ GET ALL VENDORS
+        // -----------------------------------------------------
         [HttpGet("Vendors")]
         public async Task<IActionResult> GetVendors()
         {
@@ -25,7 +30,7 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                     {
                         v.Id,
                         VendorCode = v.Vendor_Code,
-                        CompanyName = v.Company_Name,
+                        v.Company_Name,
                         v.Contact_Person,
                         v.Email,
                         v.Contact_Number,
@@ -40,12 +45,11 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                         v.Address,
                         v.industry,
                         v.Category,
-                        v.Sub_Category,
-
+                        v.Sub_Category
                     })
                     .ToListAsync();
 
-                if (vendors == null || vendors.Count == 0)
+                if (!vendors.Any())
                     return NotFound(new { success = false, message = "No vendors found" });
 
                 return Ok(new { success = true, data = vendors });
@@ -55,60 +59,99 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-        // ---------- AccountBankDetails APIs ----------
+        // -----------------------------------------------------
+        // ✅ GET ALL BANK DETAILS (ASYNC, TOP 200000)
+        // -----------------------------------------------------
+        [HttpGet("AccountBankDetail")]
+        public async Task<IActionResult> GetAllBankDetails()
+        {
+            try
+            {
+                var bankDetails = await (from bank in _context.AccountBankDetails
+                                         join vendor in _context.Potential_Vendor
+                                         on bank.VendorId equals vendor.Id
+                                         orderby bank.AccountBankDetailId
+                                         select new
+                                         {
+                                             bank.AccountBankDetailId,
+                                             bank.VendorId,
+                                             VendorName = vendor.Company_Name, // get company name
+                                             bank.BankName,
+                                             bank.AccountNo,
+                                             bank.BranchName,
+                                             bank.IFSCCode,
+                                             bank.IsActive
+                                         })
+                     .ToListAsync();
 
-        // ✅ GET all bank details
-        [HttpGet("AccountBankDetails")]
-        public IActionResult GetAllAccountBankDetails([FromQuery] bool? isActive)
+                if (!bankDetails.Any())
+                    return NotFound(new { success = false, message = "No bank details found" });
+
+                return Ok(new { success = true, data = bankDetails });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        // -----------------------------------------------------
+        // ✅ GET ALL BANK DETAILS (with optional filtering)
+        // -----------------------------------------------------
+        [HttpGet("BankDetails")]
+        public IActionResult GetBankDetails([FromQuery] int? vendorId, [FromQuery] bool? isActive)
         {
             var query = _context.AccountBankDetails.AsQueryable();
 
             if (isActive.HasValue)
-            {
                 query = query.Where(x => x.IsActive == isActive.Value);
-            }
 
-            var data = query
-                .Select(x => new
-                {
-                    x.AccountBankDetailId,
-                    x.VendorId,
-                    x.BranchName,
-                    x.BankName,
-                    x.AccountNo,
-                    x.IFSCCode,
-                    x.IsActive
-                })
-                .ToList();
+            if (vendorId.HasValue)
+                query = query.Where(x => x.VendorId == vendorId.Value);
 
-            return Ok(data);
+            var result = query.Select(x => new
+            {
+                x.AccountBankDetailId,
+                x.VendorId,
+                x.BranchName,
+                x.BankName,
+                x.AccountNo,
+                x.IFSCCode,
+                x.IsActive
+            }).ToList();
+
+            return Ok(new { success = true, data = result });
         }
 
-        // ✅ POST: api/AccountBankDetails
+
+        // -----------------------------------------------------
+        // ✅ ADD MULTIPLE BANK DETAILS
+        // -----------------------------------------------------
         [HttpPost("AccountBankDetails")]
-        public async Task<IActionResult> PostAccountBankDetails([FromBody] List<AccountBankDetails> bank)
+        public async Task<IActionResult> PostAccountBankDetails([FromBody] List<AccountBankDetails> bankList)
         {
-            if (bank == null)
+            if (bankList == null || !bankList.Any())
                 return BadRequest(new { success = false, message = "No data received" });
 
             try
             {
-                foreach (var bank_ in bank)
+                foreach (var bank in bankList)
                 {
-                    if (string.IsNullOrEmpty(bank_.BankName) || bank_.VendorId <= 0)
+                    if (string.IsNullOrEmpty(bank.BankName) || bank.VendorId <= 0)
                         return BadRequest(new { success = false, message = "Missing required fields" });
 
-                    // ✅ verify vendor exists
-                    var vendorExists = await _context.Potential_Vendor.AnyAsync(v => v.Id == bank_.VendorId);
-                    if (!vendorExists)
-                        return BadRequest(new { success = false, message = $"Vendor ID {bank_.VendorId} not found." });
-                    var vendorDetail = _context.Potential_Vendor.Where(v => v.Id == bank_.VendorId).FirstOrDefault();
-                    bank_.IsActive = true;
-                    bank_.Vendor = vendorDetail;
-                    _context.AccountBankDetails.Add(bank_);
-                    await _context.SaveChangesAsync();
+                    var vendor = await _context.Potential_Vendor.FindAsync(bank.VendorId);
+                    if (vendor == null)
+                        return BadRequest(new { success = false, message = $"Vendor ID {bank.VendorId} not found" });
+
+                    bank.IsActive = true;
+                    bank.Vendor = vendor;
+
+                    _context.AccountBankDetails.Add(bank);
                 }
-                return Ok(new { success = true, message = "Bank Details added successfully!" });
+
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Bank details added successfully!" });
             }
             catch (Exception ex)
             {
@@ -116,22 +159,43 @@ namespace SwamiSamarthSyn8.Accounts.Controller
             }
         }
 
-
+        // -----------------------------------------------------
+        // ✅ UPDATE BANK DETAILS
         [HttpPut("AccountBankDetails/{id}")]
-        public IActionResult UpdateAccountBankDetails(int id, [FromBody] AccountBankDetails accountBankDetails)
+        public async Task<IActionResult> UpdateAccountBankDetails(int id, [FromBody] JsonElement body)
         {
-            var existing = _context.AccountBankDetails.Find(id);
-            if (existing == null) return NotFound();
+            var existing = await _context.AccountBankDetails.FindAsync(id);
+            if (existing == null)
+                return NotFound(new { success = false, message = "Record not found" });
 
-            existing.AccountBankDetailId = accountBankDetails.AccountBankDetailId;
-            existing.BranchName = accountBankDetails.BranchName;
-            existing.BankName = accountBankDetails.BankName;
-            existing.AccountNo = accountBankDetails.AccountNo;
-            existing.IFSCCode = accountBankDetails.IFSCCode;
-            existing.IsActive = accountBankDetails.IsActive;
+            // ✅ Case 1: Only IsActive toggle (Activate / Deactivate)
+            if (body.TryGetProperty("isActive", out var isActiveProp) && body.EnumerateObject().Count() == 1)
+            {
+                existing.IsActive = isActiveProp.GetBoolean();
+                _context.Entry(existing).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Status updated", data = existing });
+            }
 
-            _context.SaveChanges();
-            return Ok(existing);
+            // ✅ Case 2: Full update (edit form)
+            var updatedBank = JsonSerializer.Deserialize<AccountBankDetails>(
+                body.GetRawText(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
+
+            if (updatedBank == null)
+                return BadRequest(new { success = false, message = "Invalid data" });
+
+            existing.BankName = updatedBank.BankName;
+            existing.AccountNo = updatedBank.AccountNo;
+            existing.BranchName = updatedBank.BranchName;
+            existing.IFSCCode = updatedBank.IFSCCode;
+            existing.IsActive = updatedBank.IsActive;
+
+            _context.Entry(existing).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Updated successfully", data = existing });
         }
 
     }

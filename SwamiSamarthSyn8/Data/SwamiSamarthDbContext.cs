@@ -27,6 +27,8 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<AccountFiscalPeriod> AccountFiscalPeriod { get; set; }
     public virtual DbSet<AccountGroup> AccountGroup { get; set; }
     public virtual DbSet<Account> Account { get; set; }
+    public virtual DbSet<AccountGRNDetails> AccountGRNDetails { get; set; }
+    public virtual DbSet<AccountGRN> AccountGRN { get; set; }
     public virtual DbSet<AccountBankDetails> AccountBankDetails { get; set; }
     //---------Accounts-------//
 

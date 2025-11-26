@@ -108,7 +108,7 @@ function Header() {
             DASHBOARD
           </NavLink>
           <NavLink
-            to="/hrandadmin"
+            to="/HRMDashboard"
             className="nav-link text-white fw-bold"
             style={({ isActive }) => (isActive ? activeStyle : {
               ...activeStyle,

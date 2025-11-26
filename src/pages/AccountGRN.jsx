@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Pagination from "../components/Pagination";
 import { API_ENDPOINTS } from "../config/apiconfig";
 
-const API_BASE_URL = "https://localhost:7026/api";
+const API_BASE_URL = "https://localhost:7145/api";
 
 // Initial new item row structure
 const emptyItem = {
@@ -26,13 +26,18 @@ const emptyItem = {
 };
 
 const AccountGRN = () => {
+    const[Grndetails,setGrnDetails]=useState(false);
     // Main data and auxiliary fetched options:
+    const [selectedGrn, setSelectedGrn] = useState("");
+const [fetchedItems, setFetchedItems] = useState([]);
+
     const [loading, setLoading] = useState(false);
     const [grns, setGrns] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [ledgerTypes, setLedgerTypes] = useState([]);
     const [grnNumbers, setGrnNumbers] = useState([]);
     const [poNumbers, setPoNumbers] = useState([]);
+    
     const [items, setItems] = useState([]);
     const [units, setUnits] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
@@ -43,6 +48,8 @@ const AccountGRN = () => {
     ]);
     // Form state:
     const [formData, setFormData] = useState({
+        vendorId: "",
+
         sellerName: "",
         grnNumber: "",
         grnDate: "",
@@ -64,12 +71,25 @@ const AccountGRN = () => {
     const indexOfLast = currentPage * recordsPerPage;
     const indexOfFirst = indexOfLast - recordsPerPage;
     const currentRecords = grns.slice(indexOfFirst, indexOfLast);
+const handleGrnChange = (e) => {
+  const selectedId = e.target.value;
+
+  // 1. Set selected GRN immediately
+  setFormData(fd => ({ ...fd, grnNumber: selectedId }));
+
+  // 2. Fetch details asynchronously
+  if (selectedId) {
+    fetchGRNDetails(selectedId); 
+  }
+};
 
     // Data fetches
     useEffect(() => {
         fetchAllDropdowns();
-        fetchGRNs();
-    }, []);
+        loadSellers();
+     
+        loadGrnNumbers();
+    },[]);
     const unitOptions = [
         { value: "pcs", label: "Pieces" },
         { value: "kg", label: "Kilograms" },
@@ -90,188 +110,443 @@ const AccountGRN = () => {
     ];
 
     // Combined fetch for dropdowns
-    const fetchAllDropdowns = async () => {
-        try {
-            setLoading(true);
-            const [
-                suppliersRes,
-                ledgerRes,
-                grnRes,
-                poRes,
-                itemRes,
-                // unitRes,
-                statusRes,
-            ] = await Promise.all([
-                fetch(API_ENDPOINTS.suppliers),
-                fetch(API_ENDPOINTS.Ledger),
-                fetch(API_ENDPOINTS.GRN),
-                fetch(API_ENDPOINTS.PONumber),
-                fetch(API_ENDPOINTS.ItemNames),
+ // ---------------- SAFE JSON WRAPPER ----------------
+const safeJson = async (res) => {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+};
 
-                fetch(`${API_BASE_URL}/statuses`)
-            ]);
-            setSuppliers(await suppliersRes.json());
-            setLedgerTypes(await ledgerRes.json());
-            setGrnNumbers(await grnRes.json());
-            setPoNumbers(await poRes.json());
-            setItems(await itemRes.json());
+// ---------------- FETCH DROPDOWNS ----------------
+const fetchAllDropdowns = async () => {
+  try {
+    setLoading(true);
 
-            setStatusOptions(await statusRes.json());
-        } catch {
-            toast.error("Failed to fetch dropdown data");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [sellersRes, ledgerRes, grnNumRes] = await Promise.all([
+      fetch(API_ENDPOINTS.GetSellers),
+      fetch(API_ENDPOINTS.Ledger),
+      fetch(`${API_ENDPOINTS.GetGRNNumbersBySeller}?sellerName=${formData.sellerName || ""}`)
+    ]);
 
-    const fetchGRNs = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch(API_ENDPOINTS.GRN);
-            setGrns(await res.json());
-        } catch (error) {
-            toast.error("Error fetching GRNs");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const sellersData = await safeJson(sellersRes);
+    const ledgerData = await safeJson(ledgerRes);
+    const grnNumData = await safeJson(grnNumRes);
 
-    // Input handlers
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((fd) => ({ ...fd, [name]: value }));
-    };
-    const handleItemChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentItem((it) => ({ ...it, [name]: value }));
-    };
+    setSuppliers(sellersData.data || []);
+    setLedgerTypes(ledgerData.data || []);
+    setGrnNumbers(grnNumData.data || []);
 
-    // Add item to form
-    const handleAddItem = () => {
-        // Numeric fields conversion
-        const convert = (val) => (val === "" ? 0 : Number(val));
-        const item = {
-            ...currentItem,
-            receivedQty: convert(currentItem.receivedQty),
-            approvedQty: convert(currentItem.approvedQty),
-            damagedQty: convert(currentItem.damagedQty),
-            cgst: convert(currentItem.cgst),
-            sgst: convert(currentItem.sgst),
-            igst: convert(currentItem.igst),
-        };
-        setFormData((fd) => ({
-            ...fd,
-            items: [...fd.items, item],
-        }));
-        setCurrentItem(emptyItem);
-        updateTotals([...formData.items, item]);
-    };
+  } catch (err) {
+    toast.error("Failed to load dropdowns");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    // Remove item from local items list
-    const handleRemoveItem = (idx) => {
-        const newItems = formData.items.filter((_, i) => i !== idx);
-        setFormData((fd) => ({
-            ...fd,
-            items: newItems,
-        }));
-        updateTotals(newItems);
-    };
+// ---------------- FETCH SELLERS ----------------
+const loadSellers = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.GetSellers);
 
-    // Edit item
-    const handleEditItem = (item, idx) => {
-        setCurrentItem(item);
-        handleRemoveItem(idx);
-    };
+    if (!res.ok) {
+      console.error("API ERROR:", res.status);
+      setSuppliers([]);
+      return;
+    }
 
-    // Calculate totals
-    const updateTotals = (items) => {
-        let totalAmount = 0, totalTaxAmount = 0;
-        items.forEach((it) => {
-            const qty = Number(it.receivedQty) || 0;
-            const cgst = Number(it.cgst) || 0;
-            const sgst = Number(it.sgst) || 0;
-            const igst = Number(it.igst) || 0;
-            // Dummy: tax sum, can use your backend's calculation logic
-            const itemTax = cgst + sgst + igst;
-            totalTaxAmount += itemTax * qty;
-            // Dummy: just use qty, should multiply by item price if available
-            totalAmount += qty;
+    const data = await safeJson(res);
+    console.log("GetSellers response:", data);
+
+    // Map string array into objects with temporary IDs
+    const suppliersWithIds = (data.data || []).map((name, index) => ({
+      id: index + 1, // temporary ID
+      name
+    }));
+
+    setSuppliers(suppliersWithIds); // save in state
+  } catch (error) {
+    console.error("Fetch error:", error);
+    setSuppliers([]);
+  }
+};
+
+const loadGrnNumbers = async (sellerName) => {
+  if (!sellerName) {
+    setGrnNumbers([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_ENDPOINTS.GetGRNNumbersBySeller}?sellerName=${sellerName}`);
+    const data = await safeJson(res);
+
+    console.log("GRN numbers API data:", data);  // 👈 SHOW ME THIS
+
+    setGrnNumbers(data.data || []);
+  } catch {
+    toast.error("Unable to load GRN numbers");
+  }
+};
+
+
+// ---------------- FETCH GRN DETAILS ----------------
+const fetchGRNDetails = async (grnId) => {
+  if (!grnId) return;
+
+  try {
+    const res = await fetch(`${API_ENDPOINTS.GetGRNDetails}?grnId=${grnId}`);
+    const data = await safeJson(res);
+
+    if (!data.success) return;
+
+    const h = data.data.header;
+    const items = data.data.items || [];
+
+    // Set header details in formData
+    setFormData(fd => ({
+      ...fd,
+      grnNumber: h.grnNumber,
+      grnDate: h.grN_Date ? h.grN_Date.split("T")[0] : "",
+      poNumber: h.poNumber,
+      invoiceNumber: h.invoice_NO,
+      invoiceDate: h.invoice_Date ? h.invoice_Date.split("T")[0] : "",
+      vehicleNo: h.vehicle_No,
+      description: h.supplier_Address,
+      status: "Received",
+      items: [] // Keep table empty initially
+    }));
+
+    // Save fetched items for dropdown only
+    setFetchedItems(items.map(i => ({
+      itemName: i.itemName,
+      taxType: i.taxType,
+      receivedQty: i.receivedQty,
+      approvedQty: i.acceptedQty,
+      damagedQty: i.rejectedQty,
+      cgst: i.taxType === "CGST" ? i.taxRate : 0,
+      sgst: i.taxType === "SGST" ? i.taxRate : 0,
+      igst: i.taxType === "IGST" ? i.taxRate : 0,
+      description: ""
+    })));
+
+    // Initialize currentItem as the first item for dropdown
+    if (items.length > 0) {
+      const first = items[0];
+      setCurrentItem({
+        itemName: first.itemName,
+        receivedQty: first.receivedQty,
+        approvedQty: first.acceptedQty,
+        damagedQty: first.rejectedQty,
+        receivedUnit: "pcs",
+        approvedUnit: "pcs",
+        damagedUnit: "pcs",
+        taxType: first.taxType || "",
+        cgst: first.taxType === "CGST" ? first.taxRate : 0,
+        sgst: first.taxType === "SGST" ? first.taxRate : 0,
+        igst: first.taxType === "IGST" ? first.taxRate : 0,
+        description: ""
+      });
+    }
+
+    // Update PO numbers list with Invoice No
+    setPoNumbers(prev => {
+      const exists = prev.find(po => po.PO_No === h.poNumber);
+      const invoiceVal = h.invoice_NO || "";
+      if (exists) {
+        return prev.map(po => po.PO_No === h.poNumber
+          ? { PO_No: h.poNumber, Invoice_NO: invoiceVal }
+          : po
+        );
+      } else {
+        return [...prev, { PO_No: h.poNumber, Invoice_NO: invoiceVal }];
+      }
+    });
+
+  } catch (err) {
+    toast.error("Unable to load GRN details");
+  }
+};
+
+
+// ---------------- FETCH ALL GRNs FOR TABLE ----------------
+
+
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "sellerName") {
+    const selectedSupplier = suppliers.find(s => s.id === Number(value));
+    setFormData(fd => ({
+      ...fd,
+      sellerName: selectedSupplier?.name || "",
+      vendorId: Number(value) || 0
+    }));
+
+    // Fetch GRNs for the selected seller
+    loadGrnNumbers(selectedSupplier?.name || "");
+    return;
+  }
+
+
+
+
+  if (name === "grnNumber") {
+    setFormData(fd => ({ ...fd, grnNumber: value }));
+    fetchGRNDetails(value);
+    return; // stop further processing for grnNumber
+  }
+
+  // For all other fields
+  setFormData(fd => ({ ...fd, [name]: value }));
+};
+
+
+const handleAddItem = () => {
+  const convert = (v) => (v === "" ? 0 : Number(v));
+
+  if (!currentItem.itemName || !currentItem.taxType) {
+    toast.error("Item Name & Tax Type required");
+    return;
+  }
+
+  const item = {
+    ...currentItem,
+    taxType: currentItem.taxType,  // 🔥 MUST INCLUDE THIS
+
+    receivedQty: convert(currentItem.receivedQty),
+    approvedQty: convert(currentItem.approvedQty),
+    damagedQty: convert(currentItem.damagedQty),
+
+    cgst: convert(currentItem.cgst),
+    sgst: convert(currentItem.sgst),
+    igst: convert(currentItem.igst),
+
+    receivedUnit: currentItem.receivedUnit || "pcs",
+    approvedUnit: currentItem.approvedUnit || "pcs",
+    damagedUnit: currentItem.damagedUnit || "pcs",
+  };
+
+  const newItems = [...formData.items, item];
+
+  setFormData(fd => ({
+    ...fd,
+    items: newItems,
+  }));
+
+  setCurrentItem(emptyItem);
+  updateTotals(newItems);
+};
+// ---------------- ITEM FIELD CHANGE HANDLER ----------------
+const handleItemChange = (e) => {
+  const { name, value } = e.target;
+
+  setCurrentItem((prev) => ({
+    ...prev,
+    [name]: value
+  }));
+
+  // Auto-set CGST/SGST/IGST values when TaxType changes
+  if (name === "taxType") {
+    setCurrentItem((prev) => ({
+      ...prev,
+      taxType: value,
+      cgst: value === "CGST" ? prev.cgst || 0 : 0,
+      sgst: value === "SGST" ? prev.sgst || 0 : 0,
+      igst: value === "IGST" ? prev.igst || 0 : 0,
+    }));
+  }
+};
+
+// ---------------- REMOVE ITEM ----------------
+const handleRemoveItem = (idx) => {
+  const newItems = formData.items.filter((_, i) => i !== idx);
+  setFormData((fd) => ({
+    ...fd,
+    items: newItems,
+  }));
+  updateTotals(newItems);
+};
+
+// ---------------- EDIT ITEM ----------------
+const handleEditItem = (item, idx) => {
+  setCurrentItem(item);
+  handleRemoveItem(idx);
+};
+
+// ---------------- TOTALS CALCULATION ----------------
+const updateTotals = (items) => {
+  let totalAmount = 0;
+  let totalTaxAmount = 0;
+
+  items.forEach((it) => {
+    const qty = Number(it.receivedQty) || 0;
+    const cgst = Number(it.cgst) || 0;
+    const sgst = Number(it.sgst) || 0;
+    const igst = Number(it.igst) || 0;
+
+    totalTaxAmount += (cgst + sgst + igst) * qty;
+    totalAmount += qty; // Replace with price * qty when available
+  });
+
+  setFormData((fd) => ({
+    ...fd,
+    totalAmount,
+    totalTaxAmount,
+    grandTotal: totalAmount + totalTaxAmount,
+  }));
+};
+useEffect(() => {
+    if (formData.poNumber && !poNumbers.find(po => po.PO_No === formData.poNumber)) {
+      setPoNumbers(prev => [...prev, { PO_No: formData.poNumber, Invoice_NO: formData.invoiceNumber }]);
+    }
+  }, [formData.poNumber, formData.invoiceNumber, poNumbers]);
+debugger;
+// ---------------- SAVE GRN ----------------
+const handleSave = async () => {
+  if (!formData.sellerName || !formData.grnNumber) {
+    toast.error("Seller Name & GRN Number are required");
+    return;
+  }
+
+  const payload = {
+
+  VendorId: Number(formData.vendorId) || 0, // int
+          SellerName: formData.sellerName, // 🔥 must match backend property name
+
+    grnNumber: formData.grnNumber,
+    grnDate: formData.grnDate,
+    poNumber: formData.poNumber,
+    invoiceNumber: formData.invoiceNumber,
+    invoiceDate: formData.invoiceDate,
+    status: formData.status,
+    vehicleNo: formData.vehicleNo,
+    description: formData.description,
+    totalAmount: formData.totalAmount,
+    totalTaxAmount: formData.totalTaxAmount,
+    grandAmount: formData.grandTotal,   // ✔ C# model requires GrandAmount
+    items: formData.items.map(item => ({
+      itemName: item.itemName,
+      receivedQty: Number(item.receivedQty),
+      approvedQty: Number(item.approvedQty),
+      damagedQty: Number(item.damagedQty),
+      unit: item.receivedUnit || "",
+  TaxType: item.taxType,   // 🔥 FIXED HERE
+      cgst: Number(item.cgst),
+      sgst: Number(item.sgst),
+      igst: Number(item.igst),
+      description: item.description || ""
+    }))
+  };
+
+  console.log("Sending Payload:", payload);
+
+  try {
+const response = await fetch(API_ENDPOINTS.SaveGRN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    console.log("Server Response:", result);
+
+    if (!response.ok || !result.success) {
+      toast.error(result.message || "Failed to save GRN");
+      return;
+    }
+
+    toast.success("GRN saved successfully!");
+
+  } catch (error) {
+    toast.error("Something went wrong!");
+    console.error("Save Error:", error);
+  }
+};
+const handleUpdate = async () => {
+  if (!formData.grnNumber) {
+    toast.error("Select GRN to update");
+    return;
+  }
+
+  const payload = {
+    VendorId: Number(formData.vendorId),
+    SellerName: formData.sellerName,
+    GRNNumber: formData.grnNumber,
+    GRNDate: formData.grnDate,
+    PO: formData.poNumber,
+    InvoiceNumber: formData.invoiceNumber,
+    Items: formData.items.map(item => ({
+      itemName: item.itemName,
+      receivedQty: Number(item.receivedQty),
+      approvedQty: Number(item.approvedQty),
+      damagedQty: Number(item.damagedQty),
+      unit: item.receivedUnit,
+      TaxType: item.taxType,
+      cgst: Number(item.cgst),
+      sgst: Number(item.sgst),
+      igst: Number(item.igst),
+      description: item.description || ""
+    }))
+  };
+
+  try {
+    const res = await fetch(`${API_ENDPOINTS.UpdateGRN}/${formData.grnNumber}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+    if (res.ok && result.success) {
+      toast.success("GRN updated successfully!");
+    } else {
+      toast.error(result.message || "Failed to update GRN");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong while updating GRN");
+  }
+};
+const handleDeleteGRN = async (grnNumber) => {
+  if (!grnNumber) return;
+
+  Swal.fire({
+    title: "Are you sure?",
+    text: "This GRN will be permanently deleted!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`${API_ENDPOINTS.DeleteGRN}/${grnNumber}`, {
+          method: "DELETE",
         });
-        setFormData((fd) => ({
-            ...fd,
-            totalAmount,
-            totalTaxAmount,
-            grandTotal: totalAmount + totalTaxAmount,
-        }));
-    };
 
-    // Save GRN
-    const handleSave = async () => {
-        if (!formData.grnNumber || !formData.sellerName) {
-            toast.error("Please fill all mandatory fields!");
-            return;
-        }
-        setLoading(true);
-        try {
-            const res = await fetch(API_ENDPOINTS.GRN, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            if (res.ok) {
-                toast.success("GRN saved successfully!");
-                setFormData({
-                    sellerName: "",
-                    grnNumber: "",
-                    grnDate: "",
-                    poNumber: "",
-                    invoiceNumber: "",
-                    invoiceDate: "",
-                    status: "",
-                    vehicleNo: "",
-                    description: "",
-                    items: [],
-                    totalAmount: 0,
-                    totalTaxAmount: 0,
-                    grandTotal: 0,
-                });
-                fetchGRNs();
-            } else {
-                toast.error("Failed to save GRN!");
-            }
-        } catch {
-            toast.error("Error saving GRN!");
-        } finally {
-            setLoading(false);
-        }
-    };
+        const data = await res.json();
 
-    // Delete GRN
-    const handleDelete = async (grnNumber) => {
-        Swal.fire({
-            title: "Are you sure?",
-            text: "Do you want to delete this GRN?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    const res = await fetch(`${API_ENDPOINTS.GRN}/${grnNumber}`, {
-                        method: "DELETE",
-                    });
-                    if (res.ok) {
-                        toast.success("GRN deleted!");
-                        fetchGRNs();
-                    } else {
-                        toast.error("Failed to delete GRN!");
-                    }
-                } catch {
-                    toast.error("Error deleting GRN!");
-                }
-            }
-        });
-    };
+        if (res.ok && data.success) {
+          toast.success("GRN deleted successfully!");
+          // Remove from local state
+          setGrns(grns.filter(g => g.grnNumber !== grnNumber));
+          setFormData({
+            ...formData,
+            grnNumber: "",
+            items: [],
+          });
+        } else {
+          toast.error(data.message || "Failed to delete GRN");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Error deleting GRN");
+      }
+    }
+  });
+};
+
 
     const LoadingSpinner = () => (
         <div className="d-flex justify-content-center align-items-center p-2">
@@ -309,60 +584,104 @@ const AccountGRN = () => {
                     >
                         <div className="row mb-3">
                             <div className="col-3 mb-3">
-                                <label className="form-label text-primary fw-semibold">Seller Name</label>
-                                <select
-                                    className="form-select"
-                                    name="sellerName"
-                                    value={formData.sellerName}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Select Seller</option>
-                                    {suppliers.map((s, idx) => (
-                                        <option key={idx} value={s.name}>{s.name}</option>
-                                    ))}
-                                </select>
+                      <label className="form-label text-primary fw-semibold">Seller Name</label>
+
+                        <select
+  className="form-select"
+  name="sellerName"
+  value={formData.vendorId || ""}
+  onChange={handleChange}
+>
+  <option value="">Select Seller</option>
+  {suppliers.map((s) => (
+    <option key={s.id} value={s.id}>
+      {s.name}
+    </option>
+  ))}
+</select>
+
+
+
+
+
+
+
+
                             </div>
                             <div className="col-3 mb-3">
-                                <label className="form-label text-primary fw-semibold">GRN Number</label>
-                                <select
-                                    className="form-select"
-                                    name="grnNumber"
-                                    value={formData.grnNumber}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Select GRN No.</option>
-                                    {grnNumbers.map((g, idx) => (
-                                        <option key={idx} value={g.number || g.grnNumber}>{g.number || g.grnNumber}</option>
-                                    ))}
-                                </select>
-                            </div>
+  <label className="form-label text-primary fw-semibold">GRN Number</label>
+ <select  className="form-select"
+  value={selectedGrn || ""}
+  onChange={(e) => {
+    const id = e.target.value;
+    setSelectedGrn(id); // separate state
+    setFormData((fd) => ({ ...fd, grnNumber: id })); // update formData
+    fetchGRNDetails(id);
+  }}
+>
+  <option value="">Select GRN No.</option>
+  {grnNumbers.map((g) => (
+    <option key={g.id} value={String(g.id)}>
+      {g.number || g.grnNumber || g.GRN_NO}
+    </option>
+  ))}
+</select>
+
+
+</div>
+
                             <div className="col-3 mb-3">
                                 <label className="form-label text-primary fw-semibold">GRN Date</label>
-                                <input
-                                    className="form-control"
-                                    type="date"
-                                    name="grnDate"
-                                    value={formData.grnDate}
-                                    onChange={handleChange}
-                                />
+                               <input
+  type="date"
+  name="grnDate"
+  className="form-control"
+  value={formData.grnDate}
+  onChange={handleChange}
+/>
+
                             </div>
-                            <div className="col-3 mb-3">
-                                <label className="form-label text-primary fw-semibold">Invoice No / PO No</label>
-                                <select
-                                    className="form-select"
-                                    name="poNumber"
-                                    value={formData.poNumber}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Select PO/Invoice No.</option>
-                                    {poNumbers.map((po, idx) => (
-                                        <option key={idx} value={po.poNumber || po.invoiceNo}>{po.poNumber || po.invoiceNo}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="col-3 mb-3">
+                         <div className="col-3 mb-3">
+  <label className="form-label text-primary fw-semibold">Invoice No</label>
+<select
+  className="form-select"
+  name="invoiceNumber"
+  value={formData.invoiceNumber || ""}
+  onChange={handleChange}
+>
+  <option value="">Select Invoice No</option>
+  {poNumbers.map((po, idx) => (
+    <option key={idx} value={po.Invoice_NO}>
+      {po.Invoice_NO}
+    </option>
+  ))}
+</select>
+
+
+
+
+</div>
+
+<div className="col-3 mb-3">
+  <label className="form-label text-primary fw-semibold">PO No</label>
+ <select
+  className="form-select"
+  name="poNumber"
+  value={formData.poNumber || ""}
+  onChange={handleChange}
+>
+  <option value="">Select PO No</option>
+  {poNumbers.map((po, idx) => (
+    <option key={idx} value={po.PO_No}>
+      {po.PO_No}
+    </option>
+  ))}
+</select>
+
+</div>
+
+
+    <div className="col-3 mb-3">
                                 <label className="form-label text-primary fw-semibold">Invoice Date</label>
                                 <input
                                     className="form-control"
@@ -403,17 +722,20 @@ const AccountGRN = () => {
                         <div className="row mb-2">
                             <div className="col-3">
                                 <label className="form-label text-primary">Item Name</label>
-                                <select
-                                    className="form-select"
-                                    name="itemName"
-                                    value={currentItem.itemName}
-                                    onChange={handleItemChange}
-                                >
-                                    <option value="">Select Item</option>
-                                    {items.map((i, idx) => (
-                                        <option key={idx} value={i.name || i.itemName}>{i.name || i.itemName}</option>
-                                    ))}
-                                </select>
+                               <select
+  className="form-select"
+  name="itemName"
+  value={currentItem.itemName}
+  onChange={handleItemChange}
+>
+  <option value="">Select Item</option>
+  {fetchedItems.map((i, idx) => (
+    <option key={idx} value={i.itemName}>
+      {i.itemName}
+    </option>
+  ))}
+</select>
+
                             </div>
                             <div className="col-2">
                                 <label className="form-label text-primary">Received Qty</label>
@@ -492,21 +814,25 @@ const AccountGRN = () => {
                             </div>
                         </div>
 
-                        <div className="row mb-2">
-                            <div className="col-2">
-                                <label className="form-label text-primary">Tax Type</label>
-                                <select
-                                    className="form-select"
-                                    name="taxType"
-                                    value={currentItem.taxType}
-                                    onChange={handleItemChange}
-                                >
-                                    <option value="">Select Tax</option>
-                                    {taxTypes.map((tt) => (
-                                        <option key={tt.value} value={tt.value}>{tt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+                      <div className="row mb-2">
+  <div className="col-2">
+    <label className="form-label text-primary">Tax Type</label>
+
+    <select
+      className="form-select"
+      name="taxType"
+      value={currentItem.taxType}
+      onChange={handleItemChange}
+    >
+      <option value="">Select Tax</option>
+      <option value="CGST">CGST</option>
+      <option value="SGST">SGST</option>
+      <option value="IGST">IGST</option>
+    </select>
+
+  </div>
+
+
                             <div className="col-2">
                                 <label className="form-label text-primary">CGST</label>
                                 <input

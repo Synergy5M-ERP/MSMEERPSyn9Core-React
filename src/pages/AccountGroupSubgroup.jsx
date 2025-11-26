@@ -24,130 +24,193 @@ function AccountGroupSubgroup() {
   const [editingId, setEditingId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("active");
 
-  // ✅ Fetch Table Data
-  const fetchTableData = useCallback(
-    async (type = formType, status = activeFilter) => {
-      try {
-        const endpoints = {
-          accountType: `${API_ENDPOINTS.Account}AccountType`,
-          accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
-          subGroup: `${API_ENDPOINTS.Account}Subgroups`,
-          subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
-        };
+// --------------------------------------------------------------------------------------------------
+// 🔗 API Endpoints (declared once)
+// --------------------------------------------------------------------------------------------------
+const ENDPOINTS = {
+  accountType: `${API_ENDPOINTS.Account}AccountType`,
+  accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
+  subGroup: `${API_ENDPOINTS.Account}Subgroups`,
+  subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
+};
 
-        const res = await axios.get(endpoints[type]);
-        let data = res.data || [];
+// --------------------------------------------------------------------------------------------------
+// 📌 Fetch Table Data
+// --------------------------------------------------------------------------------------------------
 
-        if (status === "active") data = data.filter((x) => x.isActive === true);
-        else if (status === "inactive") data = data.filter((x) => x.isActive === false);
-
-        setTableData(data);
-      } catch (err) {
-        console.error("❌ Error fetching data:", err);
-        toast.error("Failed to load data");
-      }
-    },
-    [API_ENDPOINTS.Account, formType, activeFilter]
-  );
-
-  // ✅ Load Dropdown Data
-  const loadDropdowns = useCallback(async () => {
+const fetchTableData = useCallback(
+  async (type = formType, status = activeFilter) => {
     try {
-      const [typesRes, groupsRes, subsRes] = await Promise.allSettled([
-        axios.get(`${API_ENDPOINTS.Account}AccountType`),
-        axios.get(`${API_ENDPOINTS.Account}AccountGroups`),
-        axios.get(`${API_ENDPOINTS.Account}Subgroups`),
-      ]);
+      const url = ENDPOINTS[type];
+      const res = await axios.get(url);
+      let data = res.data || [];
 
-      if (typesRes.status === "fulfilled") setAccountTypes(typesRes.value.data);
-      if (groupsRes.status === "fulfilled") setAccountGroups(groupsRes.value.data);
-      if (subsRes.status === "fulfilled") setSubGroups(subsRes.value.data);
-    } catch {
-      toast.error("Failed to load dropdown data");
+      if (status === "active") data = data.filter((x) => x.isActive === true);
+      else if (status === "inactive") data = data.filter((x) => x.isActive === false);
+
+      setTableData(data);
+    } catch (err) {
+      console.error("❌ Error fetching data:", err);
+      toast.error("Failed to load data");
     }
-  }, [API_ENDPOINTS.Account]);
+  },
+  [formType, activeFilter]
+);
 
-  useEffect(() => {
-    loadDropdowns();
-  }, [loadDropdowns]);
+// --------------------------------------------------------------------------------------------------
+// 📌 Load Dropdown Data
+// --------------------------------------------------------------------------------------------------
 
-  useEffect(() => {
-    fetchTableData(formType, activeFilter);
-  }, [formType, activeFilter, fetchTableData]);
+const loadDropdowns = useCallback(async () => {
+  try {
+    const [typesRes, groupsRes, subsRes] = await Promise.allSettled([
+      axios.get(ENDPOINTS.accountType),
+      axios.get(ENDPOINTS.accountGroup),
+      axios.get(ENDPOINTS.subGroup),
+    ]);
 
-  useEffect(() => setSubGroupId(""), [groupId]);
+    if (typesRes.status === "fulfilled") setAccountTypes(typesRes.value.data);
+    if (groupsRes.status === "fulfilled") setAccountGroups(groupsRes.value.data);
+    if (subsRes.status === "fulfilled") setSubGroups(subsRes.value.data);
+  } catch {
+    toast.error("Failed to load dropdown data");
+  }
+}, []);
 
-  const resetForm = () => {
-    setAccountTypeId("");
-    setGroupId("");
-    setSubGroupId("");
-    setName("");
-    setNarration("");
-    setGroupCode("");
-    setIsActive(true);
-    setEditingId(null);
-  };
+// --------------------------------------------------------------------------------------------------
+// 📌 Effects
+// --------------------------------------------------------------------------------------------------
 
-  // ✅ Save / Update
-  const handleSave = async () => {
-    try {
-      let payload = {};
-      let url = "";
-      const method = editingId ? "put" : "post";
+useEffect(() => {
+  loadDropdowns();
+}, [loadDropdowns]);
 
-      const endpoints = {
-        accountType: `${API_ENDPOINTS.Account}AccountType`,
-        accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
-        subGroup: `${API_ENDPOINTS.Account}Subgroups`,
-        subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
+useEffect(() => {
+  fetchTableData(formType, activeFilter);
+}, [formType, activeFilter, fetchTableData]);
+
+useEffect(() => setSubGroupId(""), [groupId]);
+
+// --------------------------------------------------------------------------------------------------
+// 📌 Reset Form
+// --------------------------------------------------------------------------------------------------
+
+const resetForm = () => {
+  setAccountTypeId("");
+  setGroupId("");
+  setSubGroupId("");
+  setName("");
+  setNarration("");
+  setGroupCode("");
+  setIsActive(true);
+  setEditingId(null);
+};
+
+// --------------------------------------------------------------------------------------------------
+// 📌 SAVE / UPDATE (FIXED with PascalCase)
+// --------------------------------------------------------------------------------------------------
+
+const handleSave = async () => {
+  try {
+    let payload = {};
+    let url = "";
+    const method = editingId ? "put" : "post";
+
+    // ==============================
+    // ACCOUNT TYPE
+    // ==============================
+    if (formType === "accountType") {
+      if (!name.trim()) return toast.warning("Enter Account Type Name!");
+
+      payload = {
+        AccountTypeName: name,
+        AccountTypeNarration: narration,
+        IsActive: isActive,
+        AccountGroups: [] ,  // works but unnecessary
+
       };
 
-      if (formType === "accountType") {
-        if (!name.trim()) return toast.warning("Enter Account Type Name!");
-        payload = { accountTypeName: name, accountTypeNarration: narration, isActive };
-        url = editingId ? `${endpoints.accountType}/${editingId}` : endpoints.accountType;
-      } else if (formType === "accountGroup") {
-        if (!accountTypeId || !groupCode.trim() || !name.trim())
-          return toast.warning("Select Account Type, Code, and Name!");
-        payload = {
-          accountGroupName: name,
-          accountGroupNarration: narration,
-          groupCode,
-          accountTypeid: Number(accountTypeId),
-          isActive,
-        };
-        url = editingId ? `${endpoints.accountGroup}/${editingId}` : endpoints.accountGroup;
-      } else if (formType === "subGroup") {
-        if (!groupId || !name.trim()) return toast.warning("Select Group and enter Sub Group name!");
-        payload = {
-          accountSubGroupName: name,
-          accountSubGroupNarration: narration,
-          accountGroupid: Number(groupId),
-          isActive,
-        };
-        url = editingId ? `${endpoints.subGroup}/${editingId}` : endpoints.subGroup;
-      } else if (formType === "subSubGroup") {
-        if (!groupId || !subGroupId || !name.trim())
-          return toast.warning("Select Group, Sub Group, and enter name!");
-        payload = {
-          accountSubSubGroupName: name,
-          accountSubSubGroupNarration: narration,
-          accountGroupid: Number(groupId),
-          accountSubGroupid: Number(subGroupId),
-          isActive,
-        };
-        url = editingId ? `${endpoints.subSubGroup}/${editingId}` : endpoints.subSubGroup;
-      }
-
-      await axios({ method, url, data: payload });
-      toast.success(editingId ? "Updated successfully!" : "Saved successfully!");
-      resetForm();
-      fetchTableData(formType, activeFilter);
-    } catch (err) {
-      console.error("❌ Save error:", err);
-      toast.error("Failed to save record");
+      url = editingId
+        ? `${ENDPOINTS.accountType}/${editingId}`
+        : ENDPOINTS.accountType;
     }
-  };
+
+    // ==============================
+    // ACCOUNT GROUP
+    // ==============================
+    else if (formType === "accountGroup") {
+      if (!accountTypeId || !groupCode.trim() || !name.trim())
+        return toast.warning("Select Account Type, Code, and Name!");
+payload = {
+  AccountGroupName: name,
+  AccountGroupNarration: narration,
+  GroupCode: groupCode,
+  AccountTypeid: Number(accountTypeId), 
+ // FIXED
+  IsActive: isActive
+};
+
+
+
+
+      url = editingId
+        ? `${ENDPOINTS.accountGroup}/${editingId}`
+        : ENDPOINTS.accountGroup;
+    }
+
+    // ==============================
+    // SUB GROUP
+    // ==============================
+    else if (formType === "subGroup") {
+      if (!groupId || !name.trim())
+        return toast.warning("Select Group and enter Sub Group name!");
+
+     payload = {
+  AccountSubGroupName: name,
+  AccountSubGroupNarration: narration,
+  AccountGroupid: Number(groupId),   // FIXED
+  IsActive: isActive,
+};
+
+      url = editingId
+        ? `${ENDPOINTS.subGroup}/${editingId}`
+        : ENDPOINTS.subGroup;
+    }
+
+    // ==============================
+    // SUB - SUB GROUP
+    // ==============================
+    else if (formType === "subSubGroup") {
+      if (!groupId || !subGroupId || !name.trim())
+        return toast.warning("Select Group, Sub Group, and enter name!");
+payload = {
+  AccountSubSubGroupName: name,
+  AccountSubSubGroupNarration: narration,
+  AccountGroupid: Number(groupId),
+  AccountSubGroupid: Number(subGroupId),
+  IsActive: isActive,
+};
+
+      url = editingId
+        ? `${ENDPOINTS.subSubGroup}/${editingId}`
+        : ENDPOINTS.subSubGroup;
+    }
+
+    // ==============================
+    // API CALL
+    // ==============================
+    await axios({ method, url, data: payload });
+
+    toast.success(editingId ? "Updated successfully!" : "Saved successfully!");
+
+    resetForm();
+    fetchTableData(formType, activeFilter);
+  } catch (err) {
+    console.error("❌ Save error:", err);
+    toast.error("Failed to save record");
+  }
+};
+
 
   // ✅ Edit
   const handleEdit = (item) => {

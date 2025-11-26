@@ -704,7 +704,7 @@ export default function CreateVendor() {
             )}
             {/* Actions */}
             <div className="action-buttons" style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-              <button type="button" onClick={handleSubmit} className="btn btn-primary" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>
+              <button type="button" onClick={handleSubmit} className="btn btn-primary save" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>
                 {loading ? (<><Loader className="btn-spinner" size={16} /> Submitting...</>) : (<>Submit</>)}
               </button>
               <button type="button" onClick={handleCancel} className="btn btn-danger" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>

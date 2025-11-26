@@ -495,7 +495,7 @@ function ViewVendor() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-primary shadow-sm"
+                                    className="btn btn-primary save shadow-sm"
                                     onClick={handleUpdate}
                                 >
                                     Update Vendor

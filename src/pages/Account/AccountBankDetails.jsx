@@ -1,11 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Eye, Save, Trash2, Loader2, X } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../../config/apiconfig";
+//const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
+//const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
 
-const API_BASE_URL = 'https://localhost:7026/api';
 
 function AccountBankDetails({ view = 'active' }) {
+const [vendorId, setVendorId] = useState('');
+
     const [vendorName, setVendorName] = useState('');
     const [bankName, setBankName] = useState('');
     const [accountNo, setAccountNo] = useState('');
@@ -18,7 +21,7 @@ function AccountBankDetails({ view = 'active' }) {
     const [vendorNames, setVendorNames] = useState([]);
     const [savedBanks, setSavedBanks] = useState([]);
     const [editingId, setEditingId] = useState(null);
-    const navigate = useNavigate();
+
     const [errors, setErrors] = useState({
         vendorName: '',
         bankName: '',
@@ -40,20 +43,22 @@ function AccountBankDetails({ view = 'active' }) {
     };
 
     const fetchVendorNames = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/vendors`);
-            if (!res.ok) throw new Error('Failed to fetch vendors');
-            const json = await res.json();
-            setVendorNames(json.data || []);
-        } catch (err) {
-            showToast(err.message, 'error');
-        }
-    };
+    try {
+        const res = await fetch(`${API_ENDPOINTS.Vendors}Vendors`);
+        if (!res.ok) throw new Error('Failed to fetch vendors');
+        
+        const json = await res.json();
+        setVendorNames(json.data || []);
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+};
+
 
     const fetchBanks = async (status = "active") => {
         setFetchLoading(true);
         try {
-            let url = `${API_BASE_URL}/banks`;
+        let url = `${API_ENDPOINTS.AccountBankDetails}`; 
             if (status === "active") url += "?isActive=true";
             else if (status === "inactive") url += "?isActive=false";
 
@@ -68,17 +73,7 @@ function AccountBankDetails({ view = 'active' }) {
             setFetchLoading(false);
         }
     };
-    const handleVendorChange = (e) => {
-        const selectedValue = e.target.value;
-        if (selectedValue === "__add_new__") {
-            // redirect to create vendor page
-            navigate("/createvendor");
-            // Or use: window.location.href = "/createvendor";
-        } else {
-            setVendorName(selectedValue);
-            validateField("vendorName", selectedValue);
-        }
-    };
+
     useEffect(() => {
         fetchVendorNames();
         fetchBanks(view);
@@ -127,15 +122,19 @@ function AccountBankDetails({ view = 'active' }) {
             showToast('Please fix all errors before adding', 'error');
             return;
         }
+ const selectedVendor = vendorNames.find(v => v.id === parseInt(vendorName));
 
-        const newEntry = {
-            id: editingIndex !== null ? stagedBanks[editingIndex].id : Date.now(),
-            vendorName: vendorName.trim(),
-            bankName: bankName.trim(),
-            accountNo: accountNo.trim(),
-            branchName: branchName.trim(),
-            ifscCode: ifscCode.trim(),
-        };
+    const newEntry = {
+        id: editingIndex !== null ? stagedBanks[editingIndex].id : Date.now(),
+        vendorId: parseInt(vendorName),  // store ID
+        vendorName: selectedVendor ? selectedVendor.company_Name : '',  // match exact property
+        bankName: bankName.trim(),
+        accountNo: accountNo.trim(),
+        branchName: branchName.trim(),
+        ifscCode: ifscCode.trim(),
+    };
+
+
 
         if (editingIndex !== null) {
             const updated = [...stagedBanks];
@@ -150,65 +149,74 @@ function AccountBankDetails({ view = 'active' }) {
         handleClearForm();
     };
 
-    const handleEdit = (index) => {
-        const bank = stagedBanks[index];
-        setVendorName(bank.vendorName);
-        setBankName(bank.bankName);
-        setAccountNo(bank.accountNo);
-        setBranchName(bank.branchName);
-        setIfscCode(bank.ifscCode);
-        setEditingIndex(index);
-        setEditingId(null);
-    };
+  const handleEdit = (index) => {
+    const bank = stagedBanks[index];
 
-    const handleEditSaved = (bank) => {
-        setVendorName(bank.vendorName);
-        setBankName(bank.bankName);
-        setAccountNo(bank.accountNo);
-        setBranchName(bank.branchName);
-        setIfscCode(bank.ifscCode);
-        setEditingId(bank.id);
-        setEditingIndex(null);
-    };
+    // ✅ Only set vendor if it exists in vendorNames
+    const selectedVendor = vendorNames.find(v => v.id === bank.vendorId);
+    setVendorName(selectedVendor ? selectedVendor.id : ''); // show blank if not selected
+
+    setBankName(bank.bankName);
+    setAccountNo(bank.accountNo);
+    setBranchName(bank.branchName);
+    setIfscCode(bank.ifscCode);
+    setEditingIndex(index);
+    setEditingId(null); // staged entry, not saved
+};
+
+
+  const handleEditSaved = (bank) => {
+    const selectedVendor = vendorNames.find(v => v.id === bank.vendorId);
+    setVendorName(selectedVendor ? selectedVendor.id : '');
+
+    setBankName(bank.bankName);
+    setAccountNo(bank.accountNo);
+    setBranchName(bank.branchName);
+    setIfscCode(bank.ifscCode);
+    setEditingId(bank.id); // saved entry
+    setEditingIndex(null);
+};
+
 
     const handleSaveEdited = async () => {
-        if (!validateAllFields()) {
-            showToast('Please fix all errors before saving', 'error');
-            return;
+    if (!validateAllFields()) {
+        showToast('Please fix all errors before saving', 'error');
+        return;
+    }
+
+    setLoading(true);
+    try {
+        const payload = {
+            vendorId: parseInt(vendorName),
+            bankName: bankName.trim(),
+            accountNo: accountNo.trim(),
+            branchName: branchName.trim(),
+            ifscCode: ifscCode.trim(),
+        };
+
+        const response = await fetch(`${API_ENDPOINTS.AccountBankDetails}/AccountBankDetails/${editingId}`, {
+            method: 'PUT', // updated API handles full edit + isActive toggle
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('Bank details updated successfully!');
+            await fetchBanks(view);
+            handleClearForm();
+        } else {
+            throw new Error(result.message || 'Update failed');
         }
+    } catch (error) {
+        showToast(`Update Error: ${error.message}`, 'error');
+    } finally {
+        setLoading(false);
+    }
+};
 
-        setLoading(true);
-        try {
-            const payload = {
-                vendorName: vendorName.trim(),
-                bankName: bankName.trim(),
-                accountNo: accountNo.trim(),
-                branchName: branchName.trim(),
-                ifscCode: ifscCode.trim(),
-            };
-
-            const response = await fetch(`${API_BASE_URL}/banks/${editingId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) throw new Error(await response.text());
-            const result = await response.json();
-
-            if (result.success) {
-                showToast('Bank details updated successfully!');
-                await fetchBanks(view);
-                handleClearForm();
-            } else {
-                throw new Error(result.message || 'Update failed');
-            }
-        } catch (error) {
-            showToast(`Update Error: ${error.message}`, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleDeleteStaged = (index) => {
         showAlert(
@@ -225,93 +233,78 @@ function AccountBankDetails({ view = 'active' }) {
         );
     };
 
-    const handleSoftDelete = async (id) => {
-        showAlert(
-            'Set bank detail as inactive?',
-            'It will be moved to the inactive list.',
-            async () => {
-                setLoading(true);
-                try {
-                    const response = await fetch(`${API_BASE_URL}/banks/${id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ IsActive: false }),
-                    });
-                    if (!response.ok) throw new Error(await response.text());
-                    const result = await response.json();
-                    if (result.success) {
-                        showToast('Bank details moved to inactive!');
-                        await fetchBanks(view);
-                    } else {
-                        throw new Error(result.message || 'Update failed');
-                    }
-                } catch (error) {
-                    showToast(`Inactivate Error: ${error.message}`, 'error');
-                } finally {
-                    setLoading(false);
-                    setAlertDialog({ show: false, title: '', message: '', onConfirm: null });
-                }
-            }
-        );
-    };
-
-    const handleActivate = async (id) => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/banks/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ IsActive: true }),
-            });
-            if (!response.ok) throw new Error(await response.text());
-            const result = await response.json();
-            if (result.success) {
-                showToast('Bank details activated!');
-                await fetchBanks(view);
-            } else {
-                throw new Error(result.message || 'Activate failed');
-            }
-        } catch (error) {
-            showToast(`Activate Error: ${error.message}`, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSaveAll = async () => {
-        if (stagedBanks.length === 0) {
-            showToast('No entries to save!', 'error');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const promises = stagedBanks.map(bank =>
-                fetch(`${API_BASE_URL}/banks`, {
-                    method: 'POST',
+ const handleSoftDelete = async (id) => {
+    showAlert(
+        'Set bank detail as inactive?',
+        'It will be moved to the inactive list.',
+        async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`${API_ENDPOINTS.AccountBankDetails}/AccountBankDetails/${id}`, {
+                    method: 'PUT',  // ✅ use PUT for isActive toggle
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bank),
-                })
-            );
+                    body: JSON.stringify({ isActive: false }),
+                });
 
-            const responses = await Promise.all(promises);
-            const results = await Promise.all(responses.map(r => r.json()));
+                if (!response.ok) throw new Error(await response.text());
+                const result = await response.json();
 
-            const allSuccess = results.every(r => r.success);
-
-            if (allSuccess) {
-                showToast(`${stagedBanks.length} bank detail(s) saved successfully!`);
-                setStagedBanks([]);
-                await fetchBanks(view);
-            } else {
-                throw new Error('Some entries failed to save');
+                if (result.success) {
+                    showToast('Bank details moved to inactive!');
+                    await fetchBanks(view);
+                } else throw new Error(result.message || 'Update failed');
+            } catch (error) {
+                showToast(`Inactivate Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+                setAlertDialog({ show: false, title: '', message: '', onConfirm: null });
             }
-        } catch (error) {
-            showToast(`Save Error: ${error.message}`, 'error');
-        } finally {
-            setLoading(false);
         }
-    };
+    );
+};
+
+
+  const handleSaveAll = async () => {
+  if (stagedBanks.length === 0) {
+    showToast('No entries to save!', 'error');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const payload = stagedBanks.map(bank => ({
+      VendorId: parseInt(bank.vendorId),
+      BankName: bank.bankName,
+      AccountNo: bank.accountNo,
+      BranchName: bank.branchName,
+      IFSCCode: bank.ifscCode,
+      IsActive: true,
+     // Vendor:{}
+    }));
+
+ const response = await fetch(`${API_ENDPOINTS.AccountBankDetailsSave}/AccountBankDetailsSave`, {
+  method: 'POST',
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
+    const result = await response.json();
+
+    if (result.success) {
+      showToast(result.message || 'All bank details saved successfully!');
+      setStagedBanks([]);
+      await fetchBanks(view);
+    } else {
+      throw new Error(result.message || 'Save failed');
+    }
+  } catch (error) {
+    showToast(`Save Error: ${error.message}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
     const handleClearForm = () => {
         setVendorName('');
@@ -459,25 +452,26 @@ function AccountBankDetails({ view = 'active' }) {
                                 <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                                     Vendor name <span style={{ color: 'red' }}>*</span>
                                 </label>
-                                <select
-                                    value={vendorName}
-                                    onChange={e => {
-                                        setVendorName(e.target.value);
-                                        validateField('vendorName', e.target.value);
-                                    }}
-                                    disabled={loading}
-                                    style={{ width: '100%', padding: '10px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '4px' }}
-                                >
-                                    <option value="">--Select Vendor--</option>
-                                    {vendorNames.map(vt => (
-                                        <option key={vt.id} value={vt.name || vt.vendorName}>
-                                            {vt.name || vt.vendorName}
-                                        </option>
-                                    ))}
-                                    {/* <option value="__add_new__" style={{ fontStyle: "italic" }}>
-                                        + Add New Vendor...
-                                    </option> */}
-                                </select>
+                            <select 
+    value={vendorName} 
+    onChange={e => {
+        setVendorName(e.target.value);
+        validateField('vendorName', e.target.value);
+    }} 
+    disabled={loading} 
+    style={{ width: '100%', padding: '10px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '4px' }}
+>
+    <option value="">--Select Vendor--</option>
+
+    {vendorNames.map(vendor => (
+        <option key={vendor.id} value={vendor.id}>
+            {vendor.company_Name}
+        </option>
+    ))}
+</select>
+
+
+
                                 {errors.vendorName && <div style={{ color: 'red', fontSize: '14px', marginTop: '5px' }}>{errors.vendorName}</div>}
                             </div>
 
@@ -631,7 +625,6 @@ function AccountBankDetails({ view = 'active' }) {
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '2px solid #0066cc' }}>
-                                            <th style={{ padding: '12px', color: '#0066cc', fontSize: '18px', fontWeight: '600', display: 'none' }}>Vendor ID</th>
                                             <th style={{ padding: '12px', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Vendor Name</th>
                                             <th style={{ padding: '12px', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Bank Name</th>
                                             <th style={{ padding: '12px', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Account Number</th>
@@ -687,52 +680,52 @@ function AccountBankDetails({ view = 'active' }) {
                                 </table>
                             </div>
 
-
+                            
                         </div>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                            <button
-                                onClick={handleSaveAll}
-                                disabled={loading || stagedBanks.length === 0}
-                                style={{
-                                    width: '120px',
-                                    fontSize: '18px',
-                                    padding: '10px 0',
-                                    background: loading || stagedBanks.length === 0 ? '#ccc' : '#0066cc',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: loading || stagedBanks.length === 0 ? 'not-allowed' : 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                {loading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
-                                Save
-                            </button>
+                                <button
+                                    onClick={handleSaveAll}
+                                    disabled={loading || stagedBanks.length === 0}
+                                    style={{
+                                        width: '120px',
+                                        fontSize: '18px',
+                                        padding: '10px 0',
+                                        background: loading || stagedBanks.length === 0 ? '#ccc' : '#0066cc',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: loading || stagedBanks.length === 0 ? 'not-allowed' : 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    {loading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
+                                    Save 
+                                </button>
 
-                            <button
-                                onClick={handleCancelAll}
-                                disabled={loading}
-                                style={{
-                                    width: '120px',
-                                    fontSize: '18px',
-                                    padding: '10px 0',
-                                    background: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: loading ? 'not-allowed' : 'pointer',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                                <button
+                                    onClick={handleCancelAll}
+                                    disabled={loading}
+                                    style={{
+                                        width: '120px',
+                                        fontSize: '18px',
+                                        padding: '10px 0',
+                                        background: '#dc3545',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: loading ? 'not-allowed' : 'pointer',
+                                    }}
+                                >
+                                    Cancel 
+                                </button>
+                            </div>
                     </div>
                 )}
 
-
+             
             </div>
 
             <style>{`

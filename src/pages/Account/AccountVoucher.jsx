@@ -589,7 +589,7 @@ const fetchAmountByReference = async (refId) => {
                 {/* Add Button */}
                 <div className="mt-2 mb-4">
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-primary save"
                         onClick={handleAddToGrid}
                         disabled={!ledgerAccount || (!creditAmount && !debitAmount) || !narration.trim()}
                         style={{ fontWeight: 600, borderRadius: '6px', minWidth: 120 }}

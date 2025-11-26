@@ -19,7 +19,11 @@ const Footer = () => {
         boxShadow: '0 -2px 6px rgba(0,0,0,0.3)' // optional: subtle shadow
       }}
     >
-      <p>© 2025 MSME ERP SYN 9 Powered by SYNERGY5M LLP,PUNE All  Rights Reserved.</p>
+
+   
+
+      <p>© 2025 - MSME ERP SYN - 9 Powered by SYNERGY5M LLP Pune All Rights Reserved</p>
+
     </footer>
   );
 };

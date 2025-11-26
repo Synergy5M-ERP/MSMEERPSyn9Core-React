@@ -120,13 +120,17 @@ function AccountConfiguration() {
 
 
       {/* Render selected page with view prop */}
-      <div>
-        {selectedPage==='accountledger'?(<AccountLedger view={view} />
-):selectedPage==='accountvoucher'?(<CreateVoucherType view={view}/>):  selectedPage === "fiscal" ? (
+       <div>
+        {selectedPage === "accountledger" ? (
+          <AccountLedger view={view} />
+        ) : selectedPage === "accountvoucher" ? (
+          <CreateVoucherType view={view} />
+        ) : selectedPage === "fiscal" ? (
           <AccountFiscalPeriod view={view} />
-        ) : selectedPage==="bank"?( 
-          <AccountBankDetails view={view} />):(
-            <ViewBank/>
+        ) : selectedPage === "bank" ? (
+          <AccountBankDetails view={view} />
+        ) : (
+          <ViewBank view={view} />
         )}
       </div>
     </div>

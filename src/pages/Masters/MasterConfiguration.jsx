@@ -12,6 +12,7 @@ import CreateItem from './ItemMaster/CreateItem';
 import ItemMaster from './ItemMaster/ItemMaster';
 import VendorMaster from '../Masters/vendorMaster/VendorMaster';
 import CommodityMaster from './Commodity/CommodityMaster';
+import CreateBOM from './BOM/CreateBOM';
 
 const MasterConfiguration = () => {
 const [activePage, setActivePage] = useState('Dashboard');
@@ -32,6 +33,7 @@ const [activePage, setActivePage] = useState('Dashboard');
           {activePage === 'itemMaster' && <ItemMaster />}
             {activePage === 'vendorMaster' && <VendorMaster />}
              {activePage === 'commodityMaster' && <CommodityMaster />}
+                {activePage === 'createBOM' && <CreateBOM />}
           {/* Add more conditions for other pages */}
         </div>
       </div>

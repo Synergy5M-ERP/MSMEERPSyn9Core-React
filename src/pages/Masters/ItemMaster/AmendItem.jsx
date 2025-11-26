@@ -501,7 +501,7 @@ function AmendItem() {
 
                     {/* Submit Button Centered */}
                     <div className="text-center mt-4">
-                      <button type="submit" disabled={isLoading} className="btn btn-primary px-5">
+                      <button type="submit" disabled={isLoading} className="btn btn-primary save px-5">
                         {isLoading ? (
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         ) : (

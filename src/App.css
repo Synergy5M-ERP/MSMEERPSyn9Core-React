@@ -492,5 +492,93 @@ th{
                 }
 
 
+/* ===================BOM CSS===================== */
+.label-dark{
+  color: #125ca7;
+  font-size: 17px;
+  font-weight: 600; 
+}
+.blue-button {
+  margin-top: 10px;
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 10px 15px;
+  border: none;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.blue-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.02);
+}
+.list-btns:hover {
+  background-color: #c5c8ca; 
+  transform: scale(1.02);
+}
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; 
+  background: linear-gradient(135deg, #0532d3, #0a279e); 
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+.submit-button:hover {
+  background: linear-gradient(135deg, #0f277e, #192d7e); 
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+.cancel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #615f5fa6;
+  color:black;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.cancel-button:hover {
+  background: #a59898;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+/* Outer wrapper - prevents layout expanding */
+
+/* Scroll only inside this container */
+.finish-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  white-space: nowrap;
+  border: 1px solid #ddd;
+}
+
+/* Prevent table from expanding body */
+.finish-table-scroll table {
+  min-width: 1400px;   /* Adjust width based on columns */
+}
+
+/* =================BOM End======================= */
+
 
                 

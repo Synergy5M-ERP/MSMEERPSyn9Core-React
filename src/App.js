@@ -50,12 +50,14 @@ function App() {
          <Route path="/AccountGroupSubgroup" element={<AccountGroupSubgroup/>}/>
          <Route path="/CreditDebitNote" element={<CreditDebitNote/>}/>
          <Route path="/Nullify" element={<Nullify/>}/>
+
           <Route path="/Masters" element={<MasterDashboard/>}/>
           <Route path="/commodity" element={<CreateCommodity/>}/>
 <Route path="/viewcommodity" element={<ViewCommodity/>}/>
 <Route path="/viewvendor" element={<ViewVendor/>}/>
 <Route  path="/hrm" element={<HrmConfiguration/>}/>
 <Route path="/salesanddistribution" element={<SalesDistribution/>}/>
+
         {/* AccountGroupSubgroup */}
       </Routes>
 

@@ -392,7 +392,7 @@ function AccountVoucherType({ view }) {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   onClick={handleSave}
-                  className="btn btn-primary"
+                  className="btn btn-primary save"
                   disabled={
                     loading ||
                     !vouchertype.trim() ||

@@ -475,7 +475,7 @@ export default function AccountLedger({ view }) {
               </div>
 
               <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={handleSave} className="btn btn-primary" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
+                <button onClick={handleSave} className="btn btn-primary save" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
                   <Save size={18} style={{ marginRight: "6px" }} /> Save
                 </button>
                 <button onClick={handleCancel} className="btn btn-secondary" disabled={loading}>

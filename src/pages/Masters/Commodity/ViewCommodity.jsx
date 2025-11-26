@@ -271,7 +271,7 @@ const ViewCommodity = () => {
                     </div>
                     <div className="col-md-4 text-end">
                         <button
-                            className="btn btn-primary"
+                            className="btn btn-primary save"
                             onClick={fetchAllData}
                             disabled={loading}
                         >
@@ -356,7 +356,7 @@ const ViewCommodity = () => {
                                 <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
                                     Cancel
                                 </button>
-                                <button className="btn btn-primary" onClick={handleUpdate}>
+                                <button className="btn btn-primary save" onClick={handleUpdate}>
                                     Update
                                 </button>
                             </div>

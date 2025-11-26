@@ -686,7 +686,7 @@ function CreateItem() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="btn btn-primary"
+              className="btn btn-primary save"
             >
               {loading ? (
                 <>

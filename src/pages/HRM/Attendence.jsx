@@ -78,6 +78,7 @@ Daily Wasge SalarySheet
         style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
       />
   Pay Salary Slip
+    {/* Pay Salary Slip */}
     </label>
 
 

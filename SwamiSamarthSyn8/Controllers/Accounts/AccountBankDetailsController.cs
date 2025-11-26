@@ -127,7 +127,7 @@ namespace SwamiSamarthSyn8.Accounts.Controller
         // -----------------------------------------------------
         // ✅ ADD MULTIPLE BANK DETAILS
         // -----------------------------------------------------
-        [HttpPost("AccountBankDetails")]
+        [HttpPost("AccountBankDetailsSave")]
         public async Task<IActionResult> PostAccountBankDetails([FromBody] List<AccountBankDetails> bankList)
         {
             if (bankList == null || !bankList.Any())

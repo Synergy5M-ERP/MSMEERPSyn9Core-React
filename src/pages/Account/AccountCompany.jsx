@@ -3,7 +3,7 @@ import { Eye, Save, Trash2, Loader2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-import { API_ENDPOINTS } from "../config/apiconfig"
+import { API_ENDPOINTS } from "../../config/apiconfig"
 
 function AccountCompany() {
   const [CompanyName, setCompanyName] = useState('');

@@ -4,8 +4,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import Pagination from "../components/Pagination";
-import { API_ENDPOINTS } from "../config/apiconfig";
+import Pagination from "../../components/Pagination";
+import { API_ENDPOINTS } from "../../config/apiconfig";
 
 export default function AccountLedger({ view }) {
   const [formType, setFormType] = useState("ledger");

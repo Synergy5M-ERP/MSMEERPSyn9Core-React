@@ -4,8 +4,8 @@ import { Eye, Trash2, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Pagination from "../components/Pagination";
-import { API_ENDPOINTS } from "../config/apiconfig";
+import Pagination from "../../components/Pagination";
+import { API_ENDPOINTS } from "../../config/apiconfig";
 
 const API_BASE_URL = "https://localhost:7026/api";
 

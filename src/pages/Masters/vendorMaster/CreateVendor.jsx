@@ -436,7 +436,11 @@ export default function CreateVendor() {
         <div className="form-card scrollbar" style={{ marginTop: "1rem", borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}>
           <div className="form-content" style={{ padding: "1.8rem" }}>
             {/* Vendor Classification */}
-            <div className="section">
+            <div className="header">
+        <h4 className='fw-500 text-primary'>Add Vendor Details</h4>
+        <div className="header-line"></div>
+      </div>
+            {/* <div className="section"> */}
               <div className="row">
                 {/* Vendor Category */}
                 <div className="form-group col-3">
@@ -503,7 +507,7 @@ export default function CreateVendor() {
                   </select>
                 </div>
               </div>
-            </div>
+            {/* </div> */}
 
             {/* Location Section Row 1 */}
             <div className='row'>
@@ -726,12 +730,7 @@ export default function CreateVendor() {
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .required { color: #e11d48; }
         .btn-spinner { animation: spin 1s linear infinite; display: inline-block; }
-        .scrollbar {
-          height: 400px;
-          overflow-y: auto;
-          scroll-behavior: smooth;
-          padding-right: 8px;
-        }
+       
         .row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
         .col-3 { flex: 1; min-width: 200px; }
         .form-group { display: flex; flex-direction: column; }

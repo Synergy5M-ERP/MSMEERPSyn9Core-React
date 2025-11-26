@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import CreateItem from "./CreateItem";
-import CreateVendor from "./CreateVendor";
+import CreateItem from "./ItemMaster/CreateItem";
+import CreateVendor from "../Masters/vendorMaster/CreateVendor";
 
 function Masters() {
   const [selectedPage, setSelectedPage] = useState("itemMaster");

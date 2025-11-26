@@ -7,8 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from "axios";
-import { API_ENDPOINTS } from "../config/apiconfig";
-import Pagination from '../components/Pagination';
+import { API_ENDPOINTS } from "../../config/apiconfig";
+import Pagination from '../../components/Pagination';
 
 function CreateFiscalPeriod({ view }) {
   const [FiscalPeriodName, setFiscalPeriodName] = useState('');

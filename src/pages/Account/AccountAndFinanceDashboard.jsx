@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
-import Header from '../components/Header';
+import Sidebar from '../../components/Sidebar';
+import Footer from '../../components/Footer';
+import Header from '../../components/Header';
 
 // Your account configuration component
-import AccountConfiguration from '../pages/AccountConfiguration';
-import AccountGroupSubGroup from '../pages/AccountGroupSubgroup'
-import Dashboard from '../pages/Dashboard'
+import AccountConfiguration from '../Account/AccountConfiguration';
+import AccountGroupSubGroup from '../Account/AccountGroupSubgroup'
+import Dashboard from '../../pages/Account/Dashboard'
 import AccountVoucherType from './AccountVoucherType';
 import AccountLedger from './AccountLedger';
 import AccountVoucher from './AccountVoucher';
 import AccountJournal from './AccountJournal';
 import AccountGRN from './AccountGRN';
-import Masters from './Masters';
+import Masters from '../Masters/Masters';
 import VoucherConfiguration from './VoucherConfiguration';
 import CreditDebitNote from './CreditDebitNote';
 import Nullify from './Nullify';

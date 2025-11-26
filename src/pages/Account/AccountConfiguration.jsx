@@ -4,7 +4,7 @@ import AccountFiscalPeriod from "./AccountFiscalPeriod";
 import AccountBankDetails from "./AccountBankDetails";
 import ViewBank from "./ViewBank";
 import AccountLedger from "./AccountLedger";
-import CreateVoucherType from "../pages/AccountVoucherType";
+import CreateVoucherType from "../Account/AccountVoucherType";
 
 function AccountConfiguration() {
   const [selectedPage, setSelectedPage] = useState("accountledger");

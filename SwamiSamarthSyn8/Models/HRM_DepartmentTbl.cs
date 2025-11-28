@@ -18,6 +18,6 @@ public partial class HRM_DepartmentTbl
 
     [StringLength(2)]
     public string? Department_code { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool? IsActive { get; set; }
 
 }

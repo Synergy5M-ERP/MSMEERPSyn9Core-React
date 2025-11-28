@@ -24,130 +24,241 @@ public class HrmMasterController : ControllerBase
     {
         try
         {
-            return type switch
+            object data = type switch
             {
-                "Department" => Ok(await _context.HRM_DepartmentTbl.ToListAsync()),
-                "Designation" => Ok(await _context.HRM_DesignationTbl.ToListAsync()),
-                "AuthorityMatrix" => Ok(await _context.HRM_AuthorityMatrixTbl.ToListAsync()),
-                _ => BadRequest("Invalid type")
+                "Department" => await _context.HRM_DepartmentTbl.ToListAsync(),
+                "Designation" => await _context.HRM_DesignationTbl.ToListAsync(),
+                "AuthorityMatrix" => await _context.HRM_AuthorityMatrixTbl.ToListAsync(),
+                _ => null
             };
+
+            if (data == null)
+                return BadRequest("Invalid type");
+
+            return Ok(data);
         }
         catch (Exception ex)
         {
             return StatusCode(500, ex.Message);
         }
     }
-
-    // ------------------------------------
-    // POST (CREATE)
-    // ------------------------------------
-    // Accepts payload with at least the Name property for the given type:
-    // Department -> { "DepartmentName": "XYZ", "isActive": true (optional) }
-    // Designation -> { "DesignationName": "XYZ", "isActive": true (optional) }
-    // AuthorityMatrix -> { "Authority_name": "XYZ", "IsSelected": "No" (optional), "isActive": true (optional) }
     [HttpPost("{type}")]
-    public async Task<IActionResult> Create(string type, [FromBody] object payload)
+    public async Task<IActionResult> Create(string type, [FromBody] JObject payload)
     {
-        if (payload == null) return BadRequest("Invalid data");
+        if (payload == null)
+            return BadRequest(new { success = false, message = "Invalid JSON payload." });
 
-        // Parse incoming JSON as JObject so we can read partial payloads safely
-        JObject j;
         try
         {
-            j = JObject.Parse(payload.ToString());
+            switch (type)
+            {
+                // ---------------------------------------------------------
+                //                        DEPARTMENT
+                // ---------------------------------------------------------
+                case "Department":
+                    {
+                        var name = payload.GetValue("DepartmentName", StringComparison.OrdinalIgnoreCase)
+                                          ?.ToString()?.Trim();
+
+                        if (string.IsNullOrWhiteSpace(name))
+                            return BadRequest(new { success = false, message = "Department name is required." });
+
+                        if (await _context.HRM_DepartmentTbl
+                            .AnyAsync(d => d.DepartmentName.ToLower() == name.ToLower()))
+                            return BadRequest(new { success = false, message = "Department already exists." });
+
+                        var nextCode = await GenerateNextCode(
+                            _context.HRM_DepartmentTbl.Select(x => x.Department_code)
+                        );
+
+                        var dept = new HRM_DepartmentTbl
+                        {
+                            DepartmentName = name,
+                            Department_code = nextCode,
+                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
+                                              ?.ToObject<bool?>() ?? true
+                        };
+
+                        _context.HRM_DepartmentTbl.Add(dept);
+
+                        try
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
+                        }
+
+                        return Ok(new
+                        {
+                            success = true,
+                            data = new
+                            {
+                                dept.Id,
+                                dept.DepartmentName,
+                                dept.Department_code,
+                                dept.IsActive
+                            },
+                            message = "Department added successfully!"
+                        });
+                    }
+
+
+                // ---------------------------------------------------------
+                //                        DESIGNATION
+                // ---------------------------------------------------------
+                case "Designation":
+                    {
+                        var name = payload.GetValue("DesignationName", StringComparison.OrdinalIgnoreCase)
+                                          ?.ToString()?.Trim();
+
+                        if (string.IsNullOrWhiteSpace(name))
+                            return BadRequest(new { success = false, message = "Designation name is required." });
+
+                        if (await _context.HRM_DesignationTbl
+                            .AnyAsync(d => d.DesignationName.ToLower() == name.ToLower()))
+                            return BadRequest(new { success = false, message = "Designation already exists." });
+
+                        var nextCode = await GenerateNextCode(
+                            _context.HRM_DesignationTbl.Select(x => x.Designation_code)
+                        );
+
+                        var desig = new HRM_DesignationTbl
+                        {
+                            DesignationName = name,
+                            Designation_code = nextCode,
+                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
+                                              ?.ToObject<bool?>() ?? true
+                        };
+
+                        _context.HRM_DesignationTbl.Add(desig);
+
+                        try
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
+                        }
+
+                        return Ok(new
+                        {
+                            success = true,
+                            data = new
+                            {
+                                desig.Id,
+                                desig.DesignationName,
+                                desig.Designation_code,
+                                desig.IsActive
+                            },
+                            message = "Designation added successfully!"
+                        });
+                    }
+
+
+                // ---------------------------------------------------------
+                //                    AUTHORITY MATRIX
+                // ---------------------------------------------------------
+                case "AuthorityMatrix":
+                    {
+                        var name = payload.GetValue("AuthorityName", StringComparison.OrdinalIgnoreCase)
+                                          ?.ToString()?.Trim();
+
+                        if (string.IsNullOrWhiteSpace(name))
+                            return BadRequest(new { success = false, message = "Authority name is required." });
+
+                        if (await _context.HRM_AuthorityMatrixTbl
+                            .AnyAsync(a => a.AuthorityName.ToLower() == name.ToLower()))
+                            return BadRequest(new { success = false, message = "Authority already exists." });
+
+                        var nextCode = await GenerateNextCode(
+                            _context.HRM_AuthorityMatrixTbl.Select(x => x.Authority_code)
+                        );
+
+                        var auth = new HRM_AuthorityMatrixTbl
+                        {
+                            AuthorityName = name,
+                            Authority_code = nextCode,
+                            IsSelected = payload.GetValue("IsSelected", StringComparison.OrdinalIgnoreCase)
+                                                ?.ToString() ?? "No",
+                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
+                                              ?.ToObject<bool?>() ?? true
+                        };
+
+                        _context.HRM_AuthorityMatrixTbl.Add(auth);
+
+                        try
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
+                        }
+
+                        return Ok(new
+                        {
+                            success = true,
+                            data = new
+                            {
+                                auth.Id,
+                                auth.AuthorityName,
+                                auth.Authority_code,
+                                auth.IsSelected,
+                                auth.IsActive
+                            },
+                            message = "Authority added successfully!"
+                        });
+                    }
+
+
+                default:
+                    return BadRequest(new { success = false, message = "Invalid type." });
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            return BadRequest("Invalid JSON payload");
-        }
-
-        switch (type)
-        {
-            // ===================================================
-            // DEPARTMENT CREATE
-            // ===================================================
-            case "Department":
-                {
-                    var name = j["DepartmentName"]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(name))
-                        return BadRequest("Department name is required.");
-
-                    if (await _context.HRM_DepartmentTbl.AnyAsync(d => d.DepartmentName.ToLower() == name.ToLower()))
-                        return BadRequest("Department already exists.");
-
-                    var dept = new HRM_DepartmentTbl
-                    {
-                        DepartmentName = name,
-                        Department_code = await GenerateNextCode(_context.HRM_DepartmentTbl.Select(x => x.Department_code)),
-                        IsActive = j["isActive"]?.ToObject<bool?>() ?? true
-                    };
-
-                    _context.HRM_DepartmentTbl.Add(dept);
-                    await _context.SaveChangesAsync();
-                    return Ok(dept);
-                }
-
-            // ===================================================
-            // DESIGNATION CREATE
-            // ===================================================
-            case "Designation":
-                {
-                    var name = j["DesignationName"]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(name))
-                        return BadRequest("Designation name is required.");
-
-                    if (await _context.HRM_DesignationTbl.AnyAsync(d => d.DesignationName.ToLower() == name.ToLower()))
-                        return BadRequest("Designation already exists.");
-
-                    var desig = new HRM_DesignationTbl
-                    {
-                        DesignationName = name,
-                        Designation_code = await GenerateNextCode(_context.HRM_DesignationTbl.Select(x => x.Designation_code)),
-                        IsActive = j["isActive"]?.ToObject<bool?>() ?? true
-                    };
-
-                    _context.HRM_DesignationTbl.Add(desig);
-                    await _context.SaveChangesAsync();
-                    return Ok(desig);
-                }
-
-            // ===================================================
-            // AUTHORITY MATRIX CREATE
-            // ===================================================
-            case "AuthorityMatrix":
-                {
-                    var name = j["Authority_name"]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(name))
-                        return BadRequest("Authority name is required.");
-
-                    if (await _context.HRM_AuthorityMatrixTbl.AnyAsync(a => a.Authority_name.ToLower() == name.ToLower()))
-                        return BadRequest("Authority already exists.");
-
-                    var auth = new HRM_AuthorityMatrixTbl
-                    {
-                        Authority_name = name,
-                        IsSelected = string.IsNullOrWhiteSpace(j["IsSelected"]?.ToString()) ? "No" : j["IsSelected"]!.ToString(),
-                        Authority_code = await GenerateNextCode(_context.HRM_AuthorityMatrixTbl.Select(x => x.Authority_code)),
-                        IsActive = j["isActive"]?.ToObject<bool?>() ?? true
-                    };
-
-                    _context.HRM_AuthorityMatrixTbl.Add(auth);
-                    await _context.SaveChangesAsync();
-                    return Ok(auth);
-                }
-
-            default:
-                return BadRequest("Invalid type");
+            return StatusCode(500, new { success = false, message = "Server error: " + ex.Message });
         }
     }
 
-    // ------------------------------------
-    // PUT (UPDATE)
-    // ------------------------------------
-    // Accepts partial updates:
-    // - To update name: { "DepartmentName": "New" }
-    // - To toggle active: { "isActive": false }
-    // - Both together: { "DepartmentName": "New", "isActive": false }
+
+
+    // Helper to generate next code
+    // Helper to generate next code
+    private async Task<string> GenerateNextCode(IQueryable<string> existingCodesQuery)
+    {
+        var existingCodes = await existingCodesQuery.ToListAsync();
+
+        var numbers = existingCodes
+            .Select(c =>
+            {
+                var digits = new string(c?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
+                return int.TryParse(digits, out var n) ? n : 0;
+            })
+            .Where(n => n > 0)
+            .ToList();
+
+        int next;
+        if (!numbers.Any())
+            next = 1;
+        else
+            next = numbers.Max() + 1;
+
+        var nextCode = next.ToString("D2"); // 01, 02, 03...
+
+        Console.WriteLine($"Generated next code: {nextCode}"); // log to console
+        return nextCode;
+    }
+
+
+
+
+
+
+
     [HttpPut("{type}/{id}")]
     public async Task<IActionResult> Update(string type, int id, [FromBody] object payload)
     {
@@ -231,29 +342,5 @@ public class HrmMasterController : ControllerBase
     // ------------------------------------
     // HELPER: GENERATE NEXT CODE
     // ------------------------------------
-    private async Task<string> GenerateNextCode(IQueryable<string> existingCodesQuery)
-    {
-        var existingCodes = await existingCodesQuery.ToListAsync();
-
-        var numbers = existingCodes
-            .Where(c => !string.IsNullOrWhiteSpace(c))
-            .Select(c => int.TryParse(c, out var n) ? n : 0)
-            .Where(n => n > 0)
-            .OrderBy(n => n)
-            .ToList();
-
-        if (!numbers.Any())
-            return "01";
-
-        // find first missing number in sequence 1..max
-        var max = numbers.Max();
-        for (int i = 1; i <= max; i++)
-        {
-            if (!numbers.Contains(i))
-                return i.ToString("D2");
-        }
-
-        // if none missing, return next after max
-        return (max + 1).ToString("D2");
-    }
+   
 }

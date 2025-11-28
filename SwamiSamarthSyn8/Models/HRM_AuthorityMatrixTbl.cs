@@ -23,6 +23,6 @@ public partial class HRM_AuthorityMatrixTbl
     public string IsSelected { get; set; } = null!;
 
     public string? Authority_name { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool? IsActive { get; set; }
 
 }

@@ -327,9 +327,19 @@ public partial class SwamiSamarthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Auth__3214EC07B6873500");
 
-            entity.Property(e => e.Authority_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
-            entity.Property(e => e.IsSelected).HasDefaultValue("No");
+            entity.Property(e => e.AuthorityName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Authority_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)")
+                  .ValueGeneratedNever();          // <-- manual code
+
+            entity.Property(e => e.IsSelected)
+                  .HasDefaultValue("No");
         });
+
 
         modelBuilder.Entity<HRM_ContactusTbl>(entity =>
         {
@@ -340,20 +350,35 @@ public partial class SwamiSamarthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Dail__3214EC07AF88F291");
         });
-
         modelBuilder.Entity<HRM_DepartmentTbl>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__HRM_Depa__3214EC07A72CB8A2");
+            entity.HasKey(e => e.Id).HasName("PK__HRM_DepartmentTbl");
 
-            entity.Property(e => e.Department_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
+            entity.Property(e => e.DepartmentName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Department_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)") // <- here
+                  .ValueGeneratedNever();         // EF will save your value
         });
+
 
         modelBuilder.Entity<HRM_DesignationTbl>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Desi__3214EC07AC6F3B7E");
 
-            entity.Property(e => e.Designation_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
+            entity.Property(e => e.DesignationName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Designation_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)")
+                  .ValueGeneratedNever();          // <-- manual code, not computed
         });
+
 
         modelBuilder.Entity<HRM_EmpAttendanceTbl>(entity =>
         {

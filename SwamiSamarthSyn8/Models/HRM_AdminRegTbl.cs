@@ -51,4 +51,6 @@ public partial class HRM_AdminRegTbl
 
     [StringLength(255)]
     public string? designation { get; set; }
+    public bool? IsActive { get; set; }
+
 }

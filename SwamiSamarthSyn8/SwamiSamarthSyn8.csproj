@@ -13,6 +13,7 @@
 		<!-- Azure Storage -->
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.25.1" />
 		<PackageReference Include="Azure.Storage.Common" Version="12.24.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
 
 		<!-- SignalR -->
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="8.0.6" />

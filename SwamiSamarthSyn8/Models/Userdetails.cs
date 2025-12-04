@@ -28,7 +28,6 @@
 
         public string Password { get; set; }   // KEEP THIS ONE
 
-        // public string password { get; set; } // REMOVE THIS ONE
 
         public string Position_Code { get; set; }
         public string DepartmentCode { get; set; }

@@ -4,8 +4,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Save, Edit, Trash2 } from "lucide-react";
 
+// API BASE URL
+const API_BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster";
 //const API_BASE_URL = "https://localhost:7145/api/HrmMaster";
-const API_BASE_URL="https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster"
 
 function CreateMaster() {
   const [formType, setFormType] = useState("Department");
@@ -16,12 +17,14 @@ function CreateMaster() {
   const [editingId, setEditingId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("active");
 
-  // Fetch table data
+  // Fetch Data
   const fetchTableData = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/${formType}`);
+      let url = `${API_BASE_URL}/${formType}`;
 
+      const res = await axios.get(url);
       let data = res.data || [];
+
       data = data.filter((x) =>
         activeFilter === "active" ? x.isActive !== false : x.isActive === false
       );
@@ -34,7 +37,6 @@ function CreateMaster() {
 
   useEffect(() => {
     fetchTableData();
-    resetForm();
   }, [fetchTableData]);
 
   // Reset form
@@ -47,42 +49,39 @@ function CreateMaster() {
 
   // Save / Update
   const handleSave = async () => {
-  if (!name.trim()) return toast.warning("Enter name!");
+    if (!name.trim()) return toast.warning("Enter name!");
 
-  let mainPayload = { isActive };
+    let payload = { isActive };
 
-if (formType === "Department") mainPayload.DepartmentName = name;
-if (formType === "Designation") mainPayload.DesignationName = name;
-if (formType === "AuthorityMatrix") mainPayload.AuthorityName = name;
+    if (formType === "Department") payload.DepartmentName = name;
+    if (formType === "Designation") payload.DesignationName = name;
+    if (formType === "AuthorityMatrix") payload.AuthorityName = name;
 
-try {
-  let res;
+    try {
+      let res;
 
-  if (editingId) {
-    res = await axios.put(`${API_BASE_URL}/${formType}/${editingId}`, mainPayload);
-  } else {
-    res = await axios.post(`${API_BASE_URL}/${formType}`, mainPayload);
-  }
+      if (editingId) {
+        res = await axios.put(
+          `${API_BASE_URL}/${formType}/${editingId}`,
+          payload
+        );
+      } else {
+        res = await axios.post(`${API_BASE_URL}/${formType}`, payload);
+      }
 
-  toast.success("Saved successfully!");
-  fetchTableData();
-  resetForm();
-
-} catch (err) {
-  toast.error(err.response?.data?.message || "Failed to save");
-}
-
-};
+      toast.success("Saved successfully!");
+      fetchTableData();
+      resetForm();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save");
+    }
+  };
 
   // Edit record
   const handleEdit = (item) => {
     setEditingId(item.id);
     setIsActive(item.isActive ?? true);
 
-    if (formType === "AuthorityMatrix") {
-      setName(item.authorityName);
-      setCode(item.authority_code);
-    }
     if (formType === "Department") {
       setName(item.departmentName);
       setCode(item.department_code);
@@ -91,12 +90,19 @@ try {
       setName(item.designationName);
       setCode(item.designation_code);
     }
+    if (formType === "AuthorityMatrix") {
+      setName(item.authorityName);
+      setCode(item.authority_code);
+    }
   };
 
-  // Toggle Active/Inactive
+  // Activate / Deactivate
   const toggleActive = async (id, activate) => {
     try {
-      await axios.put(`${API_BASE_URL}/${formType}/${id}`, { isActive: activate });
+      await axios.put(`${API_BASE_URL}/${formType}/${id}`, {
+        isActive: activate,
+      });
+
       toast.success(activate ? "Activated!" : "Deactivated!");
       fetchTableData();
     } catch {
@@ -108,7 +114,7 @@ try {
     <div style={{ padding: 20, background: "#f5f5f5", minHeight: "85vh" }}>
       <div className="text-center text-primary h2 mb-4">CREATE MASTER</div>
 
-      {/* Master Type Filter */}
+      {/* Filters */}
       <div className="d-flex justify-content-between flex-wrap mb-3 bg-white p-3 rounded shadow-sm">
         <div>
           {["Department", "Designation", "AuthorityMatrix"].map((type) => (
@@ -143,7 +149,7 @@ try {
       </div>
 
       <div className="row">
-        {/* Form */}
+        {/* Form Section */}
         <div className="col-lg-5">
           <div className="p-3 bg-white rounded shadow-sm">
             <label>Name:</label>
@@ -171,14 +177,14 @@ try {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table Section */}
         <div className="col-lg-7">
           <div className="p-3 bg-white rounded shadow-sm table-responsive">
             <table className="table table-bordered text-center align-middle">
               <thead className="table-light">
                 <tr>
                   <th>Name</th>
-                  {(formType === "Department" || formType === "Designation") && <th>Code</th>}
+                  <th>Code</th>
                   <th>Edit</th>
                   <th>{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
                 </tr>
@@ -189,23 +195,20 @@ try {
                   tableData.map((item) => (
                     <tr key={item.id}>
                       <td>
-                        {formType === "AuthorityMatrix"
-                          ? item.authorityName
-                          : formType === "Department"
+                        {formType === "Department"
                           ? item.departmentName
-                          : item.designationName}
+                          : formType === "Designation"
+                          ? item.designationName
+                          : item.authorityName}
                       </td>
 
-                      {(formType === "Department" || formType === "Designation" || formType === "AuthorityMatrix") && (
-  <td>
-    {formType === "Department"
-      ? item.department_code
-      : formType === "Designation"
-      ? item.designation_code
-      : item.authority_code}
-  </td>
-)}
-
+                      <td>
+                        {formType === "Department"
+                          ? item.department_code
+                          : formType === "Designation"
+                          ? item.designation_code
+                          : item.authority_code}
+                      </td>
 
                       <td>
                         <Edit
@@ -235,9 +238,7 @@ try {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={formType === "AuthorityMatrix" ? 3 : 4}>
-                      No Records Found
-                    </td>
+                    <td colSpan="4">No Records Found</td>
                   </tr>
                 )}
               </tbody>

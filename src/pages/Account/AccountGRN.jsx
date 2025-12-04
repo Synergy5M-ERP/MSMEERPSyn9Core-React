@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 import Pagination from "../../components/Pagination";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 
-const API_BASE_URL = "https://localhost:7145/api";
 
 // Initial new item row structure
 const emptyItem = {

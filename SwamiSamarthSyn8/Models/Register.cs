@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SwamiSamarthSyn8.Models
 {
@@ -45,11 +48,16 @@ namespace SwamiSamarthSyn8.Models
         [Required(ErrorMessage = "Designation is required.")]
         public string designation { get; set; }
 
-        [DataType(DataType.Password)]
-        public string password { get; set; }
+        [StringLength(50)]
+        [JsonPropertyName("password")]  // Bind JSON password field
+        public string? Password { get; set; }
+        [NotMapped]
+        [Required]
+        [Compare("Password")]
+        public string? confirm_password { get; set; }
 
-        [DataType(DataType.Password)]
-        public string comfirmpassword { get; set; }
+
+
 
     }
 }

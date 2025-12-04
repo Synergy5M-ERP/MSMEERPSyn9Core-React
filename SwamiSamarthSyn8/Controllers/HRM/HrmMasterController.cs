@@ -19,28 +19,25 @@ public class HrmMasterController : ControllerBase
     // ------------------------------------
     // GET ALL
     // ------------------------------------
-    [HttpGet("{type}")]
-    public async Task<IActionResult> GetAll(string type)
+    [HttpGet("Department")]
+    public async Task<IActionResult> GetDepartment()
     {
-        try
-        {
-            object data = type switch
-            {
-                "Department" => await _context.HRM_DepartmentTbl.ToListAsync(),
-                "Designation" => await _context.HRM_DesignationTbl.ToListAsync(),
-                "AuthorityMatrix" => await _context.HRM_AuthorityMatrixTbl.ToListAsync(),
-                _ => null
-            };
+        var data = await _context.HRM_DepartmentTbl.ToListAsync();
+        return Ok(data);
+    }
 
-            if (data == null)
-                return BadRequest("Invalid type");
+    [HttpGet("Designation")]
+    public async Task<IActionResult> GetDesignation()
+    {
+        var data = await _context.HRM_DesignationTbl.ToListAsync();
+        return Ok(data);
+    }
 
-            return Ok(data);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
+    [HttpGet("AuthorityMatrix")]
+    public async Task<IActionResult> GetAuthorityMatrix()
+    {
+        var data = await _context.HRM_AuthorityMatrixTbl.ToListAsync();
+        return Ok(data);
     }
     [HttpPost("{type}")]
     public async Task<IActionResult> Create(string type, [FromBody] JObject payload)

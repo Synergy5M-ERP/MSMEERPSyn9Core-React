@@ -1,4 +1,8 @@
-﻿namespace SwamiSamarthSyn8.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace SwamiSamarthSyn8.Models
 {
     public class Userdetails
     {

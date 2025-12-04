@@ -56,7 +56,7 @@ namespace SwamiSamarthSyn8.Models
         [Compare("Password")]
         public string? confirm_password { get; set; }
 
-        //
+        /////
 
 
     }

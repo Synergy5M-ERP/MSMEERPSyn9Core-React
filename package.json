@@ -32,13 +32,9 @@
     "react-select": "^5.10.2",
     "react-toastify": "^11.0.5",
     "recharts": "^3.3.0",
-<<<<<<< HEAD
-    "sweetalert2": "^11.26.2",
+    "sweetalert2": "^11.26.3",
     "tailwindcss": "^4.1.17",
     "tailwindcss-animate": "^1.0.7",
-=======
-    "sweetalert2": "^11.26.3",
->>>>>>> 9320543beb32da4bd4d94e8c3eeeb3d206beeab7
     "web-vitals": "^2.1.4",
     "yup": "^1.7.1"
   },

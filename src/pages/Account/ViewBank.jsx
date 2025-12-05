@@ -155,9 +155,9 @@ export default function ViewBank({ view }) {
           </h5>
 
           <table className="table table-bordered table-striped">
-            <thead className="table-dark">
+            <thead className="table-primary">
               <tr>
-                <th>#</th>
+                <th>Id</th>
                 <th>Bank Name</th>
                 <th>Account No</th>
                 <th>Branch</th>

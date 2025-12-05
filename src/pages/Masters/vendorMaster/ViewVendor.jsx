@@ -1,5 +1,5 @@
 // ============================================
-// FILE 1: ViewVendor.jsx
+// FILE 1: ViewVendor.jsx (Updated with Records Per Page Dropdown)
 // ============================================
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -9,13 +9,14 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { RefreshCcw } from 'lucide-react';
 import { RiDeleteBin3Fill } from 'react-icons/ri';
+import { API_ENDPOINTS } from '../../../config/apiconfig';
 
 function ViewVendor() {
     // State management
     const [Vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [VendorsPerPage] = useState(10);
+    const [VendorsPerPage, setVendorsPerPage] = useState(10); // Changed to state
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredVendors, setFilteredVendors] = useState([]);
     const [editingVendor, setEditingVendor] = useState(null);
@@ -42,14 +43,25 @@ function ViewVendor() {
             );
             setFilteredVendors(filtered);
         }
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset to first page when filtering
     }, [searchTerm, Vendors]);
+
+    // Reset to first page when VendorsPerPage changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [VendorsPerPage]);
+
+    // Handle records per page change
+    const handleVendorsPerPageChange = (e) => {
+        const newSize = parseInt(e.target.value);
+        setVendorsPerPage(newSize);
+    };
 
     // Fetch all Vendors from API
     const fetchAllVendors = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/GetAllVendorsApi`);
+            const response = await fetch(API_ENDPOINTS.AllVendor);
             const result = await response.json();
 
             if (result.success) {
@@ -85,7 +97,7 @@ function ViewVendor() {
         if (!confirm.isConfirmed) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/DeleteItemApi`, {
+            const response = await fetch(API_ENDPOINTS.DeleteItem, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${id}`,
@@ -131,7 +143,7 @@ function ViewVendor() {
             formData.append('MOQ', editingVendor.MOQ || '');
             formData.append('TC_COA', editingVendor.TC_COA || '');
 
-            const response = await fetch(`${API_BASE_URL}/UpdateVendorApi?id=${editingVendor.Id}`, {
+            const response = await fetch(`${API_ENDPOINTS.UpdateVendor}?id=${editingVendor.Id}`, {
                 method: 'POST',
                 body: formData
             });
@@ -192,14 +204,13 @@ function ViewVendor() {
 
     return (
         <>
-        
-            
             <div className="vendor-container">
                 <div className="container-fluid m-3">
                     {/* Search and Actions */}
-                    <div className="row mb-3 p-3 m-2">
-                        <div className="col-md-4">
-                            <div className="input-group shadow-sm">
+
+                    <div className="row p-3 m-2 flex-nowrap d-flex align-items-center" style={{ overflowX: 'auto' }}>
+                        <div className="col-auto px-2">
+                            <div className="input-group shadow-sm" style={{ minWidth: '220px' }}>
                                 <input
                                     type="text"
                                     className="form-control border-0 rounded-start"
@@ -213,23 +224,48 @@ function ViewVendor() {
                                 </button>
                             </div>
                         </div>
-                        <div className="col-md-4">
-                            <h4 className="text-primary m-2 p-2 h2">VIEW VENDOR DETAILS</h4>
+
+                        <div className="col-auto flex-grow-1">
+                            <h4 className="text-primary h2 mb-0 text-truncate">VIEW VENDOR DETAILS</h4>
                         </div>
-                        <div className="col-md-4 text-end">
+
+                        <div className="col-auto px-2">
                             <button
-                                className="btn btn-success me-2 shadow-sm"
+                                className="btn btn-success shadow-sm"
                                 onClick={fetchAllVendors}
                                 disabled={loading}
                                 style={{ backgroundColor: "#100670" }}
                             >
                                 <RefreshCcw />
                             </button>
-                            <span className="badge bg-info p-2 m-2" style={{ fontSize: "14px", height: "30px" }}>
+                        </div>
+
+                        <div className="col-auto px-2">
+                            <div className="d-flex align-items-center">
+                                <label className="me-2 fw-bold text-muted small mb-0">Show:</label>
+                                <select
+                                    className="form-select form-select-sm shadow-sm"
+                                    style={{ width: '80px' }}
+                                    value={VendorsPerPage}
+                                    onChange={handleVendorsPerPageChange}
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                                <span className="ms-2 text-muted small">entries</span>
+                            </div>
+                        </div>
+                        <div className="col-auto">
+                            <span className="badge bg-info p-2" style={{ fontSize: "14px", height: "30px" }}>
                                 Total Vendors: {filteredVendors.length}
                             </span>
                         </div>
                     </div>
+
+
+
 
                     {/* Vendors Table */}
                     <div className="card border-0 shadow-sm">
@@ -339,7 +375,7 @@ function ViewVendor() {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="pagination-wrapper">
+                        <div className="pagination-wrapper mt-4">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div className="text-muted">
                                     Showing {indexOfFirstVendor + 1} to {Math.min(indexOfLastVendor, filteredVendors.length)} of {filteredVendors.length} entries
@@ -384,7 +420,7 @@ function ViewVendor() {
                 </div>
             </div>
 
-            {/* Edit Modal */}
+            {/* Edit Modal - Unchanged */}
             {showEditModal && editingVendor && (
                 <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-lg">
@@ -512,4 +548,3 @@ function ViewVendor() {
 }
 
 export default ViewVendor;
-

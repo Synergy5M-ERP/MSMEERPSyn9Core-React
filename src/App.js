@@ -31,6 +31,13 @@ import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
 import HrmDashboard from "./pages/HRM/HrmDashboard";
 import HrmConfiguration from "./pages/HRM/HRMConfiguration";
 import SalesDistribution from "./pages/Sales/SalesDistribution";
+import MMModule from "./pages/MM/MMModule";
+import StepIndicator from "./pages/MM/StepIndicator";
+import CreateEnquiryPage from "./pages/MM/StepWise";
+import ProductionModule from "./pages/ProductionModule/ProductionModule";
+import QualityModule from "./pages/QualityModule/QualityModule";
+import WareHouse from "./pages/Sales/WareHouse";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -40,6 +47,7 @@ function App() {
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/accounttype" element={<AccountTypePage />} />
         <Route path="/AccountPage" element={<AccountPage />} />
         <Route path="/AccountVoucherType" element={<AccoutVoucherType/>}/>
@@ -57,7 +65,12 @@ function App() {
 <Route path="/viewvendor" element={<ViewVendor/>}/>
 <Route  path="/hrm" element={<HrmConfiguration/>}/>
 <Route path="/salesanddistribution" element={<SalesDistribution/>}/>
+<Route path="/mm" element={<MMModule/>} />
+<Route path="/indicator" element={<CreateEnquiryPage/>} />
 
+<Route path="/production" element={<ProductionModule/>} />
+<Route path="/quality" element={<QualityModule/>} />
+<Route path="/warehouse" element={<WareHouse/>} />
         {/* AccountGroupSubgroup */}
       </Routes>
 

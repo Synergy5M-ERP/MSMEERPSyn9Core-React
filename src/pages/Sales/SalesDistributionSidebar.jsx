@@ -1,47 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    AccountBalance,
-    AccountBalanceOutlined,
-    AccountBalanceTwoTone,
-    AccountCircle,
-    AddBox,
-    AlternateEmail,
-    Category,
-    ChangeCircle,
-    CurrencyRupeeOutlined,
-    Dashboard,
     DashboardCustomize,
-    GppGoodSharp,
-    GroupAddRounded,
     Inventory,
-    Inventory2Sharp,
-    LocalPostOffice,
-    LocationCity,
-    SchemaRounded,
-    StayPrimaryPortrait,
-    StayPrimaryPortraitTwoTone,
-    SwapHoriz,
-    Tune,
-    VolunteerActivismSharp,
-} from '@mui/icons-material';
-import { CreditCardIcon, SheetIcon, StoreIcon } from 'lucide-react';
-import { RiBillFill, RiSalesDistributioncardFill, RiProductHuntFill } from 'react-icons/ri';
-import ListItem from '@mui/material/ListItem';
+    HelpCenter,
+    TaxiAlert,
+    Recommend,
+} from "@mui/icons-material";
+
+import {
+    ListOrdered,
+    FileSpreadsheet,
+    FileSymlink,
+    Warehouse,
+    DessertIcon
+} from "lucide-react";
+
+import { RiBillFill } from "react-icons/ri";
+import { FaFileInvoice, FaGoodreads, FaSalesforce } from "react-icons/fa";
 
 const SalesDistributionSidebar = ({ selected, onSelect }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [expandedMenu, setExpandedMenu] = useState(null);
 
-    const menuItems = 
-     [
-  { label: 'Dashboard', icon: <DashboardCustomize />, key: 'Dashboard' },
-  {label:"sales Inventory",icon:<Inventory/>,key:'Salesinventory'},
-  {label:"BOM",icon:<RiBillFill/>,key:"BOM"},
-  {label:"Sales Invoice"}
-];
+    const menuItems = [
+        { label: "Dashboard", icon: <DashboardCustomize />, key: "Dashboard" },
+        { label: "Inventory Master", icon: <Inventory />, key: "inventoryMaster" },
+        { label: "BOM", icon: <RiBillFill />, key: "BOM" },
+        { label: "Sales Invoice", icon: <FaSalesforce />, key: "SalesInvoice" },
 
+        {
+            label: "Enquiry To Sales Order",
+            icon: <ListOrdered />,
+            key: "EnquiryToSales",
+            subItems: [
+                { label: "Enquiry", icon: <HelpCenter />, key: "Enquiry" },
+                { label: "Quotation Master", icon: <FaFileInvoice />, key: "Quotation" },
+                { label: "Direct/External SO", icon: <FileSpreadsheet />, key: "DirectExternalSO" },
+                { label: "Generic/Repeate SO", icon: <FileSymlink />, key: "GenericRepeateSO" }
+            ]
+        },
+        {label:"Tax Invoice",icon:<TaxiAlert/>,key:"taxInvoice"},
+        {label:"SO Reconciliation",icon:<Recommend/>,key:"SOReconciliation"},
+        {label:"WareHouse",icon:<Warehouse/>,key:"WareHouse"},
+          {label:"Dispach Advise",icon:<DessertIcon/>,key:"dispachAdvise"},
+          {label:"Sales Return GRN",icon:<FaGoodreads/>,key:"SalesReturnGRN"}
+    ];
 
-    // Toggle submenu open/close on click
     const handleItemClick = (key, hasSubItems) => {
         if (hasSubItems) {
             setExpandedMenu(expandedMenu === key ? null : key);
@@ -51,7 +55,6 @@ const SalesDistributionSidebar = ({ selected, onSelect }) => {
         }
     };
 
-    // Close flyout submenu if SalesDistributionSidebar collapses
     const handleToggleCollapse = () => {
         if (!collapsed) {
             setExpandedMenu(null);
@@ -63,148 +66,135 @@ const SalesDistributionSidebar = ({ selected, onSelect }) => {
         <nav
             style={{
                 width: collapsed ? 60 : 250,
-                backgroundColor: '#f5f5f5',
-                borderRight: '1px solid #ccc',
-                padding: '20px 10px',
-                boxSizing: 'border-box',
-                transition: 'width 0.3s ease',
-                display: 'flex',
-                flexDirection: 'column',
-                height: '120vh',
-                overflowY: 'auto',
-                position: 'relative',
-                userSelect: 'none',
+                backgroundColor: "#f5f5f5",
+                borderRight: "1px solid #ccc",
+                padding: "20px 10px",
+                transition: "width 0.3s ease",
+                height: "120vh",
+                overflowY: "auto",
+                userSelect: "none",
+                boxSizing: "border-box"
             }}
         >
+            {/* Collapse Button */}
             <button
                 onClick={handleToggleCollapse}
                 style={{
                     marginBottom: 20,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#0066cc',
-                    fontWeight: 'bold',
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#0066cc",
+                    fontWeight: "bold",
                     fontSize: 18,
-                    alignSelf: collapsed ? 'center' : 'flex-end',
-                    outline: 'none',
+                    alignSelf: collapsed ? "center" : "flex-end",
                 }}
-                aria-label={collapsed ? 'Expand SalesDistributionSidebar' : 'Collapse SalesDistributionSidebar'}
             >
-                {/* Account And Finance */}
-                {collapsed ? '▶' : '◀'}
+                {collapsed ? "▶" : "◀"}
             </button>
 
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, flex: 1 }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                 {menuItems.map((item) => {
                     const isSelected =
-                        selected === item.key || (item.subItems && item.subItems.some((sub) => sub.key === selected));
+                        selected === item.key ||
+                        (item.subItems && item.subItems.some((s) => s.key === selected));
                     const isExpanded = expandedMenu === item.key;
 
                     return (
-                        <li key={item.key} style={{ position: 'relative' }}>
-                            {/* Main menu item */}
+                        <li key={item.key} style={{ position: "relative" }}>
+                            {/* MAIN ITEM WITH ICON */}
                             <div
                                 onClick={() => handleItemClick(item.key, !!item.subItems)}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    padding: '10px',
-                                    cursor: 'pointer',
-                                    fontWeight: isSelected ? 'bold' : 'normal',
-                                    backgroundColor: isSelected ? '#ddeeff' : 'transparent',
+                                    display: "flex",
+                                    alignItems: "center",
+                                    padding: "10px",
+                                    cursor: "pointer",
+                                    fontWeight: isSelected ? "bold" : "normal",
+                                    backgroundColor: isSelected ? "#ddeeff" : "transparent",
                                     borderRadius: 4,
-                                    color: isSelected ? '#0066cc' : '#333',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                    color: isSelected ? "#0066cc" : "#333",
+                                    justifyContent: collapsed ? "center" : "flex-start",
                                 }}
-                                title={item.label}
                             >
-                                <div
-                                    style={{
-                                        marginRight: collapsed ? 0 : 15,
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        width: 24,
-                                    }}
-                                >
+                                <div style={{ marginRight: collapsed ? 0 : 15 }}>
                                     {item.icon}
                                 </div>
 
                                 {!collapsed && <span>{item.label}</span>}
 
                                 {!collapsed && item.subItems && (
-                                    <span style={{ marginLeft: 'auto', userSelect: 'none' }}>{isExpanded ? '▾' : '▸'}</span>
+                                    <span style={{ marginLeft: "auto" }}>
+                                        {isExpanded ? "▾" : "▸"}
+                                    </span>
                                 )}
                             </div>
 
-                            {/* Submenu: Expanded & SalesDistributionSidebar expanded */}
+                            {/* SUB-ITEMS WITH ICONS */}
                             {item.subItems && isExpanded && !collapsed && (
-                                <ul style={{ listStyle: 'none', paddingLeft: 30, marginTop: 8 }}>
+                                <ul style={{ listStyle: "none", paddingLeft: 30, marginTop: 6 }}>
                                     {item.subItems.map((sub) => {
                                         const subSelected = selected === sub.key;
+
                                         return (
                                             <li
                                                 key={sub.key}
                                                 onClick={() => onSelect(sub.key)}
                                                 style={{
-                                                    padding: '6px 10px',
-                                                    cursor: 'pointer',
-                                                    fontWeight: subSelected ? 'bold' : 'normal',
-                                                    backgroundColor: subSelected ? '#cce4ff' : 'transparent',
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    padding: "8px 10px",
+                                                    cursor: "pointer",
+                                                    fontWeight: subSelected ? "bold" : "normal",
+                                                    backgroundColor: subSelected ? "#cce4ff" : "transparent",
                                                     borderRadius: 4,
-                                                    color: subSelected ? '#0050b3' : '#555',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
+                                                    color: subSelected ? "#0050b3" : "#444",
                                                 }}
-                                                title={sub.label}
                                             >
-                                                {sub.label}
+                                                {/* Submenu Icon */}
+                                                <span style={{ marginRight: 10 }}>{sub.icon}</span>
+                                                <span>{sub.label}</span>
                                             </li>
                                         );
                                     })}
                                 </ul>
                             )}
 
-                            {/* Flyout Submenu: visible when collapsed & expanded */}
+                            {/* FLYOUT when collapsed */}
                             {item.subItems && isExpanded && collapsed && (
                                 <ul
                                     style={{
-                                        position: 'absolute',
+                                        position: "absolute",
                                         top: 0,
-                                        left: '100%',
-                                        backgroundColor: '#fff',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                        left: "100%",
+                                        backgroundColor: "#fff",
+                                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                                         borderRadius: 4,
                                         padding: 10,
-                                        minWidth: 160,
-                                        whiteSpace: 'nowrap',
-                                        zIndex: 1000,
+                                        minWidth: 180,
+                                        zIndex: 10,
                                     }}
                                 >
                                     {item.subItems.map((sub) => {
                                         const subSelected = selected === sub.key;
+
                                         return (
                                             <li
                                                 key={sub.key}
                                                 onClick={() => onSelect(sub.key)}
                                                 style={{
-                                                    padding: '6px 10px',
-                                                    cursor: 'pointer',
-                                                    fontWeight: subSelected ? 'bold' : 'normal',
-                                                    backgroundColor: subSelected ? '#cce4ff' : 'transparent',
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    padding: "8px 10px",
+                                                    cursor: "pointer",
+                                                    fontWeight: subSelected ? "bold" : "normal",
+                                                    backgroundColor: subSelected ? "#cce4ff" : "transparent",
                                                     borderRadius: 4,
-                                                    color: subSelected ? '#0050b3' : '#555',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
+                                                    color: subSelected ? "#0050b3" : "#444",
                                                 }}
-                                                title={sub.label}
                                             >
-                                                {sub.label}
+                                                <span style={{ marginRight: 10 }}>{sub.icon}</span>
+                                                <span>{sub.label}</span>
                                             </li>
                                         );
                                     })}

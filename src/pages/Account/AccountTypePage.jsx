@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./AccountTypePage.css";
+import Pagination from "../../components/Pagination"; // Adjust path as needed
 
 function AccountTypePage() {
   const [accountTypes, setAccountTypes] = useState([]);
@@ -11,6 +12,8 @@ function AccountTypePage() {
   const [newNarration, setNewNarration] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 4; // Increased for better UX
 
   // Replace with your actual API URL
   const apiBase = "https://localhost:7145/api/Account/AccountType";
@@ -22,8 +25,8 @@ function AccountTypePage() {
 
   const fetchAccountTypes = async () => {
     try {
-const res = await axios.get(apiBase);
-      console.log("Fetched data:", res.data); // Debug API response
+      const res = await axios.get(apiBase);
+      console.log("Fetched data:", res.data);
       setAccountTypes(res.data);
     } catch (err) {
       console.error("Error fetching account types:", err);
@@ -81,11 +84,31 @@ const res = await axios.get(apiBase);
     setIsActive(true);
   };
 
+  // Filter account types
   const filteredAccountTypes = accountTypes.filter(
     (type) =>
       type.accountTypeName.toLowerCase().includes(searchText.toLowerCase()) ||
       type.accountTypeNarration.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  // Pagination logic
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredAccountTypes.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+
+  // Reset to page 1 when search changes
+  const handleSearchChange = (e) => {
+    setSearchText(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Reset to page 1 after data refresh
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [accountTypes]);
 
   return (
     <div className="accounttype-container">
@@ -137,7 +160,7 @@ const res = await axios.get(apiBase);
           type="text"
           placeholder="Search..."
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={handleSearchChange}
           className="form-control search-input"
         />
         <div className="data-table-wrapper">
@@ -153,26 +176,41 @@ const res = await axios.get(apiBase);
               </tr>
             </thead>
             <tbody>
-              {filteredAccountTypes.map((type) => (
-                <tr key={type.accountTypeId}>
-                  <td>{type.accountTypeId}</td>
-                  <td>{type.accountTypeName}</td>
-                  <td>{type.accountTypeNarration}</td>
-                  <td>{type.isActive ? "Yes" : "No"}</td>
-                  <td>
-                    <button className="btn-icon edit" onClick={() => handleEdit(type)}>
-                      ✏️
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn-icon delete" onClick={() => handleDelete(type.accountTypeId)}>
-                      🗑️
-                    </button>
+              {currentRecords.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4">
+                    {filteredAccountTypes.length === 0 ? "No account types found" : "No records on this page"}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                currentRecords.map((type) => (
+                  <tr key={type.accountTypeId}>
+                    <td>{type.accountTypeId}</td>
+                    <td>{type.accountTypeName}</td>
+                    <td>{type.accountTypeNarration}</td>
+                    <td>{type.isActive ? "Yes" : "No"}</td>
+                    <td>
+                      <button className="btn-icon edit" onClick={() => handleEdit(type)}>
+                        ✏️
+                      </button>
+                    </td>
+                    <td>
+                      <button className="btn-icon delete" onClick={() => handleDelete(type.accountTypeId)}>
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+
+          <Pagination
+            totalRecords={filteredAccountTypes.length}
+            recordsPerPage={recordsPerPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 

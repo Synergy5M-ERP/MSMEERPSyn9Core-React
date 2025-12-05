@@ -58,7 +58,7 @@ function ItemMaster() {
                         />
                         View Item
                     </label>
- <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
+ {/* <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
                         <input
                             type="radio"
                             name="configTab"
@@ -68,7 +68,7 @@ function ItemMaster() {
                             style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
                         />
                         Amend Item
-                    </label>
+                    </label> */}
 
 
                      <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>

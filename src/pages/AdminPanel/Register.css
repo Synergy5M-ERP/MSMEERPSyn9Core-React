@@ -1,7 +1,7 @@
 /* ====== Container ====== */
 .register-container {
   max-width: 1200px; /* wider to fit 4 items in a row */
-  margin: 60px auto;
+  margin:18px auto;
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
@@ -100,22 +100,49 @@
   }
 }
 /* Cancel button */
-.btn-cancel {
-  width: 100%;
+/* ====== Button Group ====== */
+/* ====== Button Group ====== */
+.btn-group {
+  display: flex;
+  gap: 20px;                /* space between buttons */
+  justify-content: center;   /* center buttons horizontally */
+  margin-top: 20px;
+}
+
+/* ====== Submit / Register Button ====== */
+.btn-group .btn-primary {
+  width: 150px;             /* fixed width */
   height: 45px;
   border: none;
   border-radius: 10px;
-  background: #e40f41; /* gray */
+  background: linear-gradient(90deg, #007bff, #00a8ff);
   color: white;
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 10px;
 }
 
-.btn-cancel:hover {
-  background: #5a6268;
+.btn-group .btn-primary:hover {
+  background: linear-gradient(90deg, #0062cc, #0084ff);
   transform: scale(1.02);
 }
 
+/* ====== Cancel Button ====== */
+.btn-group .btn-cancel {
+  width: 150px;             /* fixed width */
+  height: 45px;
+  border: none;
+  border-radius: 10px;
+  background: #e40f41;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-group .btn-cancel:hover {
+  background: #c10b34;
+  transform: scale(1.02);
+}

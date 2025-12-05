@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { RiAccountCircleFill } from "react-icons/ri";
 
@@ -10,15 +10,39 @@ const activeStyle = {
   padding: "7px 22px",
 };
 
-function Header() {
-  const [pqOpen, setPqOpen] = React.useState(false);
+const linkStyle = {
+  padding: "10px 18px",
+  fontSize: "14px",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  color: "#333",
+  textDecoration: "none",
+};
 
-  // close dropdown on outside click
-  const dropdownRef = React.useRef(null);
-  React.useEffect(() => {
+function Header() {
+  const [pqOpen, setPqOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(false);
+  
+  const accountDropdownRef = useRef(null);
+  const pqDropdownRef = useRef(null);
+
+  // Account dropdown outside click handler
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
+        setOpenDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // PQ dropdown outside click handler
+  useEffect(() => {
     const handler = (e) => {
-      if (!dropdownRef.current) return;
-      if (!dropdownRef.current.contains(e.target)) {
+      if (!pqDropdownRef.current) return;
+      if (!pqDropdownRef.current.contains(e.target)) {
         setPqOpen(false);
       }
     };
@@ -34,7 +58,6 @@ function Header() {
           top: 0,
           left: 0,
           width: "100%",
-          minHeight: "47px",
           zIndex: 1500,
           background:
             "linear-gradient(90deg, #083967 0%, #0a4684 50%, #0e5ca7 100%)",
@@ -63,48 +86,92 @@ function Header() {
               alignItems: "center",
             }}
           >
-            <h2
-              style={{
-                color: "#e6f0fa",
-                fontWeight: "bold",
-                margin: 0,
-                letterSpacing: 1,
-              }}
-            >
-              MSME ERP SYN 9
-            </h2>
-          </div>
+            {/* Title Center */}
+            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <h2
+                style={{
+                  color: "#e6f0fa",
+                  fontWeight: "bold",
+                  margin: 0,
+                  letterSpacing: 1,
+                }}
+              >
+                MSME ERP SYN 9
+              </h2>
+            </div>
 
-          <div>
-            <button
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#fff",
-                fontWeight: "bold",
-                fontSize: "16px",
-                outline: "none",
-                padding: "8px 19px",
-                borderRadius: "11px",
-                marginTop: 2,
-                marginBottom: 2,
-                float: "right",
-              }}
-              className="shadow-sm"
-            >
-              <RiAccountCircleFill className="me-2" size={17} />
-              MY ACCOUNT
-            </button>
+            {/* My Account Dropdown */}
+            <div style={{ position: "relative" }} ref={accountDropdownRef}>
+              <button
+                onClick={() => setOpenDropdown(!openDropdown)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  padding: "8px 19px",
+                  borderRadius: "11px",
+                  cursor: "pointer",
+                }}
+              >
+                <RiAccountCircleFill className="me-2" size={17} />
+                MY ACCOUNT
+              </button>
+
+              {openDropdown && (
+                <div
+                  className="dropdown-menu shadow"
+                  style={{
+                    display: "block",
+                    position: "absolute",
+                    right: 0,
+                    marginTop: "5px",
+                    background: "white",
+                    borderRadius: "10px",
+                    width: "220px",
+                    padding: "10px 0",
+                    zIndex: 2000,
+                  }}
+                >
+                  <a className="dropdown-item" href="/signup" style={linkStyle}>
+                    <i className="fa fa-user-plus text-primary"></i> Signup
+                  </a>
+
+                  <a className="dropdown-item" href="/login" style={linkStyle}>
+                    <i className="fa fa-sign-in-alt text-success"></i> Login
+                  </a>
+
+                  <a className="dropdown-item" href="/logout" style={linkStyle}>
+                    <i className="fa fa-sign-out-alt text-danger"></i> Signout
+                  </a>
+
+                  <div className="dropdown-divider"></div>
+
+                  <a className="dropdown-item" href="/admin" style={linkStyle}>
+                    <i className="fa fa-check-circle text-success"></i> User Approval
+                  </a>
+
+                  <a className="dropdown-item" href="/profile" style={linkStyle}>
+                    <i className="fa fa-id-badge text-info"></i> User Profile
+                  </a>
+
+                  <a className="dropdown-item" href="/contact-us" style={linkStyle}>
+                    <i className="fa fa-envelope text-warning"></i> Contact Us
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Nav Row */}
+        {/* Navigation Row */}
         <div
           className="d-flex justify-content-center"
           style={{
             background: "rgba(6,56,113,1)",
             margin: 0,
-            padding: "10px 0 10px 0",
+            padding: "10px 0",
             minHeight: "41px",
             gap: "4px",
           }}
@@ -187,7 +254,7 @@ function Header() {
           <div
             className="position-relative"
             style={{ margin: "0 8px" }}
-            ref={dropdownRef}
+            ref={pqDropdownRef}
           >
             <button
               type="button"
@@ -200,7 +267,7 @@ function Header() {
                 border: "none",
               }}
             >
-              PRODUCTION &amp; QUALITY ▾
+              PRODUCTION & QUALITY ▾
             </button>
 
             {pqOpen && (
@@ -282,12 +349,9 @@ function Header() {
       <div style={{ marginTop: "105px" }}></div>
 
       <style>{`
-        .nav-link {
-          display: inline-block;
-        }
         .nav-link:hover {
           background-color: #2176bd !important;
-          color: #fff !important;
+          color: white !important;
         }
       `}</style>
     </>

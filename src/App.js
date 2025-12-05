@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './App.css';
-import RegisterPage from "./pages/RegisterPage";
+//import RegisterPage from "./pages/RegisterPage";
 import Login from "./pages/Login";
 import AccountTypePage from "./pages/Account/AccountTypePage";
 import AccountPage from "./pages/Account/AccountPage";
@@ -31,6 +31,7 @@ import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
 import HrmDashboard from "./pages/HRM/HrmDashboard";
 import HrmConfiguration from "./pages/HRM/HRMConfiguration";
 import SalesDistribution from "./pages/Sales/SalesDistribution";
+
 import MMModule from "./pages/MM/MMModule";
 import StepIndicator from "./pages/MM/StepIndicator";
 import CreateEnquiryPage from "./pages/MM/StepWise";
@@ -39,13 +40,16 @@ import QualityModule from "./pages/QualityModule/QualityModule";
 import WareHouse from "./pages/Sales/WareHouse";
 import Dashboard from "./pages/Dashboard";
 
+import AdminConfiguration from "./pages/AdminPanel/AdminConfiguration";
+
+
 function App() {
   return (
     <Router>
       
       <Header />
       <Routes>
-        <Route path="/register" element={<RegisterPage />} />
+       
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/accounttype" element={<AccountTypePage />} />
@@ -65,8 +69,12 @@ function App() {
 <Route path="/viewvendor" element={<ViewVendor/>}/>
 <Route  path="/hrm" element={<HrmConfiguration/>}/>
 <Route path="/salesanddistribution" element={<SalesDistribution/>}/>
+
 <Route path="/mm" element={<MMModule/>} />
 <Route path="/indicator" element={<CreateEnquiryPage/>} />
+
+<Route path="/admin" element={<AdminConfiguration/>}/>
+
 
 <Route path="/production" element={<ProductionModule/>} />
 <Route path="/quality" element={<QualityModule/>} />

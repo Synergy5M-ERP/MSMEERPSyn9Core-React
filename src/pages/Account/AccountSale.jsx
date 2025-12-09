@@ -46,12 +46,12 @@ function AccountSale() {
       <input
         type="radio"
         name="configTab"
-        value="approvedInvoice"
-        checked={selectedPage === 'approvedInvoice'}
-        onChange={() => setSelectedPage('approvedInvoice')}
+        value="ApproveInvoice"
+        checked={selectedPage === 'ApproveInvoice'}
+        onChange={() => setSelectedPage('ApproveInvoice')}
         style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
       />
-   Approved Invoice
+   Approve Invoice
     </label>
  
   </div>
@@ -63,7 +63,7 @@ function AccountSale() {
 
       {/* Render selected page with view prop */}
       <div>
-        {selectedPage==='checkInvoice'?(<CheckInvoice/>):<ApprovedInvoice/>
+      {selectedPage==='checkInvoice'?(<CheckInvoice/>):<ApprovedInvoice/>
         
          
         }

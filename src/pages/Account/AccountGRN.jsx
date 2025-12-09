@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import CheckPayable from "./CheckPayable";
 import ApprovedPayable from "./ApprovedPayable";
 
+
 function AccountGRN() {
   const [selectedPage, setSelectedPage] = useState("checkPayable");
 
@@ -46,12 +47,12 @@ function AccountGRN() {
       <input
         type="radio"
         name="configTab"
-        value="approvedPayable"
-        checked={selectedPage === 'approvedPayable'}
-        onChange={() => setSelectedPage('approvedPayable')}
+        value="approvePayable"
+        checked={selectedPage === 'approvePayable'}
+        onChange={() => setSelectedPage('approvePayable')}
         style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
       />
-   Approved Payable
+   Approve Payable
     </label>
  
   </div>

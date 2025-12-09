@@ -14,7 +14,7 @@ export const API_ENDPOINTS = {
   AccountBankDetailsSave: `${BASE_URL}/AccountBankDetails`,
 
   Invoices: `${BASE_URL}/Invoices/`,
-  Items: `${BASE_URL}/AccountBankDetails/`,
+  AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
   CreditNote: `${BASE_URL}/credit-note`,
   DebitNote: `${BASE_URL}/Debit-note`,
@@ -31,6 +31,21 @@ export const API_ENDPOINTS = {
  Ledger: `${BASE_URL}/AccountLedger`,
   AllVendor: `${API_BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${API_BASE_URL}/DeleteItemApi`,
-  UpdateVendor: `${API_BASE_URL}/UpdateVendorApi`
+  UpdateVendor: `${API_BASE_URL}/UpdateVendorApi`,
+  AccountType:`${API_BASE_URL}/Account/AccountType`,
 
+
+
+
+  //  ManualPR: `${BASE_URL}/ManualPR`,
+  // ManualPRById: (id) => `${BASE_URL}/ManualPR/${id}`,
+  // PR_Departments: `${BASE_URL}/Departments`,
+  // PR_Employees: `${BASE_URL}/Employees`,
+  // PR_Items: `${BASE_URL}/Items`,
+  // PR_Specifications: `${BASE_URL}/ItemSpecifications`,
+  // PR_Currencies: `${BASE_URL}/Currencies`,
+  // PR_UOM: `${BASE_URL}/Uom`,
+  // PR_BudgetByDept: (deptId) => `${BASE_URL}/Budget/department/${deptId}`,
+  // PR_EmployeeDetails: (empId) => `${BASE_URL}/Employees/${empId}`,
+  // PR_ItemDetails: (itemId) => `${BASE_URL}/Items/${itemId}`
 };

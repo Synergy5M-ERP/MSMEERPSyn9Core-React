@@ -825,36 +825,55 @@ function CreateItem() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="row">
-                    <div className="col-12 text-center">
-                      <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="btn btn-primary save"
-                        // style={{backgroundColor: '#100670', borderColor: '#100670'}}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader className="spinner-border spinner-border-sm me-2" role="status" />
-                            Creating Item...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="me-2" size={20} />
-                            Create Item
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        disabled={loading}
-                        className="btn btn-outline-secondary btn-lg px-5 py-2 shadow"
-                      >
-                        <X className="me-2" size={20} />
-                        Reset Form
-                      </button>
-                    </div>
-                  </div>
+                 <div className="row justify-content-center gap-3 py-4">
+  <div className="col-12 col-md-8 col-lg-6">
+    <div className="d-flex justify-content-center gap-3 flex-wrap">
+      {/* Create Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="btn btn-primary btn-lg px-5 py-3 save shadow-lg border-0 position-relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          // minWidth: '160px',
+          fontWeight: '600',
+          // letterSpacing: '0.5px',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        {loading ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Creating Item...
+          </>
+        ) : (
+          <>
+            {/* <i className="fas fa-plus me-2"></i> */}
+            Create 
+          </>
+        )}
+      </button>
+
+      {/* Clear Button */}
+      <button
+        onClick={handleCancel}
+        disabled={loading}
+        className="btn btn-outline-secondary btn-lg px-5 py-3 shadow-lg border-2 position-relative overflow-hidden"
+        style={{
+          // minWidth: '160px',
+          fontWeight: '600',
+         
+          transition: 'all 0.3s ease',
+          borderColor: '#6c757d !important'
+        }}
+      >
+        {/* <i className="fas fa-times me-2"></i> */}
+        Clear 
+      </button>
+    </div>
+  </div>
+</div>
+
 
                 </div>
               </div>

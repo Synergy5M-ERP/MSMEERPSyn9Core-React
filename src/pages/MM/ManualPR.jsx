@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import CreateMaster from "../HRM/CreateMaster";
+import CreateManualPR from "./CreateManualPR";
 
 
 function MannualPR() {
@@ -83,7 +84,7 @@ Crystal Report
 
       {/* Render selected page with view prop */}
       <div>
-        {selectedPage==='create'?(<CreateMaster/>):<CreateMaster/>
+        {selectedPage==='create'?(<CreateManualPR/>):<CreateMaster/>
         
          
         }

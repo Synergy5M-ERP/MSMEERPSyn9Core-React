@@ -423,14 +423,9 @@ const fetchAmountByReference = async (refId) => {
            
             <div className="bg-white p-3 rounded shadow scrollbar">
                 {/* Voucher static details */}
+                
                 <div className="row mb-2">
-                    <div className="col-3">
-                        <label className="form-label text-primary">Voucher Number*</label>
-                        <input type="text" value={vendorNumber} 
-                        className="form-control" disabled={loading} readOnly />
-                    </div>
-
-                    <div className="col-3">
+                       <div className="col-3">
                     <label className="form-label text-primary">Vendor Name*</label>
                     <select value={vendorName}
                             onChange={(e) => handleVendorChange(e.target.value)}
@@ -441,6 +436,13 @@ const fetchAmountByReference = async (refId) => {
                     ))}
                     </select>
                     </div>
+                    <div className="col-3">
+                        <label className="form-label text-primary">Voucher Number*</label>
+                        <input type="text" value={vendorNumber} 
+                        className="form-control" disabled={loading} readOnly />
+                    </div>
+
+                 
 
                     <div className="col-3">
                         <label className="form-label text-primary">Voucher Type*</label>

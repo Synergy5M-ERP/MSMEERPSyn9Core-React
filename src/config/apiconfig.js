@@ -35,17 +35,4 @@ export const API_ENDPOINTS = {
   AccountType:`${API_BASE_URL}/Account/AccountType`,
 
 
-
-
-  //  ManualPR: `${BASE_URL}/ManualPR`,
-  // ManualPRById: (id) => `${BASE_URL}/ManualPR/${id}`,
-  // PR_Departments: `${BASE_URL}/Departments`,
-  // PR_Employees: `${BASE_URL}/Employees`,
-  // PR_Items: `${BASE_URL}/Items`,
-  // PR_Specifications: `${BASE_URL}/ItemSpecifications`,
-  // PR_Currencies: `${BASE_URL}/Currencies`,
-  // PR_UOM: `${BASE_URL}/Uom`,
-  // PR_BudgetByDept: (deptId) => `${BASE_URL}/Budget/department/${deptId}`,
-  // PR_EmployeeDetails: (empId) => `${BASE_URL}/Employees/${empId}`,
-  // PR_ItemDetails: (itemId) => `${BASE_URL}/Items/${itemId}`
 };

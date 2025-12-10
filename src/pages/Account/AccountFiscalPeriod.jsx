@@ -21,7 +21,7 @@ function CreateFiscalPeriod({ view }) {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
 const [currentPage,setCurrentPage]=useState(1);
-const recordsPerPage=4;
+const recordsPerPage=3;
 const indexOfLast=currentPage*recordsPerPage;
 const indexOfFirst=indexOfLast-recordsPerPage
 const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)

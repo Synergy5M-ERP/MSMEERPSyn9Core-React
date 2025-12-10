@@ -3,7 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./AccountTypePage.css";
-import Pagination from "../../components/Pagination"; // Adjust path as needed
+import { API_ENDPOINTS } from "../../config/apiconfig";
 
 function AccountTypePage() {
   const [accountTypes, setAccountTypes] = useState([]);
@@ -13,19 +13,15 @@ function AccountTypePage() {
   const [isActive, setIsActive] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 4; // Increased for better UX
+  const recordsPerPage = 5;
 
-  // Replace with your actual API URL
-  const apiBase = "https://localhost:7145/api/Account/AccountType";
-
-  // Fetch account types on mount
   useEffect(() => {
     fetchAccountTypes();
   }, []);
 
   const fetchAccountTypes = async () => {
     try {
-      const res = await axios.get(apiBase);
+      const res = await axios.get(API_ENDPOINTS.AccountType);
       console.log("Fetched data:", res.data);
       setAccountTypes(res.data);
     } catch (err) {
@@ -44,10 +40,10 @@ function AccountTypePage() {
 
     try {
       if (accountTypeId) {
-        await axios.put(`${apiBase}/${accountTypeId}`, payload);
+        await axios.put(`${API_ENDPOINTS.AccountType}/${accountTypeId}`, payload);
         toast.success("Account type updated successfully!");
       } else {
-        await axios.post(apiBase, payload);
+        await axios.post(API_ENDPOINTS.AccountType, payload);
         toast.success("Account type added successfully!");
       }
       handleCancel();
@@ -68,7 +64,7 @@ function AccountTypePage() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
     try {
-      await axios.delete(`${apiBase}/${id}`);
+      await axios.delete(`${API_ENDPOINTS.AccountType}/${id}`);
       toast.success("Deleted successfully!");
       fetchAccountTypes();
     } catch (err) {
@@ -98,6 +94,7 @@ function AccountTypePage() {
     indexOfFirstRecord,
     indexOfLastRecord
   );
+  const totalPages = Math.ceil(filteredAccountTypes.length / recordsPerPage);
 
   // Reset to page 1 when search changes
   const handleSearchChange = (e) => {
@@ -109,6 +106,27 @@ function AccountTypePage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [accountTypes]);
+
+  // ✅ BUILT-IN PAGINATION FUNCTIONS
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
 
   return (
     <div className="accounttype-container">
@@ -205,12 +223,50 @@ function AccountTypePage() {
             </tbody>
           </table>
 
-          <Pagination
-            totalRecords={filteredAccountTypes.length}
-            recordsPerPage={recordsPerPage}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-          />
+          {/* ✅ BUILT-IN PAGINATION COMPONENT */}
+          {totalPages > 1 && (
+            <div className="pagination-wrapper mt-4">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="text-muted small">
+                  Showing {indexOfFirstRecord + 1} to {Math.min(indexOfLastRecord, filteredAccountTypes.length)} of {filteredAccountTypes.length} entries
+                </div>
+                <nav aria-label="Page navigation">
+                  <ul className="pagination mb-0">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                    </li>
+
+                    {getPageNumbers().map(number => (
+                      <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(number)}
+                        >
+                          {number}
+                        </button>
+                      </li>
+                    ))}
+
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

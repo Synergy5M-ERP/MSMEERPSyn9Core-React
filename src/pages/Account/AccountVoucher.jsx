@@ -88,7 +88,7 @@ function AccountVoucher() {
             const res = await fetch(API_ENDPOINTS.VoucherType);
             const json = await res.json();
             //setVoucherTypes(normalize(json));
-            setVoucherTypes(Array.isArray(json) ? json : []); // FIXED
+            setVoucherTypes(Array.isArray(json) ? json : []); 
         } catch (err) {
             toast.error("Failed to load voucher types");
         }};

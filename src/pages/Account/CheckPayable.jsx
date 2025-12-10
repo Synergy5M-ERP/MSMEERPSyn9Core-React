@@ -28,7 +28,7 @@ const CheckPayable = () => {
     paymentDue: "",
     status: "",
     totalAmount: 0,
-    totalTaxAmount: 0,
+    taxAmount: 0,
     grandTotal: 0,
   });
 
@@ -86,7 +86,7 @@ const CheckPayable = () => {
 
     const selectedItems = tableData.filter(row => row.billCheck === true);
     console.log("🔍 Validation found selected items:", selectedItems.length);
-    
+
     if (selectedItems.length === 0) {
       toast.error(`Please select at least one item using Bill Check checkbox (0/${tableData.length} selected)`);
       return false;
@@ -141,6 +141,7 @@ const CheckPayable = () => {
     }
     try {
       const res = await fetch(`${API_ENDPOINTS.GetGRNNumbersBySeller}?sellerName=${sellerName}`);
+      console.log(res)
       const data = await safeJson(res);
       setGrnNumbers(data.data || []);
     } catch {
@@ -148,76 +149,284 @@ const CheckPayable = () => {
     }
   };
 
-// --- 1. Adjust fetchGRNTableData to ADD items from multiple GRNs ---
+  // --- 1. Adjust fetchGRNTableData to ADD items from multiple GRNs ---
 
-const fetchGRNTableData = async (grnId) => {
-  if (!grnId) return;
+  const fetchGRNTableData = async (grnId) => {
+    if (!grnId) return;
 
-  try {
-    setLoading(true);
-    const res = await fetch(`${API_ENDPOINTS.GetGRNDetails}?grnId=${grnId}`);
-    const data = await safeJson(res);
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_ENDPOINTS.GetGRNDetails}?grnId=${grnId}`);
+      const data = await safeJson(res);
 
-    if (!data.success || !data.data?.items) {
-      toast.warning("No items found for this GRN");
-      return;
-    }
-
-    // Prepare new items with unique IDs to avoid collisions
-    const newItems = data.data.items.map((item, index) => ({
-      id: `${grnId}-${item.itemName}-${index}`,
-      itemName: item.itemName || "",
-      grade: item.grade || "",
-      itemCode: item.itemCode || "",
-      receivedQty: item.receivedQty || 0,
-      approvedQty: item.acceptedQty || 0,
-      damagedQty: item.rejectedQty || 0,
-      receivedUnit: item.receivedUnit || "pcs",
-      cgst: item.taxType === "CGST" ? item.taxRate || 0 : 0,
-      sgst: item.taxType === "SGST" ? item.taxRate || 0 : 0,
-      igst: item.taxType === "IGST" ? item.taxRate || 0 : 0,
-      rate: item.rate || 0,
-      taxType: item.taxType || "",
-      billCheck: false,
-      isSelected: false,
-      totalTaxValue: 0,
-      totalItemValue: 0,
-      billItemValue: 0
-    }));
-
-    // Calculate totals for new items
-    const itemsWithTotals = newItems.map((row) => {
-      const receivedQty = parseFloat(row.receivedQty) || 0;
-      const cgst = parseFloat(row.cgst) || 0;
-      const sgst = parseFloat(row.sgst) || 0;
-      const igst = parseFloat(row.igst) || 0;
-      const rate = parseFloat(row.rate) || 0;
-      return {
-        ...row,
-        totalTaxValue: (cgst + sgst + igst) * receivedQty,
-        totalItemValue: receivedQty * rate,
-        billItemValue: (receivedQty * rate) + ((cgst + sgst + igst) * receivedQty),
-      };
-    });
-
-    setTableData(prevData => {
-      // Merge avoiding duplicates by IDs
-      const existingIds = new Set(prevData.map(item => item.id));
-      const merged = [...prevData];
-      for (const item of itemsWithTotals) {
-        if (!existingIds.has(item.id)) {
-          merged.push(item);
-        }
+      if (!data.success || !data.data?.items) {
+        toast.warning("No items found for this GRN");
+        return;
       }
-      updateGrandTotals(merged);
-      return merged;
+
+      // Prepare new items with unique IDs to avoid collisions
+      // const newItems = data.data.items.map((item, index) => ({
+      //   id: `${grnId}-${item.itemName}-${index}`,
+      //   itemName: item.itemName || "",
+      //   grade: item.grade || "",
+      //   itemCode: item.itemCode || "",
+      //   receivedQty: item.receivedQty || 0,
+      //   approvedQty: item.acceptedQty || 0,
+      //   damagedQty: item.rejectedQty || 0,
+      //   receivedUnit: item.receivedUnit || "pcs",
+      //   cgst: item.taxType === "CGST" ? item.taxRate || 0 : 0,
+      //   sgst: item.taxType === "SGST" ? item.taxRate || 0 : 0,
+      //   igst: item.taxType === "IGST" ? item.taxRate || 0 : 0,
+      //   rate: item.rate || 0,
+      //   taxType: item.taxType || "",
+      //   billCheck: false,
+      //   isSelected: false,
+      //   taxAmount: 0,
+      //   totalItemValue: 0,
+      //   billItemValue: 0
+      // }));
+      const newItems = data.data.items.map((item, index) => {
+        // Handle CGST_SGST tax type properly
+        const taxRate = Number(item.taxRate) ?? 0;
+        let cgst = 0, sgst = 0, igst = 0;
+
+        if (item.taxType === "CGST_SGST") {
+          cgst = taxRate / 2;  // Split equally
+          sgst = taxRate / 2;
+        } else if (item.taxType === "CGST") {
+          cgst = taxRate;
+        } else if (item.taxType === "SGST") {
+          sgst = taxRate;
+        } else if (item.taxType === "IGST") {
+          igst = taxRate;
+        }
+
+        return {
+          id: item.g_Id ?? `${grnId}-${item.itemName}-${index}`,
+          gId: item.g_Id,
+          itemName: item.itemName ?? "",
+          // Backend doesn't have these - set defaults or fetch from elsewhere
+          grade: item.grade ?? "",
+          itemCode: item.itemCode ?? "",
+          receivedQty: Number(item.receivedQty) ?? 0,
+          approvedQty: Number(item.acceptedQty) ?? 0,
+          damagedQty: Number(item.rejectedQty) ?? 0,
+          rate: Number(item.rate) ?? 0,
+          taxType: item.taxType ?? "",
+          taxRate: taxRate,
+          backendTaxAmount: Number(item.taxAmount) ?? 0,
+          backendNetAmount: Number(item.netAmount) ?? 0,
+          receivedUnit: item.receivedUnit || "pcs",
+          cgst, sgst, igst,  // Now properly split
+          billCheck: false,
+          isSelected: false,
+          taxAmount: 0,
+          totalItemValue: 0,
+          billItemValue: 0
+        };
+      });
+
+      console.log(newItems);
+
+      // Calculate totals for new items
+      const itemsWithTotals = newItems.map((row) => {
+        const receivedQty = parseFloat(row.receivedQty) || 0;
+        const cgst = parseFloat(row.cgst) || 0;
+        const sgst = parseFloat(row.sgst) || 0;
+        const igst = parseFloat(row.igst) || 0;
+        const rate = parseFloat(row.rate) || 0;
+        return {
+          ...row,
+          taxAmount: (cgst + sgst + igst) * receivedQty,
+          totalItemValue: receivedQty * rate,
+          billItemValue: (receivedQty * rate) + ((cgst + sgst + igst) * receivedQty),
+        };
+      });
+
+      setTableData(prevData => {
+        // Merge avoiding duplicates by IDs
+        const existingIds = new Set(prevData.map(item => item.id));
+        const merged = [...prevData];
+        for (const item of itemsWithTotals) {
+          if (!existingIds.has(item.id)) {
+            merged.push(item);
+          }
+        }
+        updateGrandTotals(merged);
+        return merged;
+      });
+
+      // Also update formData header from last GRN loaded(optional)
+      const header = data.data.header;
+      setFormData(fd => ({
+        ...fd,
+        grnNumber: "", // Clear this if multiple loaded
+        grnDate: "",
+        poNumber: "",
+        poDate: "",
+        invoiceNumber: "",
+        invoiceDate: "",
+        vehicleNo: "",
+        TransporterName: "",
+        paymentDue: "",
+        status: "",
+        ...(
+          header ? {
+            grnNumber: header.grnNumber || "",
+            grnDate: header.grN_Date ? header.grN_Date.split("T")[0] : "",
+            poNumber: header.poNumber || "",
+            poDate: header.poDate ? header.poDate.split("T")[0] : "",
+            invoiceNumber: header.invoice_NO || "",
+            invoiceDate: header.invoice_Date ? header.invoice_Date.split("T")[0] : "",
+            vehicleNo: header.vehicle_No || "",
+            TransporterName: header.TransporterName || "",
+            paymentDue: header.paymentDue || "",
+            status: "Received"
+          } : {}
+        )
+      }));
+
+      setEnteredGrnNumber(grnId);
+
+    } catch (err) {
+      toast.error("Unable to load GRN data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- 2. Save all tableData items, checked or not ---
+
+  // ✅ COMPLETE handleSave WITH AUTO-CLEAR AFTER SUCCESS
+  const handleSave = async () => {
+    if (!validateForm()) return;
+
+    const TOAST_ID = "saving-grn";
+
+    // Show loading toast
+    toast.loading("Saving GRN data...", {
+      toastId: TOAST_ID,
+      closeOnClick: false,
+      draggable: false,
     });
 
-    // Also update formData header from last GRN loaded(optional)
-    const header = data.data.header;
-    setFormData(fd => ({
-      ...fd,
-      grnNumber: "", // Clear this if multiple loaded
+    // ✅ FIXED PAYLOAD - Matches backend model exactly
+    const payload = {
+      VendorId: Number(formData.vendorId) || 0,
+      SellerName: formData.sellerName,
+      grnNumber: formData.grnNumber,
+      grnDate: formData.grnDate,
+      poNumber: formData.poNumber,
+      poDate: formData.poDate,
+      invoiceNumber: formData.invoiceNumber,
+      invoiceDate: formData.invoiceDate,
+      vehicleNo: formData.vehicleNo,
+      TransporterName: formData.TransporterName,
+      paymentDue: formData.paymentDue,
+      status: formData.status || "Received",
+      totalAmount: formData.totalAmount,
+      taxAmount: formData.taxAmount,
+      grandAmount: formData.grandTotal,
+      Description: formData.sellerName || "Payable GRN", // ✅ Backend required
+      Items: tableData.map(item => ({  // ✅ Capital 'I' for Items array
+        Description: `${item.itemName} - ${item.grade}`, // ✅ Backend required
+        itemName: item.itemName,
+        grade: item.grade,
+        itemCode: item.itemCode,
+        receivedQty: parseFloat(item.receivedQty) || 0,
+        approvedQty: parseFloat(item.approvedQty) || 0,
+        damagedQty: parseFloat(item.damagedQty) || 0,
+        unit: item.receivedUnit || "pcs",
+        TaxType: item.taxType || "",
+        cgst: parseFloat(item.cgst) || 0,
+        sgst: parseFloat(item.sgst) || 0,
+        igst: parseFloat(item.igst) || 0,
+        rate: parseFloat(item.rate) || 0,
+        taxAmount: parseFloat(item.taxAmount) || 0,
+        totalItemValue: parseFloat(item.totalItemValue) || 0,
+        billItemValue: parseFloat(item.billItemValue) || 0,
+        billCheck: item.billCheck === true, // ✅ Saves checkbox state to DB
+        TransporterName: formData.TransporterName || ""
+      }))
+    };
+
+    console.log("💾 Sending payload to backend:", payload);
+
+    try {
+      setSaveLoading(true);
+
+      const response = await fetch(API_ENDPOINTS.SaveGRN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await safeJson(response);
+
+      if (!response.ok) {
+        // Detailed error parsing
+        let errorMsg = `HTTP ${response.status}`;
+
+        if (result?.errors) {
+          const errorsArr = [];
+          for (const [field, msgs] of Object.entries(result.errors)) {
+            errorsArr.push(`${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`);
+          }
+          errorMsg += ` - ${errorsArr.join('; ')}`;
+        } else {
+          errorMsg += `: ${result?.message || result?.error || 'Validation failed'}`;
+        }
+
+        toast.update(TOAST_ID, {
+          render: errorMsg,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
+        console.error("❌ Save error:", result);
+        return;
+      }
+
+      // ✅ SUCCESS - Show confirmation + AUTO CLEAR FORM
+      const successMsg = `✅ Saved ${tableData.length} items successfully!`;
+      toast.update(TOAST_ID, {
+        render: successMsg,
+        type: "success",
+        isLoading: false,
+        autoClose: 2000, // Short delay before auto-clear
+      });
+
+      // ✅ AUTO-CLEAR EVERYTHING AFTER 2 SECONDS (after toast shows)
+      setTimeout(() => {
+        clearForm();
+        toast.info("🆕 Form cleared - ready for new data!", {
+          toastId: "form-cleared",
+          autoClose: 2000
+        });
+      }, 2200); // Slightly longer than toast duration
+
+    } catch (error) {
+      console.error("🌐 Network error:", error);
+      toast.update(TOAST_ID, {
+        render: "🌐 Network error! Please check your connection.",
+        type: "error",
+        isLoading: false,
+        autoClose: 4000,
+      });
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  // ✅ NEW: CLEAR FORM FUNCTION
+  const clearForm = () => {
+    setFormData({
+      vendorId: "",
+      sellerName: "",
+      grnNumber: "",
       grnDate: "",
       poNumber: "",
       poDate: "",
@@ -227,183 +436,17 @@ const fetchGRNTableData = async (grnId) => {
       TransporterName: "",
       paymentDue: "",
       status: "",
-      ...(
-        header ? {
-          grnNumber: header.grnNumber || "",
-          grnDate: header.grN_Date ? header.grN_Date.split("T")[0] : "",
-          poNumber: header.poNumber || "",
-          poDate: header.poDate ? header.poDate.split("T")[0] : "",
-          invoiceNumber: header.invoice_NO || "",
-          invoiceDate: header.invoice_Date ? header.invoice_Date.split("T")[0] : "",
-          vehicleNo: header.vehicle_No || "",
-          TransporterName: header.TransporterName || "",
-          paymentDue: header.paymentDue || "",
-          status: "Received"
-        } : {}
-      )
-    }));
-
-    setEnteredGrnNumber(grnId);
-
-  } catch (err) {
-    toast.error("Unable to load GRN data");
-  } finally {
+      totalAmount: 0,
+      taxAmount: 0,
+      grandTotal: 0,
+    });
+    setTableData([]);
+    setSelectedGrn("");
+    setGrnNumbers([]);
+    setEnteredGrnNumber("");
     setLoading(false);
-  }
-};
-
-// --- 2. Save all tableData items, checked or not ---
-
-// ✅ COMPLETE handleSave WITH AUTO-CLEAR AFTER SUCCESS
-const handleSave = async () => {
-  if (!validateForm()) return;
-
-  const TOAST_ID = "saving-grn";
-
-  // Show loading toast
-  toast.loading("Saving GRN data...", {
-    toastId: TOAST_ID,
-    closeOnClick: false,
-    draggable: false,
-  });
-
-  // ✅ FIXED PAYLOAD - Matches backend model exactly
-  const payload = {
-    VendorId: Number(formData.vendorId) || 0,
-    SellerName: formData.sellerName,
-    grnNumber: formData.grnNumber,
-    grnDate: formData.grnDate,
-    poNumber: formData.poNumber,
-    poDate: formData.poDate,
-    invoiceNumber: formData.invoiceNumber,
-    invoiceDate: formData.invoiceDate,
-    vehicleNo: formData.vehicleNo,
-    TransporterName: formData.TransporterName,
-    paymentDue: formData.paymentDue,
-    status: formData.status || "Received",
-    totalAmount: formData.totalAmount,
-    totalTaxAmount: formData.totalTaxAmount,
-    grandAmount: formData.grandTotal,
-    Description: formData.sellerName || "Payable GRN", // ✅ Backend required
-    Items: tableData.map(item => ({  // ✅ Capital 'I' for Items array
-      Description: `${item.itemName} - ${item.grade}`, // ✅ Backend required
-      itemName: item.itemName,
-      grade: item.grade,
-      itemCode: item.itemCode,
-      receivedQty: parseFloat(item.receivedQty) || 0,
-      approvedQty: parseFloat(item.approvedQty) || 0,
-      damagedQty: parseFloat(item.damagedQty) || 0,
-      unit: item.receivedUnit || "pcs",
-      TaxType: item.taxType || "",
-      cgst: parseFloat(item.cgst) || 0,
-      sgst: parseFloat(item.sgst) || 0,
-      igst: parseFloat(item.igst) || 0,
-      rate: parseFloat(item.rate) || 0,
-      totalTaxValue: parseFloat(item.totalTaxValue) || 0,
-      totalItemValue: parseFloat(item.totalItemValue) || 0,
-      billItemValue: parseFloat(item.billItemValue) || 0,
-      billCheck: item.billCheck === true, // ✅ Saves checkbox state to DB
-      TransporterName: formData.TransporterName || ""
-    }))
-  };
-
-  console.log("💾 Sending payload to backend:", payload);
-
-  try {
-    setSaveLoading(true);
-
-    const response = await fetch(API_ENDPOINTS.SaveGRN, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const result = await safeJson(response);
-
-    if (!response.ok) {
-      // Detailed error parsing
-      let errorMsg = `HTTP ${response.status}`;
-      
-      if (result?.errors) {
-        const errorsArr = [];
-        for (const [field, msgs] of Object.entries(result.errors)) {
-          errorsArr.push(`${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`);
-        }
-        errorMsg += ` - ${errorsArr.join('; ')}`;
-      } else {
-        errorMsg += `: ${result?.message || result?.error || 'Validation failed'}`;
-      }
-
-      toast.update(TOAST_ID, {
-        render: errorMsg,
-        type: "error",
-        isLoading: false,
-        autoClose: 5000,
-      });
-      console.error("❌ Save error:", result);
-      return;
-    }
-
-    // ✅ SUCCESS - Show confirmation + AUTO CLEAR FORM
-    const successMsg = `✅ Saved ${tableData.length} items successfully!`;
-    toast.update(TOAST_ID, {
-      render: successMsg,
-      type: "success",
-      isLoading: false,
-      autoClose: 2000, // Short delay before auto-clear
-    });
-
-    // ✅ AUTO-CLEAR EVERYTHING AFTER 2 SECONDS (after toast shows)
-    setTimeout(() => {
-      clearForm();
-      toast.info("🆕 Form cleared - ready for new data!", {
-        toastId: "form-cleared",
-        autoClose: 2000
-      });
-    }, 2200); // Slightly longer than toast duration
-
-  } catch (error) {
-    console.error("🌐 Network error:", error);
-    toast.update(TOAST_ID, {
-      render: "🌐 Network error! Please check your connection.",
-      type: "error",
-      isLoading: false,
-      autoClose: 4000,
-    });
-  } finally {
     setSaveLoading(false);
-  }
-};
-
-// ✅ NEW: CLEAR FORM FUNCTION
-const clearForm = () => {
-  setFormData({
-    vendorId: "",
-    sellerName: "",
-    grnNumber: "",
-    grnDate: "",
-    poNumber: "",
-    poDate: "",
-    invoiceNumber: "",
-    invoiceDate: "",
-    vehicleNo: "",
-    TransporterName: "",
-    paymentDue: "",
-    status: "",
-    totalAmount: 0,
-    totalTaxAmount: 0,
-    grandTotal: 0,
-  });
-  setTableData([]);
-  setSelectedGrn("");
-  setGrnNumbers([]);
-  setEnteredGrnNumber("");
-  setLoading(false);
-  setSaveLoading(false);
-};
+  };
 
 
 
@@ -439,7 +482,7 @@ const clearForm = () => {
   // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
   const handleBillCheckChange = useCallback((index) => {
     console.log("🔄 Toggling billCheck at index:", index);
-    
+
     setTableData(prevTableData => {
       const newTableData = prevTableData.map((row, i) => {
         if (i === index) {
@@ -453,7 +496,7 @@ const clearForm = () => {
         }
         return row;
       });
-      
+
       updateGrandTotals(newTableData);
       return newTableData;
     });
@@ -477,9 +520,9 @@ const clearForm = () => {
       const igst = parseFloat(row.igst) || 0;
       const rate = parseFloat(row.rate) || 0;
 
-      newData[index].totalTaxValue = (cgst + sgst + igst) * receivedQty;
+      newData[index].taxAmount = (cgst + sgst + igst) * receivedQty;
       newData[index].totalItemValue = receivedQty * rate;
-      newData[index].billItemValue = newData[index].totalItemValue + newData[index].totalTaxValue;
+      newData[index].billItemValue = newData[index].totalItemValue + newData[index].taxAmount;
 
       updateGrandTotals(newData);
       return newData;
@@ -490,13 +533,13 @@ const clearForm = () => {
   const updateGrandTotals = (data) => {
     const selectedItems = data.filter(row => row.billCheck === true);
     const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
-    const totalTaxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalTaxValue) || 0), 0);
-    const grandTotal = totalAmount + totalTaxAmount;
+    const taxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.taxAmount) || 0), 0);
+    const grandTotal = totalAmount + taxAmount;
 
     setFormData(fd => ({
       ...fd,
       totalAmount,
-      totalTaxAmount,
+      taxAmount,
       grandTotal,
     }));
   };
@@ -508,7 +551,7 @@ const clearForm = () => {
     }
   }, [tableData]);
 
-  
+
 
   // ✅ RESET FORM
   const handleCancel = () => {
@@ -535,7 +578,7 @@ const clearForm = () => {
           paymentDue: "",
           status: "",
           totalAmount: 0,
-          totalTaxAmount: 0,
+          taxAmount: 0,
           grandTotal: 0,
         });
         setTableData([]);
@@ -558,190 +601,190 @@ const clearForm = () => {
     <div>
       <ToastContainer position="top-center" theme="colored" />
       {/* <div style={{ background: "white", padding: "25px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}> */}
-      
-          <div style={{ background: "white", padding: "25px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-            
-            {/* FORM FIELDS */}
-            <div className="row mb-3">
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> Seller Name</label>
-                <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
-                  <option value="">Select Seller</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> GRN Number</label>
-                <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
-                  <option value="">Select GRN No.</option>
-                  {grnNumbers.map((g) => (
-                    <option key={g.id} value={String(g.id)} disabled={String(g.id) === enteredGrnNumber}>
-                      {g.number || g.grnNumber || g.GRN_NO} {String(g.id) === enteredGrnNumber ? "(Selected)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> GRN Date</label>
-                <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> Invoice No</label>
-                <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold">Invoice Date</label>
-                <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
-              </div>
-            </div>
 
-            <div className="row mb-3">
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> PO Number</label>
-                <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> PO Date</label>
-                <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> Vehicle No</label>
-                <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> Transporter Name</label>
-                <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required />
-              </div>
-              <div className="col mb-3">
-                <label className="form-label text-primary fw-semibold"> Payment Due</label>
-                <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
-              </div>
-            </div>
+      <div style={{ background: "white", padding: "25px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
 
-        
-
-            {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
-            <div className="table-responsive">
-              <table className="table table-bordered align-middle mt-3">
-                <thead>
-                  <tr style={{ backgroundColor: "#f0f6ff" }}>
-                    <th className="text-primary">Item Name</th>
-                    <th className="text-primary">Grade</th>
-                    <th className="text-primary">Item Code</th>
-                    <th className="text-primary">Received Qty</th>
-                    <th className="text-primary">Approved Qty</th>
-                    <th className="text-primary">Damaged Qty</th>
-                    <th className="text-primary">CGST</th>
-                    <th className="text-primary">SGST</th>
-                    <th className="text-primary">IGST</th>
-                    <th className="text-primary">Total Tax</th>
-                    <th className="text-primary">Item Value</th>
-                    <th className="text-primary">Bill Check</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan={13} className="text-center"><LoadingSpinner /></td></tr>
-                  ) : tableData.length === 0 ? (
-                    <tr><td colSpan={13} className="text-center text-muted">Select GRN to load items</td></tr>
-                  ) : (
-                    tableData.map((row, index) => (
-                      <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
-                        <td>{row.itemName}</td>
-                        <td>{row.grade}</td>
-                        <td>{row.itemCode}</td>
-                        <td>
-                          <input 
-                            type="number" 
-                            className="form-control form-control-sm"
-                            value={row.receivedQty || ""}
-                            onChange={handleQuantityChange(index, 'receivedQty')}
-                            min="0"
-                            step="0.01"
-                          />
-                        </td>
-                        <td>
-                          <input 
-                            type="number" 
-                            className="form-control form-control-sm"
-                            value={row.approvedQty || ""}
-                            onChange={handleQuantityChange(index, 'approvedQty')}
-                            min="0"
-                            step="0.01"
-                          />
-                        </td>
-                        <td>
-                          <input 
-                            type="number" 
-                            className="form-control form-control-sm"
-                            value={row.damagedQty || ""}
-                            onChange={handleQuantityChange(index, 'damagedQty')}
-                            min="0"
-                            step="0.01"
-                          />
-                        </td>
-                        <td>{(row.cgst || 0).toFixed(2)}%</td>
-                        <td>{(row.sgst || 0).toFixed(2)}%</td>
-                        <td>{(row.igst || 0).toFixed(2)}%</td>
-                        <td className="fw-bold text-success">₹{(row.totalTaxValue || 0).toFixed(2)}</td>
-                        <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td>
-                        <td style={{ textAlign: "center", width: "100px" }}>
-                          <div className="form-check">
-                            <input
-                              type="checkbox"
-                              id={`billCheck-${row.id}`}
-                              key={`billCheck-${row.id}`}
-                              checked={row.billCheck === true}
-                              onChange={() => handleBillCheckChange(index)}
-                              className="form-check-input"
-                            />
-                            <label 
-                              htmlFor={`billCheck-${row.id}`}
-                              className="form-check-label ms-1"
-                              style={{ cursor: "pointer", fontSize: "14px" }}
-                            >
-                              Bill
-                            </label>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-
-            {/* BUTTONS */}
-            <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
-              <button
-                onClick={handleSave}
-                disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-                className="btn btn-primary btn-lg px-5 py-2 position-relative"
-                style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
-              >
-                {saveLoading ? (
-                  <>
-                    <Loader2 className="animate-spin me-2" size={20} />
-                    Saving...
-                  </>
-                ) : (
-                  `Save `
-                )}
-              </button>
-              <button
-                className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
-                style={{ borderRadius: "8px" }}
-                onClick={handleCancel}
-                disabled={saveLoading}
-              >
-                Reset
-              </button>
-            </div>
+        {/* FORM FIELDS */}
+        <div className="row mb-3">
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> Seller Name</label>
+            <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
+              <option value="">Select Seller</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
           </div>
-      
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> GRN Number</label>
+            <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
+              <option value="">Select GRN No.</option>
+              {grnNumbers.map((g) => (
+                <option key={g.id} value={String(g.id)} disabled={String(g.id) === enteredGrnNumber}>
+                  {g.number || g.grnNumber || g.GRN_NO} {String(g.id) === enteredGrnNumber ? "(Selected)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> GRN Date</label>
+            <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> Invoice No</label>
+            <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold">Invoice Date</label>
+            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
+          </div>
+        </div>
+
+        <div className="row mb-3">
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> PO Number</label>
+            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> PO Date</label>
+            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> Vehicle No</label>
+            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> Transporter Name</label>
+            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required />
+          </div>
+          <div className="col mb-3">
+            <label className="form-label text-primary fw-semibold"> Payment Due</label>
+            <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
+          </div>
+        </div>
+
+
+
+        {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
+       <div className="table-responsive">
+  <table className="table table-bordered align-middle mt-3">
+    <thead>
+      <tr style={{ backgroundColor: "#f0f6ff" }}>
+        <th className="text-primary">Item Name</th>
+        <th className="text-primary">Grade</th>
+        <th className="text-primary">Item Code</th>
+        <th className="text-primary">Received Qty</th>
+        <th className="text-primary">Approved Qty</th>
+        <th className="text-primary">Damaged Qty</th>
+        <th className="text-primary">Rate (₹)</th>
+        <th className="text-primary">CGST (%)</th>
+        <th className="text-primary">SGST (%)</th>
+        <th className="text-primary">IGST (%)</th>
+        <th className="text-primary">Total Tax (₹)</th>
+        <th className="text-primary">Total Amount (₹)</th>
+        {/* <th className="text-primary">Calculated Total (₹)</th> */}
+        <th className="text-primary">Bill Check</th>
+      </tr>
+    </thead>
+    <tbody>
+      {loading ? (
+        <tr><td colSpan={14} className="text-center p-5"><LoadingSpinner /></td></tr>
+      ) : tableData.length === 0 ? (
+        <tr><td colSpan={14} className="text-center text-muted py-5">Select GRN to load items</td></tr>
+      ) : (
+        tableData.map((row, index) => (
+          <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
+            <td><strong>{row.itemName}</strong></td>
+            <td>{row.grade || '-'}</td>
+            <td>{row.itemCode || '-'}</td>
+            <td>
+              <input
+                type="number"
+                className="form-control form-control-sm"
+                value={row.receivedQty || ""}
+                onChange={handleQuantityChange(index, 'receivedQty')}
+                min="0" step="0.01"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                className="form-control form-control-sm"
+                value={row.approvedQty || ""}
+                onChange={handleQuantityChange(index, 'approvedQty')}
+                min="0" step="0.01"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                className="form-control form-control-sm"
+                value={row.damagedQty || ""}
+                onChange={handleQuantityChange(index, 'damagedQty')}
+                min="0" step="0.01"
+              />
+            </td>
+            <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
+            <td>{(row.cgst || 0).toFixed(2)}%</td>
+            <td>{(row.sgst || 0).toFixed(2)}%</td>
+            <td>{(row.igst || 0).toFixed(2)}%</td>
+            <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
+            <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
+            {/* <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td> */}
+            <td style={{ textAlign: "center", width: "100px" }}>
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  id={`billCheck-${row.id}`}
+                  checked={row.billCheck === true}
+                  onChange={() => handleBillCheckChange(index)}
+                  className="form-check-input"
+                />
+                <label
+                  htmlFor={`billCheck-${row.id}`}
+                  className="form-check-label ms-1"
+                  style={{ cursor: "pointer", fontSize: "14px" }}
+                >
+                  Bill
+                </label>
+              </div>
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
+
+
+        {/* BUTTONS */}
+        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
+          <button
+            onClick={handleSave}
+            disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
+            className="btn btn-primary btn-lg px-5 py-2 position-relative"
+            style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
+          >
+            {saveLoading ? (
+              <>
+                <Loader2 className="animate-spin me-2" size={20} />
+                Saving...
+              </>
+            ) : (
+              `Save `
+            )}
+          </button>
+          <button
+            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
+            style={{ borderRadius: "8px" }}
+            onClick={handleCancel}
+            disabled={saveLoading}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
       {/* </div> */}
     </div>
   );

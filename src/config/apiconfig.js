@@ -1,5 +1,5 @@
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-// const BASE_URL = "https://localhost:7145/api";
+ //const BASE_URL = "https://localhost:7145/api";
 
 export const API_ENDPOINTS = {
   Ledger: `${BASE_URL}/AccountLedger/`,
@@ -14,7 +14,7 @@ export const API_ENDPOINTS = {
   AccountBankDetailsSave: `${BASE_URL}/AccountBankDetails`,
 
   Invoices: `${BASE_URL}/Invoices/`,
-  Items: `${BASE_URL}/AccountBankDetails/`,
+  AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
   CreditNote: `${BASE_URL}/credit-note`,
   DebitNote: `${BASE_URL}/Debit-note`,
@@ -26,18 +26,14 @@ export const API_ENDPOINTS = {
   GetGRNNumbersBySeller: `${BASE_URL}/GRN/GetGRNNumbersBySeller`,
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
-//  //Ledger: `${BASE_URL}/AccountLedger`,
-//   AllVendor: `${API_BASE_URL}/GetAllVendorsApi`,
-//   DeleteItem: `${API_BASE_URL}/DeleteItemApi`,
-//   UpdateVendor: `${API_BASE_URL}/UpdateVendorApi`,
 
   Voucher: `${BASE_URL}/AccountVoucher`,
-  Vendors: `${BASE_URL}/vendors/`, 
+  Vendors: `${BASE_URL}/vendors`,
   PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
   SalesInvoices: `${BASE_URL}/SalesInvoices`,
   GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
   GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
   PaymentMode: `${BASE_URL}/PaymentMode`,
   Status: `${BASE_URL}/Status`,
-
+ 
 };

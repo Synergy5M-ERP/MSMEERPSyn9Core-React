@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SwamiSamarthSyn8.Models;
+using SwamiSamarthSyn8.Models.Accounts;
 
 namespace SwamiSamarthSyn8.Data;
 
@@ -16,6 +16,11 @@ public partial class SwamiSamarthDbContext : DbContext
     {
     }
     //---------Accounts-------//
+
+    public virtual DbSet<AccountPaymentMode> AccountPaymentMode { get; set; }
+    public virtual DbSet<AccountStatus> AccountStatus { get; set; }
+    public virtual DbSet<AccountVoucherDetails> AccountVoucherDetails { get; set; }
+    public virtual DbSet<AccountVoucher> AccountVoucher { get; set; }
     public virtual DbSet<AccountJournal> AccountJournal { get; set; }
     public virtual DbSet<AccountVoucherType> AccountVoucherType { get; set; }
     public virtual DbSet<AccountSubLedger> AccountSubLedger { get; set; }
@@ -722,6 +727,12 @@ public partial class SwamiSamarthDbContext : DbContext
             entity.HasKey(e => e.id).HasName("PK_UserLogin");
 
             entity.Property(e => e.password).IsFixedLength();
+        });
+
+        modelBuilder.Entity<AccountPaymentMode>(entity =>
+        {
+            entity.ToTable("AccountPaymentMode");   // MUST match SQL table
+            entity.HasKey(e => e.PaymentModeId);    // explicitly tell EF the PK
         });
 
         OnModelCreatingPartial(modelBuilder);

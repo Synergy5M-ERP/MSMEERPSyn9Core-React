@@ -1,6 +1,6 @@
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 // const BASE_URL = "https://localhost:7145/api";
-const API_BASE_URL = 'http://localhost:49980/Vendor';
+
 export const API_ENDPOINTS = {
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -21,16 +21,23 @@ export const API_ENDPOINTS = {
   GetSellers: `${BASE_URL}/GRN/suppliers`,
 
   Journal: `${BASE_URL}/journals`,
-  Voucher: `${BASE_URL}/vouchers`,
-  Voucher: `${BASE_URL}/vouchers`,
   Account: `${BASE_URL}/Account/`,
   GetSellers: `${BASE_URL}/GRN/suppliers`,
   GetGRNNumbersBySeller: `${BASE_URL}/GRN/GetGRNNumbersBySeller`,
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
- Ledger: `${BASE_URL}/AccountLedger`,
-  AllVendor: `${API_BASE_URL}/GetAllVendorsApi`,
-  DeleteItem: `${API_BASE_URL}/DeleteItemApi`,
-  UpdateVendor: `${API_BASE_URL}/UpdateVendorApi`
+//  //Ledger: `${BASE_URL}/AccountLedger`,
+//   AllVendor: `${API_BASE_URL}/GetAllVendorsApi`,
+//   DeleteItem: `${API_BASE_URL}/DeleteItemApi`,
+//   UpdateVendor: `${API_BASE_URL}/UpdateVendorApi`,
+
+  Voucher: `${BASE_URL}/AccountVoucher`,
+  Vendors: `${BASE_URL}/vendors/`, 
+  PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
+  SalesInvoices: `${BASE_URL}/SalesInvoices`,
+  GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
+  GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
+  PaymentMode: `${BASE_URL}/PaymentMode`,
+  Status: `${BASE_URL}/Status`,
 
 };

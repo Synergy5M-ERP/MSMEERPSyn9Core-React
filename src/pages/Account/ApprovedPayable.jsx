@@ -22,6 +22,7 @@ const ApprovedPayable = () => {
   const [showItemModal, setShowItemModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+const [grnList, setGrnList] = useState([]);
 
   const GRNS_PER_PAGE = 2;
 
@@ -32,218 +33,126 @@ const ApprovedPayable = () => {
       return {};
     }
   };
+const loadSellers = useCallback(async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.GetgrnSellers);
 
-  const loadSellers = useCallback(async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.GetSellers);
-      if (!res.ok) throw new Error("Failed to load sellers");
-      const data = await safeJson(res);
+    if (!res.ok) throw new Error("Failed to load sellers");
 
-      const suppliersWithIds = (data.data || []).map((name, index) => ({
-        id: index + 1,
-        name: name || `Supplier ${index + 1}`,
+    const data = await safeJson(res);
+
+    setSuppliers(data.data || []);
+  } catch (error) {
+    toast.error(error.message || "Failed to load sellers");
+  }
+}, []);
+
+
+
+const loadAllGrnsWithDetails = useCallback(async (sellerId) => {
+  try {
+    setLoading(true);
+
+    const res = await fetch(`${API_ENDPOINTS.GetGRNsBySeller}?sellerId=${sellerId}`);
+    if (!res.ok) throw new Error("Failed to load GRNs");
+
+    const data = await safeJson(res);
+
+    const grnsWithDetails = (data.data || []).map((row, index) => {
+      const header = row.header || {};
+      const items = row.items || [];
+
+      const mappedItems = items.map((it, idx) => ({
+        id: it.accountGRNDetailsId || `${header.accountGRNId}-${idx}`,
+        itemId: it.itemId,
+        itemName: it.itemName || "",
+        itemCode: it.item_Code || "",
+        grade: it.item_Grade || "",
+        receivedQty: Number(it.receivedQty || 0),
+        approvedQty: Number(it.approvedQty || 0),
+        damagedQty: Number(it.damagedQty || 0),
+        unit: it.unit || "",
+        taxType: it.taxType || "",
+        cgst: Number(it.cgst || 0),
+        sgst: Number(it.sgst || 0),
+        igst: Number(it.igst || 0),
+        totalTaxValue: Number(it.totalTaxValue || 0),
+        totalItemValue: Number(it.totalItemValue || 0),
+        billItemValue: Number(it.totalItemValue || 0) + Number(it.totalTaxValue || 0),
+        billApprove: false
       }));
-      setSuppliers(suppliersWithIds);
-    } catch (error) {
-      toast.error(error.message || "Failed to load sellers");
-      setSuppliers([
-        { id: 1, name: "Vendor A" },
-        { id: 2, name: "Vendor B" },
-      ]);
-    }
-  }, []);
 
-  const loadAllGrnsWithDetails = useCallback(async (sellerName) => {
-    try {
-      setLoading(true);
-
-      // First: get GRN list for this seller
-      const res = await fetch(
-        `${API_ENDPOINTS.GetGRNNumbersBySeller}?sellerName=${encodeURIComponent(
-          sellerName
-        )}`
-      );
-      if (!res.ok) throw new Error("Failed to load GRNs");
-      const data = await safeJson(res);
-
-      console.log("🔍 RAW GRN LIST RESPONSE:", data);
-
-      // Assume each element may either be:
-      // { header: {...}, items: [...] }
-      // or a flat header row
-      const grnsList = (data.data || []).map((raw, index) => {
-        const h = raw.header || raw;
-
-        const grnObj = {
-          grnNumber: h.grnNumber || h.GRN_NO,
-          grnId: h.id || h.GRN_ID || index,
-          grN_Date: h.grN_Date || h.date,
-          invoiceNumber: h.invoice_NO || h.invoiceNumber || "N/A",
-          invoice_Date:h.invoice_Date || "N/A",
-          poNumber: h.poNumber || "N/A",
-          poDate:  h.poDate || "N/A",
-          grandTotal: h.grandTotal || 0,
-          approvedGrandTotal: 0,
-          items: [],
-          index,
-        };
-
-        console.log("🔧 MAPPED GRN HEADER:", grnObj);
-        return grnObj;
-      });
-
-      const grnsWithDetails = await Promise.all(
-        grnsList.map(async (grn) => {
-          try {
-            // For each GRN, fetch full details (header + items)
-            const detailRes = await fetch(
-              `${API_ENDPOINTS.GetGRNDetails}?grnId=${grn.grnId}`
-            );
-            if (!detailRes.ok) return grn;
-
-            const detailData = await safeJson(detailRes);
-            console.log(`🔍 RAW GRN ${grn.grnNumber} DETAILS:`, detailData);
-
-            if (
-              detailData.success &&
-              detailData.data &&
-              Array.isArray(detailData.data.items)
-            ) {
-              const header = detailData.data.header || {};
-
-              // Optional: override header details from detail API if needed
-              const mergedGrn = {
-                ...grn,
-                grnNumber: header.grnNumber || grn.grnNumber,
-                grnId: header.id || grn.grnId,
-                grN_Date: header.grN_Date || grn.grN_Date,
-                invoiceNumber: header.invoice_NO || grn.invoiceNumber,
-                invoice_Date: header.invoice_Date || grn.invoice_Date ,
-                poNumber: header.poNumber || grn.poNumber,
-                poDate: header.invoice_Date || grn.poDate,
-              };
-
-              const mappedItems = detailData.data.items.map((item, idx) => {
-                console.log(`🔧 MAPPING RAW ITEM ${idx}:`, item);
-
-                const taxAmountNum = Number(item.taxAmount) || 0;
-                const netAmountNum = Number(item.netAmount) || 0;
-                const taxRateNum = Number(item.taxRate) || 0;
-
-                return {
-                  id: item.g_Id ?? `${mergedGrn.grnId}-${item.itemName}-${idx}`,
-                  gId: item.g_Id,
-                  itemName: item.itemName ?? "",
-                  grade: item.grade ?? "",
-                  itemCode: item.itemCode ?? "",
-                  receivedQty: Number(item.receivedQty) || 0,
-                  approvedQty: Number(item.acceptedQty) || 0,
-                  damagedQty: Number(item.rejectedQty) || 0,
-                  rate: Number(item.rate) || 0,
-                  taxType: item.taxType ?? "",
-                  taxRate: taxRateNum,
-                  backendTaxAmount: taxAmountNum,
-                  backendNetAmount: netAmountNum,
-                  TotalTaxValue: taxAmountNum,
-                  totalTaxValue: taxAmountNum,
-                  totalItemValue: netAmountNum,
-                  billItemValue: netAmountNum + taxAmountNum,
-                  billCheck: item.billCheck ?? false,
-                  billApprove: item.billApprove ?? false,
-                  cgst:
-                    item.taxType === "CGST" ? taxRateNum : 0,
-                  sgst:
-                    item.taxType === "SGST" ? taxRateNum : 0,
-                  igst:
-                    item.taxType === "IGST" ? taxRateNum : 0,
-                  receivedUnit: item.receivedUnit || "pcs",
-                  TransporterName: header.transporter || "",
-                };
-              });
-
-              console.log(
-                `✅ MAPPED ITEMS for ${mergedGrn.grnNumber}:`,
-                mappedItems
-              );
-
-              const finalGrn = {
-                ...mergedGrn,
-                items: mappedItems,
-              };
-
-              console.log(`🎯 FINAL GRN OBJECT ${mergedGrn.grnNumber}:`, finalGrn);
-              return finalGrn;
-            }
-
-            return grn;
-          } catch (err) {
-            console.error(
-              `❌ Failed to load details for ${grn.grnNumber}:`,
-              err
-            );
-            return grn;
-          }
-        })
-      );
-
-      console.log("🏁 FINAL grnsData STATE:", grnsWithDetails);
-
-      setGrnsData(grnsWithDetails);
-      const totalItems = grnsWithDetails.reduce(
-        (sum, g) => sum + (g.items?.length || 0),
-        0
-      );
-      toast.success(
-        `Loaded ${grnsWithDetails.length} GRNs with ${totalItems} total items`
-      );
-    } catch (error) {
-      console.error("💥 loadAllGrnsWithDetails ERROR:", error);
-      toast.error(error.message || "Failed to load GRNs");
-      setGrnsData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadSellers();
-  }, [loadSellers]);
-
-  useEffect(() => {
-    if (selectedSeller) {
-      loadAllGrnsWithDetails(selectedSeller);
-      setCurrentPage(1);
-    } else {
-      setGrnsData([]);
-      setCurrentPage(1);
-    }
-  }, [selectedSeller, loadAllGrnsWithDetails]);
-
-  const handleSellerChange = (e) => {
-    const sellerId = e.target.value;
-    const selected = suppliers.find((s) => s.id === Number(sellerId));
-    setSelectedSeller(selected?.name || "");
-  };
-
-  const handleCancel = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All unsaved data will be lost!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, reset",
-      cancelButtonText: "No, keep editing",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setSaveLoading(false);
-        setSelectedSeller("");
-        setGrnsData([]);
-        setShowItemModal(false);
-        setSelectedItem(null);
-        toast.info("Form reset successfully");
-      }
+      return {
+        index,
+        grnId: header.accountGRNId,
+        grnNumber: header.grnNumber,
+        grnDate: header.grnDate,
+        invoiceNumber: header.invoiceNumber,
+        invoiceDate: header.invoiceDate,
+        poNumber: header.poNumber,
+        poDate: header.poDate,
+        transporterName: header.transporterName,
+        totalAmount: Number(header.totalAmount || 0),
+        totalTaxAmount: Number(header.totalTaxAmount || 0),
+        grandAmount: Number(header.grandAmount || 0),
+        items: mappedItems,
+        approvedGrandTotal: 0
+      };
     });
-  };
+
+    setGrnsData(grnsWithDetails);
+  } catch (error) {
+    console.error("Error:", error);
+    toast.error("Error loading GRN details");
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+
+// -------------------- LOAD SELLERS --------------------
+useEffect(() => {
+  loadSellers();
+}, [loadSellers]);
+
+// -------------------- WHEN SELLER CHANGES --------------------
+useEffect(() => {
+  if (selectedSeller) {
+loadAllGrnsWithDetails(selectedSeller);
+    setCurrentPage(1);
+  } else {
+    setGrnsData([]);
+    setCurrentPage(1);
+  }
+}, [selectedSeller, loadAllGrnsWithDetails]);
+
+// -------------------- DROPDOWN CHANGE --------------------
+const handleSellerChange = (e) => {
+  const id = Number(e.target.value);
+  setSelectedSeller(id);   // store ONLY sellerId (number)
+};
+
+
+const handleCancel = () => {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "All unsaved data will be lost!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, reset",
+    cancelButtonText: "No, keep editing",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      setSaveLoading(false);
+      setSelectedSeller("");   // reset dropdown
+      setGrnsData([]);         // clear displayed GRNs
+      setShowItemModal(false); // close modal
+      setSelectedItem(null);   // clear selected item
+      toast.info("Form reset successfully");
+    }
+  });
+};
+
 
   const totalPages = Math.ceil(grnsData.length / GRNS_PER_PAGE);
   const pagedGrns = grnsData.slice(
@@ -297,87 +206,63 @@ const ApprovedPayable = () => {
       0
     );
   };
+const handleSaveApproved = async () => {
+  const TOAST_ID = "save-approved";
+  toast.loading("Saving approved payables...", { toastId: TOAST_ID });
+  setSaveLoading(true);
 
-  const handleSaveApproved = async () => {
-    const TOAST_ID = "save-approved";
-    toast.loading("Saving approved payables...", { toastId: TOAST_ID });
-    setSaveLoading(true);
-
-    try {
-      const payload = {
-        SellerName: selectedSeller,
-        Grns: grnsData
-          .filter((grn) => grn.items.some((item) => item.billApprove))
-          .map((grn) => ({
-            grnNumber: grn.grnNumber,
-            grN_Date: grn.grN_Date,
-            invoiceNumber: grn.invoiceNumber,
-            poDate: grn.poDate,
-            poNumber: grn.poNumber,
-            invoice_Date: grn.invoice_Date,
-            totalAmount: grn.totalAmount || 0,
-            taxAmount: grn.taxAmount || 0,
-            grandTotal: grn.grandTotal || 0,
-            approvedTotalAmount: 0,
-            approvedtaxAmount: 0,
-            approvedGrandTotal: grn.approvedGrandTotal || 0,
-            Items: grn.items
-              .filter((item) => item.billApprove)
-              .map((item) => ({
-                Description: `${item.itemName} - ${item.TotalTaxValue}`,
-                itemName: item.itemName,
-                TotalTaxValue: item.TotalTaxValue,
-                itemCode: item.itemCode,
-                totalTaxValue: parseFloat(item.totalTaxValue) || 0,
-                totalItemValue: parseFloat(item.totalItemValue) || 0,
-                billItemValue: parseFloat(item.billItemValue) || 0,
-                billCheck: item.billCheck || false,
-                billApprove: true,
-                TransporterName: item.TransporterName || "",
-              })),
+  try {
+    // Prepare payload: only GRNs with at least 1 approved item
+    const payload = grnsData
+      .filter((grn) => grn.items.some((item) => item.billApprove))
+      .map((grn) => ({
+        AccountGRNId: grn.grnId,
+        BillStatus: "Approved",
+        Items: grn.items
+          .filter((item) => item.billApprove)
+          .map((item) => ({
+            AccountGRNDetailsId: item.id,
+            BillApprove: true,
           })),
-      };
-      console.log(payload);
+      }));
 
-      const res = await fetch(API_ENDPOINTS.SaveGRN, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    console.log("Payload:", payload);
 
-      const result = await safeJson(res);
-      if (!res.ok) {
-        toast.update(TOAST_ID, {
-          render: `Error: ${result.message || "Save failed"}`,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-        return;
-      }
+    const res = await fetch(API_ENDPOINTS.SaveMultipleGRN, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+  body: JSON.stringify(payload),
+});
 
-      toast.update(TOAST_ID, {
-        render: `✅ Saved ${getApprovedCount()} approved items!`,
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
 
-      await loadAllGrnsWithDetails(selectedSeller);
-    } catch (error) {
-      toast.update(TOAST_ID, {
-        render: "Network error! Please try again.",
-        type: "error",
-        isLoading: false,
-        autoClose: 4000,
-      });
-    } finally {
-      setSaveLoading(false);
-    }
-  };
+    const result = await res.json();
+
+    if (!res.ok) throw new Error(result.message || "Save failed");
+
+    toast.update(TOAST_ID, {
+      render: `✅ Saved ${payload.length} approved GRNs!`,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
+
+    // Reload updated GRNs
+    await loadAllGrnsWithDetails(selectedSeller);
+  } catch (error) {
+    toast.update(TOAST_ID, {
+      render: error.message || "Network error",
+      type: "error",
+      isLoading: false,
+      autoClose: 4000,
+    });
+  } finally {
+    setSaveLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -391,18 +276,20 @@ const ApprovedPayable = () => {
                 <label className="form-label fw-semibold mb-2">
                   Select Seller
                 </label>
-                <select
-                  className="form-select form-select-lg"
-                  value={suppliers.find((s) => s.name === selectedSeller)?.id || ""}
-                  onChange={handleSellerChange}
-                >
-                  <option value="">Choose Seller...</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+               <select
+  className="form-select form-select-lg"
+  value={selectedSeller}
+  onChange={handleSellerChange}
+>
+  <option value="">Choose Seller...</option>
+
+  {suppliers.map((s) => (
+    <option key={s.id} value={s.id}>
+      {s.name}
+    </option>
+  ))}
+</select>
+
               </div>
 
               {selectedSeller && grnsData.length > 0 && (
@@ -468,7 +355,7 @@ const ApprovedPayable = () => {
                             <strong>Invoice No:</strong> {grn.invoiceNumber}
                           </div>
                           <div className="col-6">
-                            <strong>Invoice Date:</strong>{grn.invoice_Date}
+                            <strong>Invoice Date:</strong>{grn.invoiceDate}
                           </div>
                           <div className="col-6">
                             <strong>PO No:</strong> {grn.poNumber}

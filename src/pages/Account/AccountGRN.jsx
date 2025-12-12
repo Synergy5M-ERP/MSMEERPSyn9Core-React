@@ -12,7 +12,7 @@ function AccountGRN() {
   return (
     <div style={{ minHeight: "80vh"}}>
       <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-        Account GRN
+        Bill Passing For
       </h2>
 
       {/* Page Selector */}

@@ -26,7 +26,7 @@ public partial class AlternateItemMaster
 
     [StringLength(1000)]
     [Unicode(false)]
-    public string? QTY { get; set; }
+    public decimal? QTY { get; set; }
 
     [StringLength(1000)]
     [Unicode(false)]

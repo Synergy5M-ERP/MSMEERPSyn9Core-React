@@ -3,6 +3,7 @@ using SwamiSamarthSyn8.Data;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,11 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 // ----------------- Services -----------------
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    });
 
 // ✅ Register DbContext
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>

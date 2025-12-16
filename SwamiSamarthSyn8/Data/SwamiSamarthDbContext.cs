@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SwamiSamarthSyn8.Models;
+using SwamiSamarthSyn8.Models.Accounts;
 
 namespace SwamiSamarthSyn8.Data;
 
@@ -16,6 +16,11 @@ public partial class SwamiSamarthDbContext : DbContext
     {
     }
     //---------Accounts-------//
+
+    public virtual DbSet<AccountPaymentMode> AccountPaymentMode { get; set; }
+    public virtual DbSet<AccountStatus> AccountStatus { get; set; }
+    public virtual DbSet<AccountVoucherDetails> AccountVoucherDetails { get; set; }
+    public virtual DbSet<AccountVoucher> AccountVoucher { get; set; }
     public virtual DbSet<AccountJournal> AccountJournal { get; set; }
     public virtual DbSet<AccountVoucherType> AccountVoucherType { get; set; }
     public virtual DbSet<AccountSubLedger> AccountSubLedger { get; set; }
@@ -27,6 +32,8 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<AccountFiscalPeriod> AccountFiscalPeriod { get; set; }
     public virtual DbSet<AccountGroup> AccountGroup { get; set; }
     public virtual DbSet<Account> Account { get; set; }
+    public virtual DbSet<AccountGRNDetails> AccountGRNDetails { get; set; }
+    public virtual DbSet<AccountGRN> AccountGRN { get; set; }
     public virtual DbSet<AccountBankDetails> AccountBankDetails { get; set; }
     //---------Accounts-------//
 
@@ -329,9 +336,19 @@ public partial class SwamiSamarthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Auth__3214EC07B6873500");
 
-            entity.Property(e => e.Authority_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
-            entity.Property(e => e.IsSelected).HasDefaultValue("No");
+            entity.Property(e => e.AuthorityName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Authority_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)")
+                  .ValueGeneratedNever();          // <-- manual code
+
+            entity.Property(e => e.IsSelected)
+                  .HasDefaultValue("No");
         });
+
 
         modelBuilder.Entity<HRM_ContactusTbl>(entity =>
         {
@@ -342,20 +359,35 @@ public partial class SwamiSamarthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Dail__3214EC07AF88F291");
         });
-
         modelBuilder.Entity<HRM_DepartmentTbl>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__HRM_Depa__3214EC07A72CB8A2");
+            entity.HasKey(e => e.Id).HasName("PK__HRM_DepartmentTbl");
 
-            entity.Property(e => e.Department_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
+            entity.Property(e => e.DepartmentName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Department_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)") // <- here
+                  .ValueGeneratedNever();         // EF will save your value
         });
+
 
         modelBuilder.Entity<HRM_DesignationTbl>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__HRM_Desi__3214EC07AC6F3B7E");
 
-            entity.Property(e => e.Designation_code).HasComputedColumnSql("(right('0'+CONVERT([nvarchar](10),[Id]),(2)))", true);
+            entity.Property(e => e.DesignationName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Designation_code)
+                  .IsRequired()
+                  .HasColumnType("NVARCHAR(MAX)")
+                  .ValueGeneratedNever();          // <-- manual code, not computed
         });
+
 
         modelBuilder.Entity<HRM_EmpAttendanceTbl>(entity =>
         {
@@ -699,6 +731,12 @@ public partial class SwamiSamarthDbContext : DbContext
             entity.HasKey(e => e.id).HasName("PK_UserLogin");
 
             entity.Property(e => e.password).IsFixedLength();
+        });
+
+        modelBuilder.Entity<AccountPaymentMode>(entity =>
+        {
+            entity.ToTable("AccountPaymentMode");   // MUST match SQL table
+            entity.HasKey(e => e.PaymentModeId);    // explicitly tell EF the PK
         });
 
         OnModelCreatingPartial(modelBuilder);

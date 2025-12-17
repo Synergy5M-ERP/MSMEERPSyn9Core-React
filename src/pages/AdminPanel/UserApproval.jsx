@@ -3,11 +3,13 @@ import axios from "axios";
 import DataTable from "react-data-table-component";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import "./ModuleUserData.css";
+import { API_ENDPOINTS } from "../../config/apiconfig";
 
-const API_URL = "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI/Login/ModuleUserData";
+//const API_URL = "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI/Login/ModuleUserData";
 
 function ModuleUserData() {
   const [users, setUsers] = useState([]);
+const [modalMode, setModalMode] = useState(""); // "approve" or "edit"
 
   // ===== MODAL STATES =====
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -17,116 +19,152 @@ function ModuleUserData() {
   const [selectedEmpCode, setSelectedEmpCode] = useState("");
   const [selectedEmail, setSelectedEmail] = useState("");
   const [rejectReason, setRejectReason] = useState("");
+const [isAllSelected, setIsAllSelected] = useState(false);
 
   const [viewData, setViewData] = useState(null);
 
-  // ===== USER MODULE STATE =====
-  const [moduleData, setModuleData] = useState({
-    MaterialManagementModule: false,
-    SalesAndMarketingModule: false,
-    HRAndAdminModule: false,
-    AccountAndFinanceModule: false,
-    MastersModule: false,
-    DashboardModule: false,
-    ProductionAndQualityModule: false,
-    External_buyer_seller: false,
-  });
+const [moduleData, setModuleData] = useState({
+  MaterialManagementModule: false,
+  SalesAndMarketingModule: false,
+  HRAndAdminModule: false,
+  AccountAndFinanceModule: false,
+  MastersModule: false,
+  DashboardModule: false,
+  ProductionAndQualityModule: false,
+  External_buyer_seller: false,
+});
+
+
+
 
   // ================= FETCH USERS =================
-  const loadData = async () => {
-    try {
-      const response = await axios.get(API_URL);
-      setUsers(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error loading users:", error);
-    }
-  };
+ const loadData = async () => {
+  try {
+    const response = await axios.get(API_ENDPOINTS.ModuleUserData);
+    setUsers(Array.isArray(response.data) ? response.data : []);
+  } catch (error) {
+    console.error("Error loading users:", error);
+  }
+};
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // ================ VIEW MODAL =================
-  const fetchViewData = async (id, empCode) => {
-    try {
-      const res = await axios.get(
-        `https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI/GetUserDetails?id=${id}&empcode=${empCode}`
-      );
+ const fetchViewData = async (id, empCode) => {
+  try {
+    const res = await axios.get(API_ENDPOINTS.GetUserDetails, {
+      params: { id, empcode: empCode }
+    });
 
-      if (res.data.success) {
-        setViewData(res.data.data);
-        setShowViewModal(true);
-      } else {
-        alert("No data found");
-      }
-    } catch (error) {
-      console.error("Error fetching view data:", error);
+    if (res.data.success) {
+      setViewData(res.data.data);
+      setShowViewModal(true);
+    } else {
+      alert("No data found");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching view data:", error);
+  }
+};
+
 
   // ======================================================
   // ⭐⭐ OPEN MODULE DASHBOARD
   // ======================================================
-  const handleModuleDashboardOpen = async (id, empCode) => {
-    setShowModuleDashboard(true);
-    setViewData(null);
+ const handleModuleDashboardOpen = async (id, empCode) => {
+  setShowModuleDashboard(true);
+  setViewData(null);
 
-    try {
-      const res = await axios.get(
-        "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI/GetUserModules",
-        { params: { id, empCode } }
-      );
+  try {
+    const res = await axios.get(API_ENDPOINTS.GetUserModules, {
+      params: { id, empCode }
+    });
 
-      if (res.data) {
-        setViewData(res.data);
+    if (res.data.success) {
+      const user = res.data.user;
+      setViewData(user);
 
-        setModuleData({
-          MaterialManagementModule: res.data.materialManagementModule,
-          SalesAndMarketingModule: res.data.salesAndMarketingModule,
-          HRAndAdminModule: res.data.hrAndAdminModule,
-          AccountAndFinanceModule: res.data.accountAndFinanceModule,
-          MastersModule: res.data.mastersModule,
-          DashboardModule: res.data.dashboardModule,
-          ProductionAndQualityModule: res.data.productionAndQualityModule,
-          External_buyer_seller: res.data.external_buyer_seller,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // ============ MODULE CHANGE HANDLER ============
-  const handleModuleChange = (e) => {
-    const { name, checked } = e.target;
-    setModuleData((prev) => ({ ...prev, [name]: checked }));
-  };
-
-  // ============ MODULE SUBMIT ============
-  const handleModuleSubmit = async () => {
-    try {
-      const payload = {
-        Emp_Code: selectedEmpCode,
-        ...moduleData,
+      const updatedModules = {
+        MaterialManagementModule: user.materialManagement ?? false,
+        SalesAndMarketingModule: user.salesAndMarketing ?? false,
+        HRAndAdminModule: user.hrAndAdmin ?? false,
+        AccountAndFinanceModule: user.accountAndFinance ?? false,
+        MastersModule: user.masters ?? false,
+        DashboardModule: user.dashboard ?? false,
+        ProductionAndQualityModule: user.productionAndQuality ?? false,
+        External_buyer_seller: user.external_buyer_seller ?? false,
       };
 
-      const res = await axios.post(
-        "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI/UpdateUserModules",
-        payload
-      );
-
-      if (res.data.success) {
-        alert("Modules updated successfully!");
-        setShowModuleDashboard(false);
-        loadData();
-      } else {
-        alert("Failed to update modules.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Error while submitting modules.");
+      setModuleData(updatedModules);
+      setIsAllSelected(Object.values(updatedModules).every(Boolean));
     }
+  } catch (err) {
+    console.error("Error loading user modules", err);
+  }
+};
+
+
+const handleSelectAll = (e) => {
+  const checked = e.target.checked;
+
+  setIsAllSelected(checked);
+
+  setModuleData({
+    MaterialManagementModule: checked,
+    SalesAndMarketingModule: checked,
+    HRAndAdminModule: checked,
+    AccountAndFinanceModule: checked,
+    MastersModule: checked,
+    DashboardModule: checked,
+    ProductionAndQualityModule: checked,
+    External_buyer_seller: checked,
+  });
+};
+
+  const handleModuleChange = (e) => {
+  const { name, checked } = e.target;
+
+  const updatedData = {
+    ...moduleData,
+    [name]: checked,
   };
+
+  setModuleData(updatedData);
+
+  // 🔥 Auto check/uncheck Select All
+  const allChecked = Object.values(updatedData).every(Boolean);
+  setIsAllSelected(allChecked);
+};
+
+
+const handleModuleSubmit = async () => {
+  try {
+    const payload = {
+      Emp_Code: selectedEmpCode,
+      username: viewData.username, // include username
+      UserRole: viewData.UserRole ?? "User", // include UserRole or default
+      ...moduleData
+    };
+
+    const res = await axios.post(API_ENDPOINTS.UpdateUserModules, payload);
+
+    if (res.data.success) {
+      alert(
+        modalMode === "approve"
+          ? "Modules assigned successfully!"
+          : "Modules updated successfully!"
+      );
+      setShowModuleDashboard(false);
+      loadData();
+    } else {
+      alert("Failed to update modules.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error while submitting modules.");
+  }
+};
 
   // ============ REJECT USER ============
   const rejectUser = () => {
@@ -170,24 +208,40 @@ function ModuleUserData() {
           <i className="fas fa-eye"></i>
         </button>
 
-        <button
-          className="action-btn approve"
-          onClick={() => {
-            setSelectedEmpCode(row.emp_Code);
-            handleModuleDashboardOpen(row.id, row.emp_Code);
-          }}
-        >
-          <i className="fas fa-user-check"></i>
-        </button>
+     <button
+  className="action-btn approve"
+  onClick={() => {
+    setModalMode("approve"); // <-- approve mode
+    setSelectedEmpCode(row.emp_Code);
 
-        <button
-          className="action-btn edit"
-          onClick={() =>
-            (window.location.href = `/Login/UpdateModuleDashborad?Id=${row.id}&empcode=${row.emp_Code}`)
-          }
-        >
-          <i className="fas fa-edit"></i>
-        </button>
+    // Open modal with all checkboxes unchecked
+    setModuleData({
+      MaterialManagementModule: false,
+      SalesAndMarketingModule: false,
+      HRAndAdminModule: false,
+      AccountAndFinanceModule: false,
+      MastersModule: false,
+      DashboardModule: false,
+      ProductionAndQualityModule: false,
+      External_buyer_seller: false,
+    });
+    setIsAllSelected(false);
+    setShowModuleDashboard(true);
+  }}
+>
+  <i className="fas fa-user-check"></i>
+</button>
+
+<button
+  className="action-btn edit"
+  onClick={() => {
+    setModalMode("edit"); // <-- edit mode
+    setSelectedEmpCode(row.emp_Code);
+    handleModuleDashboardOpen(row.id, row.emp_Code); // load existing modules
+  }}
+>
+  <i className="fas fa-edit"></i>
+</button>
 
         <button
           className="action-btn delete"
@@ -242,15 +296,11 @@ function ModuleUserData() {
         <div className="col-md-8">{viewData.password}</div>
       </div>
 
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">NAME:</div>
-        <div className="col-md-8">{viewData.name}</div>
-      </div>
+     <div className="row mb-2">
+  <div className="col-md-4 fw-bold">NAME:</div>
+  <div className="col-md-8">{`${viewData.name ?? ""} ${viewData.surname ?? ""}`.trim()}</div>
+</div>
 
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">SURNAME:</div>
-        <div className="col-md-8">{viewData.surname}</div>
-      </div>
 
       <div className="row mb-2">
         <div className="col-md-4 fw-bold">CONTACT:</div>
@@ -350,20 +400,32 @@ function ModuleUserData() {
   centered
   dialogClassName="module-access-modal"
 >
-  <Modal.Header closeButton>
-    <Modal.Title>User Module Access</Modal.Title>
-  </Modal.Header>
+
+<Modal.Header closeButton>
+  <div className="module-header-box mb-3 p-3">
+    <h5 className="mb-0">
+      {modalMode === "approve" ? "Assign Modules" : "Edit Modules"}
+    </h5>
+  </div>
+</Modal.Header>
 
   <Modal.Body>
     {!viewData ? (
       <h5>Loading...</h5>
     ) : (
       <>
-        <div className="module-header-box mb-3 p-3">
-          <h5 className="mb-0">Select Modules to Assign</h5>
-        </div>
+       
 
         <Form>
+        <Form.Check
+  type="checkbox"
+  label="Select All Modules"
+  name="selectAll"
+  checked={isAllSelected}
+  onChange={handleSelectAll}
+  className="fw-bold mb-3"
+/>
+
           <Row className="gy-3">
             <Col md={6}>
               <Form.Check

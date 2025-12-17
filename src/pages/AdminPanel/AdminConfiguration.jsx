@@ -6,8 +6,7 @@ import Header from '../../components/Header';
 import AdminSidebar from './AdminSidebar';
 import RegisterPage from './RegisterPage';
 import UserApproval from './UserApproval';
-import ViewData from './ViewData';
-import UpdateUsers from './UpdateUsers';
+
 import AdminDashboard from './AdminDashboard';
 
 const AdminConfiguration = () => {
@@ -28,8 +27,7 @@ const AdminConfiguration = () => {
 
           {activePage === 'RegisterPage' && <RegisterPage />}
           {activePage === 'userApproval' && <UserApproval />}
-          {activePage === 'viewData' && <ViewData />}
-          {activePage === 'updateUsers' && <UpdateUsers />}
+         
           {/* Add more conditions if you add more pages */}
         </div>
       </div>

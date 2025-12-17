@@ -172,31 +172,31 @@ const handleModuleSubmit = async () => {
   };
 
  const columns = [
-  { name: "EMP_CODE", selector: row => row.emp_Code, sortable: true },
+  { name: "Emp Code", selector: row => row.emp_Code, sortable: true },
 
   {
-  name: "EMPLOYEE NAME",
-  selector: row => `${row.name ?? ""} ${row.surname ?? ""}`.trim(),
-  sortable: true,
-  className: "employee-name-col",
-},
+    name: "Employee Name",
+    selector: row => `${row.name ?? ""} ${row.surname ?? ""}`.trim(),
+    sortable: true,
+    className: "employee-name-col",
+  },
 
+  { name: "Gender", selector: row => row.gender },
+  { name: "Contact No", selector: row => row.contact_NO },
 
+  {
+    name: "Email",
+    selector: row => row.email,
+    className: "employee-email-col",
+  },
 
-  { name: "GENDER", selector: row => row.gender },
-  { name: "CONTACT_NO", selector: row => row.contact_NO },
-{
-  name: "EMAIL",
-  selector: row => row.email,
-  className: "employee-email-col",
-},
-  { name: "PASSWORD", selector: row => row.password },
-  { name: "PERMANENT_ADDRESS", selector: row => row.permanent_address },
-  { name: "COUNTRY", selector: row => row.country },
-  { name: "STATE", selector: row => row.state },
-  { name: "CITY", selector: row => row.city },
-  { name: "JOINING_DATE", selector: row => row.joiningdate },
-  { name: "DEPARTMENT", selector: row => row.department },
+  { name: "Password", selector: row => row.password },
+  { name: "Permanent Address", selector: row => row.permanent_address },
+  { name: "Country", selector: row => row.country },
+  { name: "State", selector: row => row.state },
+  { name: "City", selector: row => row.city },
+  { name: "Joining Date", selector: row => row.joiningdate },
+  { name: "Department", selector: row => row.department },
 
 
     {
@@ -258,11 +258,13 @@ const handleModuleSubmit = async () => {
   },
 ];
   // ======================================================
-  //                 RETURN JSX
+  //                 RETURN JSXs
   // ======================================================
   return (
     <div className="container mt-4">
-      <h2 className="text-center user-management-title">USER MANAGEMENT PANEL</h2>
+<h2 className="text-center user-management-title">
+  User Management Panel
+</h2>
 
       <DataTable
         columns={columns}
@@ -287,58 +289,58 @@ const handleModuleSubmit = async () => {
     <div className="container">
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">USERNAME:</div>
+        <div className="col-md-4 fw-bold">Username:</div>
         <div className="col-md-8">{viewData.username}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">PASSWORD:</div>
+        <div className="col-md-4 fw-bold">Password:</div>
         <div className="col-md-8">{viewData.password}</div>
       </div>
 
      <div className="row mb-2">
-  <div className="col-md-4 fw-bold">NAME:</div>
+  <div className="col-md-4 fw-bold">Name:</div>
   <div className="col-md-8">{`${viewData.name ?? ""} ${viewData.surname ?? ""}`.trim()}</div>
 </div>
 
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">CONTACT:</div>
+        <div className="col-md-4 fw-bold">Contact no:</div>
         <div className="col-md-8">{viewData.contact_NO}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">EMAIL:</div>
+        <div className="col-md-4 fw-bold">Email:</div>
         <div className="col-md-8">{viewData.email}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">GENDER:</div>
+        <div className="col-md-4 fw-bold">Gender:</div>
         <div className="col-md-8">{viewData.gender}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">ADDRESS:</div>
+        <div className="col-md-4 fw-bold">Address:</div>
         <div className="col-md-8">{viewData.permanent_Address}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">DEPARTMENT:</div>
+        <div className="col-md-4 fw-bold">Department:</div>
         <div className="col-md-8">{viewData.department}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">DESIGNATION:</div>
+        <div className="col-md-4 fw-bold">Designation:</div>
         <div className="col-md-8">{viewData.joining_Designation}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">AUTHORITY:</div>
+        <div className="col-md-4 fw-bold">Authority:</div>
         <div className="col-md-8">{viewData.joining_AuthorityLevel}</div>
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">DATE OF JOINING:</div>
+        <div className="col-md-4 fw-bold">Date of joining:</div>
         <div className="col-md-8">
           {viewData.date_Of_Joing 
             ? new Date(viewData.date_Of_Joing).toLocaleDateString()
@@ -347,7 +349,7 @@ const handleModuleSubmit = async () => {
       </div>
 
       <div className="row mb-2">
-        <div className="col-md-4 fw-bold">EMP CODE:</div>
+        <div className="col-md-4 fw-bold">Emp Code:</div>
         <div className="col-md-8">{viewData.emp_Code}</div>
       </div>
     </div>
@@ -509,12 +511,13 @@ const handleModuleSubmit = async () => {
   </Modal.Body>
 
   <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowModuleDashboard(false)}>
-      Cancel
-    </Button>
     <Button variant="success" onClick={handleModuleSubmit}>
       Save Changes
     </Button>
+    <Button variant="secondary" onClick={() => setShowModuleDashboard(false)}>
+      Cancel
+    </Button>
+    
   </Modal.Footer>
 </Modal>
 

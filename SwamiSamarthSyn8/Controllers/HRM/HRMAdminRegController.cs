@@ -15,6 +15,15 @@ public class HRMAdminRegAPIController : ControllerBase
     {
         _db = db;
     }
+    [HttpGet("GetIndustry")]
+    public async Task<IActionResult> GetIndustry()
+    {
+        var industryList = await _db.Industries
+            .Select(i => new { i.IndustryId, i.IndustryName })
+            .ToListAsync();
+
+        return Ok(industryList);
+    }
 
     // ----------------------------------------------------------
     // 🔹 GET SOURCE
@@ -475,7 +484,7 @@ public class HRMAdminRegAPIController : ControllerBase
         using SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
         {
             EnableSsl = true,
-            Credentials = new NetworkCredential("hrm@synergy5m.com", "YOUR_APP_PASSWORD")
+            Credentials = new NetworkCredential("hrm@synergy5m.com", "eksv lnrw smpl dsqd")
         };
 
         MailMessage message = new MailMessage

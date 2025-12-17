@@ -15,6 +15,62 @@ public class HrmMasterController : ControllerBase
     {
         _context = context;
     }
+    [HttpGet("GetCountry")]
+    public async Task<IActionResult> GetCountry()
+    {
+        var countryList = await _context.MergeTblDatas
+            .Where(x => x.Country_Name != null)
+            .Select(x => x.Country_Name)
+            .Distinct()
+            .ToListAsync();
+
+        return Ok(countryList);
+    }
+    [HttpGet("GetState")]
+    public async Task<IActionResult> GetState([FromQuery] string country)
+    {
+        if (string.IsNullOrEmpty(country))
+            return BadRequest("Country is required");
+
+        var states = await _context.MergeTblDatas
+            .Where(x => x.Country_Name == country)
+            .Select(x => x.state_name)
+            .Distinct()
+            .ToListAsync();
+
+        return Ok(states);
+    }
+    [HttpGet("GetCity")]
+    public async Task<IActionResult> GetCity(
+        [FromQuery] string country,
+        [FromQuery] string state)
+    {
+        if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(state))
+            return BadRequest("Country and State are required");
+
+        var cities = await _context.MergeTblDatas
+            .Where(x => x.Country_Name == country && x.state_name == state)
+            .Select(x => x.city_name)
+            .Distinct()
+            .ToListAsync();
+
+        return Ok(cities);
+    }
+    [HttpGet("GetCurrency")]
+    public async Task<IActionResult> GetCurrency()
+    {
+        var currencyList = await _context.Currencytbl
+            .OrderBy(x => x.Id) // optional, ensures consistent top rows
+            .Take(200000)
+            .Select(x => new
+            {
+                x.Id,
+                x.Currency_Code
+            })
+            .ToListAsync();
+
+        return Ok(currencyList);
+    }
 
     // ------------------------------------
     // GET ALL
@@ -335,9 +391,91 @@ public class HrmMasterController : ControllerBase
                 return BadRequest("Invalid type");
         }
     }
+    // ================= GET ALL ORGANIZATION =================
+    [HttpGet("Organization")]
+    public IActionResult GetOrganization([FromQuery] string status = "active")
+    {
+        var data = _context.HRM_OganizationTbl.AsQueryable();
 
-    // ------------------------------------
-    // HELPER: GENERATE NEXT CODE
-    // ------------------------------------
-   
+        if (status.ToLower() == "active")
+            data = data.Where(x => (bool)x.IsActive);
+        else if (status.ToLower() == "inactive")
+            data = data.Where(x => (bool)!x.IsActive);
+
+        var result = data.Select(x => new
+        {
+            x.Id,
+            x.Department,
+            x.Position,
+            x.Level,
+            x.Qualification,
+            x.Experience,
+            x.Industry,
+            x.Country,
+            x.State,
+            x.City,
+            x.Currency,
+            BudgetMin = x.Minimum_Budget,
+            BudgetMax = x.Maximum_Budget,
+            OnboardDate = x.Onboard_Date.HasValue ? x.Onboard_Date.Value.ToString("yyyy-MM-dd") : null,
+            x.IsActive
+        }).ToList();
+
+        return Ok(result);
+    }
+
+    // ================= PUT TO TOGGLE ACTIVE/INACTIVE =================
+    [HttpPut("Organization/{id}")]
+    public IActionResult ToggleOrganizationStatus(int id, [FromBody] dynamic payload)
+    {
+        var org = _context.HRM_OganizationTbl.FirstOrDefault(x => x.Id == id);
+        if (org == null) return NotFound("Organization record not found");
+
+        bool activate = payload?.isActive ?? true;
+        org.IsActive = activate;
+
+        _context.SaveChanges();
+
+        return Ok(new { message = activate ? "Activated successfully" : "Deactivated successfully" });
+    }
+
+    [HttpPost("OrgChartWithBudget")]
+    public IActionResult OrgChartWithBudget(
+      [FromBody] List<OrgChartWithBudgetDto> model)
+    {
+        if (model == null || !model.Any())
+            return BadRequest("No data received");
+
+        foreach (var job in model)
+        {
+            var entity = new HRM_OganizationTbl
+            {
+                Department = job.Department,
+                Position = job.Position,
+                Level = job.Level,
+                Qualification = job.Qualification,
+                Experience = job.Experience,
+                Industry = job.Industry,
+                Country = job.Country,
+                State = job.State,
+                City = job.City,
+                Currency = job.Currency,
+                Minimum_Budget = job.BudgetMin,
+                Maximum_Budget = job.BudgetMax,
+                Onboard_Date = job.OnboardDate.HasValue
+    ? DateOnly.FromDateTime(job.OnboardDate.Value)
+    : null,
+                Status = "Vacant",
+                // CreatedDate = DateTime.Now
+                IsActive = true
+            };
+
+            _context.HRM_OganizationTbl.Add(entity);
+        }
+
+        _context.SaveChanges();
+
+        return Ok(new { message = "Saved successfully" });
+    }
+
 }

@@ -1,9 +1,9 @@
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
  //const BASE_URL = "https://localhost:7145/api";
 
 //const BASE_URL = "https://localhost:7145/api";
 //const API_BASE_URL = 'http://localhost:49980/Vendor';
-
+const BASE_URL="https://localhost:44345"
 export const API_ENDPOINTS = {
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -21,6 +21,10 @@ export const API_ENDPOINTS = {
   Banks: `${BASE_URL}/banks`,
   CreditNote: `${BASE_URL}/credit-note`,
   DebitNote: `${BASE_URL}/Debit-note`,
+
+  OutwardQc:`${BASE_URL}/OutwardQCReport`,
+  SaveRejectionQty:`${BASE_URL}/SaveRejectionQty`,
+  SubmitButtonDisable:`${BASE_URL}/SubmitButtonDisable`,
 
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,

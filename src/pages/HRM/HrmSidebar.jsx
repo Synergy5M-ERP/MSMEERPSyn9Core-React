@@ -26,6 +26,7 @@ import {
     StayPrimaryPortraitTwoTone,
     SwapHoriz,
     Tune,
+    AccountBalanceWallet ,
     VerticalAlignCenter,
     VolunteerActivismSharp,
 } from '@mui/icons-material';
@@ -44,8 +45,11 @@ const HrmSidebar = ({ selected, onSelect }) => {
 {label:' Employee Master',icon:<Person/>,key:'AddEmp'},
 {label:' Matrix Master',icon:<MessageSquareTextIcon/>,key:'createMatrix'},
 {label:'View Vacant Position',icon:<VerticalAlignCenter/>,key:'vacantposition'},
+{label:'GrossSalary',icon:<AccountBalanceWallet />,key:'GrossSalary'},
+
 {label:'Salary MIS',icon:<CurrencyRupeeOutlined/>,key:'salaryMIS'},
 {label:'Employee letters',icon:<PostAddOutlined/>,key:'EmployeeLetter'},
+
 {
       label: 'Attendence Management',
       icon: <SheetIcon />,

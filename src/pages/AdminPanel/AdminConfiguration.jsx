@@ -15,7 +15,7 @@ const AdminConfiguration = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Optional Full-width Header */}
-      {/* <Headers /> */}
+      {/* <Header /> */}
 
       {/* Main layout with sidebar and content */}
       <div style={{ flex: 1, display: 'flex' }}>

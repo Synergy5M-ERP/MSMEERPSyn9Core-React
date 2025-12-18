@@ -73,7 +73,7 @@ function App() {
 <Route path="/mm" element={<MMModule/>} />
 <Route path="/indicator" element={<CreateEnquiryPage/>} />
 
-<Route path="/admin" element={<AdminConfiguration/>}/>
+<Route path="/admin/*" element={<AdminConfiguration />} />
 
 
 <Route path="/production" element={<ProductionModule/>} />

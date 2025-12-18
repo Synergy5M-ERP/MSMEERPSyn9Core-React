@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { RiUserAddLine, RiUserSettingsLine } from 'react-icons/ri';
-//import
+import { RiUserAddLine, RiUserSettingsLine, RiEyeLine, RiEditLine } from 'react-icons/ri';
+
 const AdminSidebar = ({ selected, onSelect }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [expandedMenu, setExpandedMenu] = useState(null);

@@ -13,6 +13,8 @@ import VacantPosition from './VacantPosition';
 import SalaryMIS from './SalaryMIS';
 import Attendence from './Attendence';
 import Report from './Report';
+import EmployeeLetter from './EmployeeLetter';
+import GrossSalary from './GrossSalary';
 
 
 const HrmConfiguration = () => {
@@ -35,9 +37,13 @@ const [activePage, setActivePage] = useState('Dashboard');
         {activePage === "AddEmp" && <AddEmployee/>}
         {activePage==="createMatrix" && <CreateMatrix/>}
         {activePage === "vacantposition" && <VacantPosition/>}
+              {activePage==="GrossSalary" && <GrossSalary/>}
+
         {activePage==="salaryMIS" && <SalaryMIS/>}
         {activePage === "attendence" && <Attendence/>}
         {activePage==="report" && <Report/>}
+      {activePage==="EmployeeLetter" && <EmployeeLetter/>}
+
           {/* Add more conditions for other pages */}
         </div>
       </div>

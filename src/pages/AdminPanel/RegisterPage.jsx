@@ -4,7 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Register.css";
 import { Eye, EyeOff } from "lucide-react";
-
+//import
 function Register() {
   const [formData, setFormData] = useState({
     company_name: "",
@@ -242,7 +242,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     <div className="register-container">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <h3>Registration Form</h3>
+<h3 className="form-title-box">Registration Form</h3>
 
       <form onSubmit={handleSubmit} className="row g-3">
 
@@ -491,17 +491,18 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 {/* BUTTONS */}
         <div className="btn-group mt-3">
-          <button type="submit" className="btn btn-primary">
-            Register
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="btn btn-danger"
-          >
-            Cancel
-          </button>
-          </div>
+ <div className="btn-group">
+  <button type="submit" className="btn btn-primary">
+    Register
+  </button>
+
+  <button type="button" className="btn btn-cancel">
+    Cancel
+  </button>
+</div>
+
+</div>
+
       </form>
     </div>
   );

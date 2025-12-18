@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { RiUserAddLine, RiUserSettingsLine, RiEyeLine, RiEditLine } from 'react-icons/ri';
-
+import { RiUserAddLine, RiUserSettingsLine } from 'react-icons/ri';
+//import
 const AdminSidebar = ({ selected, onSelect }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [expandedMenu, setExpandedMenu] = useState(null);
@@ -8,8 +8,7 @@ const AdminSidebar = ({ selected, onSelect }) => {
   const menuItems = [
     { label: 'Admin Register', icon: <RiUserAddLine />, key: 'RegisterPage' },
     { label: 'User Approval', icon: <RiUserSettingsLine />, key: 'userApproval' },
-    { label: 'View Data', icon: <RiEyeLine />, key: 'viewData' },
-    { label: 'Update Users', icon: <RiEditLine />, key: 'updateUsers' },
+  
 ];
 
     const handleItemClick = (key, hasSubItems) => {

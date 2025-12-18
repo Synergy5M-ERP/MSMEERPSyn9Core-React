@@ -1,6 +1,6 @@
 /* ================================ */
 /*        CLEAN TABLE LOOK          */
-/*         (LIKE YOUR IMAGE)        */
+/*         (LIKE YOUR IMAGEs)        */
 /* ================================ */
 
 /* Header Style */
@@ -158,6 +158,11 @@
 .module-access-modal .modal-dialog {
   transform: translateY(-20px);
   animation: slideDown 0.25s ease-out forwards;
+}
+.user-management-title {
+  color: #007bff;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 @keyframes slideDown {

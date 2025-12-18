@@ -74,4 +74,6 @@ public partial class HRM_OganizationTbl
 
     [StringLength(1000)]
     public string? Emp_Code { get; set; }
+    public bool? IsActive { get; set; }
+
 }

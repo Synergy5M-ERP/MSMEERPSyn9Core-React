@@ -42,6 +42,7 @@ const MasterSidebar = ({ selected, onSelect }) => {
   { label: 'Create Vendor', icon: <StoreIcon />, key: 'vendorMaster' },
   { label: 'Create Inventory', icon: <Inventory2Sharp />, key: 'createInventory' },
   { label: 'Create BOM', icon: <SchemaRounded />, key: 'createBOM' },
+  { label: 'view BOM', icon: <SchemaRounded />, key: 'viewbom' },
   { label: 'Create Location', icon: <LocationCity />, key: 'createLocaion' },
   { label: 'Create Commodity', icon: <Category />, key: 'commodityMaster' },
   { label: 'Create Parameter', icon: <Tune />, key: 'createParameter' },

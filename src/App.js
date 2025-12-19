@@ -31,6 +31,8 @@ import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
 import HrmDashboard from "./pages/HRM/HrmDashboard";
 import HrmConfiguration from "./pages/HRM/HRMConfiguration";
 import SalesDistribution from "./pages/Sales/SalesDistribution";
+import ViewBOM from "./pages/Masters/BOM/ViewBOM";
+
 
 function App() {
   return (
@@ -57,6 +59,9 @@ function App() {
 <Route path="/viewvendor" element={<ViewVendor/>}/>
 <Route  path="/hrm" element={<HrmConfiguration/>}/>
 <Route path="/salesanddistribution" element={<SalesDistribution/>}/>
+<Route path="/ViewBOM" element={<ViewBOM/>}/>
+
+
 
         {/* AccountGroupSubgroup */}
       </Routes>

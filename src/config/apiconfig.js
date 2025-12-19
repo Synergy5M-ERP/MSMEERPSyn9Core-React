@@ -1,9 +1,9 @@
-// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+ const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
  //const BASE_URL = "https://localhost:7145/api";
 
 //const BASE_URL = "https://localhost:7145/api";
 //const API_BASE_URL = 'http://localhost:49980/Vendor';
-const BASE_URL="https://localhost:44345"
+//const BASE_URL="https://localhost:44345"
 export const API_ENDPOINTS = {
  // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,

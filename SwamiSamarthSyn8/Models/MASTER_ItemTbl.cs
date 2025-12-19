@@ -12,6 +12,8 @@ public partial class MASTER_ItemTbl
     [Key]
     public int Id { get; set; }
 
+    public string? Item_Category { get; set;}
+
     [StringLength(50)]
     public string? Item_Code { get; set; }
 

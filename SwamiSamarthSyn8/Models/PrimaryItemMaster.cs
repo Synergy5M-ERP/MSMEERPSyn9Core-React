@@ -26,7 +26,7 @@ public partial class PrimaryItemMaster
 
     [StringLength(100)]
     [Unicode(false)]
-    public string? QTY { get; set; }
+    public decimal? QTY { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]

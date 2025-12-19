@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SwamiSamarthSyn8.Models
 {
@@ -22,10 +22,15 @@ namespace SwamiSamarthSyn8.Models
         [MaxLength(50)]
         public string GroupCode { get; set; }
 
-        // Foreign key to AccountType table
-        [ForeignKey("AccountTypeid")]
+        // Foreign key
+        [Required]
         public int AccountTypeid { get; set; }
-        public virtual AccountType AccountType { get; set; }
 
+        // Navigation properties
+        [JsonIgnore]
+        public virtual AccountType? AccountType { get; set; }  // nullable
+
+        [JsonIgnore]
+        public virtual ICollection<AccountSubGroup>? AccountSubGroups { get; set; } // nullable
     }
 }

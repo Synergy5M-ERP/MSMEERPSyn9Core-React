@@ -1,54 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
-namespace SwamiSamarthSyn8.Models;
 
-[Table("HRM_AdminRegTbl")]
-public partial class HRM_AdminRegTbl
+namespace SwamiSamarthSyn8.Models
 {
-    [Key]
-    public int id { get; set; }
+    [Table("HRM_AdminRegTbl")]
+    public partial class HRM_AdminRegTbl
+    {
+        [Key]
+        public int id { get; set; }
 
-    public int? userid { get; set; }
+        public int? UserId { get; set; }
 
-    [StringLength(50)]
-    public string? company_name { get; set; }
+        [StringLength(50)]
+        public string? CompanyName { get; set; }
 
-    [StringLength(50)]
-    public string? contact_person { get; set; }
+        [StringLength(50)]
+        public string? ContactPerson { get; set; }
 
-    [StringLength(50)]
-    public string? email_id { get; set; }
+        [StringLength(50)]
+        public string? EmailId { get; set; }
 
-    [StringLength(50)]
-    public string? contact_no { get; set; }
+        [StringLength(50)]
+        public string? ContactNo { get; set; }
 
-    [StringLength(50)]
-    public string? gst_no { get; set; }
+        [StringLength(50)]
+        public string? GstNo { get; set; }
 
-    [StringLength(50)]
-    public string? country { get; set; }
+        [StringLength(50)]
+        public string? Country { get; set; }
 
-    [StringLength(50)]
-    public string? state { get; set; }
+        [StringLength(50)]
+        public string? State { get; set; }
 
-    [StringLength(50)]
-    public string? city { get; set; }
+        [StringLength(50)]
+        public string? City { get; set; }
 
-    [StringLength(255)]
-    [Unicode(false)]
-    public string? source { get; set; }
+        [StringLength(255)]
+        [Unicode(false)]
+        public string? Source { get; set; }
 
-    [StringLength(255)]
-    [Unicode(false)]
-    public string? continent { get; set; }
+        [StringLength(255)]
+        [Unicode(false)]
+        public string? Continent { get; set; }
 
-    [StringLength(255)]
-    public string? authority { get; set; }
+        [StringLength(255)]
+        public string? Authority { get; set; }
 
-    [StringLength(255)]
-    public string? designation { get; set; }
+        [StringLength(255)]
+        public string? Designation { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+      
+    }
 }

@@ -5,9 +5,10 @@ import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/apiconfig";
+import Pagination from "../../components/Pagination"; // Adjust path as needed
 
 function AccountVoucherType({ view }) {
-  const [formType, setFormType] = useState("vouchertype"); // 'vouchertype' or 'subvouchertype'
+  const [formType, setFormType] = useState("vouchertype");
   const [vouchertype, setVoucherType] = useState("");
   const [description, setDescription] = useState("");
   const [vouchertypeId, setVoucherTypeId] = useState("");
@@ -16,8 +17,10 @@ function AccountVoucherType({ view }) {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 4;
 
-  // Use the external 'view' prop for filtering
   const activeFilter = view;
 
   useEffect(() => {
@@ -27,6 +30,11 @@ function AccountVoucherType({ view }) {
       fetchSubVoucherTypes(activeFilter);
     }
   }, [formType, activeFilter]);
+
+  // Reset pagination when data or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [formType, activeFilter, vouchertypes, subVoucherTypes]);
 
   const fetchVoucherTypes = async (status = "active") => {
     setFetchLoading(true);
@@ -267,6 +275,11 @@ function AccountVoucherType({ view }) {
     activeFilter === "active" ? item.IsActive !== false : item.IsActive === false
   );
 
+  // Pagination logic
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredData.slice(indexOfFirstRecord, indexOfLastRecord);
+
   // Loading Spinner component
   const LoadingSpinner = () => (
     <div
@@ -336,8 +349,6 @@ function AccountVoucherType({ view }) {
               Account Sub Voucher Type
             </label>
           </div>
-
-          {/* Remove internal activeFilter UI since parent controls that */}
         </div>
 
         <div className="row">
@@ -416,73 +427,86 @@ function AccountVoucherType({ view }) {
                 {formType === "vouchertype" ? "Voucher Type List" : "Sub Voucher Type List"}
               </h5>
 
-              <table className="table table-bordered table-striped mt-3">
-                <thead>
-                  <tr>
-                    {formType === "subvouchertype" && <th>Voucher Type</th>}
-                    <th>{formType === "vouchertype" ? "Voucher Type" : "Sub Voucher Type"}</th>
-                    {activeFilter === "active" ? (
-                      <>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                      </>
-                    ) : (
-                      <th>Activate</th>
-                    )}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredData.length === 0 ? (
+              <div className="table-responsive">
+                <table className="table table-bordered table-striped mt-3">
+                  <thead>
                     <tr>
-                      <td colSpan={formType === "subvouchertype" ? 3 : 2} className="text-center text-muted">
-                        No data found
-                      </td>
+                      {formType === "subvouchertype" && <th>Voucher Type</th>}
+                      <th>{formType === "vouchertype" ? "Voucher Type" : "Sub Voucher Type"}</th>
+                      {activeFilter === "active" ? (
+                        <>
+                          <th>Edit</th>
+                          <th>Delete</th>
+                        </>
+                      ) : (
+                        <th>Activate</th>
+                      )}
                     </tr>
-                  ) : (
-                    filteredData.map((item) => (
-                      <tr key={item.AccountVoucherTypeId || item.AccountSubVoucherTypeId}>
-                        {formType === "subvouchertype" && (
-                          <td>
-                            {vouchertypes.find((l) => l.AccountVoucherTypeId === item.AccountVoucherTypeId)?.VoucherType || "N/A"}
-                          </td>
-                        )}
+                  </thead>
 
-                        <td>{item.VoucherType || item.SubVoucherType}</td>
-
-                        {activeFilter === "active" ? (
-                          <>
+                  <tbody>
+                    {currentRecords.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={formType === "subvouchertype" ? (activeFilter === "active" ? 4 : 3) : (activeFilter === "active" ? 3 : 2)}
+                          className="text-center text-muted py-4"
+                        >
+                          {filteredData.length === 0 ? "No data found" : "No records on this page"}
+                        </td>
+                      </tr>
+                    ) : (
+                      currentRecords.map((item) => (
+                        <tr key={item.AccountVoucherTypeId || item.AccountSubVoucherTypeId}>
+                          {formType === "subvouchertype" && (
                             <td>
-                              <button onClick={() => handleEdit(item)} className="btn btn-link p-0" title="Edit">
-                                <Eye size={18} />
-                              </button>
+                              {vouchertypes.find((l) => l.AccountVoucherTypeId === item.AccountVoucherTypeId)?.VoucherType || "N/A"}
                             </td>
+                          )}
+
+                          <td>{item.VoucherType || item.SubVoucherType}</td>
+
+                          {activeFilter === "active" ? (
+                            <>
+                              <td>
+                                <button onClick={() => handleEdit(item)} className="btn btn-link p-0" title="Edit">
+                                  <Eye size={18} />
+                                </button>
+                              </td>
+                              <td>
+                                <button
+                                  onClick={() => handleDelete(item.AccountVoucherTypeId || item.AccountSubVoucherTypeId)}
+                                  className="btn btn-link text-danger p-0"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </td>
+                            </>
+                          ) : (
                             <td>
                               <button
-                                onClick={() => handleDelete(item.AccountVoucherTypeId || item.AccountSubVoucherTypeId)}
-                                className="btn btn-link text-danger p-0"
-                                title="Delete"
+                                onClick={() => handleActivate(item.AccountVoucherTypeId || item.AccountSubVoucherTypeId)}
+                                className="btn btn-link text-success p-0 fw-semibold"
+                                title="Activate"
                               >
-                                <Trash2 size={18} />
+                                Activate
                               </button>
                             </td>
-                          </>
-                        ) : (
-                          <td>
-                            <button
-                              onClick={() => handleActivate(item.AccountVoucherTypeId || item.AccountSubVoucherTypeId)}
-                              className="btn btn-link text-success p-0 fw-semibold"
-                              title="Activate"
-                            >
-                              Activate
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                          )}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+
+                {/* Pagination Component */}
+                <Pagination
+                  totalRecords={filteredData.length}
+                  recordsPerPage={recordsPerPage}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
             </div>
           </div>
         </div>

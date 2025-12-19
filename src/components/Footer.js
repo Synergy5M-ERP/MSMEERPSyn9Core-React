@@ -1,7 +1,9 @@
 import React from 'react';
+import './Footer.css';
 
 const Footer = () => {
   return (
+
     <footer
       style={{
         backgroundColor: '#002b5b',  // fixed typo
@@ -22,7 +24,9 @@ const Footer = () => {
 
    
 
-      <p>© 2025 - MSME ERP SYN - 9 Powered by SYNERGY5M LLP Pune All Rights Reserved</p>
+      <p className='text-light'>© 2025 - MSME ERP SYN - 9 Powered by SYNERGY5M LLP Pune All Rights Reserved</p>
+
+
 
     </footer>
   );

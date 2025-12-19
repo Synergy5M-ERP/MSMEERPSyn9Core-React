@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './App.css';
-import RegisterPage from "./pages/RegisterPage";
+//import RegisterPage from "./pages/RegisterPage";
 import Login from "./pages/Login";
 import AccountTypePage from "./pages/Account/AccountTypePage";
 import AccountPage from "./pages/Account/AccountPage";
@@ -34,14 +34,26 @@ import SalesDistribution from "./pages/Sales/SalesDistribution";
 import ViewBOM from "./pages/Masters/BOM/ViewBOM";
 
 
+import MMModule from "./pages/MM/MMModule";
+import StepIndicator from "./pages/MM/StepIndicator";
+import CreateEnquiryPage from "./pages/MM/StepWise";
+import ProductionModule from "./pages/ProductionModule/ProductionModule";
+import QualityModule from "./pages/QualityModule/QualityModule";
+import WareHouse from "./pages/Sales/WareHouse";
+import Dashboard from "./pages/Dashboard";
+
+import AdminConfiguration from "./pages/AdminPanel/AdminConfiguration";
+
+
 function App() {
   return (
     <Router>
       
       <Header />
       <Routes>
-        <Route path="/register" element={<RegisterPage />} />
+       
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/accounttype" element={<AccountTypePage />} />
         <Route path="/AccountPage" element={<AccountPage />} />
         <Route path="/AccountVoucherType" element={<AccoutVoucherType/>}/>
@@ -63,6 +75,15 @@ function App() {
 
 
 
+<Route path="/mm" element={<MMModule/>} />
+<Route path="/indicator" element={<CreateEnquiryPage/>} />
+
+<Route path="/admin/*" element={<AdminConfiguration />} />
+
+
+<Route path="/production" element={<ProductionModule/>} />
+<Route path="/quality" element={<QualityModule/>} />
+<Route path="/warehouse" element={<WareHouse/>} />
         {/* AccountGroupSubgroup */}
       </Routes>
 

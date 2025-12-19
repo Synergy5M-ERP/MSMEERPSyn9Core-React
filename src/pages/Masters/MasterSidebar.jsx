@@ -35,19 +35,19 @@ const MasterSidebar = ({ selected, onSelect }) => {
     const menuItems = 
      [
   { label: 'Dashboard', icon: <DashboardCustomize />, key: 'Dashboard' },
-  { label: 'Create Item', icon: <AddBox />, key: 'itemMaster' },
-  { label: 'Create Alternative Item', icon: <SwapHoriz />, key: 'alternateItem' },
+  { label: ' Item Master', icon: <AddBox />, key: 'itemMaster' },
+  { label: ' Alternative Item Master', icon: <SwapHoriz />, key: 'alternateItem' },
 //   { label: 'Primary Items', icon: <Inventory />, key: 'primaryitems' },
 //   { label: 'Alternative Items', icon: <ChangeCircle />, key: 'Alternativeitems' },
-  { label: 'Create Vendor', icon: <StoreIcon />, key: 'vendorMaster' },
-  { label: 'Create Inventory', icon: <Inventory2Sharp />, key: 'createInventory' },
-  { label: 'Create BOM', icon: <SchemaRounded />, key: 'createBOM' },
-  { label: 'view BOM', icon: <SchemaRounded />, key: 'viewbom' },
-  { label: 'Create Location', icon: <LocationCity />, key: 'createLocaion' },
-  { label: 'Create Commodity', icon: <Category />, key: 'commodityMaster' },
-  { label: 'Create Parameter', icon: <Tune />, key: 'createParameter' },
+  { label: ' Vendor Master', icon: <StoreIcon />, key: 'vendorMaster' },
+    { label: '  Inventory Master', icon: <Inventory2Sharp />, key: 'Inventory' },
+  { label: ' Floor Inventory Master', icon: <Inventory2Sharp />, key: 'FloorInventory' },
+//   { label: ' BOM', icon: <SchemaRounded />, key: ' BOM' },
+  { label: ' Location Master', icon: <LocationCity />, key: 'location' },
+  { label: ' Commodity Master', icon: <Category />, key: 'commodityMaster' },
+  { label: ' Parameter Master', icon: <Tune />, key: 'Parameter' },
   {
-label:'Bill Of Material',icon:<RiBillFill/>,key:'BillOFMaterial'
+label:'Bill Of Material',icon:<RiBillFill/>,key:'BOM'
   }
 ];
 

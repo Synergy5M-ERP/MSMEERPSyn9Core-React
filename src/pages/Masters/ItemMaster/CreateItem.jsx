@@ -24,7 +24,7 @@ function CreateItem() {
     MOQ: '',
     Primary_Alternate: 'PRIMARY',
     TC_COA: '',
-    File:'',
+    File: '',
   });
 
   const [dropdownData, setDropdownData] = useState({
@@ -79,6 +79,43 @@ function CreateItem() {
     } finally {
       setLoadingDropdowns(false);
     }
+  };
+
+  // Enhanced number input handler with validation
+  const handleNumberInputChange = (name, value) => {
+    // Allow empty string for clearing
+    if (value === '' || value === null) {
+      setFormData(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+      return;
+    }
+
+    // Convert to number and validate
+    const numValue = parseFloat(value);
+    
+    // Prevent negative values and NaN
+    if (isNaN(numValue) || numValue < 0) {
+      toast.error(`${name.replace('_', ' ')} cannot be less than 0`);
+      return;
+    }
+
+    // Specific validations
+    if (name === 'HS_Code' && (!Number.isInteger(numValue) || numValue < 1000)) {
+      toast.error('HS Code must be a valid integer >= 1000');
+      return;
+    }
+
+    if ((name === 'Average_Price' || name === 'Safe_Stock' || name === 'MOQ') && numValue === 0) {
+      toast.error(`${name.replace('_', ' ')} cannot be 0`);
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: numValue.toString()
+    }));
   };
 
   // Handle image file input change
@@ -235,6 +272,14 @@ function CreateItem() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle number fields with validation
+    if (['HS_Code', 'Average_Price', 'Safe_Stock', 'MOQ'].includes(name)) {
+      handleNumberInputChange(name, value);
+      return;
+    }
+
+    // Handle text fields
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -275,19 +320,55 @@ function CreateItem() {
     toast.info('Form cleared!');
   };
 
+  // Enhanced validation with number checks
   const validateForm = () => {
-    if (!formData.Company_Name) {
+    // Required fields
+    if (!formData.Company_Name?.trim()) {
       toast.error('Please select a company name.');
       return false;
     }
+    
+    if (!formData.Grade?.trim()) {
+      toast.error('Grade is required.');
+      return false;
+    }
+
     if (!formData.HS_Code || formData.HS_Code.trim() === '') {
       toast.error('HS CODE is required.');
       return false;
     }
-    if (!formData.Grade || formData.Grade.trim() === '') {
-      toast.error('Grade is required.');
+
+    // Number field validations
+    const hsCode = parseFloat(formData.HS_Code);
+    if (isNaN(hsCode) || hsCode < 1000 || !Number.isInteger(hsCode)) {
+      toast.error('HS Code must be a valid integer >= 1000');
       return false;
     }
+
+    const avgPrice = parseFloat(formData.Average_Price);
+    if (formData.Average_Price && (isNaN(avgPrice) || avgPrice <= 0)) {
+      toast.error('Average Price must be greater than 0');
+      return false;
+    }
+
+    const safeStock = parseFloat(formData.Safe_Stock);
+    if (formData.Safe_Stock && (isNaN(safeStock) || safeStock < 0)) {
+      toast.error('Safe Stock cannot be less than 0');
+      return false;
+    }
+
+    const moq = parseFloat(formData.MOQ);
+    if (formData.MOQ && (isNaN(moq) || moq <= 0)) {
+      toast.error('MOQ must be greater than 0');
+      return false;
+    }
+
+    // Required radio buttons
+    if (!formData.Primary_Alternate) {
+      toast.error('Please select Primary or Alternate.');
+      return false;
+    }
+
     return true;
   };
 
@@ -338,385 +419,471 @@ function CreateItem() {
 
   if (loadingDropdowns) {
     return (
-     <div className="loading-container" style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-             <Loader className="spinner" size={48} />
-             <p>Loading form data...</p>
-           </div>
+      <div className="loading-container" style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+        <Loader className="spinner" size={48} />
+        <p>Loading form data...</p>
+      </div>
     );
   }
 
   return (
-  <>
-   <style>{`
-      
+    <>
+      <style>{`
         .form-label {
-  text-align: left !important;
-   font-size: 16px; !important
-}
-
+          text-align: left !important;
+          font-size: 16px !important;
+        }
+        .form-control:focus {
+          border-color: #100670;
+          box-shadow: 0 0 0 0.2rem rgba(16, 6, 112, 0.25);
+        }
+        .required {
+          color: #dc3545;
+        }
+        .upload-area {
+          border: 2px dashed #ddd;
+          border-radius: 12px;
+          padding: 40px 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          background: #f8f9fa;
+        }
+        .upload-area:hover {
+          border-color: #100670;
+          background-color: #f0f4ff;
+        }
+        .upload-icon {
+          color: #100670;
+        }
+        .upload-text {
+          font-weight: 600;
+          margin: 0;
+        }
+        .upload-subtext {
+          margin: 0;
+          color: #6c757d;
+        }
+        .image-preview-container {
+          position: relative;
+          display: inline-block;
+        }
+        .image-preview {
+          max-height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Number input styling */
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
       `}</style>
-    <div className="app-container" style={{ backgroundColor: 'white', minHeight: '120vh' }}>
-{/* <h3>Add item Details</h3> */}
-      {/* <div className="header">
-        <h4 className='fw-500 text-primary'>Add Item Details</h4>
-        <div className="header-line"></div>
-      </div> */}
 
-      <div className="form-card scrollbar ">
-        <div className="form-content">
-
-          {/* Company & Location Section */}
-          <div className="section">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label  text-primary d-block" style={{fontSize:'18px'}}>Company Name <span className="required">*</span></label>
-                <select
-                  name="Company_Name"
-                  value={formData.Company_Name}
-                  onChange={handleCompanyChange}
-                  className="form-input"
-                >
-                  <option value="">Select Company</option>
-                  {dropdownData.companies.map((company, index) => (
-                    <option key={index} value={company.value}>{company.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Source</label>
-                <input
-                  type="text"
-                  name="Source"
-                  value={formData.Source}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Continent</label>
-                <input
-                  type="text"
-                  name="Continent"
-                  value={formData.Continent}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Country</label>
-                <input
-                  type="text"
-                  name="Country"
-                  value={formData.Country}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Item Classification Section */}
-          <div className="section">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>State</label>
-                <input
-                  type="text"
-                  name="State"
-                  value={formData.State}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>City</label>
-                <input
-                  type="text"
-                  name="City"
-                  value={formData.City}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Industry</label>
-                <select
-                  name="Industry"
-                  value={formData.Industry}
-                  onChange={handleInputChange}
-                  className="form-input"
-                >
-                  <option value="">Select Industry</option>
-                  {dropdownData.industries.map((industry, index) => (
-                    <option key={index} value={industry.value}>{industry.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Category</label>
-                <select
-                  name="ItemCategory"
-                  value={formData.ItemCategory}
-                  onChange={handleInputChange}
-                  disabled={!formData.Industry}
-                  className="form-input"
-                >
-                  <option value="">Select Category</option>
-                  {dropdownData.categories.map((category, index) => (
-                    <option key={index} value={category.value}>{category.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Sub Category</label>
-                <select
-                  name="Sub_Category"
-                  value={formData.Sub_Category}
-                  onChange={handleSubCategoryChange}
-                  disabled={!formData.ItemCategory}
-                  className="form-input"
-                >
-                  <option value="">Select Sub Category</option>
-                  {dropdownData.subcategories.map((subCategory, index) => (
-                    <option key={index} value={subCategory.value}>{subCategory.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Item Name</label>
-                <input
-                  type="text"
-                  name="Item_Name"
-                  value={formData.Item_Name}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Grade <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="Grade"
-                  value={formData.Grade}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Unit of Measurement</label>
-                <select
-                  name="Unit_Of_Measurement"
-                  value={formData.Unit_Of_Measurement}
-                  onChange={handleInputChange}
-                  className="form-input"
-                >
-                  <option value="">Select UOM</option>
-                  {dropdownData.uoms.map((uom, index) => (
-                    <option key={index} value={uom.value}>{uom.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Pricing & Stock Section */}
-          <div className="section">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>HS Code <span className="required">*</span></label>
-                <input
-                  type="number"
-                  name="HS_Code"
-                  value={formData.HS_Code}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Currency</label>
-                <select
-                  name="Currency"
-                  value={formData.Currency}
-                  onChange={handleInputChange}
-                  className="form-input"
-                >
-                  {dropdownData.currencies.map((currency, index) => (
-                    <option key={index} value={currency.value}>{currency.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Average Price</label>
-                <input
-                  type="number"
-                  name="Average_Price"
-                  value={formData.Average_Price}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  step="0.01"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Safe Stock Level</label>
-                <input
-                  type="number"
-                  name="Safe_Stock"
-                  value={formData.Safe_Stock}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Options Section */}
-          <div className="section">
-            <div className="options-grid">
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>MOQ</label>
-                <input
-                  type="number"
-                  name="MOQ"
-                  value={formData.MOQ}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>Primary or Alternate <span className="required">*</span></label>
-                <div className="radio-group">
-                  <label className="form-label  h3 text-primary d-block radio-label">
-                    <input
-                      type="radio"
-                      value="PRIMARY"
-                      checked={formData.Primary_Alternate === 'PRIMARY'}
-                      onChange={(e) => handleRadioChange('Primary_Alternate', e.target.value)}
-                    />
-                    <span>Primary</span>
-                  </label>
-                  <label className="form-label  h3 text-primary d-block radio-label">
-                    <input
-                      type="radio"
-                      value="ALTERNATE"
-                      checked={formData.Primary_Alternate === 'ALTERNATE'}
-                      onChange={(e) => handleRadioChange('Primary_Alternate', e.target.value)}
-                    />
-                    <span>Alternate</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label  h3 text-primary d-block" style={{fontSize:'18px'}}>TC / COA</label>
-                <div className="radio-group">
-                  <label className="form-label  h3 text-primary d-block radio-label">
-                    <input
-                      type="radio"
-                      value="Required"
-                      checked={formData.TC_COA === 'Required'}
-                      onChange={(e) => handleRadioChange('TC_COA', e.target.value)}
-                    />
-                    <span>Required</span>
-                  </label>
-                  <label className="form-label  h3 text-primary d-block radio-label">
-                    <input
-                      type="radio"
-                      value="Not Required"
-                      checked={formData.TC_COA === 'Not Required'}
-                      onChange={(e) => handleRadioChange('TC_COA', e.target.value)}
-                    />
-                    <span>Not Required</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Image & Document Upload Section */}
-          <div className="row">
-            <div className="col-5 ">
-              {/* Image Upload */}
-              <label className="form-label   text-primary d-block"> Upload item Image</label>
-              {!imagePreview ? (
-                <label className="form-label  text-primary d-block upload-area">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="file-input"
-                  />
-                  <Upload size={16} className="upload-icon" />
-                  <div className='flex'>
-                    <p className="upload-text">Click to upload image</p>
-                    <p className="upload-subtext">PNG, JPG up to 5MB</p>
+      <div className="app-container" style={{ backgroundColor: 'white', minHeight: '120vh', padding: '20px 0' }}>
+        <div className="container-fluid">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-11">
+              <div className="card border-0 shadow-lg">
+                <div className="card-body p-4 p-lg-5">
+                  
+                  {/* ROW 1: Company Name, Source, Continent, Country, State */}
+                  <div className="row mb-4">
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">
+                        Company Name <span className="required">*</span>
+                      </label>
+                      <select
+                        name="Company_Name"
+                        value={formData.Company_Name}
+                        onChange={handleCompanyChange}
+                        className="form-control form-input"
+                      >
+                        <option value="">Select Company</option>
+                        {dropdownData.companies.map((company, index) => (
+                          <option key={index} value={company.value}>{company.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Source</label>
+                      <input
+                        type="text"
+                        name="Source"
+                        value={formData.Source}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Continent</label>
+                      <input
+                        type="text"
+                        name="Continent"
+                        value={formData.Continent}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Country</label>
+                      <input
+                        type="text"
+                        name="Country"
+                        value={formData.Country}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">State</label>
+                      <input
+                        type="text"
+                        name="State"
+                        value={formData.State}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
                   </div>
-                </label>
-              ) : (
-                <div className="image-preview-container">
-                  <img src={imagePreview} alt="Preview" className="image-preview" />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="remove-image-btn"
-                  >
-                    <X size={20} />
-                  </button>
+
+                  {/* ROW 2: City, Industry, Category, Sub Category, Item Name */}
+                  <div className="row mb-4">
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">City</label>
+                      <input
+                        type="text"
+                        name="City"
+                        value={formData.City}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Industry</label>
+                      <select
+                        name="Industry"
+                        value={formData.Industry}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      >
+                        <option value="">Select Industry</option>
+                        {dropdownData.industries.map((industry, index) => (
+                          <option key={index} value={industry.value}>{industry.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Category</label>
+                      <select
+                        name="ItemCategory"
+                        value={formData.ItemCategory}
+                        onChange={handleInputChange}
+                        disabled={!formData.Industry}
+                        className="form-control"
+                      >
+                        <option value="">Select Category</option>
+                        {dropdownData.categories.map((category, index) => (
+                          <option key={index} value={category.value}>{category.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Sub Category</label>
+                      <select
+                        name="Sub_Category"
+                        value={formData.Sub_Category}
+                        onChange={handleSubCategoryChange}
+                        disabled={!formData.ItemCategory}
+                        className="form-control"
+                      >
+                        <option value="">Select Sub Category</option>
+                        {dropdownData.subcategories.map((subCategory, index) => (
+                          <option key={index} value={subCategory.value}>{subCategory.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Item Name</label>
+                      <input
+                        type="text"
+                        name="Item_Name"
+                        value={formData.Item_Name}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROW 3: Grade, UOM, HS Code, Currency, Average Price */}
+                  <div className="row mb-4">
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">
+                        Grade <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="Grade"
+                        value={formData.Grade}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">UOM</label>
+                      <select
+                        name="Unit_Of_Measurement"
+                        value={formData.Unit_Of_Measurement}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      >
+                        <option value="">Select UOM</option>
+                        {dropdownData.uoms.map((uom, index) => (
+                          <option key={index} value={uom.value}>{uom.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">
+                        HS Code <span className="required">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="HS_Code"
+                        value={formData.HS_Code}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        min="1000"
+                        step="1"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Currency</label>
+                      <select
+                        name="Currency"
+                        value={formData.Currency}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      >
+                        {dropdownData.currencies.map((currency, index) => (
+                          <option key={index} value={currency.value}>{currency.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Avg Price</label>
+                      <input
+                        type="number"
+                        name="Average_Price"
+                        value={formData.Average_Price}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        min="0.01"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROW 4: Safe Stock, MOQ, Primary/Alternate, TC/COA */}
+                  <div className="row mb-4">
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">Safe Stock</label>
+                      <input
+                        type="number"
+                        name="Safe_Stock"
+                        value={formData.Safe_Stock}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        min="0"
+                        step="1"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-primary fw-bold fs-6">MOQ</label>
+                      <input
+                        type="number"
+                        name="MOQ"
+                        value={formData.MOQ}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        min="1"
+                        step="1"
+                      />
+                    </div>
+                    <div className="col-xl-4 col-lg-4 col-md-6 mb-3">
+                      <label className="form-label text-primary fw-bold fs-6">
+                        Primary or Alternate <span className="required">*</span>
+                      </label>
+                      <div className="d-flex gap-4 mt-2 pt-1">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="Primary_Alternate"
+                            id="primary"
+                            value="PRIMARY"
+                            checked={formData.Primary_Alternate === 'PRIMARY'}
+                            onChange={(e) => handleRadioChange('Primary_Alternate', e.target.value)}
+                          />
+                          <label className="form-check-label fw-semibold" htmlFor="primary">
+                            Primary
+                          </label>
+                        </div>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="Primary_Alternate"
+                            id="alternate"
+                            value="ALTERNATE"
+                            checked={formData.Primary_Alternate === 'ALTERNATE'}
+                            onChange={(e) => handleRadioChange('Primary_Alternate', e.target.value)}
+                          />
+                          <label className="form-check-label fw-semibold" htmlFor="alternate">
+                            Alternate
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-xl-4 col-lg-4 col-md-6 mb-3">
+                      <label className="form-label text-primary fw-bold fs-6">TC / COA</label>
+                      <div className="d-flex gap-4 mt-2 pt-1">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="TC_COA"
+                            id="tc-required"
+                            value="Required"
+                            checked={formData.TC_COA === 'Required'}
+                            onChange={(e) => handleRadioChange('TC_COA', e.target.value)}
+                          />
+                          <label className="form-check-label fw-semibold" htmlFor="tc-required">
+                            Required
+                          </label>
+                        </div>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="TC_COA"
+                            id="tc-not-required"
+                            value="Not Required"
+                            checked={formData.TC_COA === 'Not Required'}
+                            onChange={(e) => handleRadioChange('TC_COA', e.target.value)}
+                          />
+                          <label className="form-check-label fw-semibold" htmlFor="tc-not-required">
+                            Not Required
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ROW 5: Image Upload (Full Width) */}
+                  <div className="row mb-5">
+                    <div className="col-12">
+                      <div className="col-lg-6 col-md-8 mx-auto">
+                        {!imagePreview ? (
+                          <label className="upload-area p-4">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="d-none"
+                            />
+                            <Upload size={32} className="upload-icon mx-auto d-block mb-3" />
+                            <div>
+                              <p className="upload-text mb-1">Click to upload item image</p>
+                              <p className="upload-subtext">PNG, JPG (Max 5MB)</p>
+                            </div>
+                          </label>
+                        ) : (
+                          <div className="image-preview-container text-center">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="img-fluid rounded shadow-lg mb-3" 
+                              style={{maxHeight: '250px', objectFit: 'cover', maxWidth: '100%'}}
+                            />
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="btn btn-danger btn-sm px-3"
+                            >
+                              <X size={16} className="me-1" /> Remove Image
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                 <div className="row justify-content-center gap-3 py-4">
+  <div className="col-12 col-md-8 col-lg-6">
+    <div className="d-flex justify-content-center gap-3 flex-wrap">
+      {/* Create Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="btn btn-primary btn-lg px-5 py-3 save shadow-lg border-0 position-relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          // minWidth: '160px',
+          fontWeight: '600',
+          // letterSpacing: '0.5px',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        {loading ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Creating Item...
+          </>
+        ) : (
+          <>
+            {/* <i className="fas fa-plus me-2"></i> */}
+            Create 
+          </>
+        )}
+      </button>
+
+      {/* Clear Button */}
+      <button
+        onClick={handleCancel}
+        disabled={loading}
+        className="btn btn-outline-secondary btn-lg px-5 py-3 shadow-lg border-2 position-relative overflow-hidden"
+        style={{
+          // minWidth: '160px',
+          fontWeight: '600',
+         
+          transition: 'all 0.3s ease',
+          borderColor: '#6c757d !important'
+        }}
+      >
+        {/* <i className="fas fa-times me-2"></i> */}
+        Clear 
+      </button>
+    </div>
+  </div>
+</div>
+
+
                 </div>
-              )}
+              </div>
             </div>
-
-           
-          </div>
-
-          {/* Action Buttons */}
-          <div className="action-buttons">
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="btn btn-primary save"
-            >
-              {loading ? (
-                <>
-                  <Loader className="btn-spinner" size={18} />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={18} />
-                  Submit
-                </>
-              )}
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={loading}
-              className="btn btn-secondary"
-            >
-              <X size={18} />
-              Cancel
-            </button>
           </div>
         </div>
       </div>
 
-      <ToastContainer position="top-right" autoClose={3000} />
-
-
-    </div>
-  </>
+      <ToastContainer position="top-right" autoClose={4000} theme="colored" />
+    </>
   );
 }
 

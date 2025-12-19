@@ -13,14 +13,18 @@ import ItemMaster from './ItemMaster/ItemMaster';
 import VendorMaster from '../Masters/vendorMaster/VendorMaster';
 import CommodityMaster from './Commodity/CommodityMaster';
 import CreateBOM from './BOM/CreateBOM';
-import ViewBOM from './BOM/ViewBOM';
-
+import BOM from './BOM/BOM';
+import AlternateItem from './AlternateItemMaster/AlternateItemMaster';
+import InventoryMaster from './InventoryMaster/InventoryMaster';
+import LocationMaster from './LocationMaster/LocationMaster';
+import ParameterMaster from './ParameterMaster/ParameterMaster';
+import FloorInventoryMaster from './FloorInventoryMaster/FloorInventortMaster';
 const MasterConfiguration = () => {
-const [activePage, setActivePage] = useState('Dashboard');
+  const [activePage, setActivePage] = useState('Dashboard');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      
+
       {/* Full-width Header */}
       {/* <Header /> */}
 
@@ -30,12 +34,16 @@ const [activePage, setActivePage] = useState('Dashboard');
 
         {/* Main Content area */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
-       {activePage === 'Dashboard' && <MasterDashboard />}
+          {activePage === 'Dashboard' && <MasterDashboard />}
           {activePage === 'itemMaster' && <ItemMaster />}
-            {activePage === 'vendorMaster' && <VendorMaster />}
-             {activePage === 'commodityMaster' && <CommodityMaster />}
-                {activePage === 'createBOM' && <CreateBOM />}
-                 {activePage === 'viewbom' && <ViewBOM />}
+          {activePage === 'vendorMaster' && <VendorMaster />}
+          {activePage === 'commodityMaster' && <CommodityMaster />}
+          {activePage === 'BOM' && <BOM />}
+          {activePage === 'alternateItem' && <AlternateItem />}
+          {activePage === 'Inventory' && <InventoryMaster />}
+          {activePage === 'location' && <LocationMaster />}
+          {activePage === 'Parameter' && <ParameterMaster/>}
+          {activePage === 'FloorInventory' && <FloorInventoryMaster/>}
           {/* Add more conditions for other pages */}
         </div>
       </div>

@@ -271,17 +271,18 @@ const CheckPayable = () => {
         paymentDue: "",
         status: "",
         ...(
-          header ? {
-            grnNumber: header.grnNumber || "",
-            grnDate: header.grN_Date ? header.grN_Date.split("T")[0] : "",
-            poNumber: header.poNumber || "",
-            poDate: header.poDate ? header.poDate.split("T")[0] : "",
-            invoiceNumber: header.invoice_NO || "",
-            invoiceDate: header.invoice_Date ? header.invoice_Date.split("T")[0] : "",
-            vehicleNo: header.vehicle_No || "",
-            TransporterName: header.TransporterName || "",
-            paymentDue: header.paymentDue || "",
-            status: "Received"
+         header ? {
+         grnNumber: header.grnNumber || "",
+  grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
+  poNumber: header.poNumber || "",
+  poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
+  invoiceNumber: header.invoiceNumber || "",
+  invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
+  vehicleNo: header.vehicleNo || "",
+  TransporterName: header.transporterName || "",
+    paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
+
+  status: "Received"
           } : {}
         )
       }));
@@ -310,45 +311,49 @@ const CheckPayable = () => {
       draggable: false,
     });
 
-    // ✅ FIXED PAYLOAD - Matches backend model exactly
-    const payload = {
-      VendorId: Number(formData.vendorId) || 0,
-      SellerName: formData.sellerName,
-      grnNumber: formData.grnNumber,
-      grnDate: formData.grnDate,
-      poNumber: formData.poNumber,
-      poDate: formData.poDate,
-      invoiceNumber: formData.invoiceNumber,
-      invoiceDate: formData.invoiceDate,
-      vehicleNo: formData.vehicleNo,
-      TransporterName: formData.TransporterName,
-      paymentDue: formData.paymentDue,
-      status: formData.status || "Received",
-      totalAmount: formData.totalAmount,
-      taxAmount: formData.taxAmount,
-      grandAmount: formData.grandTotal,
-      Description: formData.sellerName || "Payable GRN", // ✅ Backend required
-      Items: tableData.map(item => ({  // ✅ Capital 'I' for Items array
-        Description: `${item.itemName} - ${item.grade}`, // ✅ Backend required
-        itemName: item.itemName,
-        grade: item.grade,
-        itemCode: item.itemCode,
-        receivedQty: parseFloat(item.receivedQty) || 0,
-        approvedQty: parseFloat(item.approvedQty) || 0,
-        damagedQty: parseFloat(item.damagedQty) || 0,
-        unit: item.receivedUnit || "pcs",
-        TaxType: item.taxType || "",
-        cgst: parseFloat(item.cgst) || 0,
-        sgst: parseFloat(item.sgst) || 0,
-        igst: parseFloat(item.igst) || 0,
-        rate: parseFloat(item.rate) || 0,
-        taxAmount: parseFloat(item.taxAmount) || 0,
-        totalItemValue: parseFloat(item.totalItemValue) || 0,
-        billItemValue: parseFloat(item.billItemValue) || 0,
-        billCheck: item.billCheck === true, // ✅ Saves checkbox state to DB
-        TransporterName: formData.TransporterName || ""
-      }))
-    };
+   // ✅ FIXED PAYLOAD - Matches backend model exactly
+const payload = {
+  VendorId: Number(formData.vendorId) || 0,
+  SellerName: formData.sellerName,
+  grnNumber: formData.grnNumber,
+  grnDate: formData.grnDate,
+  poNumber: formData.poNumber,
+  poDate: formData.poDate,
+  invoiceNumber: formData.invoiceNumber,
+  invoiceDate: formData.invoiceDate,
+  vehicleNo: formData.vehicleNo,
+  TransporterName: formData.TransporterName,
+  paymentDue: formData.paymentDue,
+  status: formData.status || "Received",
+  totalAmount: formData.totalAmount,
+  taxAmount: formData.taxAmount,
+  grandAmount: formData.grandTotal,
+    BillStatus: "Pending", // <-- Add this field as required by backend
+
+  Description: formData.sellerName || "Payable GRN",
+  Items: tableData.map(item => ({
+    Description: `${item.itemName} `,
+    itemName: item.itemName,
+    grade: item.grade,
+    itemCode: item.itemCode,
+    receivedQty: parseFloat(item.receivedQty) || 0,
+    approvedQty: parseFloat(item.approvedQty) || 0,
+    damagedQty: parseFloat(item.damagedQty) || 0,
+    unit: item.receivedUnit || "pcs",
+    TaxType: item.taxType || "",
+    cgst: parseFloat(item.cgst) || 0,
+    sgst: parseFloat(item.sgst) || 0,
+    igst: parseFloat(item.igst) || 0,
+    rate: parseFloat(item.rate) || 0,
+     // ✅ USE UI VALUES
+    TotalAmount: Number(item.backendNetAmount) || 0,
+    TotalTaxAmount: Number(item.backendTaxAmount) || 0,
+
+    billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
+    billCheck: item.billCheck === true,
+    TransporterName: formData.TransporterName || ""
+  }))
+};
 
     console.log("💾 Sending payload to backend:", payload);
 

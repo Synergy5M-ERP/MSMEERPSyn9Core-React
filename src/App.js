@@ -31,6 +31,8 @@ import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
 import HrmDashboard from "./pages/HRM/HrmDashboard";
 import HrmConfiguration from "./pages/HRM/HRMConfiguration";
 import SalesDistribution from "./pages/Sales/SalesDistribution";
+import ViewBOM from "./pages/Masters/BOM/ViewBOM";
+
 
 import MMModule from "./pages/MM/MMModule";
 import StepIndicator from "./pages/MM/StepIndicator";
@@ -49,7 +51,7 @@ function App() {
       
       <Header />
       <Routes>
-       
+       <Route path="/Admin" element={<AdminConfiguration/>}/>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Dashboard/>}/>
         <Route path="/dashboard" element={<Dashboard/>}/>
@@ -70,11 +72,14 @@ function App() {
 <Route path="/viewvendor" element={<ViewVendor/>}/>
 <Route  path="/hrm" element={<HrmConfiguration/>}/>
 <Route path="/salesanddistribution" element={<SalesDistribution/>}/>
+<Route path="/ViewBOM" element={<ViewBOM/>}/>
+
+
 
 <Route path="/mm" element={<MMModule/>} />
 <Route path="/indicator" element={<CreateEnquiryPage/>} />
 
-<Route path="/admin" element={<AdminConfiguration/>}/>
+<Route path="/admin/*" element={<AdminConfiguration />} />
 
 
 <Route path="/production" element={<ProductionModule/>} />

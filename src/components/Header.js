@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { RiAccountCircleFill } from "react-icons/ri";
-
+//import
 const activeStyle = {
   backgroundColor: "#2176bd",
   borderRadius: "24px",
@@ -134,6 +134,7 @@ function Header() {
                     zIndex: 2000,
                   }}
                 >
+                  
                   <a className="dropdown-item" href="/signup" style={linkStyle}>
                     <i className="fa fa-user-plus text-primary"></i> Signup
                   </a>

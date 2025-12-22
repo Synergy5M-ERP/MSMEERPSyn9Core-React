@@ -4,8 +4,11 @@ using SwamiSamarthSyn8.Models;
 
 namespace SwamiSamarthSyn8.Controllers.Quality
 {
+    [Route("api/")]
+    [ApiController]
     public class QualityController : Controller
     {
+
         private readonly SwamiSamarthDbContext _context;
         public QualityController(SwamiSamarthDbContext context)
         {

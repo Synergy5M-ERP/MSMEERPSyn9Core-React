@@ -227,10 +227,14 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<plantSettingpara> plantSettingparas { get; set; }
 
     public virtual DbSet<userlogin> userlogins { get; set; }
+    public virtual DbSet<MASTER_ItemTbl> ItemMasters { get; set; }
+    public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
+    public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=synergy-swamisamarth.database.windows.net;Database=SwamiSamarthDb;User ID=swamisamarthsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;");
+    {
+        optionsBuilder.UseSqlServer("Server=synergy-swamisamarth.database.windows.net;Database=SwamiSamarthDb;User ID=swamisamarthsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

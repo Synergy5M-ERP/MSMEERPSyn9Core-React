@@ -1,23 +1,32 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Loader2,
-  Package,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Loader2, FileText, Calendar, DollarSign, AlertCircle } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Swal from "sweetalert2";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 
-const VoucherList = () => {
-  const [loading, setLoading] = useState(false);
+function VoucherList() {
+  // Dropdown states
+  const [vendors, setVendors] = useState([]);
+  const [voucherTypes, setVoucherTypes] = useState([]);
+  const [referenceList, setReferenceList] = useState([]);
 
-  const [suppliers, setSuppliers] = useState([]);
-  const [selectedSeller, setSelectedSeller] = useState("");
+  // Selected values
+  const [selectedVendorId, setSelectedVendorId] = useState("");
+  const [selectedVoucherTypeId, setSelectedVoucherTypeId] = useState("");
+  const [selectedReferenceId, setSelectedReferenceId] = useState("");
 
-  const [vouchers, setVouchers] = useState([]);          // dropdown: vouchers for vendor
-  const [selectedVoucherId, setSelectedVoucherId] = useState("");
+  // Voucher data
+  const [voucherHeader, setVoucherHeader] = useState(null);
+  const [ledgerRecords, setLedgerRecords] = useState([]);
 
-  const [voucherData, setVoucherData] = useState([]);    // vouchers with ledger rows
+  // Loading states
+  const [loadingDropdowns, setLoadingDropdowns] = useState(true);
+  const [loadingReferences, setLoadingReferences] = useState(false);
+  const [loadingVoucher, setLoadingVoucher] = useState(false);
+
+  // Helper function to normalize API responses
+  const normalize = (json) =>
+    Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : [];
 
   const safeJson = async (res) => {
     try {
@@ -27,362 +36,478 @@ const VoucherList = () => {
     }
   };
 
-  // LOAD VENDORS
-  const loadSellers = useCallback(async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.GetSellers);
-      if (!res.ok) throw new Error("Failed to load vendors");
-      const data = await safeJson(res);
-
-      // assume backend: { success, data: [ "Vendor A", "Vendor B", ... ] }
-      const suppliersWithIds = (data.data || []).map((name, index) => ({
-        id: index + 1,
-        name: name || `Vendor ${index + 1}`,
-      }));
-      setSuppliers(suppliersWithIds);
-    } catch (err) {
-      toast.error(err.message || "Failed to load vendors");
-      setSuppliers([]);
-    }
-  }, []);
-
-  // LOAD VOUCHER LIST FOR SELECTED VENDOR
-  const loadVouchersByVendor = useCallback(async (sellerName) => {
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${API_ENDPOINTS.GetVouchersBySeller}?sellerName=${encodeURIComponent(
-          sellerName
-        )}`
-      );
-      if (!res.ok) throw new Error("Failed to load vouchers");
-      const data = await safeJson(res);
-
-      // expect: { success, data: [ { id, voucherNo, voucherType, ... }, ... ] }
-      setVouchers(data.data || []);
-      setSelectedVoucherId("");
-      setVoucherData([]);
-    } catch (err) {
-      toast.error(err.message || "Failed to load vouchers");
-      setVouchers([]);
-      setVoucherData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // LOAD VOUCHER DETAILS (HEADER + LEDGERS)
-  const loadVoucherDetails = useCallback(
-    async (sellerName, voucherId) => {
+  // Load initial dropdowns (Vendors and Voucher Types)
+  useEffect(() => {
+    const loadInitialData = async () => {
       try {
-        setLoading(true);
+        setLoadingDropdowns(true);
 
-        // if voucherId is empty → backend should return ALL vouchers for that vendor
-        const res = await fetch(
-          `${API_ENDPOINTS.GetVoucherDetails}?sellerName=${encodeURIComponent(
-            sellerName
-          )}${voucherId ? `&voucherId=${voucherId}` : ""}`
-        );
-        if (!res.ok) throw new Error("Failed to load voucher details");
-        const data = await safeJson(res);
+        const [vendorRes, voucherTypeRes] = await Promise.all([
+          fetch(API_ENDPOINTS.Vendors),
+          fetch(API_ENDPOINTS.VoucherType),
+        ]);
 
-        // expected backend shape (example):
-        // {
-        //   success: true,
-        //   data: [
-        //     {
-        //       header: {
-        //         id, voucherNo, vendorName, voucherType, voucherDate,
-        //         referenceNo, totalAmount, paymentDate, paymentMode, status
-        //       },
-        //       ledgers: [
-        //         { id, ledgerName, creditAmount, debitAmount, description },
-        //         ...
-        //       ]
-        //     },
-        //     ...
-        //   ]
-        // }
+        const vendorData = await safeJson(vendorRes);
+        const voucherTypeData = await safeJson(voucherTypeRes);
 
-        const mapped = (data.data || []).map((v, index) => {
-          const h = v.header || v;
-
-          return {
-            id: h.id || h.voucherId || index,
-            voucherNo: h.voucherNo || h.voucherNumber || "",
-            vendorName: h.vendorName || sellerName,
-            voucherType: h.voucherType || "",
-            voucherDate: h.voucherDate || h.date || "",
-            referenceNo: h.referenceNo || h.refNo || "",
-            totalAmount: Number(h.totalAmount) || 0,
-            paymentDate: h.paymentDate || "",
-            paymentMode: h.paymentMode || "",
-            status: h.status || "",
-            ledgers: (v.ledgers || []).map((l, idx) => ({
-              id: l.id || idx,
-              ledgerName: l.ledgerName || l.ledger || "",
-              credit: Number(l.creditAmount ?? l.credit ?? 0),
-              debit: Number(l.debitAmount ?? l.debit ?? 0),
-              description: l.description || "",
-            })),
-          };
-        });
-
-        setVoucherData(mapped);
+        setVendors(normalize(vendorData));
+        setVoucherTypes(Array.isArray(voucherTypeData) ? voucherTypeData : []);
       } catch (err) {
-        toast.error(err.message || "Failed to load voucher details");
-        setVoucherData([]);
+        toast.error("Failed to load vendors and voucher types");
+        console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingDropdowns(false);
       }
-    },
-    []
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Load reference list when voucher type changes
+  useEffect(() => {
+    if (!selectedVoucherTypeId) {
+      setReferenceList([]);
+      setSelectedReferenceId("");
+      setVoucherHeader(null);
+      setLedgerRecords([]);
+      return;
+    }
+
+    const voucherTypeObj = voucherTypes.find(
+      (v) => v.accountVoucherTypeId.toString() === selectedVoucherTypeId.toString()
+    );
+
+    if (!voucherTypeObj) return;
+
+    const loadReferenceData = async () => {
+      setLoadingReferences(true);
+      setReferenceList([]);
+      setSelectedReferenceId("");
+      setVoucherHeader(null);
+      setLedgerRecords([]);
+
+      try {
+        if (voucherTypeObj.voucherType === "Payment") {
+          // Load GRN/Purchase Orders
+          const res = await fetch(API_ENDPOINTS.PurchaseOrders);
+          const data = await safeJson(res);
+          setReferenceList(normalize(data));
+        } else if (voucherTypeObj.voucherType === "Receipt") {
+          // Load Sales Invoices
+          const res = await fetch(API_ENDPOINTS.SalesInvoices);
+          const data = await safeJson(res);
+          setReferenceList(normalize(data));
+        } else {
+          // For Journal or other types, you might have a different endpoint
+          setReferenceList([]);
+        }
+      } catch (err) {
+        toast.error("Failed to load reference list");
+        console.error(err);
+      } finally {
+        setLoadingReferences(false);
+      }
+    };
+
+    loadReferenceData();
+  }, [selectedVoucherTypeId, voucherTypes]);
+
+  // Load voucher details when all three dropdowns are selected
+  useEffect(() => {
+    if (!selectedVendorId || !selectedVoucherTypeId || !selectedReferenceId) {
+      setVoucherHeader(null);
+      setLedgerRecords([]);
+      return;
+    }
+
+    loadVoucherDetails();
+  }, [selectedVendorId, selectedVoucherTypeId, selectedReferenceId]);
+
+  const loadVoucherDetails = async () => {
+    setLoadingVoucher(true);
+    setVoucherHeader(null);
+    setLedgerRecords([]);
+
+    try {
+      const url = `${API_ENDPOINTS.GetVoucherDetails}?vendorId=${selectedVendorId}&voucherTypeId=${selectedVoucherTypeId}&referenceId=${selectedReferenceId}`;
+      const res = await fetch(url);
+      const data = await safeJson(res);
+
+      if (!data || !data.success) {
+        toast.error(data?.message || "No voucher data found");
+        return;
+      }
+
+      const header = data.data?.header || data.header || {};
+      const ledgers = data.data?.ledger || data.ledger || [];
+
+      setVoucherHeader(header);
+      setLedgerRecords(Array.isArray(ledgers) ? ledgers : []);
+
+      toast.success("Voucher loaded successfully");
+    } catch (err) {
+      toast.error("Failed to load voucher details");
+      console.error(err);
+    } finally {
+      setLoadingVoucher(false);
+    }
+  };
+
+  const handleVendorChange = (e) => {
+    setSelectedVendorId(e.target.value);
+    setVoucherHeader(null);
+    setLedgerRecords([]);
+  };
+
+  const handleVoucherTypeChange = (e) => {
+    setSelectedVoucherTypeId(e.target.value);
+    setSelectedReferenceId("");
+    setVoucherHeader(null);
+    setLedgerRecords([]);
+  };
+
+  const handleReferenceChange = (e) => {
+    setSelectedReferenceId(e.target.value);
+  };
+
+  const selectedVoucherType = voucherTypes.find(
+    (v) => v.accountVoucherTypeId.toString() === selectedVoucherTypeId.toString()
   );
 
-  // INITIAL LOAD: VENDORS
-  useEffect(() => {
-    loadSellers();
-  }, [loadSellers]);
-
-  // DROPDOWN HANDLERS
-  const handleSellerChange = (e) => {
-    const sellerId = e.target.value;
-    const selected = suppliers.find((s) => s.id === Number(sellerId));
-    const name = selected?.name || "";
-    setSelectedSeller(name);
-
-    if (name) {
-      loadVouchersByVendor(name);
-    } else {
-      setVouchers([]);
-      setVoucherData([]);
-      setSelectedVoucherId("");
-    }
+  const calculateTotals = () => {
+    const totalCredit = ledgerRecords.reduce(
+      (sum, record) => sum + (parseFloat(record.creditAmount) || 0),
+      0
+    );
+    const totalDebit = ledgerRecords.reduce(
+      (sum, record) => sum + (parseFloat(record.debitAmount) || 0),
+      0
+    );
+    return { totalCredit, totalDebit };
   };
 
-  const handleVoucherChange = (e) => {
-    const vId = e.target.value;
-    setSelectedVoucherId(vId);
+  const { totalCredit, totalDebit } = calculateTotals();
 
-    if (selectedSeller) {
-      // vId === "" → all vouchers for that vendor
-      loadVoucherDetails(selectedSeller, vId);
-    }
-  };
-
-  const handleCancel = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All selected data will be cleared!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, reset",
-      cancelButtonText: "No, keep",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setSelectedSeller("");
-        setVouchers([]);
-        setSelectedVoucherId("");
-        setVoucherData([]);
-        toast.info("Form reset successfully");
-      }
-    });
-  };
-
-  return (
-    <>
-      <ToastContainer position="top-right" theme="colored" />
-      <div className="approved-payable-app">
-        <div className="container-fluid py-3">
-          {/* Vendor + Voucher selection */}
-          <div className="seller-section mb-4">
-            <div className="row align-items-end">
-              <div className="col-md-4 mb-3">
-                <label className="form-label fw-semibold mb-2">
-                  Select Vendor
-                </label>
-                <select
-                  className="form-select form-select-lg"
-                  value={
-                    suppliers.find((s) => s.name === selectedSeller)?.id || ""
-                  }
-                  onChange={handleSellerChange}
-                >
-                  <option value="">Choose Vendor...</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-4 mb-3">
-                <label className="form-label fw-semibold mb-2">
-                  Select Voucher
-                </label>
-                <select
-                  className="form-select form-select-lg"
-                  value={selectedVoucherId}
-                  onChange={handleVoucherChange}
-                  disabled={!selectedSeller || vouchers.length === 0}
-                >
-                  <option value="">
-                    {selectedSeller
-                      ? "All vouchers for vendor"
-                      : "Select vendor first"}
-                  </option>
-                  {vouchers.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.voucherNo ||
-                        v.voucherNumber ||
-                        v.referenceNo ||
-                        `Voucher ${v.id}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-4 mb-3 text-md-end">
-                {selectedSeller && (
-                  <button
-                    className="btn btn-secondary btn-lg mt-3 mt-md-0"
-                    onClick={handleCancel}
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Main content: loading / empty / vouchers */}
-          {loading ? (
-            <div className="text-center py-5">
-              <Loader2 className="animate-spin text-primary mb-3" size={48} />
-              <h4>Loading vouchers...</h4>
-              <p className="text-muted">Please wait</p>
-            </div>
-          ) : !selectedSeller ? (
-            <div className="empty-state text-center py-5">
-              <Package className="empty-icon mb-3" size={64} />
-              <h4>No Vendor Selected</h4>
-              <p className="text-muted">Select a vendor to view vouchers</p>
-            </div>
-          ) : voucherData.length === 0 ? (
-            <div className="empty-state text-center py-5">
-              <Package className="empty-icon mb-3" size={64} />
-              <h4>No Vouchers Found</h4>
-              <p className="text-muted">
-                {selectedVoucherId
-                  ? "No data for this voucher"
-                  : "No vouchers available for this vendor"}
-              </p>
-            </div>
-          ) : (
-            <div className="row g-3 mb-4">
-              {voucherData.map((v) => (
-                <div key={v.id} className="col-12">
-                  <div className="border rounded shadow-sm mb-3">
-                    {/* Voucher header */}
-                    <div className="p-3 bg-primary text-white rounded-top">
-                      <div className="row small">
-                        <div className="col-md-3">
-                          <strong>Voucher:</strong> {v.voucherNo}
-                        </div>
-                        <div className="col-md-3">
-                          <strong>Vendor:</strong> {v.vendorName}
-                        </div>
-                        <div className="col-md-3">
-                          <strong>Type:</strong> {v.voucherType}
-                        </div>
-                        <div className="col-md-3">
-                          <strong>Voucher Date:</strong> {v.voucherDate}
-                        </div>
-                        <div className="col-md-3 mt-1">
-                          <strong>Reference No:</strong> {v.referenceNo}
-                        </div>
-                        <div className="col-md-3 mt-1">
-                          <strong>Total:</strong>{" "}
-                          ₹{v.totalAmount.toLocaleString("en-IN")}
-                        </div>
-                        <div className="col-md-3 mt-1">
-                          <strong>Payment Date:</strong>{" "}
-                          {v.paymentDate || "N/A"}
-                        </div>
-                        <div className="col-md-3 mt-1">
-                          <strong>Mode:</strong> {v.paymentMode || "N/A"}
-                        </div>
-                        <div className="col-md-3 mt-2">
-                          <strong>Status:</strong>{" "}
-                          <span
-                            className={`badge ${
-                              v.status === "PAID"
-                                ? "bg-success"
-                                : v.status === "CANCELLED"
-                                ? "bg-danger"
-                                : "bg-warning text-dark"
-                            }`}
-                          >
-                            {v.status || "Pending"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ledger table */}
-                    <div className="p-3">
-                      <div className="table-responsive">
-                        <table className="table table-sm table-hover mb-0">
-                          <thead className="table-light">
-                            <tr>
-                              <th>Ledger</th>
-                              <th className="text-end">Credit Amount</th>
-                              <th className="text-end">Debit Amount</th>
-                              <th>Description</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {v.ledgers.length === 0 ? (
-                              <tr>
-                                <td
-                                  colSpan="4"
-                                  className="text-center text-muted py-3"
-                                >
-                                  No ledgers for this voucher
-                                </td>
-                              </tr>
-                            ) : (
-                              v.ledgers.map((l) => (
-                                <tr key={l.id}>
-                                  <td>{l.ledgerName}</td>
-                                  <td className="text-end">
-                                    {l.credit
-                                      ? `₹${l.credit.toLocaleString("en-IN")}`
-                                      : "-"}
-                                  </td>
-                                  <td className="text-end">
-                                    {l.debit
-                                      ? `₹${l.debit.toLocaleString("en-IN")}`
-                                      : "-"}
-                                  </td>
-                                  <td>{l.description}</td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+  if (loadingDropdowns) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <div className="text-center">
+          <Loader2 className="animate-spin text-primary mb-3" size={48} />
+          <h5 className="text-muted">Loading...</h5>
         </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="container-fluid py-4 px-3" style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+
+      <div className="bg-white rounded-3 shadow-sm p-4">
+        {/* Page Header */}
+        <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+          <FileText className="text-primary me-3" size={32} />
+          <div>
+            <h3 className="mb-1 fw-bold text-primary">View Account Voucher</h3>
+            <p className="mb-0 text-muted small">Select criteria to view voucher details and ledger records</p>
+          </div>
+        </div>
+
+        {/* Filter Dropdowns */}
+        <div className="row g-3 mb-4">
+          {/* Vendor Dropdown */}
+          <div className="col-md-4">
+            <label className="form-label fw-semibold text-secondary mb-2">
+              <DollarSign size={16} className="me-1" />
+              Vendor Name
+            </label>
+            <select
+              className="form-select form-select-lg"
+              value={selectedVendorId}
+              onChange={handleVendorChange}
+              disabled={loadingDropdowns}
+            >
+              <option value="">-- Select Vendor --</option>
+              {vendors.map((vendor) => (
+                <option key={vendor.vendorId} value={vendor.vendorId}>
+                  {vendor.companyName || vendor.vendorName || `Vendor ${vendor.vendorId}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Voucher Type Dropdown */}
+          <div className="col-md-4">
+            <label className="form-label fw-semibold text-secondary mb-2">
+              <FileText size={16} className="me-1" />
+              Voucher Type
+            </label>
+            <select
+              className="form-select form-select-lg"
+              value={selectedVoucherTypeId}
+              onChange={handleVoucherTypeChange}
+              disabled={loadingDropdowns}
+            >
+              <option value="">-- Select Voucher Type --</option>
+              {voucherTypes.map((type) => (
+                <option key={type.accountVoucherTypeId} value={type.accountVoucherTypeId}>
+                  {type.voucherType}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reference Number Dropdown */}
+          <div className="col-md-4">
+            <label className="form-label fw-semibold text-secondary mb-2">
+              <Calendar size={16} className="me-1" />
+              Reference No
+            </label>
+            {loadingReferences ? (
+              <div className="form-select form-select-lg d-flex align-items-center">
+                <Loader2 className="animate-spin me-2" size={20} />
+                Loading references...
+              </div>
+            ) : selectedVoucherType?.voucherType === "Payment" ? (
+              <select
+                className="form-select form-select-lg"
+                value={selectedReferenceId}
+                onChange={handleReferenceChange}
+                disabled={!selectedVoucherTypeId}
+              >
+                <option value="">-- Select GRN --</option>
+                {referenceList.map((ref) => (
+                  <option key={ref.id} value={ref.id}>
+                    {ref.purchaseOrderNo || ref.grnNumber || `GRN ${ref.id}`}
+                  </option>
+                ))}
+              </select>
+            ) : selectedVoucherType?.voucherType === "Receipt" ? (
+              <select
+                className="form-select form-select-lg"
+                value={selectedReferenceId}
+                onChange={handleReferenceChange}
+                disabled={!selectedVoucherTypeId}
+              >
+                <option value="">-- Select Invoice --</option>
+                {referenceList.map((ref) => (
+                  <option key={ref.id} value={ref.id}>
+                    {ref.invoiceNo || `Invoice ${ref.id}`}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                className="form-control form-control-lg"
+                value={selectedReferenceId}
+                onChange={(e) => setSelectedReferenceId(e.target.value)}
+                placeholder="Enter reference number"
+                disabled={!selectedVoucherTypeId}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Loading Indicator */}
+        {loadingVoucher && (
+          <div className="text-center py-5">
+            <Loader2 className="animate-spin text-primary mb-3" size={40} />
+            <p className="text-muted">Loading voucher details...</p>
+          </div>
+        )}
+
+        {/* Voucher Header Section */}
+        {voucherHeader && !loadingVoucher && (
+          <>
+            <div className="border rounded-3 p-4 mb-4" style={{ background: "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)" }}>
+              <h5 className="fw-bold mb-3 text-primary pb-2 border-bottom">
+                <FileText size={20} className="me-2" />
+                Voucher Information
+              </h5>
+              
+              <div className="row g-3">
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Voucher No</small>
+                    <strong className="text-dark">{voucherHeader.voucherNo || "N/A"}</strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Vendor Name</small>
+                    <strong className="text-dark">{voucherHeader.vendorName || "N/A"}</strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Voucher Type</small>
+                    <span className="badge bg-primary fs-6 text-start">
+                      {voucherHeader.voucherType || "N/A"}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Voucher Date</small>
+                    <strong className="text-dark">
+                      {voucherHeader.voucherDate
+                        ? new Date(voucherHeader.voucherDate).toLocaleDateString('en-IN')
+                        : "N/A"}
+                    </strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Reference No</small>
+                    <strong className="text-dark">{voucherHeader.referenceNo || "N/A"}</strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Total Amount</small>
+                    <strong className="text-success fs-5">
+                      ₹{(parseFloat(voucherHeader.totalAmount) || 0).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Payment Due Date</small>
+                    <strong className="text-dark">
+                      {voucherHeader.paymentDueDate
+                        ? new Date(voucherHeader.paymentDueDate).toLocaleDateString('en-IN')
+                        : "N/A"}
+                    </strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Payment Mode</small>
+                    <strong className="text-dark">{voucherHeader.paymentMode || "N/A"}</strong>
+                  </div>
+                </div>
+                
+                <div className="col-md-3">
+                  <div className="d-flex flex-column">
+                    <small className="text-muted mb-1">Status</small>
+                    <span
+                      className={`badge fs-6 ${
+                        voucherHeader.status === "Paid"
+                          ? "bg-success"
+                          : voucherHeader.status === "Cancelled"
+                          ? "bg-danger"
+                          : voucherHeader.status === "Pending"
+                          ? "bg-warning text-dark"
+                          : "bg-secondary"
+                      }`}
+                    >
+                      {voucherHeader.status || "Unknown"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Ledger Records Table */}
+            <div className="border rounded-3 overflow-hidden">
+              <div className="bg-primary text-white p-3">
+                <h5 className="mb-0 fw-bold">
+                  <FileText size={20} className="me-2" />
+                  Ledger Records
+                </h5>
+              </div>
+              
+              <div className="table-responsive">
+                <table className="table table-hover table-striped mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="fw-semibold" style={{ width: "35%" }}>Ledger Name</th>
+                      <th className="fw-semibold text-end" style={{ width: "20%" }}>Credit Amount</th>
+                      <th className="fw-semibold text-end" style={{ width: "20%" }}>Debit Amount</th>
+                      <th className="fw-semibold" style={{ width: "25%" }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ledgerRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="text-center py-5 text-muted">
+                          <AlertCircle size={32} className="mb-2" />
+                          <p className="mb-0">No ledger records found for this voucher</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      ledgerRecords.map((record, index) => (
+                        <tr key={index}>
+                          <td className="fw-semibold">{record.ledgerName || "N/A"}</td>
+                          <td className="text-end text-success fw-semibold">
+                            {record.creditAmount != null && parseFloat(record.creditAmount) > 0
+                              ? `₹${parseFloat(record.creditAmount).toLocaleString('en-IN', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}`
+                              : "-"}
+                          </td>
+                          <td className="text-end text-danger fw-semibold">
+                            {record.debitAmount != null && parseFloat(record.debitAmount) > 0
+                              ? `₹${parseFloat(record.debitAmount).toLocaleString('en-IN', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}`
+                              : "-"}
+                          </td>
+                          <td className="text-muted">{record.description || "-"}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  {ledgerRecords.length > 0 && (
+                    <tfoot className="table-secondary">
+                      <tr className="fw-bold">
+                        <td>TOTAL</td>
+                        <td className="text-end text-success fs-5">
+                          ₹{totalCredit.toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
+                        </td>
+                        <td className="text-end text-danger fs-5">
+                          ₹{totalDebit.toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Empty State */}
+        {!voucherHeader && !loadingVoucher && (selectedVendorId || selectedVoucherTypeId || selectedReferenceId) && (
+          <div className="text-center py-5">
+            <AlertCircle size={48} className="text-muted mb-3" />
+            <h5 className="text-muted">Select all filters to view voucher details</h5>
+            <p className="text-muted small">Please select Vendor, Voucher Type, and Reference Number</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
-};
+}
 
 export default VoucherList;

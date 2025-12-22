@@ -72,7 +72,7 @@ function AccountVoucher() {
     // ========================
 
     const normalize = (json) =>
-        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : [];
+        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : json && typeof json === 'object' && !Array.isArray(json) ? [json] : [];
 
     const fetchVendorNames = async () => {
         try {
@@ -267,7 +267,7 @@ function AccountVoucher() {
         const newEntry = {
             id: Date.now(),
             ledgerId: ledgerAccount,
-            ledgerName: selectedLedger?.accountLedgerName,
+            ledgerName: typeof selectedLedger?.accountLedgerName === 'string' ? selectedLedger.accountLedgerName : 'Unknown',
             creditAmount: Number(creditAmount) || 0,
             debitAmount: Number(debitAmount) || 0,
             narration,
@@ -425,18 +425,21 @@ const handleSave = async () => {
                             onChange={(e) => handleVendorChange(e.target.value)}
                         >
                             <option value="">--Select Vendor--</option>
-                            {vendorNames.map((v) => (
+                            {Array.isArray(vendorNames) ? vendorNames.map((v) => (
                                 <option key={v.vendorId} value={v.vendorId}>
-                                    {v.companyName}
+                                    {typeof v.companyName === 'string' ? v.companyName : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
                     <div className="col-3">
                         <label className="form-label text-primary">Voucher Number*</label>
-                        <input className="form-control" value={vendorNumber} readOnly />
+                        <input type="text" value={vendorNumber}
+                        className="form-control" disabled={loading} readOnly />
                     </div>
+
+                 
 
                     <div className="col-3">
                         <label className="form-label text-primary">Voucher Type*</label>
@@ -446,11 +449,11 @@ const handleSave = async () => {
                             onChange={(e) => setVoucherType(e.target.value)}
                         >
                             <option value="">--Select Voucher Type--</option>
-                            {voucherTypes.map((t) => (
+                            {Array.isArray(voucherTypes) ? voucherTypes.map((t) => (
                                 <option key={t.accountVoucherTypeId} value={t.accountVoucherTypeId}>
-                                    {t.voucherType}
+                                    {typeof t.voucherType === 'string' ? t.voucherType : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
@@ -489,11 +492,11 @@ const handleSave = async () => {
                                     }}
                                 >
                                     <option value="">--Select GRN--</option>
-                                    {purchaseOrders.map((p) => (
+                                    {Array.isArray(purchaseOrders) ? purchaseOrders.map((p) => (
                                         <option key={p.id} value={p.id}>
-                                            {p.purchaseOrderNo}
+                                            {typeof p.purchaseOrderNo === 'string' ? p.purchaseOrderNo : 'Unknown'}
                                         </option>
-                                    ))}
+                                    )) : []}
                                 </select>
                             );
                         } else if (voucherTypeObj?.voucherType === "Receipt") {
@@ -507,11 +510,11 @@ const handleSave = async () => {
                                     }}
                                 >
                                     <option value="">--Select Invoice--</option>
-                                    {saleInvoices.map((i) => (
+                                    {Array.isArray(saleInvoices) ? saleInvoices.map((i) => (
                                         <option key={i.id} value={i.id}>
-                                            {i.invoiceNo}
+                                            {typeof i.invoiceNo === 'string' ? i.invoiceNo : 'Unknown'}
                                         </option>
-                                    ))}
+                                    )) : []}
                                 </select>
                             );
                         } else {
@@ -549,9 +552,9 @@ const handleSave = async () => {
                             onChange={(e) => setPaymentMode(e.target.value)}
                         >
                             <option value="">--Select Payment Mode--</option>
-                            {paymentModes.map((t) => (
-                               <option key={t.paymentModeId} value={t.paymentModeId}>{t.paymentMode}</option>
-                            ))}
+                            {Array.isArray(paymentModes) ? paymentModes.map((t) => (
+                               <option key={t.paymentModeId} value={t.paymentModeId}>{typeof t.paymentMode === 'string' ? t.paymentMode : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
                 </div>
@@ -561,9 +564,9 @@ const handleSave = async () => {
                         <label className="form-label text-primary">Status*</label>
                         <select value={status} onChange={e => setStatus(e.target.value)} className="form-control" disabled={loading}>
                             <option value="">--Select Status--</option>
-                            {statusList.map((t) => (
-                               <option key={t.accountStatusId} value={t.accountStatusId}>{t.status}</option>
-                            ))}
+                            {Array.isArray(statusList) ? statusList.map((t) => (
+                               <option key={t.accountStatusId} value={t.accountStatusId}>{typeof t.status === 'string' ? t.status : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
                     <div className="col-6">
@@ -587,11 +590,11 @@ const handleSave = async () => {
                             onChange={(e) => setLedgerAccount(e.target.value)}
                         >
                             <option value="">--Select--</option>
-                            {ledgerAccounts.map((l) => (
+                            {Array.isArray(ledgerAccounts) ? ledgerAccounts.map((l) => (
                                 <option key={l.id || l.accountLedgerId} value={l.id || l.accountLedgerId}>
-                                    {l.accountLedgerName}
+                                    {typeof l.accountLedgerName === 'string' ? l.accountLedgerName : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
@@ -661,7 +664,7 @@ const handleSave = async () => {
                             <tbody>
                                 {gridEntries.map((row, i) => (
                                     <tr key={row.id}>
-                                        <td>{row.ledgerName}</td>
+                                        <td>{typeof row.ledgerName === 'string' ? row.ledgerName : 'Unknown'}</td>
                                         <td>{row.creditAmount}</td>
                                         <td>{row.debitAmount}</td>
                                         <td>{row.narration}</td>

@@ -22,6 +22,12 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
 ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
+  Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
+  MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
+  MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
+  UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
+  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`, 
+
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
   VoucherType: `${BASE_URL}/AccountVoucherType/`,

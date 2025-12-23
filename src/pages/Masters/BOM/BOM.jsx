@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import CreateBOM from "./CreateBOM";
 import NotCreated from "../../../components/NotCreated";
+import ViewBOM from "./ViewBOM";
 
 function BOM() {
   const [selectedPage, setSelectedPage] = useState("createBOM"); // createBOM | AmendBOM | report
@@ -23,7 +24,7 @@ function BOM() {
   const renderContent = () => {
     if (selectedPage === "createBOM") return <CreateBOM />;
 
-    if (selectedPage === "AmendBOM") return <NotCreated />;
+    if (selectedPage === "viewBom") return <ViewBOM />;
 
     if (selectedPage === "report") {
       if (reportType === "BOM_LIST") return <div>BOM LIST Report Page</div>;
@@ -67,7 +68,17 @@ function BOM() {
             />
             Create BOM
           </label>
-
+   <label style={{ fontWeight: 600, fontSize: "18px", cursor: "pointer" }}>
+            <input
+              type="radio"
+              name="configTab"
+              value="viewBOM"
+              checked={selectedPage === "viewBOM"}
+              onChange={() => setSelectedPage("viewBOM")}
+              style={{ width: 18, height: 18, cursor: "pointer", marginRight: "8px" }}
+            />
+            View BOM
+          </label>
           {/* <label style={{ fontWeight: 600, fontSize: "18px", cursor: "pointer" }}>
             <input
               type="radio"
@@ -82,7 +93,7 @@ function BOM() {
         </div>
 
         {/* right: STANDARD REPORT dropdown like image */}
-        <div
+        {/* <div
           ref={dropdownRef}
           style={{ marginLeft: "auto", position: "relative", marginRight: "12px" }}
         >
@@ -172,7 +183,7 @@ function BOM() {
               </div>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* content area */}

@@ -5,6 +5,8 @@ import { API_ENDPOINTS } from "../../config/apiconfig";
 //const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
 //const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
 
+const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api';
+
 
 function AccountBankDetails({ view = 'active' }) {
 const [vendorId, setVendorId] = useState('');
@@ -42,17 +44,24 @@ const [vendorId, setVendorId] = useState('');
         setAlertDialog({ show: true, title, message, onConfirm });
     };
 
-    const fetchVendorNames = async () => {
-    try {
-        const res = await fetch(`${API_ENDPOINTS.Vendors}Vendors`);
-        if (!res.ok) throw new Error('Failed to fetch vendors');
-        
-        const json = await res.json();
-        setVendorNames(json.data || []);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
+   const fetchVendorNames = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.Vendors);
+    if (!res.ok) throw new Error('Failed to fetch vendors');
+
+    const json = await res.json();
+
+    const normalized = (json.data || []).map(v => ({
+      id: v.vendorId,           // ✅ CORRECT
+      company_Name: v.companyName // ✅ CORRECT
+    }));
+
+    setVendorNames(normalized);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 };
+
 
 
     const fetchBanks = async (status = "active") => {

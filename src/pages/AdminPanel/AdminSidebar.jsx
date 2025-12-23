@@ -8,8 +8,7 @@ const AdminSidebar = ({ selected, onSelect }) => {
   const menuItems = [
     { label: 'Admin Register', icon: <RiUserAddLine />, key: 'RegisterPage' },
     { label: 'User Approval', icon: <RiUserSettingsLine />, key: 'userApproval' },
-    { label: 'View Data', icon: <RiEyeLine />, key: 'viewData' },
-    { label: 'Update Users', icon: <RiEditLine />, key: 'updateUsers' },
+  
 ];
 
     const handleItemClick = (key, hasSubItems) => {

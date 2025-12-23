@@ -1,71 +1,85 @@
-
 import React, { useState } from "react";
-import CreateItem from "./ItemMaster/CreateItem";
+
+import CreateItem from "../Masters/ItemMaster/CreateItem";
 import CreateVendor from "../Masters/vendorMaster/CreateVendor";
+import InventoryAdd from "../Masters/InventoryMaster/InventoryAdd";
+
+// import CreateItem from "./ItemMaster/CreateItem";
+// import CreateVendor from "../Masters/vendorMaster/CreateVendor";
+
 
 function Masters() {
   const [selectedPage, setSelectedPage] = useState("itemMaster");
-  const [view, setView] = useState("active"); // active or inactive
 
   return (
-    <div style={{ minHeight: "80vh"}}>
-      <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-        Masters
-      </h2>
+    <div style={{ display: "flex", minHeight: "90vh" }}>
 
-      {/* Page Selector */}
- <div
-  style={{
-    display: 'flex',
-    justifyContent: 'space-between', // space between two groups
-    alignItems: 'center',
-    gap: '30px',
-    marginTop: '22px',
-    marginBottom: '12px',
-    padding: '14px 0 14px 5px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.07)',
-    background: '#fff',
-  }}
->
-  <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
+      {/* ================= Sidebar ================= */}
+      <div
+        style={{
+          width: "250px",
+          background: "#003d80",
+          color: "white",
+          padding: "25px 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "25px",
+          boxShadow: "2px 0 10px rgba(0,0,0,0.1)"
+        }}
+      >
+        <h2 style={{ fontSize: "22px", marginBottom: "10px" }}>Masters</h2>
 
-  <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="itemMaster"
-        checked={selectedPage === 'itemMaster'}
-        onChange={() => setSelectedPage('itemMaster')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-    Item Master
-    </label>
-   <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="vendorMaster"
-        checked={selectedPage === 'vendorMaster'}
-        onChange={() => setSelectedPage('vendorMaster')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-    Vendor Master
-    </label>
- 
-  </div>
+        {/* Sidebar Options */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+            fontSize: "18px",
+            fontWeight: 600,
+            cursor: "pointer"
+          }}
+        >
+          <span
+            onClick={() => setSelectedPage("itemMaster")}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "6px",
+              background: selectedPage === "itemMaster" ? "#0059b3" : "transparent"
+            }}
+          >
+            Item Master
+          </span>
 
-</div>
+          <span
+            onClick={() => setSelectedPage("vendorMaster")}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "6px",
+              background: selectedPage === "vendorMaster" ? "#0059b3" : "transparent"
+            }}
+          >
+            Vendor Master
+          </span>
 
+          <span
+            onClick={() => setSelectedPage("inventoryMaster")}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "6px",
+              background: selectedPage === "inventoryMaster" ? "#0059b3" : "transparent"
+            }}
+          >
+            Inventory Master
+          </span>
+        </div>
+      </div>
 
-
-
-      {/* Render selected page with view prop */}
-      <div>
-        {selectedPage==='itemMaster'?(<CreateItem/>):<CreateVendor/>
-        
-         
-        }
+      {/* ================= Main Content ================= */}
+      <div style={{ flex: 1, padding: "30px 40px" }}>
+        {selectedPage === "itemMaster" && <CreateItem />}
+        {selectedPage === "vendorMaster" && <CreateVendor />}
+        {selectedPage === "inventoryMaster" && <InventoryAdd />}
       </div>
     </div>
   );

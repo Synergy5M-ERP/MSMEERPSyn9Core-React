@@ -133,8 +133,7 @@ function VoucherList() {
 
     try {
       const url = `${API_ENDPOINTS.GetVoucherDetails}?vendorId=${selectedVendorId}&voucherTypeId=${selectedVoucherTypeId}&referenceId=${selectedReferenceId}`;
-      console.log(url);
-           
+
       const res = await fetch(url);
       const data = await safeJson(res);
 
@@ -172,10 +171,9 @@ function VoucherList() {
   };
 
   const handleReferenceChange = (e) => {
-    const referenceid = e.target.value;
-    console.log(referenceid);
-    
-    setSelectedReferenceId(e.target.value);    
+
+    setSelectedReferenceId(e.target.value);
+
   };
 
   const selectedVoucherType = voucherTypes.find(
@@ -238,7 +236,11 @@ function VoucherList() {
               <option value="">-- Select Vendor --</option>
               {vendors.map((vendor) => (
                 <option key={vendor.vendorId} value={vendor.vendorId}>
+
                   {vendor.companyName}
+
+                  {vendor.companyName || vendor.vendorName || `Vendor ${vendor.vendorId}`}
+
                 </option>
               ))}
             </select>

@@ -1,94 +1,122 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import './App.css';
-//import RegisterPage from "./pages/RegisterPage";
+import "./App.css";
+
+/* AUTH */
+import RegisterPage from "./pages/RegisterPage";
 import Login from "./pages/Login";
+
+/* ACCOUNT */
 import AccountTypePage from "./pages/Account/AccountTypePage";
 import AccountPage from "./pages/Account/AccountPage";
-//import AccountBankDetailsPage from "./pages/AccountBankDetailsPage";
 import AccoutVoucherType from "./pages/Account/AccountVoucherType";
 import AccountLedger from "./pages/Account/AccountLedger";
 import AccountCompany from "./pages/Account/AccountCompany";
 import AccountConfiguration from "./pages/Account/AccountConfiguration";
 import AccountGroupSubgroup from "./pages/Account/AccountGroupSubgroup";
-import Nullify from "./pages/Account/Nullify";
-import CreditDebitNote from "./pages/Account/CreditDebitNote";
-
 import AccountAndFinanceDashboard from "./pages/Account/AccountAndFinanceDashboard";
 
-import Header from "./components/Header"; // ✅ default import
-import Footer from "./components/Footer"; // ✅ default import
+/* OTHER */
+import CreditDebitNote from "./pages/Account/CreditDebitNote";
+import Nullify from "./pages/Account/Nullify";
+import Dashboard from "./pages/Dashboard";
 
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Masters from "./pages/Masters/Masters";
-import CreateVendor from "./pages/Masters/vendorMaster/CreateVendor";
+/* MASTERS */
 import MasterDashboard from "./pages/Masters/MasterConfiguration";
+import CreateVendor from "./pages/Masters/vendorMaster/CreateVendor";
 import ViewVendor from "./pages/Masters/vendorMaster/ViewVendor";
 import CreateCommodity from "./pages/Masters/Commodity/CreateCommodity";
 import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
-import HrmDashboard from "./pages/HRM/HrmDashboard";
-import HrmConfiguration from "./pages/HRM/HRMConfiguration";
-import SalesDistribution from "./pages/Sales/SalesDistribution";
 import ViewBOM from "./pages/Masters/BOM/ViewBOM";
 
+/* HRM / SALES */
+import HrmConfiguration from "./pages/HRM/HRMConfiguration";
+import SalesDistribution from "./pages/Sales/SalesDistribution";
+import WareHouse from "./pages/Sales/WareHouse";
 
+/* MM */
 import MMModule from "./pages/MM/MMModule";
-import StepIndicator from "./pages/MM/StepIndicator";
 import CreateEnquiryPage from "./pages/MM/StepWise";
+
+/* PRODUCTION / QUALITY */
 import ProductionModule from "./pages/ProductionModule/ProductionModule";
 import QualityModule from "./pages/QualityModule/QualityModule";
-import WareHouse from "./pages/Sales/WareHouse";
-import Dashboard from "./pages/Dashboard";
 
+/* ADMIN */
 import AdminConfiguration from "./pages/AdminPanel/AdminConfiguration";
 
+/* INVENTORY */
+import InventoryAdd from "./pages/Masters/InventoryMaster/InventoryAdd";
+import InventoryEdit from "./pages/Masters/InventoryMaster/InventoryEdit";
+
+/* LAYOUT */
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+
+/* CSS */
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function App() {
   return (
     <Router>
-      
       <Header />
+
       <Routes>
-       <Route path="/Admin" element={<AdminConfiguration/>}/>
+        {/* AUTH */}
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Dashboard/>}/>
-        <Route path="/dashboard" element={<Dashboard/>}/>
+
+        {/* DASHBOARD */}
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* ACCOUNT */}
         <Route path="/accounttype" element={<AccountTypePage />} />
-        <Route path="/AccountPage" element={<AccountPage />} />
-        <Route path="/AccountVoucherType" element={<AccoutVoucherType/>}/>
-        <Route path="/AccountLedger" element={<AccountLedger/>}/>
-        <Route path="/AccountCompany" element={<AccountCompany/>}/>
-        <Route path="/AccountConfiguration" element={<AccountConfiguration/>}/>
-        <Route path="/AccFinancedashboard" element={<AccountAndFinanceDashboard/>}/>
-         <Route path="/AccountGroupSubgroup" element={<AccountGroupSubgroup/>}/>
-         <Route path="/CreditDebitNote" element={<CreditDebitNote/>}/>
-         <Route path="/Nullify" element={<Nullify/>}/>
+        <Route path="/accountpage" element={<AccountPage />} />
+        <Route path="/accountvouchertype" element={<AccoutVoucherType />} />
+        <Route path="/accountledger" element={<AccountLedger />} />
+        <Route path="/accountcompany" element={<AccountCompany />} />
+        <Route path="/accountconfiguration" element={<AccountConfiguration />} />
+        <Route path="/accfinancedashboard" element={<AccountAndFinanceDashboard />} />
+        <Route path="/accountgroupsubgroup" element={<AccountGroupSubgroup />} />
 
-          <Route path="/Masters" element={<MasterDashboard/>}/>
-          <Route path="/commodity" element={<CreateCommodity/>}/>
-<Route path="/viewcommodity" element={<ViewCommodity/>}/>
-<Route path="/viewvendor" element={<ViewVendor/>}/>
-<Route  path="/hrm" element={<HrmConfiguration/>}/>
-<Route path="/salesanddistribution" element={<SalesDistribution/>}/>
-<Route path="/ViewBOM" element={<ViewBOM/>}/>
+        {/* INVENTORY */}
+        <Route path="/inventory" element={<InventoryAdd />} />
+        <Route path="/inventory/add" element={<InventoryAdd />} />
+        <Route path="/inventory/edit/:id" element={<InventoryEdit />} />
 
+        {/* MASTERS */}
+        <Route path="/masters" element={<MasterDashboard />} />
+        <Route path="/createvendor" element={<CreateVendor />} />
+        <Route path="/viewvendor" element={<ViewVendor />} />
+        <Route path="/commodity" element={<CreateCommodity />} />
+        <Route path="/viewcommodity" element={<ViewCommodity />} />
+        <Route path="/viewbom" element={<ViewBOM />} />
 
+        {/* HRM / SALES */}
+        <Route path="/hrm" element={<HrmConfiguration />} />
+        <Route path="/salesanddistribution" element={<SalesDistribution />} />
+        <Route path="/warehouse" element={<WareHouse />} />
 
-<Route path="/mm" element={<MMModule/>} />
-<Route path="/indicator" element={<CreateEnquiryPage/>} />
+        {/* MM */}
+        <Route path="/mm" element={<MMModule />} />
+        <Route path="/indicator" element={<CreateEnquiryPage />} />
 
-<Route path="/admin/*" element={<AdminConfiguration />} />
+        {/* PRODUCTION / QUALITY */}
+        <Route path="/production" element={<ProductionModule />} />
+        <Route path="/quality" element={<QualityModule />} />
 
+        {/* ADMIN */}
+        <Route path="/admin/*" element={<AdminConfiguration />} />
 
-<Route path="/production" element={<ProductionModule/>} />
-<Route path="/quality" element={<QualityModule/>} />
-<Route path="/warehouse" element={<WareHouse/>} />
-        {/* AccountGroupSubgroup */}
+        {/* OTHER */}
+        <Route path="/creditdebitnote" element={<CreditDebitNote />} />
+        <Route path="/nullify" element={<Nullify />} />
       </Routes>
 
-      <Footer /> {/* Always visible */}
+      <Footer />
     </Router>
   );
 }

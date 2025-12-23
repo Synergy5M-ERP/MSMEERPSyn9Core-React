@@ -17,6 +17,8 @@ public partial class SwamiSamarthDbContext : DbContext
     }
     //---------Accounts-------//
 
+    public virtual DbSet<AccountSale> AccountSale { get; set; }
+    public virtual DbSet<AccountSaleDetails> AccountSaleDetail { get; set; }
     public virtual DbSet<AccountPaymentMode> AccountPaymentMode { get; set; }
     public virtual DbSet<AccountStatus> AccountStatus { get; set; }
     public virtual DbSet<AccountVoucherDetails> AccountVoucherDetails { get; set; }
@@ -733,6 +735,12 @@ public partial class SwamiSamarthDbContext : DbContext
         {
             entity.ToTable("AccountPaymentMode");   // MUST match SQL table
             entity.HasKey(e => e.PaymentModeId);    // explicitly tell EF the PK
+        });
+
+        modelBuilder.Entity<AccountSaleDetails>(entity =>
+        {
+            entity.ToTable("AccountSaleDetails");   // MUST match SQL table
+            entity.HasKey(e => e.AccountSaleDetailedId);    // explicitly tell EF the PK
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -1,7 +1,9 @@
 import React from 'react';
+import './Footer.css';
 
 const Footer = () => {
   return (
+
     <footer
       style={{
         backgroundColor: '#002b5b',  // fixed typo
@@ -19,7 +21,13 @@ const Footer = () => {
         boxShadow: '0 -2px 6px rgba(0,0,0,0.3)' // optional: subtle shadow
       }}
     >
-      <p>© 2025 Swami Samarth. All rights reserved.</p>
+
+   
+
+      <p className='text-light'>© 2025 - MSME ERP SYN - 9 Powered by SYNERGY5M LLP Pune All Rights Reserved</p>
+
+
+
     </footer>
   );
 };

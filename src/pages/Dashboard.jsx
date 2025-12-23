@@ -1,211 +1,137 @@
-import React, { useState } from 'react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+// src/pages/Dashboard.js
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Users, Package, Factory, DollarSign, Settings, ShoppingCart, TrendingUp } from "lucide-react";
 
-function Dashboard() {
-  const [chartType, setChartType] = useState('balanceSheet');
-  const [timeFrame, setTimeFrame] = useState('weekly');
-
-  // Sample data
-  const dataSamples = {
-    balanceSheet: {
-      weekly: [
-        { name: 'Week 1', Assets: 4000, Liabilities: 2400 },
-        { name: 'Week 2', Assets: 3000, Liabilities: 1398 },
-      ],
-      monthly: [
-        { name: 'Jan', Assets: 12000, Liabilities: 6000 },
-        { name: 'Feb', Assets: 15000, Liabilities: 8000 },
-      ],
-    },
-    profitLoss: {
-      weekly: [
-        { name: 'Week 1', Profit: 2000, Loss: 500 },
-        { name: 'Week 2', Profit: 3000, Loss: 700 },
-        { name: 'Week 5', Profit: 9000, Loss: 8600 },
-        { name: 'Week 3', Profit: 5760, Loss: 8600 },
-        { name: 'Week 4', Profit: 9000, Loss: 3479 },
-      ],
-      monthly: [
-        { name: 'Jan', Profit: 8000, Loss: 2000 },
-        { name: 'Feb', Profit: 9000, Loss: 1000 },
-      ],
-    },
-    trialBalance: {
-      weekly: [
-        { name: 'Week 1', Debits: 8000, Credits: 7500 },
-        { name: 'Week 2', Debits: 9000, Credits: 8600 },
-        { name: 'Week 3', Debits: 5760, Credits: 8600 },
-        { name: 'Week 4', Debits: 9000, Credits: 3479 },
-        { name: 'Week 5', Debits: 8778, Credits: 9030 },
-      ],
-      monthly: [
-        { name: 'Jan', Debits: 35000, Credits: 34000 },
-        { name: 'Feb', Debits: 37000, Credits: 36000 },
-      ],
-    },
-  };
-
-  const chartData = dataSamples[chartType][timeFrame];
-
-  // Calculate totals for cards
-  const totals = {
-    balanceSheet: {
-      totalAssets: chartData.reduce((sum, item) => sum + (item.Assets || 0), 0),
-      totalLiabilities: chartData.reduce((sum, item) => sum + (item.Liabilities || 0), 0),
-    },
-    profitLoss: {
-      totalProfit: chartData.reduce((sum, item) => sum + (item.Profit || 0), 0),
-      totalLoss: chartData.reduce((sum, item) => sum + (item.Loss || 0), 0),
-    },
-    trialBalance: {
-      totalDebits: chartData.reduce((sum, item) => sum + (item.Debits || 0), 0),
-      totalCredits: chartData.reduce((sum, item) => sum + (item.Credits || 0), 0),
-    },
-  };
-
-  let bars, cards;
-  if (chartType === 'balanceSheet') {
-    bars = (
-      <>
-        <Bar dataKey="Assets" fill="#8884d8" />
-        <Bar dataKey="Liabilities" fill="#82ca9d" />
-      </>
-    );
-    cards = (
-      <>
-        <div className='row'>
-          <div className='col-6'>  <Card label="Total Assets  " value={totals.balanceSheet.totalAssets} />
-          </div>
-          <div className='col-6'> <Card label="Total Liabilities" value={totals.balanceSheet.totalLiabilities} />
-          </div>
-        </div>
-      </>
-    );
-  } else if (chartType === 'profitLoss') {
-    bars = (
-      <>
-        <Bar dataKey="Profit" fill="#24ec11ff" />
-        <Bar dataKey="Loss" fill="#e21313ff" />
-      </>
-    );
-    cards = (
-      <>
-        <div className='row'>
-          <div className='col-6'> <Card label="Total Profit in lacs" value={totals.profitLoss.totalProfit} />
-
-          </div>
-          <div className='col-6'>     <Card label="Total Loss in Lacs " value={totals.profitLoss.totalLoss} /></div>
-        </div>
-
-      </>
-    );
-  } else if (chartType === 'trialBalance') {
-    bars = (
-      <>
-        <Bar dataKey="Debits" fill="#8884d8" />
-        <Bar dataKey="Credits" fill="#82ca9d" />
-      </>
-    );
-    cards = (
-      <>
-        <div className='row'>
-          <div className='col-6'>   <Card label="Total Debits in Lacs" value={totals.trialBalance.totalDebits} />
-          </div>
-          <div className='col-6'>  <Card label="Total Credits in Lacs" value={totals.trialBalance.totalCredits} />
-          </div>
-        </div>
-      </>
-    );
+const modules = [
+  {
+    id: "hrm",
+    title: "HRM",
+    description: "Employees, attendance, payroll and HR operations.",
+    path: "/hrm",
+    icon: Users,
+    color: "#0d6efd"
+  },
+  {
+    id: "material",
+    title: "Material Management",
+    description: "Purchases, stock, GRN, consumables and inventory.",
+    path: "/mm",
+    icon: Package,
+    color: "#198754"
+  },
+  {
+    id: "sales",
+    title: "Sales & Distribution",
+    description: "Enquiries, quotations, orders, dispatch and invoicing.",
+    path: "/salesanddistribution",
+    icon: ShoppingCart,
+    color: "#fd7e14"
+  },
+  {
+    id: "production",
+    title: "Production and Quality",
+    description: "Planning, work orders, production tracking and reports.",
+    path: "/production",
+    icon: Factory,
+    color: "#6f42c1"
+  },
+  {
+    id: "finance",
+    title: "Accounts & Finance",
+    description: "Ledgers, vouchers, balance sheet and P&L.",
+    path: "/AccFinancedashboard",
+    icon: DollarSign,
+    color: "#20c997"
+  },
+  {
+    id: "masters",
+    title: "Masters",
+    description: "Item, customer, vendor and configuration masters.",
+    path: "/Masters",
+    icon: Settings,
+    color: "#0dcaf0"
   }
+];
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (path) => {
+    navigate(path); // navigate to that module page [web:36][web:39]
+  };
 
   return (
-    <div style={{ padding: 10 }}>
-      <h2 style={{ textAlign: 'left' }}>Financial Dashboard</h2>
-
-      {/* Chart type selection */}
-      <div style={{ textAlign: 'left' }}>
-        <label className='h5 m-2 text-primary'><input type="radio" name="chartType" value="balanceSheet" checked={chartType === 'balanceSheet'} onChange={() => setChartType('balanceSheet')} /> Balance Sheet</label>{' '}
-        <label className='h5 m-2 text-primary'   ><input type="radio" name="chartType" value="profitLoss" checked={chartType === 'profitLoss'} onChange={() => setChartType('profitLoss')} /> Profit & Loss</label>{' '}
-        <label className='h5 m-2 text-primary'         ><input type="radio" name="chartType" value="trialBalance" checked={chartType === 'trialBalance'} onChange={() => setChartType('trialBalance')} /> Trial Balance</label>
-      </div>
-
-      {/* Timeframe selection */}
-      <div style={{ marginTop: 10, textAlign: 'left' }}>
-        <label className='h5 m-2 text-info'><input type="radio" name="timeFrame" value="weekly" checked={timeFrame === 'weekly'} onChange={() => setTimeFrame('weekly')} /> Weekly</label>{' '}
-        <label className='h5 m-2 text-info'><input type="radio" name="timeFrame" value="monthly" checked={timeFrame === 'monthly'} onChange={() => setTimeFrame('monthly')} /> Monthly</label>
-      </div>
-
-      {/* Row with chart and cards */}
-      <div style={{ display: 'flex', marginTop: 30, gap: 40 }}>
-        <div style={{ flex: 2, height: 300 }}>
-          <ResponsiveContainer>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="2 2 " />
-              <XAxis dataKey="name" />
-              <YAxis />
-
-              <Tooltip />
-              <Legend />
-              {bars}
-            </BarChart>
-          </ResponsiveContainer>
+    <div className="bg-light" style={{ minHeight: "100vh" }}>
+      {/* Top header – reuse same style as your app */}
+      <header className="bg-white border-bottom shadow-sm">
+        <div className="container-fluid px-4 py-3 d-flex justify-content-between align-items-center">
+          <h1 className="h4 mb-0 fw-bold text-primary d-flex align-items-center gap-2">
+            <TrendingUp size={22} />
+            MSME ERP System
+          </h1>
+          <div className="d-flex align-items-center gap-3">
+            <div className="text-end d-none d-sm-block">
+              <div className="small fw-semibold">Welcome</div>
+              {/* <div className="small text-muted">Last login: Today, 4:32 PM</div> */}
+            </div>
+            <div
+              className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+              style={{ width: 40, height: 40 }}
+            >
+              A
+            </div>
+          </div>
         </div>
+      </header>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {cards}
+      {/* Only cards */}
+      <main className="container-fluid px-4 py-4">
+        <h2 className="h3 fw-bold mb-3">Select a Module</h2>
+        <p className="text-muted mb-4">
+          Click a module card to open its detailed dashboard and transactions.
+        </p>
+
+        <div className="row g-3">
+          {modules.map((m) => {
+            const Icon = m.icon;
+            return (
+              <div key={m.id} className="col-12 col-md-6 col-lg-4">
+                <div
+                  className="card shadow-sm border-0 h-100 module-card"
+                  role="button"
+                  onClick={() => handleCardClick(m.path)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="card-body d-flex">
+                    <div
+                      className="me-3 d-flex align-items-center justify-content-center rounded-3"
+                      style={{
+                        width: 46,
+                        height: 46,
+                        backgroundColor: m.color,
+                      }}
+                    >
+                      <Icon size={24} className="text-white" />
+                    </div>
+                    <div className="flex-grow-1">
+                      <h5 className="card-title mb-1 fw-semibold">{m.title}</h5>
+                      <p className="card-text small text-muted mb-2">
+                        {m.description}
+                      </p>
+                      <span className="small text-primary fw-semibold">
+                        Open module →
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-      <div>
-        <h3 style={{ textAlign: 'left' }}>Today's Activities</h3>
-      </div>
+      </main>
     </div>
   );
-}
-
-function Card({ label, value }) {
-  const size = 150; // width and height for square shape
-
-  return (
-    <div
-      style={{
-        background: '#e3f2fd',
-        width: size,
-        height: size,
-        padding: 12,
-        borderRadius: 8,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        boxSizing: 'border-box',
-      }}
-    >
-      <h3
-        style={{
-          margin: 0,
-          color: '#0f1316ff',
-          fontSize: 16,
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </h3>
-      <p
-        style={{
-          fontSize: 20,
-          margin: '6px 0 0',
-          fontWeight: 'bold',
-          textAlign: 'center',
-        }}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
+};
 
 export default Dashboard;

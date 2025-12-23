@@ -9,6 +9,7 @@ import {
   GppGoodSharp,
   GroupAddRounded,
   LocalPostOffice,
+  SdCardAlert,
   VolunteerActivismSharp,
 } from '@mui/icons-material';
 import { CreditCardIcon, SheetIcon } from 'lucide-react';
@@ -29,6 +30,7 @@ const Sidebar = ({ selected, onSelect }) => {
     { label: 'Account Voucher', icon: <VolunteerActivismSharp />, key: 'AccountVoucher' },
     { label: 'Credit Debit Note', icon: <CreditCardIcon />, key: 'CreditDebitNote' },
     { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
+      { label: 'Account Sale', icon: <SdCardAlert />, key: 'AccountSale' },
   { label: 'Nullify', icon: <GppGoodSharp />, key: 'nullify' },
     {
       label: 'Report',

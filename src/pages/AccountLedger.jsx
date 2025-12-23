@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Eye, Save, Trash2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { API_ENDPOINTS } from "../config/apiconfig";
 import Pagination from "../components/Pagination";
+import { API_ENDPOINTS } from "../config/apiconfig";
 
-function AccountLedger({ view }) {
+export default function AccountLedger({ view }) {
   const [formType, setFormType] = useState("ledger");
-  const [ledger, setLedger] = useState("");
-  const [ledgerGroupName, setLedgerGroupName] = useState("");
+
+  // form fields
   const [accountGroupOptions, setAccountGroupOptions] = useState([]);
-  const [accountGroup, setAccountGroup] = useState(""); // Only the selected value
-const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
+  const [accountGroup, setAccountGroup] = useState("");
+  const [ledgerGroupName, setLedgerGroupName] = useState("");
+  const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
+  const [ledger, setLedger] = useState("");
+  const [ledgerId, setLedgerId] = useState("");
   const [mobileNo, setMobileNo] = useState("");
   const [emailId, setEmailId] = useState("");
   const [gstNo, setGstNo] = useState("");
@@ -21,67 +24,96 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
   const [openingBal, setOpeningBal] = useState(0);
   const [closingBal, setClosingBal] = useState(0);
   const [description, setDescription] = useState("");
-  const [ledgerId, setLedgerId] = useState([]);
+
+  const getAccountGroupName = (id) => {
+  const group = accountGroupOptions.find(g => g.id === id);
+  return group ? group.name : "—";
+};
+
+  // lists and UI state
   const [ledgers, setLedgers] = useState([]);
   const [subLedgers, setSubLedgers] = useState([]);
-  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
 
+  // pagination
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 4;
 
-  const activeFilter = view;
+  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
+  const activeFilter = view || "active";
+
+  // Fetch account groups
   useEffect(() => {
-    if (formType === "ledger") {
-      fetchLedgers(activeFilter);
-    } else {
-      fetchSubLedgers(activeFilter);
-    }
-    setCurrentPage(1);
-  }, [formType, activeFilter]);
-  useEffect(() => {
+    let isMounted = true;
+
     const fetchAccountGroups = async () => {
       try {
-        const response = await axios.get(API_ENDPOINTS.AccountGroups); // Set this endpoint in your apiconfig
-        // Adjust data mapping as per your API response
-        setAccountGroupOptions(response.data.data || response.data || []);
-      } catch (error) {
-        toast.error("Failed to fetch account groups");
-        setAccountGroupOptions([]);
+        const response = await axios.get(API_ENDPOINTS.AccountGroup);
+        // backend is expected to return: { data: [ { id, name, isActive } ] }
+        const groups = response?.data?.data ?? response?.data ?? [];
+
+        if (!Array.isArray(groups)) throw new Error("Unexpected groups shape");
+
+        if (isMounted) {
+          setAccountGroupOptions(
+            groups.map((g) => ({ id: g.id ?? g.AccountGroupid ?? g.accountGroupId, name: g.name ?? g.AccountGroupName ?? g.accountGroup }))
+          );
+        }
+      } catch (err) {
+        if (isMounted) {
+          toast.error("Failed to fetch account groups");
+          setAccountGroupOptions([]);
+        }
       }
     };
+
     fetchAccountGroups();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  // Fetch ledgers / subledgers based on formType and view
+  useEffect(() => {
+    setCurrentPage(1);
+    if (formType === "ledger") fetchLedgers(activeFilter);
+    else fetchSubLedgers(activeFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formType, activeFilter]);
 
   const fetchLedgers = async (status = "active") => {
     setFetchLoading(true);
     try {
-      let url = API_ENDPOINTS.Ledger;
+      let url = API_ENDPOINTS.Ledger; 
       if (status === "active") url += "?isActive=true";
       else if (status === "inactive") url += "?isActive=false";
 
       const response = await axios.get(url);
-      const raw = response.data.data || response.data || [];
-      const mappedLedgers = raw.map((l) => ({
-        AccountLedgerId: l.accountLedgerId,
-        AccountLedgerName: l.accountLedgerName,
-        AccountLedgerNarration: l.accountLedgerNarration,
-        AccountGroup: l.accountGroup,
-        LedgerGroupName: l.ledgerGroupName,
-        MobileNo: l.mobileNo,
-        EmailId: l.emailId,
-        GstNo: l.gstNo,
-        Address: l.address,
-        OpeningBal: l.openingBal,
-        ClosingBal: l.closingBal,
-        IsActive: l.isActive,
+      const raw = response?.data?.data ?? response?.data ?? [];
+
+      const mapped = (Array.isArray(raw) ? raw : []).map((l) => ({
+        
+        AccountLedgerId: l.AccountLedgerId ?? l.accountLedgerId,
+        AccountLedgerName: l.AccountLedgerName ?? l.accountLedgerName,
+        AccountLedgerNarration: l.AccountLedgerNarration ?? l.accountLedgerNarration,
+        AccountGroupId: l.AccountGroupId ?? l.accountGroupId ?? l.AccountGroup ?? l.accountGroup,  
+        LedgerGroupName: l.LedgerGroupName ?? l.ledgerGroupName ?? l.accountGroupName,
+        // MobileNo: l.MobileNo ?? l.mobileNo,
+        MobileNo: l.mobileNo ? String(l.mobileNo) : "",
+        EmailId: l.EmailId ?? l.emailId,
+        GstNo: l.GSTNo ?? l.GstNo ?? l.gstNo,
+        Address: l.Address ?? l.address,
+        OpeningBal: l.OpeningBal ?? l.openingBal ?? 0,
+        ClosingBal: l.ClosingBal ?? l.closingBal ?? 0,
+        IsActive: Object.prototype.hasOwnProperty.call(l, "IsActive") ? l.IsActive : l.isActive,
       }));
 
-      setLedgers(mappedLedgers);
-    } catch (error) {
-      toast.error(`Fetch Error: ${error.message}`);
+      setLedgers(mapped);
+    } catch (err) {
+      toast.error(`Fetch Error: ${err.message}`);
       setLedgers([]);
     } finally {
       setFetchLoading(false);
@@ -91,111 +123,27 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
   const fetchSubLedgers = async (status = "active") => {
     setFetchLoading(true);
     try {
-      let url = API_ENDPOINTS.SubLedger;
+      let url = API_ENDPOINTS.SubLedger; 
       if (status === "active") url += "?isActive=true";
       else if (status === "inactive") url += "?isActive=false";
 
       const response = await axios.get(url);
-      const raw = response.data.data || response.data || [];
-      const mappedSubLedgers = raw.map((s) => ({
-        AccountLedgerSubid: s.accountLedgerSubid,
-        AccountLedgerSubName: s.accountLedgerSubName,
-        AccountLedgerSubNarration: s.accountLedgerSubNarration,
-        AccountLedgerid: s.accountLedgerid,
-        IsActive: s.isActive,
+      const raw = response?.data?.data ?? response?.data ?? [];
+
+      const mapped = (Array.isArray(raw) ? raw : []).map((s) => ({
+        AccountLedgerSubid: s.AccountLedgerSubid ?? s.accountLedgerSubid,
+        AccountLedgerSubName: s.AccountLedgerSubName ?? s.accountLedgerSubName,
+        AccountLedgerSubNarration: s.AccountLedgerSubNarration ?? s.accountLedgerSubNarration,
+        AccountLedgerid: s.AccountLedgerid ?? s.accountLedgerId ?? s.accountLedgerID,
+        IsActive: Object.prototype.hasOwnProperty.call(s, "IsActive") ? s.IsActive : s.isActive,
       }));
 
-      setSubLedgers(mappedSubLedgers);
-    } catch (error) {
-      toast.error(`Fetch Error: ${error.message}`);
+      setSubLedgers(mapped);
+    } catch (err) {
+      toast.error(`Fetch Error: ${err.message}`);
       setSubLedgers([]);
     } finally {
       setFetchLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (
-      !accountGroup ||
-      !ledgerGroupName ||
-      !mobileNo ||
-      !emailId ||
-      !gstNo ||
-      !address ||
-      !ledger.trim() ||
-      !description.trim()
-    ) {
-      toast.warning("Please fill all required fields!");
-      return;
-    }
-    if (formType === "subledger" && !ledgerId) {
-      toast.error("Please select a Ledger first.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
-
-      let payload = {};
-      if (formType === "ledger") {
-        payload = {
-          accountLedgerName: ledger.trim(),
-          accountLedgerNarration: description.trim(),
-          accountGroup: accountGroup,
-          ledgerGroupName: ledgerGroupName,
-          mobileNo: mobileNo,
-          emailId: emailId,
-          gstNo: gstNo,
-          address: address,
-          openingBal: openingBal,
-          closingBal: closingBal,
-          isActive: true,
-        };
-      } else {
-        payload = {
-          accountLedgerSubName: ledger.trim(),
-          accountLedgerSubNarration: description.trim(),
-          accountLedgerId: Number(ledgerId),
-          isActive: true,
-        };
-      }
-
-      const method = editingId ? "PUT" : "POST";
-      const url = editingId ? `${baseUrl}${editingId}` : baseUrl;
-
-      const response = await axios({
-        method,
-        url,
-        headers: { "Content-Type": "application/json" },
-        data: payload,
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        toast.success(editingId ? "Updated successfully!" : "Added successfully!");
-        if (formType === "ledger") {
-          await fetchLedgers(activeFilter);
-        } else {
-          await fetchSubLedgers(activeFilter);
-        }
-        handleCancel();
-      } else {
-        toast.error("Failed to save record!");
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          toast.error(`Server Error: ${error.response.data?.message || error.response.status}`);
-        } else if (error.request) {
-          toast.error("No response from server. Check API URL or server.");
-        } else {
-          toast.error(`Request Error: ${error.message}`);
-        }
-      } else {
-        toast.error("Unexpected error occurred.");
-      }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -212,26 +160,119 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
     setDescription("");
     setLedgerId("");
     setEditingId(null);
+    setLedgerSubGroupName("");
+  };
+
+  const validateForm = () => {
+    if (formType === "ledger") {
+      if (!accountGroup) return "Please select Account Group";
+      if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
+      const mobile = String(mobileNo || "").trim();
+      if (mobile) {
+      if (!/^\d{10}$/.test(mobile)) return "Mobile No must be exactly 10 digits";
+      if (!/^[6-9]/.test(mobile)) return "Mobile No must start with 6, 7, 8, or 9";
+      }
+      // if (!emailId.trim()) return "Please enter Email ID";
+      const validateGST = () => {
+      if (gstNo.trim() === "") return true; // Optional
+
+      if (!gstRegex.test(gstNo)) {
+      toast.error("Invalid GST Number");
+      return false;
+      }
+
+      return true;
+      };
+      // if (!address.trim()) return "Please enter Address";
+      if (!description.trim()) return "Please enter Description";
+    } else {
+      if (!ledgerId) return "Please select Ledger for Sub Ledger";
+      if (!ledger.trim()) return "Please enter Sub Ledger name";
+      if (!description.trim()) return "Please enter Description";
+    }
+    return null;
+  };
+
+  const handleSave = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      toast.warning(validationError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
+
+      let payload;
+      if (formType === "ledger") {
+        payload = {
+          accountLedgerName: ledgerGroupName.trim(),
+          accountLedgerNarration: description.trim(),
+          accountGroupId: Number(accountGroup),
+          ledgerGroupName: ledgerGroupName,
+          mobileNo,
+          emailId,
+          gstNo,
+          address,
+          openingBal,
+          closingBal,
+          isActive: true,
+        };
+      } else {
+        payload = {
+          accountLedgerSubName: ledger.trim(),
+          accountLedgerSubNarration: description.trim(),
+          accountLedgerId: Number(ledgerId),
+          isActive: true,
+        };
+      }
+
+      console.log(payload)
+
+      const method = editingId ? "put" : "post";
+      const url = editingId ? `${baseUrl}${editingId}` : baseUrl;
+
+      console.log(url)
+
+      const response = await axios({ method, url, data: payload, headers: { "Content-Type": "application/json" } });
+
+      console.log(response)
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success(editingId ? "Updated successfully!" : "Added successfully!");
+        if (formType === "ledger") await fetchLedgers(activeFilter);
+        else await fetchSubLedgers(activeFilter);
+        handleCancel();
+      } else {
+        toast.error("Failed to save record!");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (item) => {
     if (formType === "ledger") {
-      setLedger(item.AccountLedgerName || "");
-      setDescription(item.AccountLedgerNarration || "");
-      setLedgerGroupName(item.LedgerGroupName || "");
-      setAccountGroup(item.AccountGroup || "");
-      setMobileNo(item.MobileNo || "");
-      setEmailId(item.EmailId || "");
-      setGstNo(item.GstNo || "");
-      setAddress(item.Address || "");
-      setOpeningBal(item.OpeningBal || 0);
-      setClosingBal(item.ClosingBal || 0);
-      setEditingId(item.AccountLedgerId || null);
+      setLedgerGroupName(item.AccountLedgerName ?? "");
+      setDescription(item.AccountLedgerNarration ?? "");
+      // setAccountGroup(item.AccountGroup ?? "");
+      setAccountGroup(item.AccountGroupId ?? "");
+      // setMobileNo(item.MobileNo ?? "");
+      setMobileNo(item.MobileNo ? String(item.MobileNo) : "");
+      setEmailId(item.EmailId ?? "");
+      setGstNo(item.GstNo ?? "");
+      setAddress(item.Address ?? "");
+      setOpeningBal(item.OpeningBal ?? 0);
+      setClosingBal(item.ClosingBal ?? 0);
+      setEditingId(item.AccountLedgerId ?? null);
     } else {
-      setLedger(item.AccountLedgerSubName || "");
-      setDescription(item.AccountLedgerSubNarration || "");
-      setLedgerId(item.AccountLedgerid || "");
-      setEditingId(item.AccountLedgerSubid || null);
+      setLedger(item.AccountLedgerSubName ?? "");
+      setDescription(item.AccountLedgerSubNarration ?? "");
+      setLedgerId(item.AccountLedgerid ?? "");
+      setEditingId(item.AccountLedgerSubid ?? null);
     }
   };
 
@@ -253,59 +294,18 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
     try {
       const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
 
-      const record =
-        formType === "ledger"
-          ? ledgers.find((l) => l.AccountLedgerId === id)
-          : subLedgers.find((s) => s.AccountLedgerSubid === id);
-
-      if (!record) {
-        toast.error("Record not found in state.");
-        setLoading(false);
-        return;
-      }
-
-      let payload = {};
-      if (formType === "ledger") {
-        payload = {
-          accountLedgerId: record.AccountLedgerId,
-          accountLedgerName: record.AccountLedgerName,
-          accountLedgerNarration: record.AccountLedgerNarration,
-          accountGroup: record.AccountGroup,
-          ledgerGroupName: record.LedgerGroupName,
-          mobileNo: record.MobileNo,
-          emailId: record.EmailId,
-          gstNo: record.GstNo,
-          address: record.Address,
-          openingBal: record.OpeningBal,
-          closingBal: record.ClosingBal,
-          isActive: false,
-        };
-      } else {
-        payload = {
-          AccountLedgerSubid: record.AccountLedgerSubid,
-          AccountLedgerSubName: record.AccountLedgerSubName,
-          AccountLedgerSubNarration: record.AccountLedgerSubNarration,
-          AccountLedgerId: record.AccountLedgerid,
-          IsActive: false,
-        };
-      }
-
-      const response = await axios.put(`${baseUrl}${id}`, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      // Soft-delete pattern: set isActive = false
+      const response = await axios.put(`${baseUrl}${id}`, { isActive: false });
 
       if (response.status === 200) {
         toast.success("Deleted successfully!");
-        if (formType === "ledger") {
-          await fetchLedgers(activeFilter);
-        } else {
-          await fetchSubLedgers(activeFilter);
-        }
+        if (formType === "ledger") await fetchLedgers(activeFilter);
+        else await fetchSubLedgers(activeFilter);
       } else {
         toast.error("Delete failed!");
       }
-    } catch (error) {
-      toast.error(`Delete Error: ${error.message}`);
+    } catch (err) {
+      toast.error(`Delete Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -315,22 +315,14 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
     setLoading(true);
     try {
       const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
-
-      const record =
-        formType === "ledger"
-          ? ledgers.find((l) => l.AccountLedgerId === id)
-          : subLedgers.find((s) => s.AccountLedgerSubid === id);
-
-      const payload = { ...record, isActive: true };
-
-      await axios.put(`${baseUrl}${id}`, payload);
-
-      toast.success("Activated!");
-      if (formType === "ledger") {
-        await fetchLedgers(activeFilter);
-      } else {
-        await fetchSubLedgers(activeFilter);
+      const response = await axios.put(`${baseUrl}${id}`, { isActive: true });
+      if (response.status === 200) {
+        toast.success("Activated!");
+        if (formType === "ledger") await fetchLedgers(activeFilter);
+        else await fetchSubLedgers(activeFilter);
       }
+    } catch (err) {
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -338,27 +330,16 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
 
   const displayData = formType === "ledger" ? ledgers : subLedgers;
 
-  const filteredData = displayData.filter((item) =>
-    activeFilter === "active" ? item.IsActive !== false : item.IsActive === false
-  );
+  const filteredData = useMemo(() => displayData.filter((item) => (activeFilter === "active" ? item.IsActive !== false : item.IsActive === false)), [displayData, activeFilter]);
 
   const indexOfLast = currentPage * recordsPerPage;
   const indexOfFirst = indexOfLast - recordsPerPage;
-
   const currentRecords = filteredData.slice(indexOfFirst, indexOfLast);
 
   const LoadingSpinner = () => (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{
-        height: "100vh",
-        width: "100vw",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        backgroundColor: "rgba(255,255,255,0.8)",
-        zIndex: 2000,
-      }}
+      style={{ height: "100vh", width: "100vw", position: "fixed", top: 0, left: 0, backgroundColor: "rgba(255,255,255,0.8)", zIndex: 2000 }}
     >
       <div className="text-center">
         <div className="spinner-border text-primary" role="status"></div>
@@ -374,223 +355,128 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
       <ToastContainer position="top-right" autoClose={2000} />
 
       <div className="container-fluid">
-        {/* Toggle Ledger/SubLedger */}
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "8px",
-            marginBottom: "20px",
-          }}
-          className="d-flex justify-content-between align-items-center flex-wrap"
-        >
+        <div style={{ background: "white", padding: "20px", borderRadius: "8px", marginBottom: "20px" }} className="d-flex justify-content-between align-items-center flex-wrap">
           <div>
             <label style={{ marginRight: "20px" }}>
-              <input
-                type="radio"
-                name="formType"
-                value="ledger"
-                checked={formType === "ledger"}
-                onChange={() => {
-                  setFormType("ledger");
-                  handleCancel();
-                }}
-                style={{ marginRight: "8px" }}
-              />
+              <input type="radio" name="formType" value="ledger" checked={formType === "ledger"} onChange={() => { setFormType("ledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
               Account Ledger
             </label>
             <label>
-              <input
-                type="radio"
-                name="formType"
-                value="subledger"
-                checked={formType === "subledger"}
-                onChange={() => {
-                  setFormType("subledger");
-                  handleCancel();
-                }}
-                style={{ marginRight: "8px" }}
-              />
+              <input type="radio" name="formType" value="subledger" checked={formType === "subledger"} onChange={() => { setFormType("subledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
               Account Sub Ledger
             </label>
           </div>
         </div>
 
         <div className="row">
-          {/* Form Section */}
           <div className="col-lg-7">
             <div style={{ background: "white", padding: "25px", borderRadius: "8px" }}>
-        <div className="row">
+              <div className="row">
                 {formType === "subledger" && (
-                <div className=" col-6 mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Group Name</label>
-                  <select
-                    value={ledgerId}
-                    onChange={(e) => setLedgerId(Number(e.target.value))}
-                    disabled={loading}
-                    className="form-control"
-                  >
-                    <option value="">-- Ledger Group Name --</option>
-                    {ledgers.map((l) => (
-                      <option key={l.AccountLedgerId} value={l.AccountLedgerId}>
-                        {l.AccountLedgerName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {formType === "subledger" && (
-                <div className=" col-6 mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Sub-Group Name</label>
-                    <input
-                        type="text"
-                        value={ledgerSubGroupName}
-                        onChange={e => setLedgerSubGroupName(e.target.value)}
-                        className="form-control"
-                        placeholder="Enter Ledger Sub Group Name"
-                        disabled={loading}
-                      />
-                </div>
-              )}
-        </div>
+                  <div className="col-6 mb-3">
+                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
+                    <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="form-control">
+                      <option value="">-- Ledger Name --</option>
+                      {ledgers.map((l) => (
+                        <option key={l.AccountLedgerId} value={l.AccountLedgerId}>{l.AccountLedgerName}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {formType === "subledger" && (
+                  <div className="col-6 mb-3">
+                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Sub-Group Name</label>
+                    <input type="text" value={ledgerSubGroupName} onChange={(e) => setLedgerSubGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Sub Group Name" disabled={loading} />
+                  </div>
+                )}
+              </div>
+
               {formType === "ledger" && (
                 <>
                   <div className="row">
-                    <div className=" col-6  mb-3">
+                    <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Group</label>
-                      <select
-                        value={accountGroup}
-                        onChange={e => setAccountGroup(e.target.value)}
-                        disabled={loading}
-                        className="form-control"
-                      >
+                      <select value={accountGroup} onChange={(e) => setAccountGroup(Number(e.target.value))} disabled={loading} className="form-control">
                         <option value="">--Select Group--</option>
                         {accountGroupOptions.map((grp) => (
-                          <option key={grp.id || grp.accountGroupId} value={grp.name || grp.accountGroup}>
-                            {grp.name || grp.accountGroup}
-                          </option>
+                          <option key={grp.id} value={grp.id}>{grp.name}</option>
                         ))}
                       </select>
-
-                    </div>
-                    <div className=" col-6  mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Group Name</label>
-                      <input
-                        type="text"
-                        value={ledgerGroupName}
-                        onChange={e => setLedgerGroupName(e.target.value)}
-                        className="form-control"
-                        placeholder="Enter Ledger Group Name"
-                        disabled={loading}
-                      />
                     </div>
 
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
+                      <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Name" disabled={loading} />
+                    </div>
                   </div>
+
                   <div className="row">
-                    <div className="col-6  mb-3">
+                    <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Mobile No</label>
-                      <input
-                        type="text"
-                        value={mobileNo}
-                        onChange={e => setMobileNo(e.target.value)}
-                        className="form-control"
-                        placeholder="Enter Mobile No"
-                        disabled={loading}
-                      />
+                      <input type="text" 
+                      value={mobileNo} 
+                      // onChange={(e) => setMobileNo(e.target.value)}
+                      onChange={(e) => {
+                      // Allow only digits
+                        const val = e.target.value.replace(/\D/g, "");
+
+                      // Limit to 10 digits
+                      if (val.length <= 10) {
+                      setMobileNo(val);}}} 
+                      className="form-control" 
+                      placeholder="Enter Mobile No"
+                      disabled={loading} />
                     </div>
-                    <div className=" col-6  mb-3">
+
+                    <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Email ID</label>
-                      <input
-                        type="email"
-                        value={emailId}
-                        onChange={e => setEmailId(e.target.value)}
-                        className="form-control"
-                        placeholder="Enter Email ID"
-                        disabled={loading}
-                      />
+                      <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="form-control" placeholder="Enter Email ID" disabled={loading} />
                     </div>
                   </div>
-                  <div className="row">     <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>GSTNo</label>
-                    <input
-                      type="text"
-                      value={gstNo}
-                      onChange={e => setGstNo(e.target.value)}
-                      className="form-control"
-                      placeholder="Enter GST No"
-                      disabled={loading}
-                    />
-                  </div>
+
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>GSTNo</label>
+                      <input type="text" 
+                      value={gstNo} 
+                      maxLength={15}
+                      onChange={(e) => setGstNo(e.target.value.toUpperCase())} 
+                      className="form-control" 
+                      placeholder="Enter GST No" 
+                      disabled={loading} />
+                    </div>
+
                     <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Address</label>
-                      <textarea
-                        value={address}
-                        onChange={e => setAddress(e.target.value)}
-                        className="form-control"
-                        rows={2}
-                        placeholder="Enter Address"
-                        disabled={loading}
-                      />
-                    </div></div>
-                  <div className="row">  <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Opening Balance</label>
-                    <input
-                      type="number"
-                      value={openingBal}
-                      onChange={e => setOpeningBal(Number(e.target.value))}
-                      className="form-control"
-                      placeholder="Opening Balance"
-                      disabled={loading}
-                    />
+                      <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
+                    </div>
                   </div>
+
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Opening Balance</label>
+                      <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="form-control" placeholder="Opening Balance" disabled={loading} />
+                    </div>
+
                     <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Closing Balance</label>
-                      <input
-                        type="number"
-                        value={closingBal}
-                        onChange={e => setClosingBal(Number(e.target.value))}
-                        className="form-control"
-                        placeholder="Closing Balance"
-                        disabled={loading}
-                      />
-                    </div></div>
+                      <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="form-control" placeholder="Closing Balance" disabled={loading} />
+                    </div>
+                  </div>
                 </>
               )}
-              <div className="row">
-                {/* <div className="col-6 mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>
-                    {formType === "ledger" ? "Ledger Name" : "Sub Ledger Name"}
-                  </label>
-                  <input
-                    type="text"
-                    value={ledger}
-                    onChange={e => setLedger(e.target.value)}
-                    className="form-control"
-                    placeholder={`Enter ${formType === "ledger" ? "Ledger" : "Sub Ledger"} name`}
-                    disabled={loading}
-                  />
-                </div> */}
 
+              <div className="row">
                 <div className="col-12 mb-3">
                   <label style={{ color: "#0066cc", fontWeight: "600" }}>Description</label>
-                  <textarea
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                    className="form-control"
-                    placeholder="Enter description"
-                    rows={2}
-                    disabled={loading}
-                  />
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="form-control" placeholder="Enter description" rows={2} disabled={loading}></textarea>
                 </div>
               </div>
+
               <div style={{ display: "flex", gap: "10px" }}>
-                <button
-                  onClick={handleSave}
-                  className="btn btn-primary"
-                  disabled={loading || !ledger.trim() || (formType === "subledger" && !ledgerId)}
-                >
-                  <Save size={18} style={{ marginRight: "6px" }} />
-                  Save
+                <button onClick={handleSave} className="btn btn-primary" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
+                  <Save size={18} style={{ marginRight: "6px" }} /> Save
                 </button>
                 <button onClick={handleCancel} className="btn btn-secondary" disabled={loading}>
                   Cancel
@@ -599,18 +485,16 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
             </div>
           </div>
 
-          {/* Table Section */}
           <div className="col-lg-5">
             <div style={{ background: "white", padding: "20px", borderRadius: "8px" }}>
-              <h5 style={{ color: "#0066cc", fontWeight: "600" }}>
-                {formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}
-              </h5>
+              <h5 style={{ color: "#0066cc", fontWeight: "600" }}>{formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}</h5>
+
               <table className="table table-bordered table-striped mt-3">
                 <thead>
                   <tr>
-                    <th className="text-primary">{formType === "ledger" ? "Account Type" : "ledger Group"}</th>
-                    {/* {formType === "subledger" && <th className="text-primary">Ledger</th>} */}
+                    <th className="text-primary">{formType === "ledger" ? "Account Group" : " "}</th>
                     <th className="text-primary">{formType === "ledger" ? "Ledger Name" : "Ledger Sub-Group"}</th>
+
                     {activeFilter === "active" ? (
                       <>
                         <th className="text-primary">Edit</th>
@@ -625,51 +509,39 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
                 <tbody>
                   {currentRecords.length === 0 ? (
                     <tr>
-                      <td colSpan={formType === "subledger" ? 3 : 2} className="text-center text-muted">
-                        No data found
-                      </td>
+                      <td colSpan={formType === "subledger" ? 3 : 2} className="text-center text-muted">No data found</td>
                     </tr>
                   ) : (
                     currentRecords.map((item) => (
-                      <tr key={item.AccountLedgerId || item.AccountLedgerSubid}>
-                        {formType === "subledger" && (
-                          <td>
-                            {ledgers.find((l) => l.AccountLedgerId === item.AccountLedgerid)?.AccountLedgerName || "N/A"}
-                          </td>
+                      <tr key={item.AccountLedgerId ?? item.AccountLedgerSubid}>
+                        {/* LEDGER LIST → Show Account Group Name */}
+                        {formType === "ledger" && (
+                          <td>{getAccountGroupName(item.AccountGroupId)}</td>
                         )}
-                        <td>{item.AccountLedgerName || item.AccountLedgerSubName}</td>
+
+                        {formType === "subledger" && (
+                          <td>{ledgers.find((l) => l.AccountLedgerId === item.AccountLedgerid)?.AccountLedgerName ?? "N/A"}</td>
+                        )}
+
+                        <td>{item.AccountLedgerName ?? item.AccountLedgerSubName}</td>
 
                         {activeFilter === "active" ? (
                           <>
                             <td>
-                              <button
-                                onClick={() => handleEdit(item)}
-                                disabled={loading}
-                                className="btn btn-link p-0"
-                                title="Edit"
-                              >
+                              <button onClick={() => handleEdit(item)} disabled={loading} className="btn btn-link p-0" title="Edit">
                                 <Eye size={18} />
                               </button>
                             </td>
+
                             <td>
-                              <button
-                                onClick={() => handleDelete(item.AccountLedgerId || item.AccountLedgerSubid)}
-                                disabled={loading}
-                                className="btn btn-link text-danger p-0"
-                                title="Delete"
-                              >
+                              <button onClick={() => handleDelete(item.AccountLedgerId ?? item.AccountLedgerSubid)} disabled={loading} className="btn btn-link text-danger p-0" title="Delete">
                                 <Trash2 size={18} />
                               </button>
                             </td>
                           </>
                         ) : (
                           <td>
-                            <button
-                              onClick={() => handleActivate(item.AccountLedgerId || item.AccountLedgerSubid)}
-                              disabled={loading}
-                              className="btn btn-link text-success p-0 fw-semibold"
-                              title="Activate"
-                            >
+                            <button onClick={() => handleActivate(item.AccountLedgerId ?? item.AccountLedgerSubid)} disabled={loading} className="btn btn-link text-success p-0 fw-semibold" title="Activate">
                               Activate
                             </button>
                           </td>
@@ -681,12 +553,7 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
               </table>
 
               {filteredData.length > recordsPerPage && (
-                <Pagination
-                  totalRecords={filteredData.length}
-                  recordsPerPage={recordsPerPage}
-                  currentPage={currentPage}
-                  onPageChange={setCurrentPage}
-                />
+                <Pagination totalRecords={filteredData.length} recordsPerPage={recordsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
               )}
 
               {filteredData.length === 0 && !loading && (
@@ -703,5 +570,3 @@ const [ledgerSubGroupName, setLedgerSubGroupName] = useState("");
     </div>
   );
 }
-
-export default AccountLedger;

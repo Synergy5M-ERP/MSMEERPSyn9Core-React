@@ -5,9 +5,10 @@ import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Pagination from "../components/Pagination";
+import { API_ENDPOINTS } from "../config/apiconfig";
 
-const API_BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//
+const API_BASE_URL = "https://localhost:7026/api";
+
 // Initial new item row structure
 const emptyItem = {
     itemName: "",
@@ -101,11 +102,11 @@ const AccountGRN = () => {
                 // unitRes,
                 statusRes,
             ] = await Promise.all([
-                fetch(`${API_BASE_URL}/suppliers`),
-                fetch(`${API_BASE_URL}/ledgers`),
-                fetch(`${API_BASE_URL}/grn-numbers`),
-                fetch(`${API_BASE_URL}/po-numbers`),
-                fetch(`http://localhost:49980/Item/GetAllItemsApi`),
+                fetch(API_ENDPOINTS.suppliers),
+                fetch(API_ENDPOINTS.Ledger),
+                fetch(API_ENDPOINTS.GRN),
+                fetch(API_ENDPOINTS.PONumber),
+                fetch(API_ENDPOINTS.ItemNames),
 
                 fetch(`${API_BASE_URL}/statuses`)
             ]);
@@ -126,7 +127,7 @@ const AccountGRN = () => {
     const fetchGRNs = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_BASE_URL}/grn`);
+            const res = await fetch(API_ENDPOINTS.GRN);
             setGrns(await res.json());
         } catch (error) {
             toast.error("Error fetching GRNs");
@@ -212,7 +213,7 @@ const AccountGRN = () => {
         }
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/grn`, {
+            const res = await fetch(API_ENDPOINTS.GRN, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
@@ -256,7 +257,7 @@ const AccountGRN = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`${API_BASE_URL}/grn/${grnNumber}`, {
+                    const res = await fetch(`${API_ENDPOINTS.GRN}/${grnNumber}`, {
                         method: "DELETE",
                     });
                     if (res.ok) {
@@ -606,9 +607,9 @@ const AccountGRN = () => {
                             </table>
                         </div>
                         {/* Totals */}
-                        <div className="d-flex justify-content-end my-3 px-3" style={{ gap: "2rem" }}>
-                            <span><b>Total Amount:</b> {formData.totalAmount}</span>
-                            <span><b>Total Tax Amount:</b> {formData.totalTaxAmount}</span>
+                        <div className="text-center" >
+                            <span><b>Total Amount:</b> {formData.totalAmount}</span><br/>
+                            <span><b>Total Tax Amount:</b> {formData.totalTaxAmount}</span><br/>
                             <span><b>Grand Total:</b> {formData.grandTotal}</span>
                         </div>
                         {/* Save / Cancel buttons */}
@@ -646,59 +647,7 @@ const AccountGRN = () => {
                         </div>
                     </div>
 
-                    {/* GRN Records Table */}
-                    {/* <div className="table-responsive my-4">
-            <table className="table table-bordered align-middle">
-              <thead>
-                <tr style={{ backgroundColor: "#e9f3fc" }}>
-                  <th>GRN No</th>
-                  <th>Seller</th>
-                  <th>PO Code</th>
-                  <th>Total</th>
-                  <th>Tax</th>
-                  <th>Grand Total</th>
-                  <th>Edit</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentRecords.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="text-center text-muted">
-                      No GRN records found.
-                    </td>
-                  </tr>
-                ) : (
-                  currentRecords.map((grn, idx) => (
-                    <tr key={idx}>
-                      <td>{grn.grnNumber}</td>
-                      <td>{grn.sellerName}</td>
-                      <td>{grn.poNumber}</td>
-                      <td>{grn.totalAmount}</td>
-                      <td>{grn.totalTaxAmount}</td>
-                      <td>{grn.grandTotal}</td>
-                      <td style={{ textAlign: "center" }}>
-                        <button className="btn btn-link">
-                          <Eye size={18} />
-                        </button>
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <button className="btn btn-link text-danger" onClick={() => handleDelete(grn.grnNumber)}>
-                          <Trash2 size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-            <Pagination
-              totalRecords={grns.length}
-              recordsPerPage={recordsPerPage}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
-          </div> */}
+                   
                 </div>
             </div>
         </div>

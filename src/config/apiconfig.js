@@ -1,7 +1,8 @@
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- //const BASE_URL = "https://localhost:7145/api";
+//  const BASE_URL = "https://localhost:7145/api";
 
 export const API_ENDPOINTS = {
+  Group: `${BASE_URL}/AccountGroups`,
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
   VoucherType: `${BASE_URL}/AccountVoucherType/`,
@@ -35,5 +36,12 @@ export const API_ENDPOINTS = {
   GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
   PaymentMode: `${BASE_URL}/PaymentMode`,
   Status: `${BASE_URL}/Status`,
- 
+  GetVoucherDetails:`${BASE_URL}/GetVoucherDetails`,
+
+  AccountSale: `${BASE_URL}/AccountSale`,
+  Getbuyers: `${BASE_URL}/Buyers`,
+  GetinvoiceNumbersBybuyer: `${BASE_URL}/GetinvoiceNumbersBybuyer`,
+  GetInvoiceItemDetails: `${BASE_URL}/GetInvoiceItemDetails`,
+  CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
+  ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`
 };

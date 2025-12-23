@@ -1,7 +1,3 @@
-// ===============================
-// FULLY FIXED ACCOUNT VOUCHER PAGE
-// ===============================
-
 import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -45,15 +41,12 @@ function AccountVoucher() {
     const [gridEntries, setGridEntries] = useState([]);
     const [voucherTypes, setVoucherTypes] = useState([]);
     const [ledgerAccounts, setLedgerAccounts] = useState([]);
-    // const [throughOptions] = useState(['Bank', 'Cash']);
-    // const [statusOptions] = useState(['Draft', 'Posted', 'Approved', 'Cancelled']);
     const [loading, setLoading] = useState(false);
     const [fetchLoading, setFetchLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 4;
     const indexOfLast = currentPage * recordsPerPage;
     const indexOfFirst = indexOfLast - recordsPerPage;
-    //const currentRecords = gridEntries.slice(indexOfFirst, indexOfLast);
 
     // ----------------------
     // Fetch initial dropdown data
@@ -87,7 +80,6 @@ function AccountVoucher() {
         try {
             const res = await fetch(API_ENDPOINTS.VoucherType);
             const json = await res.json();
-            //setVoucherTypes(normalize(json));
             setVoucherTypes(Array.isArray(json) ? json : []); 
         } catch (err) {
             toast.error("Failed to load voucher types");
@@ -197,8 +189,7 @@ function AccountVoucher() {
             toast.error("Failed to load Status");
         } finally {
             setFetchLoading(false);
-        }
-    };
+        }};
     
     // ----------------------
     // Vendor number auto-generate
@@ -291,9 +282,19 @@ function AccountVoucher() {
     };
 
     const handleReferenceNo = async () =>{
+        setTotalAmount('');
+        setPaymentDueDate('');
+        setPaymentMode('');
+        setStatus('');
+        setDescription('');
+        setGridEntries([]);   // Clear table rows
 
+        // Optional → clear ledger input fields too
+        setLedgerAccount('');
+        setCreditAmount('');
+        setDebitAmount('');
+        setNarration('');
     };
-
 
     // ----------------------
     // Save Voucher
@@ -368,6 +369,26 @@ const handleSave = async () => {
                 ...prev,
                 { voucherNo: trimmedVoucherNo, vendorId: vendorName }
                 ]);
+                
+                setNarration('')
+                setVendorName('')
+                setVendorNumber('')
+                setVoucherDate('')
+                setVoucherNo('')
+                setVoucherType('')
+                setReferenceNo('')
+                setTotalAmount('');
+                setPaymentDueDate('');
+                setPaymentMode('');
+                setStatus('');
+                setDescription('');
+                setGridEntries([]);   // Clear table rows
+
+                // Optional → clear ledger input fields too
+                setLedgerAccount('');
+                setCreditAmount('');
+                setDebitAmount('');
+                setNarration('');                   
 
         } else {
             toast.error(json.message || "Save failed!");
@@ -378,7 +399,6 @@ const handleSave = async () => {
         setLoading(false);
     }
 };
-//========================================3
 
     if (fetchLoading) return <LoadingSpinner />;
 
@@ -485,6 +505,7 @@ const handleSave = async () => {
                                     value={referenceNo}
                                     onChange={(e) => {
                                         setReferenceNo(e.target.value);
+                                        handleReferenceNo()
                                         fetchGRNAmount(parseInt(e.target.value));
                                     }}
                                 >
@@ -503,6 +524,7 @@ const handleSave = async () => {
                                     value={referenceNo}
                                     onChange={(e) => {
                                         setReferenceNo(e.target.value);
+                                        handleReferenceNo()
                                         fetchInvoiceAmount(parseInt(e.target.value));
                                     }}
                                 >
@@ -519,8 +541,10 @@ const handleSave = async () => {
                                 <input
                                     className="form-control"
                                     value={referenceNo}
-                                    onChange={(e) => setReferenceNo(e.target.value)}
-                                />
+                                    onChange={(e) => {
+                                        setReferenceNo(e.target.value)
+                                        handleReferenceNo()
+                                    }}/>
                             );
                         }
                     })()}

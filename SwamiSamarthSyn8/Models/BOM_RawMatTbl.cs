@@ -54,6 +54,9 @@ public partial class BOM_RawMatTbl
 
     [Column(TypeName = "decimal(18, 6)")]
     public decimal? QtyInGrms { get; set; }
+    public bool IsActive { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 
     [ForeignKey("FPBID")]
     [InverseProperty("BOM_RawMatTbls")]

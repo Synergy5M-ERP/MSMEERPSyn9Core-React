@@ -60,4 +60,5 @@ public partial class PQM_TodaysFinPlanTbl
     [ForeignKey("GenFinProdId")]
     [InverseProperty("PQM_TodaysFinPlanTbls")]
     public virtual PQM_GenFinProdTbl? GenFinProd { get; set; }
+    public bool IsRejectedSubmitted { get; set; }
 }

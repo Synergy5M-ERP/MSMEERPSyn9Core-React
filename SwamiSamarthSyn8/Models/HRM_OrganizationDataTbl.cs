@@ -14,25 +14,7 @@ public partial class HRM_OrganizationDataTbl
 
     public string? Position_Code { get; set; }
 
-    [StringLength(50)]
-    public string? Source { get; set; }
-
-    [StringLength(50)]
-    public string? Continent { get; set; }
-
-    [StringLength(50)]
-    public string? Country { get; set; }
-
-    [StringLength(50)]
-    public string? State { get; set; }
-
-    [StringLength(50)]
-    public string? City { get; set; }
-
-    [StringLength(50)]
-    public string? Level { get; set; }
-
-    public string? Company_Name { get; set; }
+    
 
     [StringLength(50)]
     public string? Department { get; set; }
@@ -99,5 +81,6 @@ public partial class HRM_OrganizationDataTbl
     public int? DesignationId { get; set; }
 
     [StringLength(50)]
-    public string? Report_Email { get; set; }
+    public string? Report_Email { get; set;}
+    public bool IsActive { get; internal set; }
 }

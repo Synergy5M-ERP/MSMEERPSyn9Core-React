@@ -12,6 +12,8 @@ public partial class MASTER_ItemTbl
     [Key]
     public int Id { get; set; }
 
+    public string? Item_Category { get; set;}
+
     [StringLength(50)]
     public string? Item_Code { get; set; }
 
@@ -43,7 +45,7 @@ public partial class MASTER_ItemTbl
     public byte[]? Image { get; set; }
 
     [StringLength(500)]
-    public string? Prime_For_BOM { get; set; }
+    public string? Primary_Alternate { get; set; }
 
     [StringLength(50)]
     public string? ItemCategory { get; set; }

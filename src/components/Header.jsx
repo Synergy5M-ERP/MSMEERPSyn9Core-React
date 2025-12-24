@@ -432,13 +432,16 @@ function Header() {
           style={{ padding: "0 32px", minHeight: "56px" }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
-            {/* ✅ FIXED: Logo from PUBLIC folder */}
+            {/* ✅ AZURE READY: Logo from PUBLIC folder */}
             <img
-              src="/SwamiSamarthlogo.png"  // CHANGED: / instead of ./
+              src="/SwamiSamarthlogo.png"
               alt="Logo"
               height={30}
               style={{ marginRight: 10, marginTop: 4 }}
-              onError={(e) => { e.target.src = '/logo-fallback.png'; }} // Fallback
+              onError={(e) => {
+                e.target.style.display = 'none';
+                console.log('Logo not found - using fallback');
+              }}
             />
           </div>
 
@@ -480,12 +483,11 @@ function Header() {
                 }}
               >
                 <RiAccountCircleFill className="me-2" size={17} />
-                MY ACCOUNT 
+                MY ACCOUNT
               </button>
 
               {openDropdown && (
                 <div
-                  className="dropdown-menu shadow"
                   style={{
                     display: "block",
                     position: "absolute",
@@ -496,32 +498,70 @@ function Header() {
                     width: "220px",
                     padding: "10px 0",
                     zIndex: 2000,
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                    border: "1px solid #e0e0e0"
                   }}
                 >
-                  <NavLink to="/register" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-user-plus text-primary me-2"></i> Signup
+                  <NavLink 
+                    to="/register" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-user-plus text-primary me-2" style={{fontSize: '14px'}}></i>
+                    Signup
                   </NavLink>
 
-                  <NavLink to="/login" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-sign-in-alt text-success me-2"></i> Login
+                  <NavLink 
+                    to="/login" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-sign-in-alt text-success me-2" style={{fontSize: '14px'}}></i>
+                    Login
                   </NavLink>
 
-                  <NavLink to="/logout" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-sign-out-alt text-danger me-2"></i> Signout
+                  <NavLink 
+                    to="/logout" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-sign-out-alt text-danger me-2" style={{fontSize: '14px'}}></i>
+                    Signout
                   </NavLink>
 
-                  <div className="dropdown-divider" style={{margin: '5px 0'}}></div>
+                  <hr style={{margin: '8px 0', border: 'none', borderTop: '1px solid #eee'}} />
 
-                  <NavLink to="/admin" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-check-circle text-success me-2"></i> User Approval
+                  <NavLink 
+                    to="/admin" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-check-circle text-success me-2" style={{fontSize: '14px'}}></i>
+                    User Approval
                   </NavLink>
 
-                  <NavLink to="/profile" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-id-badge text-info me-2"></i> User Profile
+                  <NavLink 
+                    to="/profile" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-id-badge text-info me-2" style={{fontSize: '14px'}}></i>
+                    User Profile
                   </NavLink>
 
-                  <NavLink to="/contact-us" className="dropdown-item" style={linkStyle} onClick={() => setOpenDropdown(false)}>
-                    <i className="fa fa-envelope text-warning me-2"></i> Contact Us
+                  <NavLink 
+                    to="/contact-us" 
+                    className="dropdown-item"
+                    style={linkStyle}
+                    onClick={() => setOpenDropdown(false)}
+                  >
+                    <i className="fas fa-envelope text-warning me-2" style={{fontSize: '14px'}}></i>
+                    Contact Us
                   </NavLink>
                 </div>
               )}
@@ -636,7 +676,6 @@ function Header() {
 
             {pqOpen && (
               <div
-                className="shadow-sm"
                 style={{
                   position: "absolute",
                   top: "110%",
@@ -645,6 +684,8 @@ function Header() {
                   background: "#fff",
                   borderRadius: "6px",
                   zIndex: 2000,
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                  border: "1px solid #e0e0e0"
                 }}
               >
                 <NavLink
@@ -655,6 +696,8 @@ function Header() {
                     color: isActive ? "#e8ebeeff" : "#333",
                     fontWeight: isActive ? "bold" : 500,
                     backgroundColor: isActive ? "#1d7ad8ff" : "transparent",
+                    padding: "10px 15px",
+                    display: "block"
                   })}
                 >
                   Production Module
@@ -667,6 +710,8 @@ function Header() {
                     color: isActive ? "#e8ebeeff" : "#333",
                     fontWeight: isActive ? "bold" : 500,
                     backgroundColor: isActive ? "#1d7ad8ff" : "transparent",
+                    padding: "10px 15px",
+                    display: "block"
                   })}
                 >
                   Quality
@@ -692,7 +737,7 @@ function Header() {
           </NavLink>
 
           <NavLink
-            to="/accfinancedashboard"  // ✅ FIXED: lowercase route match
+            to="/accfinancedashboard"
             className="nav-link text-white fw-bold"
             style={({ isActive }) =>
               isActive
@@ -712,8 +757,14 @@ function Header() {
       {/* Spacer */}
       <div style={{ marginTop: "105px" }}></div>
 
-      {/* ✅ FIXED: Inline styles moved here - Azure safe */}
-      <style jsx>{`
+      {/* Critical CSS for hover effects */}
+      <style>{`
+        .dropdown-item {
+          color: #333 !important;
+          text-decoration: none !important;
+          display: block !important;
+          transition: background 0.2s;
+        }
         .dropdown-item:hover {
           background-color: #f8f9fa !important;
         }
@@ -722,11 +773,17 @@ function Header() {
           color: white !important;
         }
         .dropdown-menu {
-          box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
         }
-        .dropdown-divider {
-          border-top: 1px solid #e0e0e0;
-          margin: 5px 0;
+        .text-primary { color: #007bff !important; }
+        .text-success { color: #28a745 !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-info { color: #17a2b8 !important; }
+        .text-warning { color: #ffc107 !important; }
+        hr { 
+          margin: 8px 0 !important; 
+          border: none !important; 
+          border-top: 1px solid #eee !important; 
         }
       `}</style>
     </>

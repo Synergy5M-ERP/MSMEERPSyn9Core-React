@@ -1,11 +1,6 @@
 
-
- //const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://localhost:7145/api";
-////
-//const BASE_URL = "https://localhost:7145/api";
-//const API_BASE_URL = 'http://localhost:49980/Vendor';
-//const BASE_URL="https://localhost:44345"
+const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//  const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -31,6 +26,7 @@ ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
   UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`, 
+
 
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -102,6 +98,16 @@ ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
   GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
   PaymentMode: `${BASE_URL}/PaymentMode`,
   Status: `${BASE_URL}/Status`,
+
+  GetVoucherDetails:`${BASE_URL}/GetVoucherDetails`,
+
+  AccountSale: `${BASE_URL}/AccountSale`,
+  Getbuyers: `${BASE_URL}/Buyers`,
+  GetinvoiceNumbersBybuyer: `${BASE_URL}/GetinvoiceNumbersBybuyer`,
+  GetInvoiceItemDetails: `${BASE_URL}/GetInvoiceItemDetails`,
+  CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
+  ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
+
  
  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   

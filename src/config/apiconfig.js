@@ -3,10 +3,6 @@
  const BASE_URL = "https://localhost:7145/api";
 
 
-
-
-
-
 export const API_ENDPOINTS = {
  // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,

@@ -1,12 +1,14 @@
 
 import React, { useState } from "react";
 import NotCreated from "../../../components/NotCreated";
+import InventoryAdd from "./InventoryAdd";
+import InventoryPage from "./InventoryEdit";
 
 
 
 
 
-function  InventoryMaster() {
+function  InventoryEdit() {
     const [selectedPage, setSelectedPage] = useState("createInventory");
 
 
@@ -77,8 +79,8 @@ function  InventoryMaster() {
  <div>
                 {
                 
-                selectedPage === 'createInventory' ? (<NotCreated />) : selectedPage === 'viewInventory'? (
-                    <NotCreated />
+                selectedPage === 'createInventory' ? (<InventoryAdd />) : selectedPage === 'viewInventory'? (
+                    < InventoryPage/>
                 )
                 : selectedPage === 'AmendInventory'? (<NotCreated/>):(<NotCreated/>)
                 }
@@ -87,4 +89,4 @@ function  InventoryMaster() {
     );
 }
 
-export default  InventoryMaster;
+export default  InventoryEdit;

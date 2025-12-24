@@ -69,4 +69,8 @@ public partial class MASTER_InventoryTbl
 
     [Column(TypeName = "decimal(18, 4)")]
     public decimal? ClosingInvValue { get; set; }
+    [StringLength(50)]
+    public string? InvCategory { get; set; }
+
+   
 }

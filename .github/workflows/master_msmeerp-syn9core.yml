@@ -48,3 +48,5 @@ jobs:
           publish-profile: ${{ secrets.AzureCredentialsReactCore}}
           package: .
 
+
+

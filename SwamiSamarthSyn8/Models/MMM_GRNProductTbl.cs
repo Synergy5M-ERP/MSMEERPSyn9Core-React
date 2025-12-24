@@ -12,7 +12,7 @@ public partial class MMM_GRNProductTbl
     [Key]
     public int G_Product_Id { get; set; }
 
-    public int? G_Id { get; set; }
+    public int G_Id { get; set; }
 
     [StringLength(200)]
     [Unicode(false)]
@@ -160,4 +160,5 @@ public partial class MMM_GRNProductTbl
     [ForeignKey("G_Id")]
     [InverseProperty("MMM_GRNProductTbls")]
     public virtual MMM_GRNTbl? G_IdNavigation { get; set; }
+    public decimal? InvTotalTaxValue { get; set; }
 }

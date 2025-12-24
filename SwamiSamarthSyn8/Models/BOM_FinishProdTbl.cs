@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace SwamiSamarthSyn8.Models;
 
@@ -39,6 +40,8 @@ public partial class BOM_FinishProdTbl
     [StringLength(200)]
     public string? Level { get; set; }
 
+    [JsonPropertyName("Quantity")]
+
     [Column(TypeName = "decimal(18, 8)")]
     public decimal? Quantity { get; set; }
 
@@ -46,6 +49,9 @@ public partial class BOM_FinishProdTbl
     public decimal? TotalRmQty { get; set; }
 
     public string? Buyer_Name { get; set; }
+
+    public bool IsActive { get; set; }
+    public DateTime? DeletedAt { get; set; }
 
     [InverseProperty("FPB")]
     public virtual ICollection<BOM_RawMatTbl> BOM_RawMatTbls { get; set; } = new List<BOM_RawMatTbl>();

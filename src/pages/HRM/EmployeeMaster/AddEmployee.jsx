@@ -231,8 +231,8 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { API_ENDPOINTS } from "../../config/apiconfig";
-const EmployeeManagementSystem = () => {
+import { API_ENDPOINTS } from "../../../config/apiconfig";
+const AddEmployee = () => {
   const [activeSection, setActiveSection] = useState('employee');
   const [currentForm, setCurrentForm] = useState('employee'); // 'employee', 'employer', 'salary'
   const [countries, setCountries] = useState([]);
@@ -1911,4 +1911,4 @@ const inputStyle = {
   backgroundColor: 'white'
 };
 
-export default EmployeeManagementSystem;
+export default AddEmployee;

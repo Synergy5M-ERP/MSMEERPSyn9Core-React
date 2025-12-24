@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { FaEdit, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 const CreateMatrix = () => {
-  const [selectedPage, setSelectedPage] = useState("createMatrix"); // main view
+  const [selectedPage, setSelectedPage] = useState("viewMatrix"); // main view
   const [statusFilter, setStatusFilter] = useState("active"); // active/inactive filter
   const [employeeList, setEmployeeList] = useState([]);
   const [reportingList, setReportingList] = useState([]);
@@ -256,16 +256,7 @@ const handleEdit = (matrix) => {
       {/* Top controls */}
       <div className="d-flex justify-content-between align-items-center mb-3 p-2 bg-white rounded shadow-sm">
         <div className="d-flex gap-3">
-          <label className="custom-radio-label">
-            <input
-              type="radio"
-              name="mainView"
-              checked={selectedPage === "createMatrix"}
-              onChange={() => setSelectedPage("createMatrix")}
-            />
-            <span className="custom-radio"></span>
-            Create Matrix
-          </label>
+         
           <label className="custom-radio-label">
             <input
               type="radio"
@@ -275,6 +266,16 @@ const handleEdit = (matrix) => {
             />
             <span className="custom-radio"></span>
             View Matrix
+          </label>
+           <label className="custom-radio-label">
+            <input
+              type="radio"
+              name="mainView"
+              checked={selectedPage === "createMatrix"}
+              onChange={() => setSelectedPage("createMatrix")}
+            />
+            <span className="custom-radio"></span>
+            Create Matrix
           </label>
         </div>
 

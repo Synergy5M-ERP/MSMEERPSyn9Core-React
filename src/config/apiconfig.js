@@ -1,6 +1,6 @@
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//  const BASE_URL = "https://localhost:7145/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+ const BASE_URL = "https://localhost:7145/api";
 
 
 
@@ -68,7 +68,7 @@ ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
   CreditNote: `${BASE_URL}/credit-note`,
   DebitNote: `${BASE_URL}/Debit-note`,
 
-
+ViewEmployees:`${BASE_URL}/HrmMaster/Employee`,
   OutwardQc:`${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty:`${BASE_URL}/SaveRejectionQty`,
   SubmitButtonDisable:`${BASE_URL}/SubmitButtonDisable`,

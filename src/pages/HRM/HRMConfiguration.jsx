@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import HrmDashboard from './HrmDashboard';
 import HrmSidebar from './HrmSidebar';
 import CreateMaster from './CreateMaster';
-import AddEmployee from './AddEmployee';
+
 import CreateMatrix from './CreateMatrix';
 import VacantPosition from './VacantPosition';
 import SalaryMIS from './SalaryMIS';
@@ -15,6 +15,7 @@ import Attendence from './Attendence';
 import Report from './Report';
 import EmployeeLetter from './EmployeeLetter';
 import GrossSalary from './GrossSalary';
+import EmployeeMaster from './EmployeeMaster/EmployeeMaster';
 
 
 const HrmConfiguration = () => {
@@ -34,7 +35,7 @@ const [activePage, setActivePage] = useState('Dashboard');
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
        {activePage === 'Dashboard' && <HrmDashboard />}
         {activePage ==="createmaster" && <CreateMaster/>}
-        {activePage === "AddEmp" && <AddEmployee/>}
+        {activePage === "AddEmp" && <EmployeeMaster/>}
         {activePage==="createMatrix" && <CreateMatrix/>}
         {activePage === "vacantposition" && <VacantPosition/>}
               {activePage==="GrossSalary" && <GrossSalary/>}

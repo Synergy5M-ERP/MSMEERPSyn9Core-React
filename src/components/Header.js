@@ -116,7 +116,8 @@ function Header() {
                 }}
               >
                 <RiAccountCircleFill className="me-2" size={17} />
-                MY ACCOUNT
+                MY ACCOUNT 
+                {/* MyAccount */}
               </button>
 
               {openDropdown && (

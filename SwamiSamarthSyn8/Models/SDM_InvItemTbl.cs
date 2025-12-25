@@ -88,4 +88,5 @@ public partial class SDM_InvItemTbl
     [ForeignKey("supplied_id_id")]
     [InverseProperty("SDM_InvItemTbls")]
     public virtual SDM_Inv_VendTbl? supplied_id { get; set; }
+    public decimal? RejectedQty { get; set; }
 }

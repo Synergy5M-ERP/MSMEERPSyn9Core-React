@@ -16,10 +16,7 @@ namespace SwamiSamarthSyn8.Controllers.Quality
         {
             _context = context;
         }
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
+    
         [HttpGet("OutwardQCReport")]
         public IActionResult OutwardQCReport()
         {

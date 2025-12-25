@@ -9,7 +9,7 @@ const Approvedinvoice = () => {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [Buyers, setBuyers] = useState([]);
-  const [selectedBuyer, setSelectedBuyer] = useState("");
+  const [selectedBuyer, setSelectedBuyer] = useState(""); // keep ID
   const [invoicesData, setinvoicesData] = useState([]);
   const [showItemModal, setShowItemModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -27,98 +27,101 @@ const Approvedinvoice = () => {
 
   const loadBuyers = useCallback(async () => {
     try {
-      const res = await fetch(API_ENDPOINTS.GetBuyers);
-      if (!res.ok) throw new Error("Failed to load Buyers");
+      setLoading(true);
+      const res = await fetch(API_ENDPOINTS.Getbuyers);
       const data = await safeJson(res);
-      
-      const BuyersWithIds = (data.data || []).map((name, index) => ({
-        id: index + 1,
-        name: name || `Supplier ${index + 1}`,
+      const buyers = (data.data || []).map(b => ({
+            buyerId: b.buyerId,
+            buyerName: b.buyerName
       }));
-      setBuyers(BuyersWithIds);
+      setBuyers(buyers);
     } catch (error) {
       toast.error(error.message || "Failed to load Buyers");
-      setBuyers([
-        { id: 1, name: "Vendor A" },
-        { id: 2, name: "Vendor B" },
-      ]);
     }
   }, []);
 
-  const loadAllinvoicesWithDetails = useCallback(async (BuyerName) => {
-    try {
-      setLoading(true);
-      
-      const res = await fetch(`${API_ENDPOINTS.GetinvoiceNumbersByBuyer}?BuyerName=${encodeURIComponent(BuyerName)}`);
-      if (!res.ok) throw new Error("Failed to load invoices");
-      const data = await safeJson(res);
-      
-      console.log("invoice List API Response (first item):", data.data?.[0]);
-      
-      const invoicesList = (data.data || []).map((invoice, index) => ({
-        invoiceNumber: invoice.number || invoice.invoiceNumber || invoice.invoice_NO,
-        invoiceId: invoice.id || invoice.invoice_ID || invoice.invoiceId || index,
-        invoiceDate: invoice.invoiceDate || invoice.date || new Date().toISOString().split('T')[0],
-        invoiceNumber: invoice.invoiceNumber || invoice.invoice_NO || 'N/A',
-        poNumber: invoice.poNumber || 'N/A',
-        poDate: invoice.poDate || 'N/A',
-        grandTotal: invoice.grandTotal || 0,
-        approvedGrandTotal: 0,
-        items: [],
-        index: index
-      }));
+const loadAllinvoicesWithDetails = useCallback(async (buyerId) => {
+  try {
+    setLoading(true);
 
-      const invoicesWithDetails = await Promise.all(
-        invoicesList.map(async (invoice) => {
-          try {
-            const detailRes = await fetch(`${API_ENDPOINTS.GetinvoiceDetails}?invoiceId=${invoice.invoiceId}`);
-            if (!detailRes.ok) return invoice;
-            
-            const detailData = await safeJson(detailRes);
-            
-            if (detailData.success && detailData.data?.items) {
-              return {
-                ...invoice,
-                items: detailData.data.items.map((item, idx) => ({
-                  id: `${invoice.invoiceNumber}-${item.itemName}-${idx}`,
-                  itemName: item.itemName || "",
-                  TotalTaxValue: item.TotalTaxValue || "",
-                  itemCode: item.itemCode || "",
-                  receivedQty: item.receivedQty || 0,
-                  approvedQty: item.acceptedQty || 0,
-                  damagedQty: item.rejectedQty || 0,
-                  cgst: item.taxType === "CGST" ? (item.taxRate || 0) : 0,
-                  sgst: item.taxType === "SGST" ? (item.taxRate || 0) : 0,
-                  igst: item.taxType === "IGST" ? (item.taxRate || 0) : 0,
-                  totalTaxValue: parseFloat(item.totalTaxValue) || 0,
-                  totalItemValue: parseFloat(item.totalItemValue) || 0,
-                  billItemValue: parseFloat(item.billItemValue) || 0,
-                  billCheck: item.billCheck || false,
-                  billApprove: item.billApprove || false,
-                  taxType: item.taxType || "",
-                  rate: parseFloat(item.rate) || 0,
-                }))
-              };
-            }
-            return invoice;
-          } catch (err) {
-            console.error(`Failed to load details for ${invoice.invoiceNumber}:`, err);
-            return invoice;
-          }
-        })
-      );
+    const res = await fetch(`${API_ENDPOINTS.CheckedSaleDetails}?buyerId=${buyerId}`);
+    if (!res.ok) throw new Error("Failed to load invoices");
+    const data = await safeJson(res);
 
-      setinvoicesData(invoicesWithDetails);
-      const totalItems = invoicesWithDetails.reduce((sum, invoice) => sum + (invoice.items?.length || 0), 0);
-      toast.success(`Loaded ${invoicesWithDetails.length} invoices with ${totalItems} total items`);
-    } catch (error) {
-      console.error("loadAllinvoicesWithDetails error:", error);
-      toast.error(error.message || "Failed to load invoices");
-      setinvoicesData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    console.log("invoice List API Response (first item):", data.data?.checkSale);
+
+    const invoicesList = data.data?.checkSale
+      ? [{
+          invoiceNumber: data.data.checkSale.invoiceNo || "N/A",
+          invoiceId: data.data.checkSale.accountSaleId || 0,
+          invoiceDate: data.data.checkSale.invoiceDate
+            ? new Date(data.data.checkSale.invoiceDate).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          poNumber: data.data.checkSale.poNumber || "N/A",
+          poDate: data.data.checkSale.poDate || "N/A",
+          grandTotal: 0, // will compute after items
+          approvedGrandTotal: 0,
+          items: [],
+        }]
+      : [];
+
+    const invoicesWithDetails = await Promise.all(
+      invoicesList.map(async (invoice) => {
+        try {
+          // Backend already sends items in CheckedSaleDetails response
+          const itemsData = data.data.items || [];
+
+          const items = itemsData.map((item, idx) => ({
+            id: `${invoice.invoiceNumber}-${item.itemName}-${idx}`,
+            itemName: item.itemName || "",
+            itemCode: item.itemCode || "",
+            approvedQty: item.approvedQty || 0,
+            damagedQty: item.rejectedQty || 0,
+            cgst: item.cgst || 0,
+            sgst: item.sgst || 0,
+            igst: item.igst || 0,
+            totalTaxValue: parseFloat(item.totalTax) || 0,
+            totalItemValue: parseFloat(item.totalAmount) || 0,
+            billItemValue: parseFloat(item.grandAmount) || 0,
+            billCheck: false,
+            approvedSale: false,
+            rate: parseFloat(item.ratePerUnit) || 0,
+          }));
+          
+          const grandTotal = items.reduce((sum, i) => sum + i.totalItemValue, 0);
+          const approvedGrandTotal = items
+            .filter(i => i.approvedSale)
+            .reduce((sum, i) => sum + (parseFloat(i.billItemValue) || 0), 0);
+
+          return {
+            ...invoice,
+            items,
+            grandTotal,
+            approvedGrandTotal,
+          };
+        } catch (err) {
+          console.error(`Failed to process details for ${invoice.invoiceNumber}:`, err);
+          return invoice;
+        }
+      })
+    );
+
+    setinvoicesData(invoicesWithDetails);
+
+    const totalItems = invoicesWithDetails.reduce(
+      (sum, invoice) => sum + (invoice.items?.length || 0),
+      0
+    );
+
+    toast.success(`Loaded ${invoicesWithDetails.length} invoices with ${totalItems} total items`);
+  } catch (error) {
+    console.error("loadAllinvoicesWithDetails error:", error);
+    toast.error(error.message || "Failed to load invoices");
+    setinvoicesData([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     loadBuyers();
@@ -135,9 +138,10 @@ const Approvedinvoice = () => {
   }, [selectedBuyer, loadAllinvoicesWithDetails]);
 
   const handleBuyerChange = (e) => {
-    const BuyerId = e.target.value;
-    const selected = Buyers.find(s => s.id === Number(BuyerId));
-    setSelectedBuyer(selected?.name || "");
+    const BuyerId = Number(e.target.value);
+    const selected = Buyers.find(s => s.BuyerId  === Number(BuyerId));
+    //setSelectedBuyer(selected?.name || "");
+    setSelectedBuyer(BuyerId)
   };
 
   const handleCancel = () => {
@@ -179,16 +183,16 @@ const Approvedinvoice = () => {
     setShowItemModal(true);
   };
 
-  const handleBillApproveToggle = useCallback((invoiceNumber, itemIndex) => {
+  const handleapprovedSaleToggle = useCallback((invoiceNumber, itemIndex) => {
     setinvoicesData(prev => {
       return prev.map(invoice => {
         if (invoice.invoiceNumber === invoiceNumber && invoice.items && invoice.items[itemIndex]) {
           const newItems = [...invoice.items];
           newItems[itemIndex] = {
             ...newItems[itemIndex],
-            billApprove: !newItems[itemIndex].billApprove,
+            approvedSale: !newItems[itemIndex].approvedSale,
           };
-          const approvedItems = newItems.filter(item => item.billApprove);
+          const approvedItems = newItems.filter(item => item.approvedSale);
           return {
             ...invoice,
             items: newItems,
@@ -201,87 +205,62 @@ const Approvedinvoice = () => {
   }, []);
 
   const getApprovedCount = () => {
-    return invoicesData.reduce((sum, invoice) => sum + ((invoice.items || []).filter(i => i?.billApprove).length || 0), 0);
+    return invoicesData.reduce((sum, invoice) => sum + ((invoice.items || []).filter(i => i?.approvedSale).length || 0), 0);
   };
 
-  const handleSaveApproved = async () => {
-    const TOAST_ID = "save-approved";
-    toast.loading("Saving approved invoices...", { toastId: TOAST_ID });
-    setSaveLoading(true);
+const handleSaveApproved = async () => {
+  const TOAST_ID = "save-approved";
+  toast.loading("Approving items...", { toastId: TOAST_ID });
+  setSaveLoading(true);
 
-    try {
-      const payload = {
-        BuyerName: selectedBuyer,
-        invoices: invoicesData
-          .filter(invoice => invoice.items.some(item => item.billApprove))
-          .map(invoice => ({
-            invoiceNumber: invoice.invoiceNumber,
-            invoiceDate: invoice.invoiceDate,
-            invoiceNumber: invoice.invoiceNumber,
-            poNumber: invoice.poNumber,
-            poDate: invoice.poDate,
-            totalAmount: invoice.totalAmount || 0,
-            totalTaxAmount: invoice.totalTaxAmount || 0,
-            grandTotal: invoice.grandTotal || 0,
-            approvedTotalAmount: 0,
-            approvedTotalTaxAmount: 0,
-            approvedGrandTotal: invoice.approvedGrandTotal || 0,
-            Items: invoice.items
-              .filter(item => item.billApprove)
-              .map(item => ({
-                Description: `${item.itemName} - ${item.TotalTaxValue}`,
-                itemName: item.itemName,
-                TotalTaxValue: item.TotalTaxValue,
-                itemCode: item.itemCode,
-                totalTaxValue: parseFloat(item.totalTaxValue) || 0,
-                totalItemValue: parseFloat(item.totalItemValue) || 0,
-                billItemValue: parseFloat(item.billItemValue) || 0,
-                billCheck: item.billCheck || false,
-                billApprove: true,
-                TransporterName: item.TransporterName || ""
-              })),
-          })),
-      };
+  try {
+    for (const invoice of invoicesData) {
+      // Get only approved items and convert IDs to numbers
+      const itemIds = invoice.items
+        .filter(item => item.approvedSale)
+        .map(item => Number(item.accountSaleDetailedId))
+        .filter(id => !isNaN(id)); // remove invalid numbers
 
-      const res = await fetch(API_ENDPOINTS.Saveinvoice, {
+      if (itemIds.length === 0) continue; // skip if nothing approved
+
+      const url = `${API_ENDPOINTS.ApprovedAccountSale}?accountSaleId=${Number(invoice.accountSaleId)}`;
+
+      console.log("Approving invoice:", invoice.accountSaleId, "ItemIds:", itemIds);
+
+      const res = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ItemIds: itemIds })
       });
 
-      const result = await safeJson(res);
       if (!res.ok) {
-        toast.update(TOAST_ID, {
-          render: `Error: ${result.message || 'Save failed'}`,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-        return;
+        const errorText = await res.text();
+        console.error("Approval failed for invoice", invoice.accountSaleId, errorText);
+        throw new Error(`Approval failed for invoice ${invoice.accountSaleId}`);
       }
-
-      toast.update(TOAST_ID, {
-        render: `✅ Saved ${getApprovedCount()} approved items!`,
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
-
-      await loadAllinvoicesWithDetails(selectedBuyer);
-    } catch (error) {
-      toast.update(TOAST_ID, {
-        render: "Network error! Please try again.",
-        type: "error",
-        isLoading: false,
-        autoClose: 4000,
-      });
-    } finally {
-      setSaveLoading(false);
     }
-  };
+
+    toast.update(TOAST_ID, {
+      render: "✅ Approved Successfully!",
+      type: "success",
+      isLoading: false,
+      autoClose: 3000
+    });
+
+    // Reload invoices after approval
+    await loadAllinvoicesWithDetails(selectedBuyer);
+  } catch (error) {
+    console.error(error);
+    toast.update(TOAST_ID, {
+      render: `❌ Approval failed: ${error.message}`,
+      type: "error",
+      isLoading: false,
+      autoClose: 4000
+    });
+  } finally {
+    setSaveLoading(false);
+  }
+};
 
   return (
     <div className="approved-invoice-app">
@@ -293,14 +272,12 @@ const Approvedinvoice = () => {
           <div className="row align-items-end">
             <div className="col-md-6">
               <label className="form-label fw-semibold mb-2">Select Buyer</label>
-              <select 
-                className="form-select form-select-lg"
-                value={Buyers.find(s => s.name === selectedBuyer)?.id || ""}
-                onChange={handleBuyerChange}
-              >
+              <select className="form-select form-select-lg"
+                value={selectedBuyer}
+                onChange={handleBuyerChange}>
                 <option value="">Choose Buyer...</option>
                 {Buyers.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.buyerId} value={s.buyerId}>{s.buyerName}</option>
                 ))}
               </select>
             </div>
@@ -357,11 +334,11 @@ const Approvedinvoice = () => {
                     <div className="invoice-header p-4 bg-primary text-white rounded-top">
                       <div className="row">
                         <div className="col-md-6">
-                          <strong className="mb-2">invoice: {invoice.invoiceNumber}</strong>
+                          <strong className="mb-2">Invoice No: {invoice.invoiceNumber}</strong>
                           <div className="row g-2 small">
                             <div className="col-6">
                               <Calendar size={14} className="me-1" />
-                              <strong>invoice Date:</strong> {invoice.invoiceDate}
+                              <strong>Invoice Date:</strong> {invoice.invoiceDate}
                             </div>
                             <div className="col-6">
                               <FileText size={14} className="me-1" />
@@ -402,7 +379,7 @@ const Approvedinvoice = () => {
                               </tr>
                             ) : (
                               (invoice.items || []).map((item, itemIndex) => (
-                                <tr key={`${invoice.invoiceNumber}-${item.id || itemIndex}`} className={item.billApprove ? 'table-success' : ''}>
+                                <tr key={`${invoice.invoiceNumber}-${item.id || itemIndex}`} className={item.approvedSale ? 'table-success' : ''}>
                                   <td className="fw-semibold">{item.itemName}</td>
                                   <td>₹{(item.totalTaxValue || 0).toLocaleString('en-IN')}</td>
                                   <td>₹{(item.totalItemValue || 0).toLocaleString('en-IN')}</td>
@@ -412,8 +389,8 @@ const Approvedinvoice = () => {
                                       <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        checked={item.billApprove || false}
-                                        onChange={() => handleBillApproveToggle(invoice.invoiceNumber, itemIndex)}
+                                        checked={item.approvedSale || false}
+                                        onChange={() => handleapprovedSaleToggle(invoice.invoiceNumber, itemIndex)}
                                         id={`approve-${invoice.invoiceNumber}-${item.id}`}
                                       />
                                     </div>
@@ -552,8 +529,8 @@ const Approvedinvoice = () => {
                     <tr>
                       <th className="bg-light">Approval Status</th>
                       <td>
-                        <span className={`badge fs-6 ${selectedItem.billApprove ? 'bg-success' : 'bg-warning'}`}>
-                          {selectedItem.billApprove ? '✅ Approved' : '⏳ Pending'}
+                        <span className={`badge fs-6 ${selectedItem.approvedSale ? 'bg-success' : 'bg-warning'}`}>
+                          {selectedItem.approvedSale ? '✅ Approved' : '⏳ Pending'}
                         </span>
                       </td>
                     </tr>

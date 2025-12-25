@@ -1,0 +1,201 @@
+/* Wrapper */
+.inventory-wrapper {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - 40px);
+}
+
+/* Form + List */
+.inventory-form-container,
+.inventory-list-container {
+  flex: 1;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+}
+
+.form-title, .list-title {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #005bbb;
+  font-weight: 700;
+}
+
+/* FORM LAYOUT */
+.inventory-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+  background: #f8f8f8;
+
+  width: 100%;          /* FIXED WIDTH */
+  min-width: 200px;     /* PREVENT SHRINKING */
+  box-sizing: border-box;
+}
+
+/* Prevent dropdown expanding on long text */
+.form-group select {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Submit Button */
+.submit-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.submit-btn {
+  padding: 10px 30px;
+  background-color: green;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 600;
+}
+ thead {
+     position: sticky;
+     top: 0;
+     background-color: cornflowerblue;
+     color: black;
+     z-index: 1;
+ }
+/* LIST TABLE */
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+    padding: 5px; /* Adjust as needed */
+    font-size: 12px; /* Decrease font size */
+    font-weight:bold;
+}
+.inventory-table th {
+  background: #eaf2ff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  font-weight: 700;
+  text-align: center;
+  
+}
+
+.inventory-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Toggle Buttons */
+.toggle-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.toggle-buttons button {
+  padding: 8px 18px;
+  border: none;
+  background: #dfe6f1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.active-btn {
+  background: #003c8f;
+  color: white !important;
+}
+.modalClass {  
+  text-align: center;  
+}  
+.edit-form .form-group {
+  margin-bottom: 15px;    
+}
+
+.edit-form .row {
+  margin-bottom: 12px;       
+}
+
+.edit-form input {
+  padding: 6px 10px;       
+}
+/* Make modal appear ONLY inside white card */
+/* Parent container */
+.inventory-wrapper {
+  position: relative !important; 
+}
+
+/* Modal inside container */
+.inside-modal .modal-dialog {
+  position: relative !important;
+  margin: 20px auto !important;
+  width: 90% !important;
+  max-width: 900px !important;
+}
+
+/* Modal panel */
+.inside-modal .modal-content {
+  border-radius: 12px !important;
+  padding: 25px !important;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+}
+
+/* Fix grid overlapping */
+.inside-modal .row {
+  display: flex !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Fix columns */
+.inside-modal .col-md-3,
+.inside-modal .col-md-4,
+.inside-modal .col-md-6 {
+  flex: 1 !important;
+}
+
+/* Form fields */
+.inside-modal input {
+  width: 100% !important;
+  height: 40px !important;
+  border-radius: 7px !important;
+}
+
+/* Labels */
+.inside-modal label {
+  font-weight: 700;
+  color: #003c8f;
+  margin-bottom: 4px !important;
+}

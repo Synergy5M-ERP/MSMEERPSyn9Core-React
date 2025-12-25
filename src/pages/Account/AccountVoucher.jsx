@@ -1,7 +1,3 @@
-// ===============================
-// FULLY FIXED ACCOUNT VOUCHER PAGE
-// ===============================
-
 import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -45,15 +41,12 @@ function AccountVoucher() {
     const [gridEntries, setGridEntries] = useState([]);
     const [voucherTypes, setVoucherTypes] = useState([]);
     const [ledgerAccounts, setLedgerAccounts] = useState([]);
-    // const [throughOptions] = useState(['Bank', 'Cash']);
-    // const [statusOptions] = useState(['Draft', 'Posted', 'Approved', 'Cancelled']);
     const [loading, setLoading] = useState(false);
     const [fetchLoading, setFetchLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 4;
     const indexOfLast = currentPage * recordsPerPage;
     const indexOfFirst = indexOfLast - recordsPerPage;
-    //const currentRecords = gridEntries.slice(indexOfFirst, indexOfLast);
 
     // ----------------------
     // Fetch initial dropdown data
@@ -72,7 +65,7 @@ function AccountVoucher() {
     // ========================
 
     const normalize = (json) =>
-        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : [];
+        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : json && typeof json === 'object' && !Array.isArray(json) ? [json] : [];
 
     const fetchVendorNames = async () => {
         try {
@@ -87,7 +80,6 @@ function AccountVoucher() {
         try {
             const res = await fetch(API_ENDPOINTS.VoucherType);
             const json = await res.json();
-            //setVoucherTypes(normalize(json));
             setVoucherTypes(Array.isArray(json) ? json : []); 
         } catch (err) {
             toast.error("Failed to load voucher types");
@@ -197,8 +189,7 @@ function AccountVoucher() {
             toast.error("Failed to load Status");
         } finally {
             setFetchLoading(false);
-        }
-    };
+        }};
     
     // ----------------------
     // Vendor number auto-generate
@@ -267,7 +258,7 @@ function AccountVoucher() {
         const newEntry = {
             id: Date.now(),
             ledgerId: ledgerAccount,
-            ledgerName: selectedLedger?.accountLedgerName,
+            ledgerName: typeof selectedLedger?.accountLedgerName === 'string' ? selectedLedger.accountLedgerName : 'Unknown',
             creditAmount: Number(creditAmount) || 0,
             debitAmount: Number(debitAmount) || 0,
             narration,
@@ -291,9 +282,19 @@ function AccountVoucher() {
     };
 
     const handleReferenceNo = async () =>{
+        setTotalAmount('');
+        setPaymentDueDate('');
+        setPaymentMode('');
+        setStatus('');
+        setDescription('');
+        setGridEntries([]);   // Clear table rows
 
+        // Optional → clear ledger input fields too
+        setLedgerAccount('');
+        setCreditAmount('');
+        setDebitAmount('');
+        setNarration('');
     };
-
 
     // ----------------------
     // Save Voucher
@@ -368,6 +369,26 @@ const handleSave = async () => {
                 ...prev,
                 { voucherNo: trimmedVoucherNo, vendorId: vendorName }
                 ]);
+                
+                setNarration('')
+                setVendorName('')
+                setVendorNumber('')
+                setVoucherDate('')
+                setVoucherNo('')
+                setVoucherType('')
+                setReferenceNo('')
+                setTotalAmount('');
+                setPaymentDueDate('');
+                setPaymentMode('');
+                setStatus('');
+                setDescription('');
+                setGridEntries([]);   // Clear table rows
+
+                // Optional → clear ledger input fields too
+                setLedgerAccount('');
+                setCreditAmount('');
+                setDebitAmount('');
+                setNarration('');                   
 
         } else {
             toast.error(json.message || "Save failed!");
@@ -378,7 +399,6 @@ const handleSave = async () => {
         setLoading(false);
     }
 };
-//========================================3
 
     if (fetchLoading) return <LoadingSpinner />;
 
@@ -425,18 +445,21 @@ const handleSave = async () => {
                             onChange={(e) => handleVendorChange(e.target.value)}
                         >
                             <option value="">--Select Vendor--</option>
-                            {vendorNames.map((v) => (
+                            {Array.isArray(vendorNames) ? vendorNames.map((v) => (
                                 <option key={v.vendorId} value={v.vendorId}>
-                                    {v.companyName}
+                                    {typeof v.companyName === 'string' ? v.companyName : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
                     <div className="col-3">
                         <label className="form-label text-primary">Voucher Number*</label>
-                        <input className="form-control" value={vendorNumber} readOnly />
+                        <input type="text" value={vendorNumber}
+                        className="form-control" disabled={loading} readOnly />
                     </div>
+
+                 
 
                     <div className="col-3">
                         <label className="form-label text-primary">Voucher Type*</label>
@@ -446,11 +469,11 @@ const handleSave = async () => {
                             onChange={(e) => setVoucherType(e.target.value)}
                         >
                             <option value="">--Select Voucher Type--</option>
-                            {voucherTypes.map((t) => (
+                            {Array.isArray(voucherTypes) ? voucherTypes.map((t) => (
                                 <option key={t.accountVoucherTypeId} value={t.accountVoucherTypeId}>
-                                    {t.voucherType}
+                                    {typeof t.voucherType === 'string' ? t.voucherType : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
@@ -485,15 +508,16 @@ const handleSave = async () => {
                                     value={referenceNo}
                                     onChange={(e) => {
                                         setReferenceNo(e.target.value);
+                                        handleReferenceNo()
                                         fetchGRNAmount(parseInt(e.target.value));
                                     }}
                                 >
                                     <option value="">--Select GRN--</option>
-                                    {purchaseOrders.map((p) => (
+                                    {Array.isArray(purchaseOrders) ? purchaseOrders.map((p) => (
                                         <option key={p.id} value={p.id}>
-                                            {p.purchaseOrderNo}
+                                            {typeof p.purchaseOrderNo === 'string' ? p.purchaseOrderNo : 'Unknown'}
                                         </option>
-                                    ))}
+                                    )) : []}
                                 </select>
                             );
                         } else if (voucherTypeObj?.voucherType === "Receipt") {
@@ -503,15 +527,16 @@ const handleSave = async () => {
                                     value={referenceNo}
                                     onChange={(e) => {
                                         setReferenceNo(e.target.value);
+                                        handleReferenceNo()
                                         fetchInvoiceAmount(parseInt(e.target.value));
                                     }}
                                 >
                                     <option value="">--Select Invoice--</option>
-                                    {saleInvoices.map((i) => (
+                                    {Array.isArray(saleInvoices) ? saleInvoices.map((i) => (
                                         <option key={i.id} value={i.id}>
-                                            {i.invoiceNo}
+                                            {typeof i.invoiceNo === 'string' ? i.invoiceNo : 'Unknown'}
                                         </option>
-                                    ))}
+                                    )) : []}
                                 </select>
                             );
                         } else {
@@ -519,8 +544,10 @@ const handleSave = async () => {
                                 <input
                                     className="form-control"
                                     value={referenceNo}
-                                    onChange={(e) => setReferenceNo(e.target.value)}
-                                />
+                                    onChange={(e) => {
+                                        setReferenceNo(e.target.value)
+                                        handleReferenceNo()
+                                    }}/>
                             );
                         }
                     })()}
@@ -549,9 +576,9 @@ const handleSave = async () => {
                             onChange={(e) => setPaymentMode(e.target.value)}
                         >
                             <option value="">--Select Payment Mode--</option>
-                            {paymentModes.map((t) => (
-                               <option key={t.paymentModeId} value={t.paymentModeId}>{t.paymentMode}</option>
-                            ))}
+                            {Array.isArray(paymentModes) ? paymentModes.map((t) => (
+                               <option key={t.paymentModeId} value={t.paymentModeId}>{typeof t.paymentMode === 'string' ? t.paymentMode : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
                 </div>
@@ -561,9 +588,9 @@ const handleSave = async () => {
                         <label className="form-label text-primary">Status*</label>
                         <select value={status} onChange={e => setStatus(e.target.value)} className="form-control" disabled={loading}>
                             <option value="">--Select Status--</option>
-                            {statusList.map((t) => (
-                               <option key={t.accountStatusId} value={t.accountStatusId}>{t.status}</option>
-                            ))}
+                            {Array.isArray(statusList) ? statusList.map((t) => (
+                               <option key={t.accountStatusId} value={t.accountStatusId}>{typeof t.status === 'string' ? t.status : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
                     <div className="col-6">
@@ -587,11 +614,11 @@ const handleSave = async () => {
                             onChange={(e) => setLedgerAccount(e.target.value)}
                         >
                             <option value="">--Select--</option>
-                            {ledgerAccounts.map((l) => (
+                            {Array.isArray(ledgerAccounts) ? ledgerAccounts.map((l) => (
                                 <option key={l.id || l.accountLedgerId} value={l.id || l.accountLedgerId}>
-                                    {l.accountLedgerName}
+                                    {typeof l.accountLedgerName === 'string' ? l.accountLedgerName : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
@@ -661,7 +688,7 @@ const handleSave = async () => {
                             <tbody>
                                 {gridEntries.map((row, i) => (
                                     <tr key={row.id}>
-                                        <td>{row.ledgerName}</td>
+                                        <td>{typeof row.ledgerName === 'string' ? row.ledgerName : 'Unknown'}</td>
                                         <td>{row.creditAmount}</td>
                                         <td>{row.debitAmount}</td>
                                         <td>{row.narration}</td>

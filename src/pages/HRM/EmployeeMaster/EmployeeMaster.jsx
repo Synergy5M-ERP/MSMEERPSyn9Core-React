@@ -1,20 +1,21 @@
 import React, { useState } from "react";
-import CreateBOM from "./CreateBOM";
-import ViewBOM from "./ViewBOM";
+import ViewEmployee from "./ViewEmployee";
+import AddEmployee from "./AddEmployee";
 
-function BOM() {
-  const [selectedPage, setSelectedPage] = useState("createBOM"); // createBOM | viewBOM
+
+function EmployeeMaster() {
+  const [selectedPage, setSelectedPage] = useState("ViewEmployee"); // ViewEmployee | AddEmployee
 
   const renderContent = () => {
-    if (selectedPage === "createBOM") return <CreateBOM />;
-    if (selectedPage === "viewBOM") return <ViewBOM />;
+    if (selectedPage === "ViewEmployee") return <ViewEmployee />;
+    if (selectedPage === "AddEmployee") return <AddEmployee />;
     return null;
   };
 
   return (
     <div style={{ minHeight: "80vh" }}>
       <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: "10px" }}>
-        BOM Management
+        Employee Master  
       </h2>
 
       {/* Selector row */}
@@ -33,25 +34,25 @@ function BOM() {
         <label style={{ fontWeight: 600, fontSize: "16px", cursor: "pointer" }}>
           <input
             type="radio"
-            name="bomTab"
-            value="createBOM"
-            checked={selectedPage === "createBOM"}
-            onChange={() => setSelectedPage("createBOM")}
+            name="EmployeeMasterTab"
+            value="ViewEmployee"
+            checked={selectedPage === "ViewEmployee"}
+            onChange={() => setSelectedPage("ViewEmployee")}
             style={{ marginRight: "8px" }}
           />
-          Create BOM
+          View Employee
         </label>
 
         <label style={{ fontWeight: 600, fontSize: "16px", cursor: "pointer" }}>
           <input
             type="radio"
-            name="bomTab"
-            value="viewBOM"
-            checked={selectedPage === "viewBOM"}
-            onChange={() => setSelectedPage("viewBOM")}
+            name="EmployeeMasterTab"
+            value="AddEmployee"
+            checked={selectedPage === "AddEmployee"}
+            onChange={() => setSelectedPage("AddEmployee")}
             style={{ marginRight: "8px" }}
           />
-          View BOM List
+          Add Employee
         </label>
       </div>
 
@@ -61,4 +62,4 @@ function BOM() {
   );
 }
 
-export default BOM;
+export default EmployeeMaster;

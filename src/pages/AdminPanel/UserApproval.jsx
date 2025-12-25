@@ -279,80 +279,91 @@ const handleModuleSubmit = async () => {
   {/* ====================== VIEW MODAL ====================== */}
       <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>User Details</Modal.Title>
+          <Modal.Title className="text-primary">User Details</Modal.Title>
         </Modal.Header>
 
        <Modal.Body>
   {!viewData ? (
     <h4>Loading...</h4>
   ) : (
-    <div className="container">
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Username:</div>
-        <div className="col-md-8">{viewData.username}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Password:</div>
-        <div className="col-md-8">{viewData.password}</div>
-      </div>
-
-     <div className="row mb-2">
-  <div className="col-md-4 fw-bold">Name:</div>
-  <div className="col-md-8">{`${viewData.name ?? ""} ${viewData.surname ?? ""}`.trim()}</div>
-</div>
-
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Contact no:</div>
-        <div className="col-md-8">{viewData.contact_NO}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Email:</div>
-        <div className="col-md-8">{viewData.email}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Gender:</div>
-        <div className="col-md-8">{viewData.gender}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Address:</div>
-        <div className="col-md-8">{viewData.permanent_Address}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Department:</div>
-        <div className="col-md-8">{viewData.department}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Designation:</div>
-        <div className="col-md-8">{viewData.joining_Designation}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Authority:</div>
-        <div className="col-md-8">{viewData.joining_AuthorityLevel}</div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Date of joining:</div>
-        <div className="col-md-8">
-          {viewData.date_Of_Joing 
-            ? new Date(viewData.date_Of_Joing).toLocaleDateString()
-            : ""}
-        </div>
-      </div>
-
-      <div className="row mb-2">
-        <div className="col-md-4 fw-bold">Emp Code:</div>
-        <div className="col-md-8">{viewData.emp_Code}</div>
+<div className="container py-3">
+  <div className="row g-3">
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Username</div>
+        <div className="fs-6">{viewData.username || "N/A"}</div>
       </div>
     </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Full Name</div>
+        <div className="fs-6">{`${viewData.name ?? ""} ${viewData.surname ?? ""}`.trim() || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Contact</div>
+        <div className="fs-6">{viewData.contact_NO || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Email</div>
+        <div className="fs-6">{viewData.email || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Gender</div>
+        <div className="fs-6">{viewData.gender || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Department</div>
+        <div className="fs-6">{viewData.department || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Designation</div>
+        <div className="fs-6">{viewData.joining_Designation || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-3 col-sm-4 col-6">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Emp Code</div>
+        <div className="  w-100 p-2">{viewData.emp_Code || "N/A"}</div>
+      </div>
+    </div>
+
+    <div className="col-md-6 col-12">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Joining Date</div>
+        <div className="fs-6">
+          {viewData.date_Of_Joing 
+            ? new Date(viewData.date_Of_Joing).toLocaleDateString('en-IN')
+            : "N/A"}
+        </div>
+      </div>
+    </div>
+
+    <div className="col-md-6 col-12">
+      <div className="text-center p-3  rounded">
+        <div className="fw-bold text-primary mb-1">Address</div>
+        <div className="fs-6">{viewData.permanent_Address || "N/A"}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
   )}
 </Modal.Body>
 

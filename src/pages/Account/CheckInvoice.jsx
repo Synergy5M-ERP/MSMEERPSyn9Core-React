@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
@@ -15,20 +16,18 @@ const CheckInvoice = () => {
   const [enteredinvoiceNumber, setEnteredinvoiceNumber] = useState("");
 
   const [formData, setFormData] = useState({
-    vendorId: "",
+    buyerId: "",
     buyerName: "",
-    // invoiceNumber: "",
-    // invoiceDate: "",
     poNumber: "",
     poDate: "",
     invoiceNumber: "",
     invoiceDate: "",
     vehicleNo: "",
     TransporterName: "",
-    paymentDue: "",
+    paymentDueDate: "",
     status: "",
     totalAmount: 0,
-    totalTaxAmount: 0,
+    taxAmount: 0,
     grandTotal: 0,
   });
 
@@ -46,15 +45,7 @@ const CheckInvoice = () => {
     if (!formData.buyerName.trim()) {
       toast.error("buyer Name is required");
       return false;
-    }
-    // if (!formData.invoiceNumber.trim()) {
-    //   toast.error("invoice Number is required");
-    //   return false;
-    // }
-    // if (!formData.invoiceDate) {
-    //   toast.error("invoice Date is required");
-    //   return false;
-    // }
+    }    
     if (!formData.invoiceNumber?.trim()) {
       toast.error("Invoice Number is required");
       return false;
@@ -71,15 +62,7 @@ const CheckInvoice = () => {
       toast.error("PO Date is required");
       return false;
     }
-    if (!formData.vehicleNo?.trim()) {
-      toast.error("Vehicle No is required");
-      return false;
-    }
-    if (!formData.TransporterName?.trim()) {
-      toast.error("Transporter Name is required");
-      return false;
-    }
-    if (!formData.paymentDue) {
+    if (!formData.paymentDueDate) {
       toast.error("Payment Due date is required");
       return false;
     }
@@ -96,15 +79,14 @@ const CheckInvoice = () => {
 
   // ✅ QUANTITY VALIDATION
   const validateQuantities = (row) => {
-    const received = parseFloat(row.receivedQty) || 0;
     const approved = parseFloat(row.approvedQty) || 0;
     const damaged = parseFloat(row.damagedQty) || 0;
 
-    if (approved + damaged > received) {
-      toast.error("Approved + Damaged quantity cannot exceed Received quantity");
+    if (damaged > approved) {
+      toast.error("Damaged quantity cannot exceed Approved quantity");
       return false;
     }
-    if (received < 0 || approved < 0 || damaged < 0) {
+    if (approved < 0 || damaged < 0) {
       toast.error("Quantities cannot be negative");
       return false;
     }
@@ -121,11 +103,12 @@ const CheckInvoice = () => {
       setLoading(true);
       const res = await fetch(API_ENDPOINTS.Getbuyers);
       const data = await safeJson(res);
-      const suppliersWithIds = (data.data || []).map((name, index) => ({
-        id: index + 1,
-        name,
-      }));
-      setSuppliers(suppliersWithIds);
+      const buyers = (data.data || []).map(b => ({
+          buyerId: b.buyerId,
+          buyerName: b.buyerName,
+          buyerCode: b.buyerCode
+        }));
+      setSuppliers(buyers);
     } catch (err) {
       toast.error("Failed to load dropdowns");
     } finally {
@@ -134,13 +117,13 @@ const CheckInvoice = () => {
   };
 
   // ✅ LOAD invoice NUMBERS
-  const loadinvoiceNumbers = async (buyerName) => {
-    if (!buyerName) {
+  const loadinvoiceNumbers = async (buyerCode) => {
+    if (!buyerCode) {
       setinvoiceNumbers([]);
       return;
     }
     try {
-      const res = await fetch(`${API_ENDPOINTS.GetinvoiceNumbersBybuyer}?buyerName=${buyerName}`);
+      const res = await fetch(`${API_ENDPOINTS.GetinvoiceNumbersBybuyer}?buyerCode=${buyerCode}`);
       const data = await safeJson(res);
       setinvoiceNumbers(data.data || []);
     } catch {
@@ -149,238 +132,209 @@ const CheckInvoice = () => {
   };
 
   // --- 1. Adjust fetchInvoiceTableData to ADD items from multiple invoices ---
+const fetchInvoiceTableData = async (buyerId) => {
+  if (!buyerId) return;
 
-  const fetchInvoiceTableData = async (invoiceId) => {
-    if (!invoiceId) return;
+  try {
+    setLoading(true);
 
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_ENDPOINTS.Invoices}?invoiceId=${invoiceId}`);
-      const data = await safeJson(res);
+    const res = await fetch(`${API_ENDPOINTS.GetInvoiceItemDetails}?buyerId=${buyerId}`);
+    const result = await safeJson(res);
 
-      if (!data.success || !data.data?.items) {
-        toast.warning("No items found for this invoice");
-        return;
-      }
+    if (!result?.success || !result.data) {
+      toast.warning("No data found");
+      return;
+    }  
 
-      // Prepare new items with unique IDs to avoid collisions
-      const newItems = data.data.items.map((item, index) => ({
-        id: `${invoiceId}-${item.itemName}-${index}`,
-        itemName: item.itemName || "",
-        grade: item.grade || "",
-        itemCode: item.itemCode || "",
-        receivedQty: item.receivedQty || 0,
-        approvedQty: item.acceptedQty || 0,
-        damagedQty: item.rejectedQty || 0,
-        receivedUnit: item.receivedUnit || "pcs",
-        cgst: item.taxType === "CGST" ? item.taxRate || 0 : 0,
-        sgst: item.taxType === "SGST" ? item.taxRate || 0 : 0,
-        igst: item.taxType === "IGST" ? item.taxRate || 0 : 0,
-        rate: item.rate || 0,
-        taxType: item.taxType || "",
-        billCheck: false,
-        isSelected: false,
-        totalTaxValue: 0,
-        totalItemValue: 0,
-        billItemValue: 0
-      }));
-
-      // Calculate totals for new items
-      const itemsWithTotals = newItems.map((row) => {
-        const receivedQty = parseFloat(row.receivedQty) || 0;
-        const cgst = parseFloat(row.cgst) || 0;
-        const sgst = parseFloat(row.sgst) || 0;
-        const igst = parseFloat(row.igst) || 0;
-        const rate = parseFloat(row.rate) || 0;
-        return {
-          ...row,
-          totalTaxValue: (cgst + sgst + igst) * receivedQty,
-          totalItemValue: receivedQty * rate,
-          billItemValue: (receivedQty * rate) + ((cgst + sgst + igst) * receivedQty),
-        };
-      });
-
-      setTableData(prevData => {
-        // Merge avoiding duplicates by IDs
-        const existingIds = new Set(prevData.map(item => item.id));
-        const merged = [...prevData];
-        for (const item of itemsWithTotals) {
-          if (!existingIds.has(item.id)) {
-            merged.push(item);
-          }
-        }
-        updateGrandTotals(merged);
-        return merged;
-      });
-
-      // Also update formData header from last invoice loaded(optional)
-      const header = data.data.header;
+    /* ===== HEADER ===== */
+    const header = result.data.header;
+    if (header) {
       setFormData(fd => ({
         ...fd,
-        //   invoiceNumber: "", // Clear this if multiple loaded
-        //   invoiceDate: "",
-        poNumber: "",
-        poDate: "",
-        invoiceNumber: "",
-        invoiceDate: "",
-        vehicleNo: "",
-        TransporterName: "",
-        paymentDue: "",
-        status: "",
-        ...(
-          header ? {
-            //   invoiceNumber: header.invoiceNumber || "",
-            //   invoiceDate: header.invoice_Date ? header.invoice_Date.split("T")[0] : "",
-            poNumber: header.poNumber || "",
-            poDate: header.poDate ? header.poDate.split("T")[0] : "",
-            invoiceNumber: header.invoice_NO || "",
-            invoiceDate: header.invoice_Date ? header.invoice_Date.split("T")[0] : "",
-            vehicleNo: header.vehicle_No || "",
-            TransporterName: header.TransporterName || "",
-            paymentDue: header.paymentDue || "",
-            status: "Received"
-          } : {}
-        )
+        invoiceDate: header.invoiceDate
+          ? header.invoiceDate.split("T")[0]
+          : "",
+        paymentDueDate: header.paymentDueDate
+          ? header.paymentDueDate.split("T")[0]
+          : "",
+        poNumber: header.poNumber || "",
+        poDate: header.poDate
+          ? header.poDate.split("T")[0]
+          : "",
+        vehicleNo: header.vehicleNo || "",
+        TransporterName: header.transporterName || ""
       }));
-
-      setEnteredinvoiceNumber(invoiceId);
-
-    } catch (err) {
-      toast.error("Unable to load invoice data");
-    } finally {
-      setLoading(false);
     }
+
+    /* ===== ITEMS ===== */
+      
+    //   console.log(item)
+      
+    //   // const receivedQty = Number(item.approvedQty) || 0;
+    //   // const ratePerUnit =
+    //   //   receivedQty > 0
+    //   //     ? (Number(item.totalItemValue) || 0) / receivedQty
+    //   //     : 0;
+
+    //   // const taxAmount =
+    //   //   (item.cgst + item.sgst + item.igst) * receivedQty;
+
+    //    // console.log(taxAmount);
+        
+
+    //   return {
+    //     id: `${buyerId}-${item.itemCode}-${index}`,
+    //     itemName: item.itemName,
+    //     itemCode: item.itemCode,
+    //     grade: item.itemGrade,
+    //     approvedQty: item.approvedQty || 0,
+    //     damagedQty: item.rejectedQty || 0,
+    //     receivedUnit: "pcs",
+    //     cgst: item.cgst,
+    //     sgst: item.sgst,
+    //     igst: item.igst,
+    //     ratePerUnit,
+    //     billCheck: false,
+    //     isSelected: false,
+    //     taxAmount,
+    //     totalItemValue: item.totalItemValue,
+    //     //billItemValue: item.totalItemValue + taxAmount
+    //   };
+    // });
+
+    const items = result.data.items.map((item, index) => {
+
+  return {
+    id: `${buyerId}-${item.itemCode}-${index}`,
+    itemName: item.itemName,
+    itemCode: item.itemCode,
+    grade: item.itemGrade,
+    approvedQty: Number(item.approvedQty) ?? 0, // ✅ now displays
+    damagedQty: Number(item.damagedQty) ?? 0,             // ✅ now displays
+    ratePerUnit: item.ratePerUnit,                                          // ✅ price
+    cgst: Number(item.cgst) || 0,
+    sgst: Number(item.sgst) || 0,
+    igst: Number(item.igst) || 0,
+    taxAmount: Number(item.taxAmount) || 0,                                 // ✅ total tax amount
+    totalItemValue: item.totalItemValue || 0,
+
+    billCheck: false,
+    isSelected: false,
+    receivedUnit: "pcs"
   };
+});
+
+    setTableData(items);
+    updateGrandTotals(items);
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Unable to load invoice data");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // --- 2. Save all tableData items, checked or not ---
 
   // ✅ COMPLETE handleSave WITH AUTO-CLEAR AFTER SUCCESS
-  const handleSave = async () => {
-    if (!validateForm()) return;
 
-    const TOAST_ID = "saving-invoice";
+const handleSave = async () => { 
+  if (!validateForm()) return;
 
-    // Show loading toast
-    toast.loading("Saving invoice data...", {
-      toastId: TOAST_ID,
-      closeOnClick: false,
-      draggable: false,
-    });
+  const TOAST_ID = "saving-invoice";
 
-    // ✅ FIXED PAYLOAD - Matches backend model exactly
-    const payload = {
-      VendorId: Number(formData.vendorId) || 0,
-      buyerName: formData.buyerName,
-      invoiceNumber: formData.invoiceNumber,
-      invoiceDate: formData.invoiceDate,
-      poNumber: formData.poNumber,
-      poDate: formData.poDate,
+  toast.loading("Saving invoice data...", {
+    toastId: TOAST_ID,
+    closeOnClick: false,
+    draggable: false,
+  });
 
-      vehicleNo: formData.vehicleNo,
-      TransporterName: formData.TransporterName,
-      paymentDue: formData.paymentDue,
-      status: formData.status || "Received",
-      totalAmount: formData.totalAmount,
-      totalTaxAmount: formData.totalTaxAmount,
-      grandAmount: formData.grandTotal,
-      Description: formData.buyerName || "Invoice invoice", // ✅ Backend required
-      Items: tableData.map(item => ({  // ✅ Capital 'I' for Items array
-        Description: `${item.itemName} - ${item.grade}`, // ✅ Backend required
-        itemName: item.itemName,
-        grade: item.grade,
-        itemCode: item.itemCode,
-        receivedQty: parseFloat(item.receivedQty) || 0,
-        approvedQty: parseFloat(item.approvedQty) || 0,
-        damagedQty: parseFloat(item.damagedQty) || 0,
-        unit: item.receivedUnit || "pcs",
-        TaxType: item.taxType || "",
-        cgst: parseFloat(item.cgst) || 0,
-        sgst: parseFloat(item.sgst) || 0,
-        igst: parseFloat(item.igst) || 0,
-        rate: parseFloat(item.rate) || 0,
-        totalTaxValue: parseFloat(item.totalTaxValue) || 0,
-        totalItemValue: parseFloat(item.totalItemValue) || 0,
-        billItemValue: parseFloat(item.billItemValue) || 0,
-        billCheck: item.billCheck === true, // ✅ Saves checkbox state to DB
-        TransporterName: formData.TransporterName || ""
-      }))
-    };
+  // ✅ Payload exactly matching backend
+  const payload = {
+    BuyerId: Number(formData.buyerId),
+    InvoiceNo: formData.invoiceNumber,
+    InvoiceDate: formData.invoiceDate,       // YYYY-MM-DD
+    PONumber: formData.poNumber,
+    PODate: formData.poDate || null,                 // YYYY-MM-DD
+    VehicleNo: formData.vehicleNo,
+    TranspoterName: formData.TransporterName, // ⚠️ spelling FIX
+    PaymentDueDate: formData.paymentDueDate || null, // YYYY-MM-DD
+    CreatedBy: 1,
+    UpdatedBy: 1,
 
-    console.log("💾 Sending payload to backend:", payload);
+    TotalAmount: formData.totalAmount || 0,
+    TotalTaxAmount: formData.taxAmount || 0,
+    GrandAmount: formData.grandTotal || 0,
 
-    try {
-      setSaveLoading(true);
+    Items: tableData.map(item => ({
+      ItemCode: item.itemCode,
+      Grade: item.grade,
+      ApprovedQty: Number(item.approvedQty) || 0,
+      DamagedQty: Number(item.damagedQty) || 0,
+      PricePerUnit: Number(item.ratePerUnit) || 0,
+      CGST: Number(item.cgst) || 0,
+      SGST: Number(item.sgst) || 0,
+      IGST: Number(item.igst) || 0,
+      TotalTax: Number(item.taxAmount) || 0,
+      TotalAmount: Number(item.totalItemValue) || 0,
+      CheckSale: true
+    }))
+  };
 
-      const response = await fetch(API_ENDPOINTS.Saveinvoice, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+  try {
+    setSaveLoading(true);
 
-      const result = await safeJson(response);
+    const response = await fetch(API_ENDPOINTS.AccountSale, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });    
+    const result = await response.json();
 
-      if (!response.ok) {
-        // Detailed error parsing
-        let errorMsg = `HTTP ${response.status}`;
-
-        if (result?.errors) {
-          const errorsArr = [];
-          for (const [field, msgs] of Object.entries(result.errors)) {
-            errorsArr.push(`${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`);
-          }
-          errorMsg += ` - ${errorsArr.join('; ')}`;
-        } else {
-          errorMsg += `: ${result?.message || result?.error || 'Validation failed'}`;
-        }
-
-        toast.update(TOAST_ID, {
-          render: errorMsg,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-        console.error("❌ Save error:", result);
-        return;
-      }
-
-      // ✅ SUCCESS - Show confirmation + AUTO CLEAR FORM
-      const successMsg = `✅ Saved ${tableData.length} items successfully!`;
+    if (!response.ok) {
       toast.update(TOAST_ID, {
-        render: successMsg,
-        type: "success",
-        isLoading: false,
-        autoClose: 2000, // Short delay before auto-clear
-      });
-
-      // ✅ AUTO-CLEAR EVERYTHING AFTER 2 SECONDS (after toast shows)
-      setTimeout(() => {
-        clearForm();
-        toast.info("🆕 Form cleared - ready for new data!", {
-          toastId: "form-cleared",
-          autoClose: 2000
-        });
-      }, 2200); // Slightly longer than toast duration
-
-    } catch (error) {
-      console.error("🌐 Network error:", error);
-      toast.update(TOAST_ID, {
-        render: "🌐 Network error! Please check your connection.",
+        render: result?.message || "Failed to save invoice",
         type: "error",
         isLoading: false,
         autoClose: 4000,
       });
-    } finally {
-      setSaveLoading(false);
+      console.error("❌ Save error:", result);
+      return;
     }
-  };
+
+    toast.update(TOAST_ID, {
+      render: "✅ Invoice saved successfully!",
+      type: "success",
+      isLoading: false,
+      autoClose: 2000,
+    });
+
+    setTimeout(() => {
+      clearForm();
+      toast.info("Form cleared", { autoClose: 2000 });
+    }, 2200);
+
+  } catch (error) {
+    console.error("🌐 Network error:", error);
+    toast.update(TOAST_ID, {
+      render: "Network error! Please check your connection.",
+      type: "error",
+      isLoading: false,
+      autoClose: 4000,
+    });
+  } finally {
+    setSaveLoading(false);
+  }
+};
 
   // ✅ NEW: CLEAR FORM FUNCTION
   const clearForm = () => {
     setFormData({
-      vendorId: "",
+      buyerId: "",
       buyerName: "",
       invoiceNumber: "",
       invoiceDate: "",
@@ -389,10 +343,10 @@ const CheckInvoice = () => {
 
       vehicleNo: "",
       TransporterName: "",
-      paymentDue: "",
+      paymentDueDate: "",
       status: "",
       totalAmount: 0,
-      totalTaxAmount: 0,
+      taxAmount: 0,
       grandTotal: 0,
     });
     setTableData([]);
@@ -403,20 +357,32 @@ const CheckInvoice = () => {
     setSaveLoading(false);
   };
 
-
-
   // ✅ HANDLE FORM CHANGES
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "buyerName") {
-      const selectedSupplier = suppliers.find(s => s.id === Number(value));
-      setFormData(fd => ({
-        ...fd,
-        buyerName: selectedSupplier?.name || "",
-        vendorId: Number(value) || 0
-      }));
-      loadinvoiceNumbers(selectedSupplier?.name || "");
+
+    if (name === "buyerId") {
+      const selectedBuyer = suppliers.find(s => s.buyerId === Number(value));
+
+      console.log(selectedBuyer)
+
+     if (!selectedBuyer) {
+      setFormData(fd => ({ ...fd, buyerId: "", buyerName: "" }));
+      setinvoiceNumbers([]);
+      setTableData([]);
+      setSelectedinvoice("");
+      setEnteredinvoiceNumber("");
+      return;
+    }
+
+     setFormData(fd => ({
+      ...fd,
+      buyerId: selectedBuyer.buyerId,
+      buyerName: selectedBuyer.buyerName
+    }));
+
+      loadinvoiceNumbers(selectedBuyer.buyerCode);
       setTableData([]);
       setSelectedinvoice("");
       setEnteredinvoiceNumber("");
@@ -426,8 +392,22 @@ const CheckInvoice = () => {
     if (name === "invoiceNumber") {
       const invoiceId = value;
       setSelectedinvoice(invoiceId);
-      setFormData(fd => ({ ...fd, invoiceNumber: invoiceId }));
-      fetchInvoiceTableData(invoiceId);
+
+      setFormData(fd => ({
+        ...fd,
+        invoiceNumber: invoiceId,   // ✅ FIX
+        vehicleNo: fd.vehicleNo,
+        TransporterName: fd.TransporterName,
+        poNumber: fd.poNumber,
+        poDate: fd.poDate,
+        invoiceDate: fd.invoiceDate,
+        paymentDueDate: fd.paymentDueDate
+      }));
+      if (formData.buyerId) {
+        fetchInvoiceTableData(formData.buyerId);
+      } else {
+        toast.error("Select a buyer first");
+      }
       return;
     }
 
@@ -436,7 +416,7 @@ const CheckInvoice = () => {
 
   // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
   const handleBillCheckChange = useCallback((index) => {
-    console.log("🔄 Toggling billCheck at index:", index);
+    //console.log("🔄 Toggling billCheck at index:", index);
 
     setTableData(prevTableData => {
       const newTableData = prevTableData.map((row, i) => {
@@ -473,11 +453,11 @@ const CheckInvoice = () => {
       const cgst = parseFloat(row.cgst) || 0;
       const sgst = parseFloat(row.sgst) || 0;
       const igst = parseFloat(row.igst) || 0;
-      const rate = parseFloat(row.rate) || 0;
+      const ratePerUnit = parseFloat(row.ratePerUnit) || 0;
 
-      newData[index].totalTaxValue = (cgst + sgst + igst) * receivedQty;
-      newData[index].totalItemValue = receivedQty * rate;
-      newData[index].billItemValue = newData[index].totalItemValue + newData[index].totalTaxValue;
+      newData[index].taxAmount = (cgst + sgst + igst) * receivedQty;
+      newData[index].totalItemValue = receivedQty * ratePerUnit;
+      newData[index].billItemValue = newData[index].totalItemValue + newData[index].taxAmount;
 
       updateGrandTotals(newData);
       return newData;
@@ -488,13 +468,13 @@ const CheckInvoice = () => {
   const updateGrandTotals = (data) => {
     const selectedItems = data.filter(row => row.billCheck === true);
     const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
-    const totalTaxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalTaxValue) || 0), 0);
-    const grandTotal = totalAmount + totalTaxAmount;
+    const taxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.taxAmount) || 0), 0);
+    const grandTotal = totalAmount + taxAmount;
 
     setFormData(fd => ({
       ...fd,
       totalAmount,
-      totalTaxAmount,
+      taxAmount,
       grandTotal,
     }));
   };
@@ -505,8 +485,6 @@ const CheckInvoice = () => {
       updateGrandTotals(tableData);
     }
   }, [tableData]);
-
-
 
   // ✅ RESET FORM
   const handleCancel = () => {
@@ -520,7 +498,7 @@ const CheckInvoice = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         setFormData({
-          vendorId: "",
+          buyerId: "",
           buyerName: "",
           invoiceNumber: "",
           invoiceDate: "",
@@ -530,10 +508,10 @@ const CheckInvoice = () => {
           invoiceDate: "",
           vehicleNo: "",
           TransporterName: "",
-          paymentDue: "",
+          paymentDueDate: "",
           status: "",
           totalAmount: 0,
-          totalTaxAmount: 0,
+          taxAmount: 0,
           grandTotal: 0,
         });
         setTableData([]);
@@ -562,56 +540,75 @@ const CheckInvoice = () => {
         {/* FORM FIELDS */}
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> buyer Name</label>
-            <select className="form-select" name="buyerName" value={formData.vendorId || ""} onChange={handleChange}>
-              <option value="">Select buyer</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+            <label className="form-label text-primary fw-semibold"> Buyer Name</label>
+            <select className="form-select" value={formData.buyerId}
+                    onChange={(e) => {
+                      const buyerId = Number(e.target.value); // ✅ FIX
+                      const buyer = suppliers.find(b => b.buyerId === buyerId);
+
+                      if (!buyer) return;
+
+                      setFormData(prev => ({
+                        ...prev,
+                        buyerId: buyer.buyerId, // ✅ REQUIRED
+                        buyerName: buyer.buyerName,
+                        buyerCode: buyer.buyerCode
+                      }));
+
+                      loadinvoiceNumbers(buyer.buyerCode);
+                      setTableData([]);
+                      setSelectedinvoice("");
+                      setEnteredinvoiceNumber("");
+                    }}
+                  >
+                    <option value="">Select buyer</option>
+                    {suppliers.map(b => (
+                      <option key={b.buyerId} value={b.buyerId} data-buyercode={b.buyerCode}>
+                        {b.buyerName}
+                      </option>
+                    ))}
+                  </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> invoice Number</label>
-            <select className="form-select" value={selectedinvoice || ""} onChange={handleChange} name="invoiceNumber">
+            <label className="form-label text-primary fw-semibold"> Invoice Number</label>
+            <select className="form-select" value={formData.invoiceNumber} onChange={handleChange} name="invoiceNumber">
+          
               <option value="">Select invoice No.</option>
-              {invoiceNumbers.map((g) => (
-                <option key={g.id} value={String(g.id)} disabled={String(g.id) === enteredinvoiceNumber}>
-                  {g.number || g.invoiceNumber || g.invoice_NO} {String(g.id) === enteredinvoiceNumber ? "(Selected)" : ""}
-                </option>
-              ))}
+                  {invoiceNumbers.map(inv => (
+                    <option key={inv.invoiceNumber} value={inv.invoiceNumber}>
+                      {inv.invoiceNumber}
+                    </option>
+                  ))}
             </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> invoice Date</label>
-            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Invoice Date</label>
+            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> PO Number</label>
-            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required />
+            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required readOnly/>
           </div>
         </div>
 
         <div className="row mb-3">
-
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> PO Date</label>
-            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required />
+            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> Vehicle No</label>
-            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required />
+            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> Transporter Name</label>
-            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required />
+            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Payment Due</label>
-            <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Payment Due Date</label>
+            <input type="date" name="paymentDueDate" className="form-control" value={formData.paymentDueDate} onChange={handleChange} required readOnly/>
           </div>
         </div>
-
-
 
         {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
         <div className="table-responsive">
@@ -621,9 +618,9 @@ const CheckInvoice = () => {
                 <th className="text-primary">Item Name</th>
                 <th className="text-primary">Grade</th>
                 <th className="text-primary">Item Code</th>
-                <th className="text-primary">Received Qty</th>
                 <th className="text-primary">Approved Qty</th>
                 <th className="text-primary">Damaged Qty</th>
+                <th className="text-primary">Price</th>
                 <th className="text-primary">CGST</th>
                 <th className="text-primary">SGST</th>
                 <th className="text-primary">IGST</th>
@@ -647,16 +644,6 @@ const CheckInvoice = () => {
                       <input
                         type="number"
                         className="form-control form-control-sm"
-                        value={row.receivedQty || ""}
-                        onChange={handleQuantityChange(index, 'receivedQty')}
-                        min="0"
-                        step="0.01"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
                         value={row.approvedQty || ""}
                         onChange={handleQuantityChange(index, 'approvedQty')}
                         min="0"
@@ -673,10 +660,11 @@ const CheckInvoice = () => {
                         step="0.01"
                       />
                     </td>
+                    <td className="fw-bold text-success">₹{(row.ratePerUnit || 0).toFixed(2)}</td>
                     <td>{(row.cgst || 0).toFixed(2)}%</td>
                     <td>{(row.sgst || 0).toFixed(2)}%</td>
                     <td>{(row.igst || 0).toFixed(2)}%</td>
-                    <td className="fw-bold text-success">₹{(row.totalTaxValue || 0).toFixed(2)}</td>
+                    <td className="fw-bold text-success">₹{(row.taxAmount || 0).toFixed(2)}</td>
                     <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td>
                     <td style={{ textAlign: "center", width: "100px" }}>
                       <div className="form-check">
@@ -739,3 +727,4 @@ const CheckInvoice = () => {
 };
 
 export default CheckInvoice;
+

@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
-import CreateMaster from "../HRM/CreateMaster";
-
+import NotCreated from "../../components/NotCreated"
 
 function AutoPR() {
   const [selectedPage, setSelectedPage] = useState("create");
@@ -73,7 +72,7 @@ Crystal Report
 
       {/* Render selected page with view prop */}
       <div>
-        {selectedPage==='create'?(<CreateMaster/>):<CreateMaster/>
+        {selectedPage==='create'?(<NotCreated/>):<NotCreated/>
         
          
         }

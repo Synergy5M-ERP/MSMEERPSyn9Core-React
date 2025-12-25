@@ -190,19 +190,20 @@ function CompleteDailyGRN() {
           <div style={tableWrapperStyle}>
             <table style={tableStyle}>
               <thead>
-                <tr>
-                  <th style={thStyle}>GRN No<br />GRN Date</th>
-                  <th style={thStyle}>Supplier</th>
-                  <th style={thStyle}>Invoice No<br />Date</th>
-                  <th style={thStyle}>PO No<br />UOM</th>
-                  <th style={thStyle}>Item</th>
-                  <th style={thStyle}>Challan Qty</th>
-                  <th style={thStyle}>Received Qty</th>
-                  <th style={thStyle}>Rejected Qty</th>
-                  <th style={thStyle}>Qty To Be <br></br>Repaired</th>
-                  <th style={thStyle}>Action</th>
-                </tr>
-              </thead>
+            <tr>
+              <th style={thStyle}>GRN No<br />GRN Date</th>
+              <th style={thStyle}>Supplier Name<br/>UOM</th>
+              <th style={thStyle}>Invoice No<br />Invoice Date</th>
+              <th style={thStyle}>PO No<br />PO Date</th>
+              <th style={thStyle}>Item Name<br />Grade</th>
+              <th style={thStyle}>Invoice Qty</th>
+              <th style={thStyle}>Received Qty</th>
+              <th style={thStyle}>Rejection Qty</th>
+              <th style={thStyle}>Qty To Be Hold/Repaired</th>
+              <th style={thStyle}>Action</th>
+            </tr>
+          </thead>
+
 
               <tbody>
                 {paginatedRecords.map((rec, i) => {
@@ -210,9 +211,9 @@ function CompleteDailyGRN() {
                   return (
                     <tr key={id} style={getRowStyle(i)}>
                       <td style={tdStyle}>{rec.grN_NO}<br />{rec.grN_Date && new Date(rec.grN_Date).toLocaleDateString()}</td>
-                      <td style={tdStyle}>{rec.supplier_Name}</td>
+                      <td style={tdStyle}>{rec.supplier_Name}<br/>{rec.uom}</td>
                       <td style={tdStyle}>{rec.invoice_NO}<br />{rec.invoice_Date && new Date(rec.invoice_Date).toLocaleDateString()}</td>
-                      <td style={tdStyle}>{rec.pO_No}<br />{rec.uom}</td>
+                      <td style={tdStyle}>{rec.pO_No}<br />{rec.purchase_Date && new Date(rec.purchase_Date).toLocaleDateString()}</td>
                       <td style={tdStyle}>{rec.item_Name}<br />{rec.item_Descrpition}</td>
                       <td style={tdStyle}>{rec.challan_Qty}</td>
                       <td style={tdStyle}>{rec.received_Qty}</td>

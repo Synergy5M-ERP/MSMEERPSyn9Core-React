@@ -204,12 +204,12 @@ function SemiFinishQC() {
               <thead>
                 <tr>
                   <th style={thStyle}>Plan Date</th>
-                  <th style={thStyle}>Finish Item</th>
-                  <th style={thStyle}>Buyer / SO</th>
-                  <th style={thStyle}>Semi Finish</th>
-                  <th style={thStyle}>Plan Info</th>
-                  <th style={thStyle}>Machine</th>
-                  <th style={thStyle}>Shift / Batch</th>
+                  <th style={thStyle}>Finish Item<br/>Finish Grade</th>
+                  <th style={thStyle}>Buyer Name <br/> SO Number</th>
+                  <th style={thStyle}>Semi Finish Item <br/>Semi Finish Grade</th>
+                  <th style={thStyle}>Plan Code<br/>Location<br/>Operator</th>
+                  <th style={thStyle}>Machine Name<br/>Machine No<br/>Capacity</th>
+                  <th style={thStyle}>Plan Date<br/>Shift <br/>Batch No</th>
                   <th style={thStyle}>Plan Qty</th>
                   <th style={thStyle}>Actual Qty</th>
                   <th style={thStyle}>Rejection Qty</th>
@@ -227,7 +227,7 @@ function SemiFinishQC() {
                     <td style={tdStyle}>{rec.semiFinishItemName}<br />{rec.semiFinishGrade}</td>
                     <td style={tdStyle}>{rec.planCode}<br />{rec.location}<br />{rec.opName}</td>
                     <td style={tdStyle}>{rec.machineName}<br />{rec.machineNumber}<br />{rec.machineCap}</td>
-                    <td style={tdStyle}>{rec.shift}<br />{rec.batchNo}</td>
+                    <td style={tdStyle}>{rec.planDate ? new Date(rec.planDate).toLocaleDateString("en-GB") : "-"}<br />{rec.shift}<br />{rec.batchNo}</td>
                     <td style={tdStyle}>{rec.planQty}</td>
                     <td style={tdStyle}>{rec.actualQty}</td>
 

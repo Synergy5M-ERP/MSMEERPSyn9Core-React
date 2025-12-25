@@ -1,9 +1,9 @@
- const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//  const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
  //const BASE_URL = "https://localhost:7145/api";
 ////
 //const BASE_URL = "https://localhost:7145/api";
 //const API_BASE_URL = 'http://localhost:49980/Vendor';
-//const BASE_URL="https://localhost:44345"
+const BASE_URL="https://localhost:7145/api"
 export const API_ENDPOINTS = {
  // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
@@ -42,6 +42,12 @@ ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
   OutwardQc:`${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty:`${BASE_URL}/SaveRejectionQty`,
   SubmitButtonDisable:`${BASE_URL}/SubmitButtonDisable`,
+  SaveCOARows: `${BASE_URL}/SaveCOARows`,
+  CheckButton: `${BASE_URL}/CheckButton`,
+  GetInwardQCRecords:`${BASE_URL}/GetInwardQCRecords`,
+  SubmitInwardQC:`${BASE_URL}/SubmitInwardQC`,
+  GetSemiFinishPlanReport:`${BASE_URL}/GetSemiFinPlanReport`,
+  SaveSemiFinRejectionQty:`${BASE_URL}/SaveSemiFinRejectionQty`,
 
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,

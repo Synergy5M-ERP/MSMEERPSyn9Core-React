@@ -4,7 +4,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 
 import AdminSidebar from './AdminSidebar';
-import RegisterPage from './RegisterPage';
+import RegisterPage from '../RegisterPage';
 import UserApproval from './UserApproval';
 
 import AdminDashboard from './AdminDashboard';

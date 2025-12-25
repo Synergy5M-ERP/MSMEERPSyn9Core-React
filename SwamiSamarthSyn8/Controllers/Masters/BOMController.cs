@@ -18,10 +18,10 @@ namespace SwamiSamarthSyn8.Controllers.Masters
             _context = context;
 
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
+        //public IActionResult Index()
+        //{
+        //    return View();
+        //}
 
         [HttpGet("GetBOMData")]
         public IActionResult GetBOMData(string category, string itemName = null, string grade = null, bool checkBOMExists = false)

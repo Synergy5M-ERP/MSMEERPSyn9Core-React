@@ -230,6 +230,7 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<MASTER_ItemTbl> ItemMasters { get; set; }
     public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
     public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
+    public virtual DbSet<PQM_FinishProdCOATbl> PQM_FinishProdCOATbl { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

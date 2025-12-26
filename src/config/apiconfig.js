@@ -1,6 +1,6 @@
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//  const BASE_URL = "https://localhost:7145/api";
+//const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+  const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -20,6 +20,9 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
 ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+ 
+  GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
+  SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
 
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST

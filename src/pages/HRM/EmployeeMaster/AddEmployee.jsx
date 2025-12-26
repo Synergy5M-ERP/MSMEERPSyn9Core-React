@@ -217,7 +217,10 @@
 
 // export default EmployeeRegistration;
 
+
 import React, { useState, useEffect } from 'react';
+import axios from "axios";   // ✅ REQUIRED
+
 import {
   User,
   FileText,
@@ -240,6 +243,11 @@ const AddEmployee = () => {
   const [cities, setCities] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
+const [authorityLevel, setAuthorityLevel] = useState("");
+const [authorities, setAuthorities] = useState([]);
+
+
 
   const [employeeInfo, setEmployeeInfo] = useState({
     title: '',
@@ -269,7 +277,9 @@ const AddEmployee = () => {
     uan: '',
     epfoAcNo: '',
     previousExperience: '',
-    previousIndustry: ''
+    previousIndustry: '',
+    department: "",
+  designation: ""
   });
 
   const [employerInfo, setEmployerInfo] = useState({
@@ -390,6 +400,30 @@ const AddEmployee = () => {
         setDesignations([]);
       });
   }, []);
+useEffect(() => {
+  fetchCurrency();
+}, []);
+useEffect(() => {
+  axios
+    .get(API_ENDPOINTS.AUTHORITY_MATRIX)
+    .then(res => {
+      setAuthorities(Array.isArray(res.data) ? res.data : []);
+    })
+    .catch(err => {
+      console.error("Authority API error:", err);
+      setAuthorities([]);
+    });
+}, []);
+
+
+const fetchCurrency = async () => {
+  try {
+    const res = await axios.get(API_ENDPOINTS.GET_CURRENCY);
+    setCurrencyList(res.data);
+  } catch (error) {
+    console.error("Error fetching currency", error);
+  }
+};
 
   // --- Previous / Next navigation ---
   const formOrder = ['employee', 'employer', 'salary'];
@@ -507,6 +541,52 @@ const AddEmployee = () => {
   //   });
   // };
   useEffect(() => {
+  if (employeeInfo.department) {
+    fetch(
+      `${API_ENDPOINTS.DESIGNATION_BY_DEPARTMENT}?department=${encodeURIComponent(
+        employeeInfo.department
+      )}`
+    )
+      .then(res => res.json())
+      .then(data => {
+        setDesignations(Array.isArray(data) ? data : []);
+      })
+      .catch(err => {
+        console.error("Designation API Error:", err);
+        setDesignations([]);
+      });
+  } else {
+    setDesignations([]);
+  }
+}, [employeeInfo.department]);
+const handleDepartmentChange = async (e) => {
+  const departmentName = e.target.value;
+
+  setEmployeeInfo(prev => ({
+    ...prev,
+    department: departmentName,
+    designation: ""
+  }));
+
+  if (!departmentName) {
+    setDesignations([]);
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `https://localhost:7145/api/HrmOrgInfo/vacant-designations`,
+      { params: { department: departmentName } }
+    );
+
+    setDesignations(res.data);
+  } catch (err) {
+    console.error(err);
+    setDesignations([]);
+  }
+};
+
+  useEffect(() => {
     if (employeeInfo.country) {
       fetch(
         `${API_ENDPOINTS.GET_STATE}?country=${encodeURIComponent(employeeInfo.country)}`
@@ -521,34 +601,23 @@ const AddEmployee = () => {
   }, [employeeInfo.country]);
 
 
-  useEffect(() => {
-    if (employeeInfo.state) {
-      fetch(
-        `${API_ENDPOINTS.GET_CITY}?state=${encodeURIComponent(employeeInfo.state)}`
-      )
-        .then(res => res.json())
-        .then(res => {
-          // ✅ normalize response to array
-          if (Array.isArray(res)) {
-            setCities(res);
-          } else if (res?.data && Array.isArray(res.data)) {
-            setCities(res.data);
-          } else if (res?.cities && Array.isArray(res.cities)) {
-            setCities(res.cities);
-          } else {
-            setCities([]); // fallback
-          }
-        })
-        .catch(err => {
-          console.error("City API Error:", err);
-          setCities([]);
-        });
-    } else {
-      setCities([]);
-    }
-  }, [employeeInfo.state]);
-
-
+ useEffect(() => {
+  if (employeeInfo.country && employeeInfo.state) {
+    fetch(
+      `${API_ENDPOINTS.GET_CITY}?country=${encodeURIComponent(
+        employeeInfo.country
+      )}&state=${encodeURIComponent(employeeInfo.state)}`
+    )
+      .then(res => res.json())
+      .then(data => setCities(data))
+      .catch(err => {
+        console.error("City API Error:", err);
+        setCities([]);
+      });
+  } else {
+    setCities([]);
+  }
+}, [employeeInfo.country, employeeInfo.state]);
 
   const handleEmployerChange = (e) => {
     const { name, value, files } = e.target;
@@ -558,49 +627,67 @@ const AddEmployee = () => {
     }));
   };
 
-  const handleSalaryChange = (e) => {
-    const { name, value } = e.target;
-    setSalaryStructure(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+const handleSalaryChange = (e) => {
+  const { name, value, type } = e.target;
 
-  const handleSave = async () => {
-    try {
-      const formData = new FormData();
-
-      Object.keys(employeeInfo).forEach(key => {
-        formData.append(`employeeInfo.${key}`, employeeInfo[key]);
-      });
-
-      Object.keys(employerInfo).forEach(key => {
-        if (key === 'aadharPancard' && employerInfo[key]) {
-          formData.append('aadharPancard', employerInfo[key]);
-        } else {
-          formData.append(`employerInfo.${key}`, employerInfo[key]);
-        }
-      });
-
-      Object.keys(salaryStructure).forEach(key => {
-        formData.append(`salaryStructure.${key}`, salaryStructure[key]);
-      });
-
-      const response = await fetch('https://your-api-url.com/api/employee', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        alert('Employee data saved successfully!');
-      } else {
-        alert('Failed to save employee data');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      alert('Error saving data');
+  // Allow only numbers for numeric fields
+  if (type === "text" || type === "number") {
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return; // block non-numeric characters
     }
-  };
+  }
+
+  // For date or other types, accept the value
+  setSalaryStructure(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+const handleSave = async () => {
+  try {
+    const formData = new FormData();
+
+    // Employee info
+    Object.keys(employeeInfo).forEach(key => {
+      formData.append(key, employeeInfo[key]);
+    });
+
+    // Employer info (file handling)
+    Object.keys(employerInfo).forEach(key => {
+      if (key === "aadharPancard" && employerInfo[key]) {
+        formData.append("AdhaarFile", employerInfo[key]); // must match API param
+      } else {
+        formData.append(key, employerInfo[key]);
+      }
+    });
+
+    // Salary structure
+    Object.keys(salaryStructure).forEach(key => {
+      formData.append(key, salaryStructure[key]);
+    });
+
+    const response = await fetch(API_ENDPOINTS.SaveEmployee, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
+    const result = await response.json();
+
+    alert("Employee saved successfully!");
+    console.log("API response:", result);
+
+  } catch (error) {
+    console.error("Save employee failed:", error);
+    alert("Failed to save employee");
+  }
+};
+
 
   const handleReset = () => {
     if (currentForm === 'employee') {
@@ -688,6 +775,7 @@ const AddEmployee = () => {
     { id: 'employer', icon: FileText, label: 'Employer Information' },
     { id: 'salary', icon: DollarSign, label: 'Salary Structure' }
   ];
+
 
   // const getFormTitle = () => {
   //   switch (currentForm) {
@@ -875,21 +963,21 @@ const AddEmployee = () => {
                   <div className='row'>
 
                     <div className='col'>
-                      <label style={labelStyle}>TITLE</label>
+                      <label style={labelStyle}>Title</label>
                       <select
                         style={inputStyle}
                         name="title"
                         value={employeeInfo.title}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT</option>
+                        <option value="">Select</option>
                         <option value="Mr">Mr</option>
                         <option value="Ms">Ms</option>
                         <option value="Mrs">Mrs</option>
                       </select>
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>NAME</label>
+                      <label style={labelStyle}>Name</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -899,7 +987,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>MIDDLE NAME</label>
+                      <label style={labelStyle}>Middle Name</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -909,7 +997,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>SURNAME</label>
+                      <label style={labelStyle}>Surname</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -919,14 +1007,14 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>GENDER</label>
+                      <label style={labelStyle}>Gender</label>
                       <select
                         style={inputStyle}
                         name="gender"
                         value={employeeInfo.gender}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT</option>
+                        <option value="">Select</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
@@ -937,7 +1025,7 @@ const AddEmployee = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>DOB</label>
+                      <label style={labelStyle}>Dob</label>
                       <input
                         type="date"
                         style={inputStyle}
@@ -947,7 +1035,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>BLOOD GROUP</label>
+                      <label style={labelStyle}>Blood Group</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -958,7 +1046,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>EMAIL</label>
+                      <label style={labelStyle}>Email</label>
                       <input
                         type="email"
                         style={inputStyle}
@@ -968,7 +1056,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>CONTACT NO</label>
+                      <label style={labelStyle}>Contact No</label>
                       <input
                         type="tel"
                         style={inputStyle}
@@ -978,23 +1066,23 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>MARRIED STATUS</label>
+                      <label style={labelStyle}>Married Status</label>
                       <select
                         style={inputStyle}
                         name="marriedStatus"
                         value={employeeInfo.marriedStatus}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT STATUS</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
+                        <option value="">Select Status</option>
+                        <option value="Single">Married</option>
+                        <option value="Married">UnMarried</option>
                       </select>
                     </div>
                   </div>
 
                   <div className='row'>
                     <div className='col-5'>
-                      <label style={labelStyle}>ADDRESS</label>
+                      <label style={labelStyle}>Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="address"
@@ -1018,11 +1106,11 @@ const AddEmployee = () => {
                           checked={employeeInfo.sameAsAddress}
                           onChange={handleEmployeeChange}
                         />
-                        SAME AS ADDRESS
+                        Same As Address
                       </label>
                     </div >
                     <div className='col-5'>
-                      <label style={labelStyle}>PERMANENT ADDRESS</label>
+                      <label style={labelStyle}> Permanent Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="permanentAddress"
@@ -1035,7 +1123,7 @@ const AddEmployee = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>QUALIFICATION</label>
+                      <label style={labelStyle}>Qualifiaction</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1045,14 +1133,14 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>COUNTRY</label>
+                      <label style={labelStyle}>Country</label>
                       <select
                         name="country"
                         value={employeeInfo.country}
                         onChange={handleEmployeeChange}
                         style={inputStyle}
                       >
-                        <option value="">SELECT COUNTRY</option>
+                        <option value="">Select Country</option>
                         {countries.map(country => (
                           <option key={country} value={country}>
                             {country}
@@ -1064,7 +1152,7 @@ const AddEmployee = () => {
                     </div>
 
                     <div className='col'>
-                      <label style={labelStyle}>STATE</label>
+                      <label style={labelStyle}>State</label>
                       <select
                         style={inputStyle}
                         name="state"
@@ -1072,7 +1160,7 @@ const AddEmployee = () => {
                         onChange={handleEmployeeChange}
                         disabled={!states.length}
                       >
-                        <option value="">SELECT STATE</option>
+                        <option value="">Select State</option>
                         {states.map(state => (
                           <option key={state} value={state}>
                             {state}
@@ -1082,7 +1170,7 @@ const AddEmployee = () => {
 
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>CITY</label>
+                      <label style={labelStyle}>City</label>
                       <select
                         style={inputStyle}
                         name="city"
@@ -1090,7 +1178,7 @@ const AddEmployee = () => {
                         onChange={handleEmployeeChange}
                         disabled={!Array.isArray(cities) || cities.length === 0}
                       >
-                        <option value="">SELECT CITY</option>
+                        <option value="">Select City</option>
                         {Array.isArray(cities) &&
                           cities.map(city => (
                             <option key={city} value={city}>
@@ -1102,7 +1190,7 @@ const AddEmployee = () => {
 
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>AADHAR NO</label>
+                      <label style={labelStyle}>Aadhar No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1116,7 +1204,7 @@ const AddEmployee = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>PAN NO</label>
+                      <label style={labelStyle}>Pan No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1126,7 +1214,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>BANK ACCOUNT NO</label>
+                      <label style={labelStyle}>Bank Account No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1136,7 +1224,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>BANK NAME</label>
+                      <label style={labelStyle}>Bank Name</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1146,7 +1234,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>IFSC CODE</label>
+                      <label style={labelStyle}>IFSC Code</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1156,7 +1244,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>NOMINEE</label>
+                      <label style={labelStyle}>Nominee</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1170,7 +1258,7 @@ const AddEmployee = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>RELATION</label>
+                      <label style={labelStyle}>Relation</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1200,7 +1288,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>PREVIOUS EXPERIENCE</label>
+                      <label style={labelStyle}>Previous Experience</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1210,7 +1298,7 @@ const AddEmployee = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>PREVIOUS INDUSTRY</label>
+                      <label style={labelStyle}>Previous Industry</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1263,20 +1351,20 @@ const AddEmployee = () => {
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>CATEGORY</label>
+                    <label style={labelStyle}>Category</label>
                     <select
                       style={inputStyle}
                       name="category"
                       value={employerInfo.category}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT CATEGORY</option>
+                      <option value="">Select Category</option>
                       <option value="Staff">Staff</option>
                       <option value="Employee">Employee</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF JOINING</label>
+                    <label style={labelStyle}>Date Of Joining</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1286,7 +1374,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>NOTICE PERIOD</label>
+                    <label style={labelStyle}>Notice Period</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1296,20 +1384,20 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>WEEKLY OFF</label>
+                    <label style={labelStyle}>Weekly Off</label>
                     <select
                       style={inputStyle}
                       name="weeklyOff"
                       value={employerInfo.weeklyOff}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF LEAVING</label>
+                    <label style={labelStyle}>Date Of Leaving</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1326,7 +1414,7 @@ const AddEmployee = () => {
 
 
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF RELEAVING</label>
+                    <label style={labelStyle}>Date Of Releaving</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1336,47 +1424,49 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>SHIFT HOURS</label>
+                    <label style={labelStyle}>Shift Hours</label>
                     <select
                       style={inputStyle}
                       name="shiftHours"
                       value={employerInfo.shiftHours}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT HOURS</option>
+                      <option value="">Select Hours</option>
                       <option value="8">8 Hours</option>
                       <option value="12">12 Hours</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DEPARTMENT</label>
-                    <select
-                      style={inputStyle}
-                      name="department"
-                      value={employeeInfo.department}
-                      onChange={handleEmployeeChange}
-                    >
-                      <option value="">SELECT DEPARTMENT</option>
+  <label style={labelStyle}>Department</label>
+  <select
+    style={inputStyle}
+    name="department"
+    value={employeeInfo.department}
+    onChange={handleDepartmentChange}
+  >
+    <option value="">Select Department</option>
 
-                      {Array.isArray(departments) &&
-                        departments.map(dep => (
-                          <option key={dep.id} value={dep.id}>
-                            {dep.departmentName}
-                          </option>
-                        ))}
-                    </select>
+    {Array.isArray(departments) &&
+      departments.map(dep => (
+        <option
+          key={dep.departmentName}
+          value={dep.departmentName}   // ✅ IMPORTANT FIX
+        >
+          {dep.departmentName}
+        </option>
+      ))}
+  </select>
+</div>
 
-
-                  </div>
                   <div className='col'>
-                    <label style={labelStyle}>OT CALCULATION</label>
+                    <label style={labelStyle}>OT Calculation</label>
                     <select
                       style={inputStyle}
                       name="otCalculation"
                       value={employerInfo.otCalculation}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT OT CALCULATION</option>
+                      <option value="">Select OT Calculation</option>
                       <option value="Hourly">Hourly</option>
                       <option value="Daily">Daily</option>
                     </select>
@@ -1389,7 +1479,7 @@ const AddEmployee = () => {
                       value={employerInfo.esicPwnNo}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
@@ -1401,30 +1491,39 @@ const AddEmployee = () => {
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>PF CONTRIBUTION</label>
+                    <label style={labelStyle}>PF Contribution</label>
                     <select
                       style={inputStyle}
                       name="pfContribution"
                       value={employerInfo.pfContribution}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
                   </div>
+               <div className="col">
+  <label style={labelStyle}>Currency</label>
+
+  <select
+    style={inputStyle}
+    name="currency"
+    value={employerInfo.currency}
+    onChange={handleEmployerChange}
+  >
+    <option value="">Select Currency</option>
+
+    {currencyList.map(cur => (
+      <option key={cur.id} value={cur.currency_Code}>
+        {cur.currency_Code}
+      </option>
+    ))}
+  </select>
+</div>
+
                   <div className='col'>
-                    <label style={labelStyle}>CURRENCY</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="currency"
-                      value={employerInfo.currency}
-                      onChange={handleEmployerChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>PF NO</label>
+                    <label style={labelStyle}>PF No</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1443,50 +1542,92 @@ const AddEmployee = () => {
                       onChange={handleEmployerChange}
                     />
                   </div>
-                  <div className='col'>
-                    <label style={labelStyle}>AUTHORITY LEVEL</label>
-                    <select
-                      style={inputStyle}
-                      name="authorityLevel"
-                      value={employerInfo.authorityLevel}
-                      onChange={handleEmployerChange}
-                    >
-                      <option value="">SELECT AUTHORITY LEVEL</option>
-                      <option value="Joining">JOINING AUTHORITY LEVEL</option>
-                      <option value="Current"> CURRENT AUTHORITY LEVEL</option>
-                    </select>
-                  </div>
+                 <div className="col">
+  <label style={labelStyle}>Authority Level</label>
+  <select
+    style={inputStyle}
+    name="authorityLevel"
+    value={authorityLevel}
+    onChange={(e) => setAuthorityLevel(e.target.value)}
+  >
+    <option value="">Select Authority Level</option>
+    <option value="joining">Joining Authority Level</option>
+    <option value="current">Current Authority Level</option>
+  </select>
+</div>
+{authorityLevel === "joining" && (
+  <div className="col">
+    <label style={labelStyle}>
+      Joining Authority Level <span className="text-danger">*</span>
+    </label>
+    <select
+      style={inputStyle}
+      name="joiningAuthorityId"
+      value={employerInfo.joiningAuthorityId || ""}
+      onChange={handleEmployerChange}
+    >
+      <option value="">Select Joining Authority Level</option>
+      {authorities.map(auth => (
+        <option key={auth.id} value={auth.id}>
+          {auth.authorityName}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+{authorityLevel === "current" && (
+  <div className="col">
+    <label style={labelStyle}>
+      Current Authority Level <span className="text-danger">*</span>
+    </label>
+    <select
+      style={inputStyle}
+      name="currentAuthorityId"
+      value={employerInfo.currentAuthorityId || ""}
+      onChange={handleEmployerChange}
+    >
+      <option value="">Select Current Authority Level</option>
+      {authorities.map(auth => (
+        <option key={auth.id} value={auth.id}>
+          {auth.authorityName}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
 
                 </div>
 
                 <div
                   className='row'
                 >
+<div className='col'>
+  <label style={labelStyle}>Designation</label>
+  <select
+    style={inputStyle}
+    name="designation"
+    value={employeeInfo.designation}
+    onChange={handleEmployeeChange}
+  >
+    <option value="">Select Designation</option>
 
+    {Array.isArray(designations) && designations.length === 0 && (
+      <option disabled>No Vacant Position</option>
+    )}
 
+    {Array.isArray(designations) &&
+      designations.map(des => (
+        <option
+          key={des.id}
+          value={des.id}
+        >
+          {des.designationName}
+        </option>
+      ))}
+  </select>
+</div>
 
-
-
-                  <div className='col'>
-                    <label style={labelStyle}>DESIGNATION</label>
-                    <select
-                      style={inputStyle}
-                      name="designation"
-                      value={employeeInfo.designation}
-                      onChange={handleEmployeeChange}
-                    >
-                      <option value="">SELECT DESIGNATION</option>
-
-                      {Array.isArray(designations) &&
-                        designations.map(des => (
-                          <option key={des.id} value={des.id}>
-                            {des.designationName}
-                          </option>
-                        ))}
-                    </select>
-
-
-                  </div>
                   <div className='col'>
                     <label style={labelStyle}>CTC</label>
                     <select
@@ -1495,13 +1636,13 @@ const AddEmployee = () => {
                       value={employerInfo.ctc}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT CTC</option>
+                      <option value="">Select CTC</option>
                       <option value="Joinning">Joinning</option>
                       <option value="Current">Current</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>AADHAR/PANCARD</label>
+                    <label style={labelStyle}>Aadhar/Pancard</label>
                     <input
                       type="file"
                       style={inputStyle}
@@ -1552,7 +1693,7 @@ const AddEmployee = () => {
 
 <div className='row'>
  <div className='col'>
-                    <label style={labelStyle}>MONTHLY GROSS SALARY</label>
+                    <label style={labelStyle}>Monthly Gross Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1562,7 +1703,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MONTHLY BASIC SALARY</label>
+                    <label style={labelStyle}>Monthly Basic Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1582,7 +1723,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DAILY SALARY</label>
+                    <label style={labelStyle}>Daliy Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1592,7 +1733,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MONTHLY SALARY</label>
+                    <label style={labelStyle}>Monthly Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1607,7 +1748,7 @@ const AddEmployee = () => {
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>LEAVE TRAVEL ALLOWANCE</label>
+                    <label style={labelStyle}>Leave Travel Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1617,7 +1758,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ADDITIONAL BENEFITS</label>
+                    <label style={labelStyle}>Addidtion Benefits</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1627,7 +1768,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>PERFORMANCE INCENTIVE</label>
+                    <label style={labelStyle}>Performance Incentive</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1637,7 +1778,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>PF CONTRIBUTION</label>
+                    <label style={labelStyle}>PF Contribution</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1662,7 +1803,7 @@ const AddEmployee = () => {
 
 <div className='row'>
      <div className='col'>
-                    <label style={labelStyle}>STOCK OPTION</label>
+                    <label style={labelStyle}>Stock Option</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1672,7 +1813,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>CAR</label>
+                    <label style={labelStyle}>Car</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1682,7 +1823,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>TELEPHONE</label>
+                    <label style={labelStyle}>Telephone</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1692,7 +1833,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MEDICAL ALLOWANCE</label>
+                    <label style={labelStyle}>Medical Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1702,7 +1843,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>TOTAL DEDUCTION</label>
+                    <label style={labelStyle}>Total Deduction</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1715,7 +1856,7 @@ const AddEmployee = () => {
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>HOUSE RENT ALLOWANCE</label>
+                    <label style={labelStyle}>House Rent Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1725,7 +1866,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>HOURLY SALARY</label>
+                    <label style={labelStyle}>Hourly Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1735,7 +1876,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL INCREMENT</label>
+                    <label style={labelStyle}>Annual Increment</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1744,18 +1885,20 @@ const AddEmployee = () => {
                       onChange={handleSalaryChange}
                     />
                   </div>
+               <div className='col'>
+  <label style={labelStyle}>Annual Inc Date</label>
+  <input
+    type="date"
+    style={inputStyle}
+    name="annualIncDate"
+    value={salaryStructure.annualIncDate}
+    onChange={handleSalaryChange}
+  />
+</div>
+
+
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL INC DATE</label>
-                    <input
-                      type="date"
-                      style={inputStyle}
-                      name="annualIncDate"
-                      value={salaryStructure.annualIncDate}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>TOTAL MONTH</label>
+                    <label style={labelStyle}>Total Months</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1779,7 +1922,7 @@ const AddEmployee = () => {
              
                 
                   <div className='col'>
-                    <label style={labelStyle}>PROFESSIONAL TAX</label>
+                    <label style={labelStyle}>Professional Tax</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1789,7 +1932,7 @@ const AddEmployee = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL CTC RS</label>
+                    <label style={labelStyle}>Annual CTC Rs</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1900,7 +2043,9 @@ const AddEmployee = () => {
 };
 
 const labelStyle = {
-  color: "#0066cc", fontWeight: "600"
+  color: "#0066cc",
+  fontWeight: "600",
+
 };
 
 const inputStyle = {
@@ -1910,5 +2055,4 @@ const inputStyle = {
   fontSize: '13px',
   backgroundColor: 'white'
 };
-
 export default AddEmployee;

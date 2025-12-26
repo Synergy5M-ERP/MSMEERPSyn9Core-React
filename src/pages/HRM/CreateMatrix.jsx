@@ -254,54 +254,55 @@ const handleEdit = (matrix) => {
       <h3 className="text-center text-primary mb-4">Organization Matrix Management</h3>
 
       {/* Top controls */}
-      <div className="d-flex justify-content-between align-items-center mb-3 p-2 bg-white rounded shadow-sm">
-        <div className="d-flex gap-3">
-         
-          <label className="custom-radio-label">
-            <input
-              type="radio"
-              name="mainView"
-              checked={selectedPage === "viewMatrix"}
-              onChange={() => setSelectedPage("viewMatrix")}
-            />
-            <span className="custom-radio"></span>
-            View Matrix
-          </label>
-           <label className="custom-radio-label">
-            <input
-              type="radio"
-              name="mainView"
-              checked={selectedPage === "createMatrix"}
-              onChange={() => setSelectedPage("createMatrix")}
-            />
-            <span className="custom-radio"></span>
-            Create Matrix
-          </label>
-        </div>
+{/* Top controls */}
+<div className="mb-3 bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
 
-        <div className="d-flex gap-3">
-          <label className="custom-radio-label">
-            <input
-              type="radio"
-              name="statusFilter"
-              checked={statusFilter === "active"}
-              onChange={() => setStatusFilter("active")}
-            />
-            <span className="custom-radio"></span>
-            Active
-          </label>
-          <label className="custom-radio-label">
-            <input
-              type="radio"
-              name="statusFilter"
-              checked={statusFilter === "inactive"}
-              onChange={() => setStatusFilter("inactive")}
-            />
-            <span className="custom-radio"></span>
-            Inactive
-          </label>
-        </div>
-      </div>
+  <div className="d-flex gap-3">
+    <label>
+      <input
+        type="radio"
+        name="mainView"
+        checked={selectedPage === "viewMatrix"}
+        onChange={() => setSelectedPage("viewMatrix")}
+      />{" "}
+      View Matrix
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="mainView"
+        checked={selectedPage === "createMatrix"}
+        onChange={() => setSelectedPage("createMatrix")}
+      />{" "}
+      Create Matrix
+    </label>
+  </div>
+
+  <div className="d-flex gap-3">
+    <label>
+      <input
+        type="radio"
+        name="statusFilter"
+        checked={statusFilter === "active"}
+        onChange={() => setStatusFilter("active")}
+      />{" "}
+      Active
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="statusFilter"
+        checked={statusFilter === "inactive"}
+        onChange={() => setStatusFilter("inactive")}
+      />{" "}
+      Inactive
+    </label>
+  </div>
+
+</div>
+
 
       {/* ================= CREATE MATRIX FORM ================= */}
       {selectedPage === "createMatrix" && (
@@ -395,8 +396,8 @@ const handleEdit = (matrix) => {
             <th>Rep Email</th>
             <th>Matrix Code</th>
             <th>Status</th>
-            <th style={{ width: "120px", textAlign: "center" }}>Action</th>
-                        <th style={{ width: "120px", textAlign: "center" }}>Action</th>
+            <th style={{ width: "120px", textAlign: "center" }}>Edit</th>
+                        <th style={{ width: "120px", textAlign: "center" }}>Deactivate</th>
 
           </tr>
         </thead>
@@ -430,27 +431,28 @@ const handleEdit = (matrix) => {
   <td>{m.isActive ? "Active" : "Inactive"}</td>
 
   {/* ACTION COLUMN */}
-  <td className="text-center">
-    <button
-      className="btn btn-sm btn-outline-primary mr-2"
-      title="Edit Matrix"
-      onClick={() => handleEdit(m)}
-    >
-      <FaEdit />
-    </button>
-    </td>
-  <td className="text-center">
+<td className="text-center">
+  <button
+    className="btn btn-sm btn-outline-primary me-2"
+    title="Edit Matrix"
+    onClick={() => handleEdit(m)}
+  >
+    <FaEdit />
+  </button>
+</td>
 
-    <button
-      className={`btn btn-sm ${
-        m.isActive ? "btn-outline-danger" : "btn-outline-success"
-      }`}
-      title={m.isActive ? "Deactivate" : "Activate"}
-      onClick={() => handleStatusChange(m.id, !m.isActive)}
-    >
-      {m.isActive ? <FaToggleOff /> : <FaToggleOn />}
-    </button>
-  </td>
+<td className="text-center">
+  <button
+    className={`btn btn-sm ${
+      m.isActive ? "btn-outline-danger" : "btn-outline-success"
+    }`}
+    title={m.isActive ? "Deactivate" : "Activate"}
+    onClick={() => handleStatusChange(m.id, !m.isActive)}
+  >
+    {m.isActive ? <FaToggleOff /> : <FaToggleOn />}
+  </button>
+</td>
+
 </tr>
 
             ))

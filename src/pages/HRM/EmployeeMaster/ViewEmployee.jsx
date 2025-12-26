@@ -47,56 +47,28 @@ useEffect(() => {
     setError("");
 
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString()
-      });
+      const url = API_ENDPOINTS.GetAll_Employee;
+      console.log("Fetching from:", url);
 
-      const url = `${API_ENDPOINTS.ViewEmployees}?${params.toString()}`;
-      console.log("🔍 Fetching from:", url);
-      
       const res = await fetch(url);
-      console.log("📡 Raw Response:", {
-        status: res.status,
-        ok: res.ok,
-        headers: Object.fromEntries(res.headers.entries()),
-        type: res.type
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
 
-      // 🚨 CRITICAL: Check if response body is accessible
-      const contentType = res.headers.get("content-type");
-      console.log("📄 Content-Type:", contentType);
-      
-      if (!contentType?.includes("application/json")) {
-        const text = await res.text();
-        console.log("❌ Not JSON - Raw text:", text.substring(0, 500));
-        throw new Error("API returned non-JSON response");
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
-      console.log("✅ Parsed Data:", {
-        items: data.items?.length || 0,
-        totalCount: data.totalCount,
-        hasItems: !!data.items
-      });
-      
-      setEmployees(data.items || []);
-      setTotalCount(data.totalCount || 0);
-      
+      setEmployees(data || []);
+      setTotalCount(data?.length || 0);
+
     } catch (err) {
-      console.error("💥 Full Error:", err);
-      setError(`Error: ${err.message}`);
+      console.error(err);
+      setError("Unable to load employees");
     } finally {
       setLoading(false);
     }
   };
 
   fetchEmployees();
-}, [page, pageSize]);
+}, []);
+
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;

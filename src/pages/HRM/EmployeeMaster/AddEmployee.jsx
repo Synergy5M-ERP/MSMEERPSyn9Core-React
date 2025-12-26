@@ -1034,17 +1034,27 @@ const handleSave = async () => {
                         onChange={handleEmployeeChange}
                       />
                     </div>
-                    <div className='col'>
-                      <label style={labelStyle}>Blood Group</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        placeholder="AB+"
-                        name="bloodGroup"
-                        value={employeeInfo.bloodGroup}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
+                   <div className="col">
+  <label style={labelStyle}>Blood Group</label>
+  <select
+    style={inputStyle}
+    name="bloodGroup"
+    value={employeeInfo.bloodGroup}
+    onChange={handleEmployeeChange}
+  >
+    <option value="">Select Blood Group</option>
+    <option value="A+">A+</option>
+    <option value="A-">A-</option>
+    <option value="B+">B+</option>
+    <option value="B-">B-</option>
+    <option value="AB+">AB+</option>
+    <option value="AB-">AB-</option>
+    <option value="O+">O+</option>
+    <option value="O-">O-</option>
+  </select>
+</div>
+
+              
                     <div className='col'>
                       <label style={labelStyle}>Email</label>
                       <input

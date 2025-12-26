@@ -12,10 +12,7 @@ namespace SwamiSamarthSyn8.Controllers.Masters
         {
             _context = context;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
+     
 
         [HttpGet]
         [Route("api/AlternateMaster/GetPrimaryItems")]

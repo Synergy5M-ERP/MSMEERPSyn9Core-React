@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;   // <-- change namespace if needed
 using SwamiSamarthSyn8.Models; // <-- change namespace if needed
+using System.Net.Mail;
 
 namespace SwamiSamarthSyn8.Controllers.HRM
 {
@@ -10,10 +12,207 @@ namespace SwamiSamarthSyn8.Controllers.HRM
     public class HrmOrgInfoController : ControllerBase
     {
         private readonly SwamiSamarthDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public HrmOrgInfoController(SwamiSamarthDbContext db)
+        public HrmOrgInfoController(SwamiSamarthDbContext db, IConfiguration configuration)
         {
             _context = db;
+        }
+        [HttpPost("SaveAddEmployee")]
+        public async Task<IActionResult> SaveEmployee([FromForm] Employee empDto)
+        {
+            if (empDto == null)
+                return BadRequest("Invalid employee data");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Generate Employee Code
+                int maxId = await _context.HRM_EmpInfoTbl.MaxAsync(e => (int?)e.Id) ?? 0;
+                int nextId = maxId + 1;
+                string empCode = empDto.Date_Of_Joing != DateTime.MinValue
+                    ? $"{empDto.Date_Of_Joing:yy}/{nextId:D5}"
+                    : "N/A";
+
+                // Map DTO to Entity
+                var empInfo = new HRM_EmpInfoTbl
+                {
+                    Emp_Code = empCode,
+                    Name = empDto.Name,
+                    Surname = empDto.Surname,
+                    Middle_Name = empDto.Middle_Name,
+                    FullName = $"{empDto.Name} {empDto.Surname}",
+                    Gender = empDto.Gender,
+                    DOB = empDto.DOB.HasValue
+    ? DateOnly.FromDateTime(empDto.DOB.Value)
+    : null,
+                    Blood_Group = empDto.Blood_Group,
+                    Email = string.IsNullOrEmpty(empDto.Email) ? "hrm@synergy5m.com" : empDto.Email,
+                    Contact_NO = empDto.Contact_NO,
+                    Department = empDto.Department,
+                    Joining_Designation = empDto.Position,
+                    Country = empDto.SelectedCountryName,
+                    State = empDto.SelectedStateName,
+                    City = empDto.SelectedCityName,
+                    Date_Of_Joing = empDto.Date_Of_Joing.HasValue
+    ? DateOnly.FromDateTime(empDto.Date_Of_Joing.Value)
+    : null,
+                    SalaryStatus = empDto.SalaryStatus,
+                    Status = "Vacant",
+                    Joining_CTC_Breakup = empDto.SelectedCTC == "joining" ? "Joining CTC Breakup" : null,
+                    Current_CTC_Breakup = empDto.SelectedCTC == "current" ? "Current CTC Breakup" : null
+                    // Map other fields as required...
+                };
+
+                // Save Aadhaar/ PAN file to Azure
+                if (empDto.AdhaarFile != null && empDto.AdhaarFile.Length > 0)
+                {
+                    string fileName = await UploadToAzure(empDto.AdhaarFile, empCode, "AadharPanCard");
+                    empInfo.Adhaarcard_PanCard = fileName;
+                }
+
+                _context.HRM_EmpInfoTbl.Add(empInfo);
+
+                // Update department status
+                var department = await _context.HRM_OganizationTbl.FirstOrDefaultAsync(d => d.Department == empDto.Department);
+                if (department != null)
+                {
+                    department.Status = "Filled";
+                    department.Employee_Name = empInfo.FullName;
+                    department.Emp_Code = empCode;
+                }
+
+                // Handle authority
+                var authorityIds = new List<int>();
+                var joiningAuthority = await _context.HRM_AuthorityMatrixTbl.FindAsync(empDto.JoiningAuthorityId);
+                var currentAuthority = await _context.HRM_AuthorityMatrixTbl.FindAsync(empDto.CurrentAuthorityId);
+
+                if (joiningAuthority != null)
+                {
+                    empInfo.Joining_AuthorityLevel = joiningAuthority.AuthorityName;
+                    empInfo.AuthorityCode = joiningAuthority.Authority_code;
+                    authorityIds.Add(empDto.JoiningAuthorityId);
+                }
+
+                if (currentAuthority != null)
+                {
+                    empInfo.Current_Authoritylevel = currentAuthority.AuthorityName;
+                    empInfo.AuthorityCode = currentAuthority.Authority_code;
+                    authorityIds.Add(empDto.CurrentAuthorityId);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Update User Authority and send mail
+                await UpdateUserAuthority(empInfo.Email, authorityIds, empInfo.Emp_Code);
+                SendMail(empInfo.Email, empInfo.Emp_Code, empInfo.FullName);
+
+                return Ok(new { message = "Employee saved successfully", Emp_Code = empInfo.Emp_Code });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Error saving employee: " + ex.Message);
+            }
+        }
+
+        private async Task<string> UploadToAzure(IFormFile file, string empCode, string type)
+        {
+            string result = "";
+            string connectionString = _configuration.GetValue<string>("StorageConnectionString");
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            var container = blobServiceClient.GetBlobContainerClient("digitalmarketingtool");
+            await container.CreateIfNotExistsAsync();
+            container.SetAccessPolicy(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+
+            string fileName = $"{DateTime.Now:yyyyMMddHHmmss}-{type}{Path.GetExtension(file.FileName)}";
+            BlobClient blobClient = container.GetBlobClient($"{empCode}/{fileName}");
+            using var stream = file.OpenReadStream();
+            await blobClient.UploadAsync(stream, overwrite: true);
+
+            result = fileName;
+            return result;
+        }
+
+        private async Task UpdateUserAuthority(string email, List<int> authorityIds, string empCode)
+        {
+            var user = await _context.HRM_UserTbl.FirstOrDefaultAsync(u => u.username == email);
+            if (user == null)
+            {
+                user = new HRM_UserTbl
+                {
+                    username = email,
+                    Emp_Code = empCode
+                };
+                _context.HRM_UserTbl.Add(user);
+            }
+
+            user.CHIEF_ADMIN = false;
+            user.SUPERADMIN = false;
+            user.DEPUTY_SUPERADMIN = false;
+            user.ADMIN = false;
+            user.DEPUTY_ADMIN = false;
+            user.USER = false;
+
+            var rolePriority = new Dictionary<int, string>
+            {
+                {1,"CHIEF_ADMIN"},{2,"SUPERADMIN"},{3,"DEPUTY_SUPERADMIN"},
+                {4,"ADMIN"},{5,"DEPUTY_ADMIN"},{6,"USER"}
+            };
+
+            string selectedRole = authorityIds.OrderBy(id => id)
+                                             .Select(id => rolePriority.ContainsKey(id) ? rolePriority[id] : null)
+                                             .FirstOrDefault(r => r != null);
+
+            switch (selectedRole)
+            {
+                case "CHIEF_ADMIN": user.CHIEF_ADMIN = true; break;
+                case "SUPERADMIN": user.SUPERADMIN = true; break;
+                case "DEPUTY_SUPERADMIN": user.DEPUTY_SUPERADMIN = true; break;
+                case "ADMIN": user.ADMIN = true; break;
+                case "DEPUTY_ADMIN": user.DEPUTY_ADMIN = true; break;
+                case "USER": user.USER = true; break;
+            }
+
+            user.UserRole = selectedRole;
+            await _context.SaveChangesAsync();
+        }
+
+        private void SendMail(string email, string empCode, string fullName)
+        {
+            try
+            {
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    EnableSsl = true,
+                    Credentials = new System.Net.NetworkCredential("hrm@synergy5m.com", "eksv lnrw smpl dsqd")
+                };
+
+                MailMessage mail = new MailMessage
+                {
+                    From = new MailAddress("hrm@synergy5m.com"),
+                    Subject = "Welcome to Synergy5M - Create Your Password",
+                    IsBodyHtml = true
+                };
+                mail.To.Add(email);
+                mail.CC.Add("ab@synergy5m.com");
+
+                string link = $"https://synergy5m-swamisamartherp8.azurewebsites.net/OrgnizationMatrix/EmployeeRegistrationForm?Emp_Code={empCode}";
+                mail.Body = $"<p>Mr/Mrs: <strong>{fullName}</strong></p>" +
+                            $"<p>Your Employee Code is: <strong>{empCode}</strong></p>" +
+                            $"<p>Click here to create password: <a href='{link}'>Create Your Password</a></p>";
+
+                smtp.Send(mail);
+            }
+            catch { /* Handle email errors */ }
+        }
+    
+    [HttpGet("GetAllEmployees")]
+        public async Task<IActionResult> GetAllEmployees()
+        {
+            var employees = await _context.HRM_EmpInfoTbl.ToListAsync();
+            return Ok(employees);
         }
 
         // ======================================================
@@ -139,6 +338,111 @@ namespace SwamiSamarthSyn8.Controllers.HRM
 
             _context.SaveChanges();
             return Ok(new { message = "Matrix Updated Successfully" });
+        }
+        // =========================
+        // 1️⃣ GET ALL DEPARTMENTS
+        // =========================
+        [HttpGet("departments")]
+        public async Task<IActionResult> GetDepartments()
+        {
+            var departments = await _context.HRM_OganizationTbl
+                .Where(x => x.Department != null)
+                .Select(x => new
+                {
+                    id = x.Department,
+                    departmentName = x.Department
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(departments);
+        }
+        [HttpGet("vacant-designations")]
+        public async Task<IActionResult> GetVacantDesignationsByDepartment(
+      [FromQuery] string department)
+        {
+            if (string.IsNullOrWhiteSpace(department))
+                return BadRequest("Department is required");
+
+            department = department.Trim();
+
+            var designations = await _context.HRM_OganizationTbl
+                .Where(x =>
+                    x.IsActive == true &&
+                    x.Department != null &&
+                    x.Department.Trim() == department &&
+                    x.Status == "Vacant" &&          // ✅ IMPORTANT
+                    x.Position != null
+                )
+                .Select(x => new
+                {
+                    id = x.Position_Code,
+                    designationName = x.Position
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(designations);
+        }
+
+
+
+        // =========================
+        // 3️⃣ GET DEPARTMENT CODE
+        // =========================
+        [HttpGet("department-code")]
+        public async Task<IActionResult> GetDepartmentCode(
+            [FromQuery] string department)
+        {
+            var dept = await _context.HRM_OganizationTbl
+                .FirstOrDefaultAsync(x => x.Department == department);
+
+            if (dept == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                departmentCode = dept.Department_Code,
+                status = dept.Status
+            });
+        }
+
+        // =========================
+        // 4️⃣ GET POSITION CODE
+        // =========================
+        [HttpGet("position-code")]
+        public async Task<IActionResult> GetPositionCode(
+            [FromQuery] string position)
+        {
+            var pos = await _context.HRM_OganizationTbl
+                .FirstOrDefaultAsync(x => x.Position == position);
+
+            if (pos == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                positionCode = pos.Position_Code
+            });
+        }
+
+        // =========================
+        // 5️⃣ UPDATE POSITION STATUS
+        // =========================
+        [HttpPost("update-position-status")]
+        public async Task<IActionResult> UpdatePositionStatus(
+            [FromBody] string positionCode)
+        {
+            var pos = await _context.HRM_OganizationTbl
+                .FirstOrDefaultAsync(x => x.Position_Code == positionCode);
+
+            if (pos == null)
+                return NotFound();
+
+            pos.Status = "Filled";
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
         }
     }
 }

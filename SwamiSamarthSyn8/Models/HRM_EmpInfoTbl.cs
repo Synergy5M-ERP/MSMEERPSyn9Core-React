@@ -64,11 +64,8 @@ public partial class HRM_EmpInfoTbl
     public string? Joining_CTC_Breakup { get; set; }
 
     [StringLength(50)]
-    public string? Password { get; set; }
+   
 
-    public string? Position_Code { get; set; }
-
-    [StringLength(50)]
     public string? DepartmentCode { get; set; }
 
     [StringLength(50)]

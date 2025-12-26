@@ -242,7 +242,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             {
                 _logger.LogInformation("Saving GRN for VendorId: {VendorId}", request.VendorId);
 
-                var vendor = _context.Potential_Vendor.FirstOrDefault(v => v.Id == request.VendorId);
+                var vendor = _context.MMM_GRNTbl.FirstOrDefault(v => v.Id == request.VendorId);
                 if (vendor == null)
                 {
                     _logger.LogWarning("Vendor not found: {VendorId}", request.VendorId);

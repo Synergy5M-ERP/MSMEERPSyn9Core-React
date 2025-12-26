@@ -7,7 +7,7 @@
         public int VendorId { get; set; }
         public int AccountVoucherTypeId { get; set; }
         public DateTime VoucherDate { get; set; }
-        public string ReferenceNo { get; set; }
+        public int ReferenceNo { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime PaymentDueDate { get; set; }
         public int PaymentModeId { get; set; }

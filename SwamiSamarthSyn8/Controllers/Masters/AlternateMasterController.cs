@@ -12,7 +12,7 @@ namespace SwamiSamarthSyn8.Controllers.Masters
         {
             _context = context;
         }
-     
+       
 
         [HttpGet]
         [Route("api/AlternateMaster/GetPrimaryItems")]

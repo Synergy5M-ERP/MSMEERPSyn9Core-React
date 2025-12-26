@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import Footer from '../../components/Footer';
 import QualitySidebar from './QualitySidebar';
 import QualityDashboard from './QualityDashboard';
-import InwardQC from './InwardQC';
-import CustomizedOutwardQC from './CustomizedOutwardQC';
+// import InwardQC from './InwardQC';
+// import CustomizedOutwardQC from './CustomizedOutwardQC';
 import GenericOutwardQC from './GenericOutwardQC';
 import SemiFinishQC from './SemiFinishQC';
 import TDSMaster from './TDS';
 import TestingReport from './TestingReport';
+import CompleteDailyGRN from './CompleteDailyGRN';
+import FinishcompleteDailyProduction from './FinishcompleteDailyProduction';
 
 
 
@@ -31,10 +33,10 @@ const QualityModule = () => {
         {/* Main Content area */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           {activePage === 'Dashboard' && <QualityDashboard />}
-       {activePage ==="inwardQC" && <InwardQC/>}
-       {activePage ==="customized" && <CustomizedOutwardQC/>}
+       {activePage ==="inwardQC" && <CompleteDailyGRN/>}
+       {activePage ==="customized" && <FinishcompleteDailyProduction/>}
        {activePage ==="Generic" && <GenericOutwardQC/>}
-        {activePage ==="SemiFInishQC" && <SemiFinishQC/>}
+        {activePage ==="SemiFinishQC" && <SemiFinishQC/>}
          {activePage ==="TDS" && <TDSMaster/>}
          {activePage ==="TestingReport" && <TestingReport/>}
           {/* Add more conditions for other pages */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 
-const OutwardQCReport = () => {
+const FinishcompleteDailyProduction = () => {
   // =================== STATE ===================
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,11 +9,53 @@ const OutwardQCReport = () => {
 
   const [showCoaModal, setShowCoaModal] = useState(false);
   const [coaData, setCoaData] = useState(null);
-
   const [parameterRows, setParameterRows] = useState([]);
 
-  // Track submitted plan IDs to disable buttons
-  const [submittedPlanIds, setSubmittedPlanIds] = useState([]);
+  // Separate states
+  const [submittedRejectionPlanIds, setSubmittedRejectionPlanIds] = useState([]);
+  const [submittedCOAPlanIds, setSubmittedCOAPlanIds] = useState([]);
+
+  const [savingCOA, setSavingCOA] = useState(false);
+
+const [searchTerm, setSearchTerm] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
+const [rowsPerPage, setRowsPerPage] = useState(10);
+
+// Flatten all customer planDetails into individual rows
+const flattenedPlans = data.flatMap(cust =>
+  cust.planDetails?.map(plan => ({ cust, plan })) || []
+);
+
+// Filter flattened rows by search term
+const filteredRows = flattenedPlans.filter(({ cust, plan }) => {
+  const searchStr = `
+    ${cust.buyerName || ""} 
+    ${cust.soNumber || ""} 
+    ${cust.itemName || ""} 
+    ${cust.grade || ""} 
+    ${plan.batchNo || ""} 
+    ${plan.shift || ""} 
+    ${plan.date ? plan.date.substring(0, 10) : ""} 
+    ${plan.planDate ? plan.planDate.substring(0, 10) : ""} 
+    ${cust.itemCode || ""}
+  `.toLowerCase();
+
+  return searchStr.includes(searchTerm.toLowerCase());
+});
+
+const indexOfLastRow = currentPage * rowsPerPage;
+const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+const currentRows = filteredRows.slice(indexOfFirstRow, indexOfLastRow);
+
+const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+
+  const searchInputStyle = { padding: 6, width: 200 };
+const controlBarStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    flexWrap: "wrap",
+  };
 
   // =================== HELPERS ===================
   const createEmptyParamRow = (grade = "") => ({
@@ -74,17 +116,37 @@ const OutwardQCReport = () => {
 
   // =================== FETCH SUBMITTED PLAN IDS ===================
   useEffect(() => {
+    // fetch submitted rejection plans
     fetch(API_ENDPOINTS.SubmitButtonDisable)
       .then((res) => res.json())
       .then((resp) => {
         if (resp.success && Array.isArray(resp.submitted)) {
-          setSubmittedPlanIds(resp.submitted);
+          setSubmittedRejectionPlanIds(resp.submitted);
         }
       })
-      .catch((err) => {
-        console.error("Error fetching submitted plans", err);
-      });
+      .catch((err) => console.error("Error fetching submitted plans", err));
+
+    // fetch submitted COA plans
+    fetch(API_ENDPOINTS.CheckButton)
+      .then((res) => res.json())
+      .then((resp) => {
+        if (resp.success && Array.isArray(resp.submitted)) {
+          setSubmittedCOAPlanIds(resp.submitted);
+        }
+      })
+      .catch((err) => console.error("Error fetching COA plans", err));
   }, []);
+
+  const fetchSubmittedCOAPlans = () => {
+    fetch(API_ENDPOINTS.CheckButton)
+      .then((res) => res.json())
+      .then((resp) => {
+        if (resp.success && Array.isArray(resp.submitted)) {
+          setSubmittedCOAPlanIds(resp.submitted); // update COA state only
+        }
+      })
+      .catch((err) => console.error("Error fetching submitted COA plans", err));
+  };
 
   // =================== HANDLE REJECTION CHANGE ===================
   const handleRejectionChange = (custIndex, planIndex, value) => {
@@ -114,7 +176,7 @@ const OutwardQCReport = () => {
           CustFinProdId: cust.custFinProdId,
           Shift: plan.shift,
           ActualQty: plan.actualQty,
-          RejectionQty: plan.rejectionQty ?? 0, // submit 0 if null
+          RejectionQty: plan.rejectionQty ?? 0,
           QtyToWH: plan.QtyToWH ?? 0,
           BatchNo: plan.batchNo,
         },
@@ -130,8 +192,8 @@ const OutwardQCReport = () => {
       .then((res) => res.json())
       .then((res) => {
         if (res.success) {
-          alert("Submitted successfully");
-          setSubmittedPlanIds((prev) => [...prev, plan.planId]);
+          alert("Rejected Qty Submitted successfully");
+          setSubmittedRejectionPlanIds((prev) => [...prev, plan.planId]);
         } else {
           alert(res.message || "Submit failed");
         }
@@ -161,22 +223,139 @@ const OutwardQCReport = () => {
     setShowCoaModal(true);
   };
 
+  const handleSaveCOA = () => {
+    if (savingCOA) return;
+    if (!coaData || parameterRows.length === 0) {
+      alert("Please add COA parameter values");
+      return;
+    }
+
+    setSavingCOA(true);
+
+    const records = parameterRows.map((row) => ({
+      PlanId: coaData.planId,
+      ProdPlanDate: coaData.prodPlanDate
+        ? new Date(coaData.prodPlanDate).toISOString()
+        : new Date().toISOString(),
+      PlanDate: coaData.planDate
+        ? new Date(coaData.planDate).toISOString()
+        : new Date().toISOString(),
+      BuyerName: coaData.buyerName || "",
+      SONo: coaData.soNumber || "",
+      ItemName: coaData.itemName || "",
+      ItemCode: coaData.itemCode || "",
+      Grade: coaData.grade || "",
+      MachineNo: coaData.machineNo || "",
+      OperatorName: coaData.operator || "",
+      Shift: coaData.shift || "",
+      BatchNo: coaData.batchNo || "",
+      PlanQty: Number(coaData.planQty) || 0,
+      ActualQty: Number(coaData.actualQty) || 0,
+      Width: row.width ? Number(row.width) : null,
+      Length: row.length ? Number(row.length) : null,
+      Thickness: row.thickness ? Number(row.thickness) : null,
+      Height: row.height ? Number(row.height) : null,
+      PartNumber: row.partNumber || "",
+      Weight: row.weight ? Number(row.weight) : null,
+      WeightperCover: row.weightPerCover ? Number(row.weightPerCover) : null,
+      PrintingQuality: row.printingQuality || "",
+      Color: row.color || "",
+      VciTest: row.vciTest || "",
+      Dust: row.dust || "",
+      Remark: row.remark || "",
+      MoistureFree: row.moistureFree || "",
+    }));
+
+    fetch(API_ENDPOINTS.SaveCOARows, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(records),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        return text ? JSON.parse(text) : {};
+      })
+      .then((res) => {
+        if (res.success) {
+          alert(res.message);
+          fetchSubmittedCOAPlans(); // update COA tick only
+          setShowCoaModal(false);
+          setParameterRows([]);
+        } else {
+          alert(res.message || "COA save failed");
+        }
+      })
+      .catch((err) => {
+        console.error("Save COA error:", err);
+        alert("Error saving COA (Check backend logs)");
+      })
+      .finally(() => setSavingCOA(false));
+  };
+{/* SEARCH BOX */}
+<div className="d-flex justify-content-end my-2">
+  <input
+    type="text"
+    className="form-control"
+    style={{ width: "220px" }}
+    placeholder="Search..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+    }}
+  />
+</div>
+
   if (loading) return <p className="text-center mt-4">Loading...</p>;
   if (error) return <p className="text-danger text-center">{error}</p>;
 
-  // =================== JSX ===================
-  return (
-    <div className="container-fluid mt-3">
-      {/* ===================== TABLE ===================== */}
+        return (
       <div className="card shadow-lg">
-        <div className="card-header text-white" style={{ backgroundColor: "#1f3c88" }}>
-          <h5 className="mb-0">📊 Outward QC Report</h5>
+
+        {/* HEADER */}
+        <div
+          className="card-header text-white text-center"
+          style={{ backgroundColor: "#1f3c88" }}
+        >
+          <h5 className="mb-0">📊 OUTWARD QC REPORT</h5>
         </div>
 
+        {/* BODY */}
+        <div className="card-body">
+
+          {/* CONTROLS */}
+          <div style={controlBarStyle}>
+            <div>
+              Show{" "}
+              <select
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                {[5, 10, 50, 100].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>{" "}
+              entries
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={searchInputStyle}
+            />
+          </div>
         <div className="card-body p-0">
           <div className="table-responsive">
             <table className="table table-bordered table-hover align-middle">
-              <thead className="text-white text-center" style={{ backgroundColor: "#1f3c88" }}>
+              <thead className="text-white text-center" style={{ backgroundColor: "#29417eff" }}>
                 <tr>
                   <th>Prod Plan Date</th>
                   <th>Buyer Name<br></br>SO Number</th>
@@ -196,57 +375,99 @@ const OutwardQCReport = () => {
               </thead>
 
               <tbody>
-                {data.map((cust, cIdx) =>
-                  cust.planDetails?.map((plan, pIdx) => (
-                    <tr key={`${cIdx}-${pIdx}`}>
-                      <td>{plan.date?.substring(0, 10)}</td>
-                      <td>{cust.buyerName}<div>{cust.soNumber}</div></td>
-                      <td>{cust.itemName}<div>{cust.grade}</div></td>
-                      <td>{cust.machineNumber}<div>{plan.opName}</div></td>
-                      <td>{plan.planDate?.substring(0, 10)}</td>
-                      <td>{plan.shift}<div>{plan.batchNo}</div></td>
-                      <td>{cust.itemCode}</td>
-                      <td className="text-end">{plan.planQty}</td>
-                      <td className="text-end">{plan.actualQty ?? 0}</td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control form-control-sm text-end"
-                          value={plan.rejectionQty ?? ""}
-                          onChange={(e) => handleRejectionChange(cIdx, pIdx, e.target.value)}
-                        />
-                      </td>
-                      <td className="text-end">{plan.QtyToWH}</td>
-                      <td className="text-center">
-                        <button
-                          className="btn btn-sm"
-                          style={{ backgroundColor: "darkcyan", color: "white" }}
-                          onClick={() => handleCreateCoA(cust, plan)}
-                        >
-                          Create COA
-                        </button>
-                      </td>
-                      <td className="text-center">
-                        <input type="checkbox" />
-                      </td>
-                      <td className="text-center">
-                        <button
-                          className={`btn btn-sm ${
-                            submittedPlanIds.includes(plan.planId)
-                              ? "btn-secondary"
-                              : "btn-success"
-                          }`}
-                          disabled={submittedPlanIds.includes(plan.planId)}
-                          onClick={() => handleSubmitRow(cust, plan)}
-                        >
-                          {submittedPlanIds.includes(plan.planId) ? "Submitted" : "Submit"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+               {currentRows.map(({ cust, plan }, idx) => (
+  <tr key={idx}>
+    <td>{plan.date?.substring(0, 10)}</td>
+    <td>{cust.buyerName}<div>{cust.soNumber}</div></td>
+    <td>{cust.itemName}<div>{cust.grade}</div></td>
+    <td>{cust.machineNumber}<div>{plan.opName}</div></td>
+    <td>{plan.planDate?.substring(0, 10)}</td>
+    <td>{plan.shift}<div>{plan.batchNo}</div></td>
+    <td>{cust.itemCode}</td>
+    <td className="text-end">{plan.planQty}</td>
+    <td className="text-end">{plan.actualQty ?? 0}</td>
+    <td>
+      <input
+        type="number"
+        className="form-control form-control-sm text-end"
+        value={plan.rejectionQty ?? ""}
+        onChange={(e) => handleRejectionChange(data.indexOf(cust), cust.planDetails.indexOf(plan), e.target.value)}
+      />
+    </td>
+    <td className="text-end">{plan.QtyToWH}</td>
+    <td className="text-center">
+      {submittedCOAPlanIds.includes(plan.planId) ? (
+        <button className="btn btn-sm btn-success" disabled>✔</button>
+      ) : (
+        <button
+          className="btn btn-sm"
+          style={{ backgroundColor: "darkcyan", color: "white" }}
+          onClick={() => handleCreateCoA(cust, plan)}
+        >
+          Create COA
+        </button>
+      )}
+    </td>
+    <td className="text-center">
+      <input type="checkbox" />
+    </td>
+    <td className="text-center">
+      <button
+        className={`btn btn-sm ${
+          submittedRejectionPlanIds.includes(plan.planId)
+            ? "btn-secondary"
+            : "btn-success"
+        }`}
+        disabled={submittedRejectionPlanIds.includes(plan.planId)}
+        onClick={() => handleSubmitRow(cust, plan)}
+      >
+        {submittedRejectionPlanIds.includes(plan.planId) ? "Submitted" : "Submit"}
+      </button>
+    </td>
+  </tr>
+))}
+
               </tbody>
             </table>
+            {/* PAGINATION FOOTER */}
+<div className="d-flex justify-content-center align-items-center gap-2 my-3">
+
+  {/* PREV BUTTON */}
+  <button
+    className="btn btn-outline-secondary btn-sm"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage(prev => prev - 1)}
+  >
+    ⬅ Prev
+  </button>
+
+  {/* PAGE NUMBERS */}
+  {[...Array(totalPages)].map((_, index) => {
+    const page = index + 1;
+    return (
+      <button
+        key={page}
+        className={`btn btn-sm ${
+          page === currentPage ? "btn-primary" : "btn-outline-secondary"
+        }`}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </button>
+    );
+  })}
+
+  {/* NEXT BUTTON */}
+  <button
+    className="btn btn-outline-secondary btn-sm"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage(prev => prev + 1)}
+  >
+    Next ➡
+  </button>
+
+</div>
+
           </div>
         </div>
       </div>
@@ -358,16 +579,22 @@ const OutwardQCReport = () => {
 
               {/* FOOTER */}
               <div className="modal-footer justify-content-center">
-                <button className="btn btn-success">Save COA</button>
+                <button
+                  className="btn btn-success"
+                  onClick={handleSaveCOA}
+                  disabled={savingCOA}
+                >
+                  {savingCOA ? "Saving..." : "Save COA"}
+                </button>
               </div>
 
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
 
-export default OutwardQCReport;
+export default FinishcompleteDailyProduction ;
+

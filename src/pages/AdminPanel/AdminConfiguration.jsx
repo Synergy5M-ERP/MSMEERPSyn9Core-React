@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 //yy//
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-
+import RegisterPage from "../AdminPanel/RegisterPage"
 import AdminSidebar from './AdminSidebar';
-import RegisterPage from '../../pages/AdminPanel/RegisterPage';
+
 import UserApproval from './UserApproval';
 
 import AdminDashboard from './AdminDashboard';

@@ -1314,6 +1314,7 @@ p {
     flex: 1 1 100%;
   }
 }
+
 :root {
   --bs-bg: #f3f4f6;
   --bs-card-bg: #ffffff;
@@ -1707,3 +1708,4 @@ body {
 Form.Label{
   color:rgb(34, 168, 123);
 }
+

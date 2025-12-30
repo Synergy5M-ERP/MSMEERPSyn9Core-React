@@ -1,10 +1,7 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models.Accounts;
-using System.Linq;
-using System.Reflection.PortableExecutable;
 
 namespace SwamiSamarthSyn8.Controllers.Accounts
 {
@@ -75,6 +72,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         {
             try
             {
+                // 1️⃣ Invoice Header
                 var header = await _context.SDM_Inv_VendTbls
                     .Where(i => i.supplied_id == buyerId)
                     .Select(i => new
@@ -89,54 +87,46 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     })
                     .FirstOrDefaultAsync();
 
-                var rawInvoices = await _context.SDM_InvItemTbls
-                    .Where(i => i.supplied_id_id == buyerId)
-                    .Select(i => new
-                    {
-                        itemName = i.ProductDiscription ?? "",
-                        itemCode = i.ItemCode ?? "",
-                        itemGrade = i.Grade ?? "",
-                        approvedQty = i.Quantity ?? 0,
-                        rejectedQty = i.RejectedQty ?? 0,
-                        ratePerUnit = i.RatePerUnit ?? 0,
-                        taxRate = i.Tax_Rate ?? "",
-                        taxAmount = i.total_amount ?? 0,
-                        totalItemValue = i.Total_Item_Value ?? 0
-                    })
-                    .ToListAsync();
+                // 2️⃣ AccountSaleId
+                var accountSaleId = await _context.AccountSale
+                    .Where(s => s.BuyerId == buyerId)
+                    .Select(s => s.AccountSaleId)
+                    .FirstOrDefaultAsync();
 
-                var items = rawInvoices.Select(i =>
-                {
-                    decimal cgst = 0, sgst = 0, igst = 0;
+                // 3️⃣ Invoice Items + Checked Items (LEFT JOIN)
+                var items = await (
+                    from item in _context.SDM_InvItemTbls
+                    where item.supplied_id_id == buyerId
 
-                    if (!string.IsNullOrEmpty(i.taxRate))
+                    join saleDetail in _context.AccountSaleDetail
+                        .Where(x => x.AccountSaleId == accountSaleId)
+                        on item.ItemCode equals saleDetail.ItemCode
+                        into saleGroup
+
+                    from sale in saleGroup.DefaultIfEmpty()
+
+                    select new
                     {
-                        foreach (var tax in i.taxRate.Split(';'))
-                        {
-                            if (tax.Contains("CGST"))
-                                decimal.TryParse(tax.Replace("CGST", "").Replace("%", ""), out cgst);
-                            else if (tax.Contains("SGST"))
-                                decimal.TryParse(tax.Replace("SGST", "").Replace("%", ""), out sgst);
-                            else if (tax.Contains("IGST"))
-                                decimal.TryParse(tax.Replace("IGST", "").Replace("%", ""), out igst);
-                        }
+                        itemName = item.ProductDiscription ?? "",
+                        itemCode = item.ItemCode ?? "",
+                        itemGrade = sale != null ? sale.Grade : item.Grade ?? "",
+
+                        approvedQty = sale != null ? sale.ApprovedQty : item.Quantity ?? 0m,
+                        rejectedQty = sale != null ? sale.DamagedQty : item.RejectedQty ?? 0m,
+
+                        ratePerUnit = sale != null ? sale.PricePerUnit : item.RatePerUnit ?? 0m,
+
+                        cgst = sale != null ? sale.CGST : 0m,
+                        sgst = sale != null ? sale.SGST : 0m,
+                        igst = sale != null ? sale.IGST : 0m,
+
+                        taxAmount = sale != null ? sale.TotalTax : item.total_amount ?? 0m,
+                        totalItemValue = sale != null ? sale.TotalAmount : item.Total_Item_Value ?? 0m,
+
+                        isChecked = sale != null,
+                        isApproved = sale != null && sale.ApprovedSale == true
                     }
-
-                    return new
-                    {
-                        i.itemName,
-                        i.itemCode,
-                        i.itemGrade,
-                        i.rejectedQty,
-                        i.approvedQty,
-                        i.ratePerUnit,
-                        cgst,
-                        sgst,
-                        igst,
-                        i.taxAmount,
-                        i.totalItemValue
-                    };
-                });
+                ).ToListAsync();
 
                 return Ok(new
                 {
@@ -153,6 +143,92 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+
+        //[HttpGet("GetInvoiceItemDetails")]
+        //public async Task<IActionResult> GetInvoiceItemDetails(int buyerId)
+        //{
+        //    try
+        //    {
+        //        var header = await _context.SDM_Inv_VendTbls
+        //            .Where(i => i.supplied_id == buyerId)
+        //            .Select(i => new
+        //            {
+        //                invoiceNumber = i.invoice_number,
+        //                invoiceDate = i.invoice_issue_date,
+        //                paymentDueDate = i.due_date,
+        //                poNumber = i.invoice_po_no,
+        //                poDate = i.invoice_po_date,
+        //                vehicleNo = i.vehicle_no,
+        //                transporterName = i.transporters_name
+        //            })
+        //            .FirstOrDefaultAsync();
+
+
+        //        var rawInvoices = await _context.SDM_InvItemTbls
+        //            .Where(i => i.supplied_id_id == buyerId)
+        //            .Select(i => new
+        //            {
+        //                itemName = i.ProductDiscription ?? "",
+        //                itemCode = i.ItemCode ?? "",
+        //                itemGrade = i.Grade ?? "",
+        //                approvedQty = i.Quantity ?? 0,
+        //                rejectedQty = i.RejectedQty ?? 0,
+        //                ratePerUnit = i.RatePerUnit ?? 0,
+        //                taxRate = i.Tax_Rate ?? "",
+        //                taxAmount = i.total_amount ?? 0,
+        //                totalItemValue = i.Total_Item_Value ?? 0
+        //            })
+        //            .ToListAsync();
+
+        //        var items = rawInvoices.Select(i =>
+        //        {
+        //            decimal cgst = 0, sgst = 0, igst = 0;
+
+        //            if (!string.IsNullOrEmpty(i.taxRate))
+        //            {
+        //                foreach (var tax in i.taxRate.Split(';'))
+        //                {
+        //                    if (tax.Contains("CGST"))
+        //                        decimal.TryParse(tax.Replace("CGST", "").Replace("%", ""), out cgst);
+        //                    else if (tax.Contains("SGST"))
+        //                        decimal.TryParse(tax.Replace("SGST", "").Replace("%", ""), out sgst);
+        //                    else if (tax.Contains("IGST"))
+        //                        decimal.TryParse(tax.Replace("IGST", "").Replace("%", ""), out igst);
+        //                }
+        //            }
+
+        //            return new
+        //            {
+        //                i.itemName,
+        //                i.itemCode,
+        //                i.itemGrade,
+        //                i.rejectedQty,
+        //                i.approvedQty,
+        //                i.ratePerUnit,
+        //                cgst,
+        //                sgst,
+        //                igst,
+        //                i.taxAmount,
+        //                i.totalItemValue
+        //            };
+        //        });
+
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            data = new
+        //            {
+        //                header,
+        //                items
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { success = false, message = ex.Message });
+        //    }
+        //}
 
         [HttpPost("AccountSale")]
         public async Task<IActionResult> AddAccountSale([FromBody] AccountSale model)
@@ -334,9 +410,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         [HttpPost("ApprovedAccountSale")]
         public async Task<IActionResult> ApprovedSale([FromQuery] int accountSaleId, [FromBody] AccountSaleDetails request)
         {
-            Console.WriteLine($"Received accountSaleId={accountSaleId}");
-            Console.WriteLine($"ItemIds: {string.Join(",", request.ItemIds)}");
-
             if (request?.ItemIds == null || !request.ItemIds.Any())
                 return BadRequest("No item IDs provided");
 
@@ -346,17 +419,12 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 .Where(x => x.AccountSaleId == accountSaleId && itemIds.Contains(x.AccountSaleDetailedId))
                 .ToListAsync();
 
-            Console.WriteLine($"Found {items.Count} matching items");
-
             foreach (var item in items)
             {
-                Console.WriteLine($"Updating Item {item.AccountSaleDetailedId} ApprovedSale: {item.ApprovedSale} -> true");
                 item.ApprovedSale = true;
             }
 
             await _context.SaveChangesAsync();
-            Console.WriteLine("SaveChanges completed");
-
             return Ok(new { success = true });
         }
 

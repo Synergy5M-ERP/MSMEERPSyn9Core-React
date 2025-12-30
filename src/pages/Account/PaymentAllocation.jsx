@@ -1,6 +1,9 @@
-// PaymentAllocation.jsx
+
+
 import React, { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
@@ -8,77 +11,205 @@ const PaymentAllocation = () => {
   const [date, setDate] = useState(getToday());
   const [ledgerId, setLedgerId] = useState("");
   const [actualBal, setActualBal] = useState(0);
+  const [baseActualBal, setBaseActualBal] = useState(0);
+  const [selectedVendor, setSelectedVendor] = useState("");
 
   const [ledgerOptions, setLedgerOptions] = useState([]);
-
   const [rows, setRows] = useState([]);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ---------- 1. Load ledgers ONCE ----------
+  // ✅ Group rows by vendor for display
+  const groupedRows = rows.reduce((acc, row) => {
+    if (!acc[row.vendorName]) acc[row.vendorName] = [];
+    acc[row.vendorName].push(row);
+    return acc;
+  }, {});
+
+  // Load ledgers on mount
   useEffect(() => {
     const loadLedgers = async () => {
       try {
         const res = await fetch(API_ENDPOINTS.Ledger);
         if (!res.ok) throw new Error("Failed to load ledgers");
-        const data = await res.json();
-        setLedgerOptions(data);
 
-        // optional auto-select FIRST ledger and its closingBal
-        if (data.length > 0) {
+        const data = await res.json();
+        setLedgerOptions(data || []);
+
+        if (data && data.length > 0) {
           const first = data[0];
+          const bal = Number(first.closingBal || 0);
           setLedgerId(first.accountLedgerId.toString());
-          setActualBal(first.closingBal || 0);
+          setBaseActualBal(bal);
+          setActualBal(bal);
         }
       } catch (err) {
         console.error(err);
+        toast.error("Unable to load ledger list.");
         setError("Unable to load ledger list.");
       }
     };
 
     loadLedgers();
-  }, []); // ✅ DO NOT add ledgerId, actualBal, ledgerOptions here
+  }, []);
 
-  // ---------- 2. Load payments with pagination ----------
+  // Load approved GRNs - Updated for your backend structure
   useEffect(() => {
-    if (!ledgerId || !date) return;
-
     const fetchPayments = async () => {
       setLoading(true);
       setError("");
 
       try {
         const params = new URLSearchParams({
-          ledgerId,
-          date,
-          actualBal: actualBal.toString(),
+          ...(selectedVendor ? { vendor: selectedVendor } : {}),
           page: page.toString(),
           pageSize: pageSize.toString()
         });
 
-        const res = await fetch(
-          `${API_ENDPOINTS.PaymentAllocations}?${params.toString()}`
-        );
-        if (!res.ok) throw new Error("Failed to load payment allocations");
+        const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params}`);
 
-        const data = await res.json(); // { items, totalCount }
-        setRows(data.items || []);
-        setTotalCount(data.totalCount || 0);
+        if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
+
+        const data = await res.json();
+        console.log('API Response:', data);
+
+        const items = data.data || [];
+        console.log('Items count:', items.length);
+
+        // ✅ Sort DESC by date (newest first)
+        const sortedItems = items.sort((a, b) =>
+          new Date(b.grnDate) - new Date(a.grnDate)
+        );
+
+        const mapped = sortedItems.map((r) => {
+          const totalAmount = Number(r.TotalAmount || r.totalAmount || r.grandTotal || 0);
+          const paidAmount = Number(r.paidAmount || 0);
+          const balanceAmount = totalAmount - paidAmount;
+
+          return {
+            accountGRNId: r.AccountGRNId || r.accountGRNId,
+            grnNumber: r.GRNNumber || r.grnNumber,
+            grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
+            vendorName: r.Description || r.VendorName || r.vendorName,
+            poNumber: r.poNumber || r.PONumber || '',
+            poDate: r.poDate || r.PODate || '',
+            invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
+            invoiceDate: r.invoiceDate || r.InvoiceDate || '',
+            cgst: Number(r.CGST || r.cgst || 0),
+            sgst: Number(r.SGST || r.sgst || 0),
+            igst: Number(r.IGST || r.igst || 0),
+            totalAmount,
+            paidAmount,
+            balanceAmount,
+            isChecked: balanceAmount === 0
+          };
+        });
+
+        setRows(mapped);
+        setTotalCount(data.totalCount || items.length);
+
+        const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
+        setActualBal(Math.max(0, baseActualBal - totalPaid));
+
       } catch (err) {
-        console.error(err);
-        setError("Unable to load payment allocations.");
+        console.error('Fetch error:', err);
+        toast.error("Unable to load approved GRNs.");
+        setError("Unable to load approved GRNs.");
+        setRows([]);
+        setTotalCount(0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPayments();
-  }, [ledgerId, date, actualBal, page, pageSize]); // ✅ DO NOT include rows or totalCount
+  }, [page, pageSize, selectedVendor, baseActualBal]);
 
-  // ---------- 3. Pagination ----------
+  // ✅ REAL-TIME balance validation
+  const handlePaidChange = (accountGRNId, value) => {
+    const numeric = Number(value);
+    const paidVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
+
+    setRows(prevRows => {
+      const currentTotalPaid = prevRows.reduce((sum, row) =>
+        row.accountGRNId === accountGRNId ? sum : sum + (row.paidAmount || 0), 0
+      );
+      const proposedTotalPaid = currentTotalPaid + paidVal;
+
+      if (proposedTotalPaid > baseActualBal) {
+        toast.error(
+          `Insufficient balance! Available: ₹${baseActualBal.toFixed(2)}, ` +
+          `Proposed total: ₹${proposedTotalPaid.toFixed(2)}`
+        );
+        return prevRows;
+      }
+
+      const updated = prevRows.map(row => {
+        if (row.accountGRNId !== accountGRNId) return row;
+        const newPaid = Math.min(paidVal, row.totalAmount);
+        const newBalance = row.totalAmount - newPaid;
+        return {
+          ...row,
+          paidAmount: newPaid,
+          balanceAmount: newBalance,
+          isChecked: newBalance === 0
+        };
+      });
+
+      const totalPaid = updated.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
+      setActualBal(Math.max(0, baseActualBal - totalPaid));
+      return updated;
+    });
+  };
+
+  const handleCheckboxChange = (accountGRNId) => {
+    setRows(prevRows =>
+      prevRows.map(row => {
+        if (row.accountGRNId !== accountGRNId) return row;
+        if (row.balanceAmount > 0) return row;
+        return { ...row, isChecked: !row.isChecked };
+      })
+    );
+  };
+
+  const handleSave = async () => {
+    const selectedRows = rows.filter(r => r.paidAmount > 0);
+
+    if (selectedRows.length === 0) {
+      toast.warning("Please enter paid amounts for at least one GRN");
+      return;
+    }
+
+    try {
+      const payload = {
+        ledgerId: Number(ledgerId),
+        date,
+        payments: selectedRows.map(row => ({
+          accountGRNId: row.accountGRNId,
+          paidAmount: row.paidAmount
+        }))
+      };
+
+      const res = await fetch(API_ENDPOINTS.SavePaymentAllocation, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Failed to save payment allocations");
+
+      toast.success("Payment allocations saved successfully!");
+      setPage(1);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save payment allocations");
+    }
+  };
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endIndex = Math.min(page * pageSize, totalCount);
@@ -93,219 +224,250 @@ const PaymentAllocation = () => {
     setPage(1);
   };
 
-  // ---------- 4. Render (NO setState calls here except in event handlers) ----------
+  const uniqueVendors = [...new Set(rows.map(r => r.vendorName))].filter(Boolean);
+
   return (
-    <div className="container my-4">
-      {/* ...same JSX you already have, unchanged... */}
-       <div className="card shadow-sm">
-        <div className="card-header bg-success text-white">
-          <h5 className="mb-0">Payment Allocation</h5>
-        </div>
+    <>
+      <ToastContainer position="top-right" theme="colored" />
+      <div className="container my-4">
+        <div className="card shadow-sm">
+          <div className="card-header bg-success text-white">
+            <h5 className="mb-0">Payment Allocation</h5>
+          </div>
 
-        <div className="card-body">
-          {/* Filters */}
-          <div className="row g-3 mb-3">
-            <div className="col-md-3">
-              <label className="form-label">Date</label>
-              <input
-                type="date"
-                className="form-control"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setPage(1);
-                }}
-              />
+          <div className="card-body">
+            {/* Filters */}
+            <div className="row g-3 mb-3">
+              <div className="col">
+                <label className="form-label">Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+
+              {/* <div className="col">
+                <label className="form-label">Vendor</label>
+                <select
+                  className="form-select"
+                  value={selectedVendor}
+                  onChange={(e) => {
+                    setSelectedVendor(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">All Vendors</option>
+                  {uniqueVendors.map((vendor, idx) => (
+                    <option key={idx} value={vendor}>{vendor}</option>
+                  ))}
+                </select>
+              </div> */}
+
+              <div className="col">
+                <label className="form-label">Ledger Account</label>
+                <select
+                  className="form-select"
+                  value={ledgerId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setLedgerId(id);
+                    setPage(1);
+                    const selected = ledgerOptions.find(
+                      (l) => l.accountLedgerId.toString() === id
+                    );
+                    if (selected) {
+                      const bal = Number(selected.closingBal || 0);
+                      setBaseActualBal(bal);
+                      setActualBal(bal);
+                    }
+                  }}
+                >
+                  <option value="">Select ledger</option>
+                  {ledgerOptions.map((l) => (
+                    <option key={l.accountLedgerId} value={l.accountLedgerId}>
+                      {l.accountLedgerName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col">
+                <label className="form-label">Amount</label>
+                <div className={`alert ${actualBal === 0 ? 'alert-danger' :
+                    actualBal < rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0) * 0.1 ? 'alert-warning' : 'alert-success'
+                  } `}>
+
+                  Balance: ₹{actualBal.toFixed(2)} | Allocated: ₹{rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0).toFixed(2)}
+
+                </div>
+
+              </div>
+
+
             </div>
 
-            <div className="col-md-5">
-              <label className="form-label">Ledger Account</label>
-              <select
-                className="form-select"
-                value={ledgerId}
-                onChange={(e) => {
-                  const id = e.target.value;
-                  setLedgerId(id);
-                  setPage(1);
+            {/* Balance Status */}
+            {/* <div className="row mb-3"> */}
 
-                  const selected = ledgerOptions.find(
-                    (l) => l.accountLedgerId.toString() === id
-                  );
-                  if (selected) {
-                    setActualBal(selected.closingBal || 0);
-                  }
-                }}
+
+            {/* Error & loading */}
+            {error && (
+              <div className="alert alert-danger py-2 mb-3" role="alert">{error}</div>
+            )}
+            {loading && (
+              <div className="alert alert-info py-2 mb-3" role="alert">Loading...</div>
+            )}
+
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <div className="d-flex align-items-center gap-2">
+                <span>Rows per page:</span>
+                <select
+                  className="form-select form-select-sm"
+                  style={{ width: "90px" }}
+                  value={pageSize}
+                  onChange={handlePageSizeChange}
+                >
+                  {[5, 10, 25, 50, 100].map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+              </div>
+              {/* 
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={loading || rows.filter(r => r.paidAmount > 0).length === 0}
               >
-                <option value="">Select ledger</option>
-                {ledgerOptions.map((l) => (
-                  <option
-                    key={l.accountLedgerId}
-                    value={l.accountLedgerId}
-                  >
-                    {l.accountLedgerName}
-                  </option>
-                ))}
-              </select>
-
-
-              
+                Save Payment Allocations
+              </button> */}
             </div>
 
-            <div className="col-md-4">
-              <label className="form-label">Actual Balance</label>
+            {/* ✅ Grouped Table Display */}
+            <div className="table-responsive">
+              <table className="table table-striped table-hover table-bordered align-middle">
+                <thead className="table-light">
+                  <tr>
+                    <th className="text-center">Select</th>
+                    <th>GRN No</th>
+                    <th>GRN Date</th>
+                    <th>Vendor Name</th>
+                    <th>PO Number</th>
+                    <th>Invoice No</th>
+                    <th>Invoice Date</th>
+                    <th>CGST</th>
+                    <th>SGST</th>
+                    <th>IGST</th>
+                    <th>Total Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Balance Amount</th>
+                  </tr>
+                </thead>
+           <tbody>
+  {Object.keys(groupedRows).length > 0 ? (
+    Object.entries(groupedRows).map(([vendorName, vendorRows]) => (
+      <React.Fragment key={vendorName}>
+    
+
+        {/* Vendor GRNs */}
+        {vendorRows.map((row) => (
+          <tr key={row.accountGRNId} className="table-hover">
+            <td className="text-center align-middle">
+              <div className="form-check">
+                <input
+                  className="form-check-input shadow-sm"
+                  type="checkbox"
+                  checked={row.isChecked}
+                  disabled={row.balanceAmount > 0}
+                  onChange={() => handleCheckboxChange(row.accountGRNId)}
+                />
+              </div>
+            </td>
+            <td className="fw-semibold align-middle">{row.grnNumber}</td>
+            <td className="align-middle">{row.grnDate}</td>
+            <td className="fw-medium align-middle">{row.vendorName}</td>
+            <td className="align-middle">{row.poNumber}</td>
+            <td className="align-middle">{row.invoiceNumber}</td>
+            <td className="align-middle">{row.invoiceDate}</td>
+            <td className="text-end align-middle text-muted small">₹{row.cgst.toFixed(2)}</td>
+            <td className="text-end align-middle text-muted small">₹{row.sgst.toFixed(2)}</td>
+            <td className="text-end align-middle text-muted small">₹{row.igst.toFixed(2)}</td>
+            <td className="text-end align-middle fw-bold text-primary">
+              ₹{row.totalAmount.toFixed(2)}
+            </td>
+            <td className="align-middle">
               <input
                 type="number"
-                className="form-control"
+                className="form-control form-control-sm shadow-sm"
+                style={{ minWidth: "120px" }}
                 min="0"
-                value={actualBal}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  // prevent NaN and negative
-                  if (Number.isNaN(val)) {
-                    setActualBal(0);
-                  } else {
-                    setActualBal(Math.max(0, val));
-                  }
-                  setPage(1);
-                }}
+                max={row.totalAmount}
+                value={row.paidAmount}
+                onChange={(e) => handlePaidChange(row.accountGRNId, e.target.value)}
               />
+            </td>
+            <td className="text-end align-middle">
+              <span className={`badge fs-6 fw-semibold px-3 py-2 shadow-sm ${
+                row.balanceAmount === 0 
+                  ? 'bg-success text-white border border-2 border-success' 
+                  : 'bg-warning text-dark border border-2 border-warning'
+              }`}>
+                ₹{row.balanceAmount.toFixed(2)}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </React.Fragment>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="13" className="text-center py-5">
+        <div className="py-5">
+          <i className="fas fa-inbox display-4 text-muted mb-4 d-block"></i>
+          <h5 className="text-muted mb-1">{loading ? "Loading approved GRNs..." : "No approved GRNs found"}</h5>
+          <p className="text-muted">Check your filters or vendor selection</p>
+        </div>
+      </td>
+    </tr>
+  )}
+</tbody>
 
+              </table>
             </div>
-          </div>
 
-          {/* Error & loading */}
-          {error && (
-            <div className="alert alert-danger py-2 mb-3" role="alert">
-              {error}
-            </div>
-          )}
-          {loading && (
-            <div className="alert alert-info py-2 mb-3" role="alert">
-              Loading...
-            </div>
-          )}
-          <div className="d-flex align-items-center gap-2">
-            <span>Rows per page:</span>
-            <select
-              className="form-select form-select-sm"
-              style={{ width: "90px" }}
-              value={pageSize}
-              onChange={handlePageSizeChange}
-            >
-              {[5, 10, 25, 50, 100].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* Table: GRN-based columns */}
-          <div className="table-responsive">
-            <table className="table table-striped table-hover table-bordered align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>GRN No</th>
-                  <th>GRN Date</th>
-                  <th>Vendor Name</th>
-                  <th>Purchase No</th>
-                  <th>Purchase Date</th>
-                  <th>Payment Due Date</th>
-                  <th>CGST</th>
-                  <th>SGST</th>
-                  <th>IGST</th>
-                  <th>Total Amount</th>
-                  <th>Paid Amount</th>
-                  <th>Balance Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length > 0 ? (
-                  rows.map((row) => (
-                    <tr key={row.grnNo}>
-                      <td>{row.grnNo}</td>
-                      <td>{row.grnDate}</td>
-                      <td>{row.vendorName}</td>
-                      <td>{row.purchaseNo}</td>
-                      <td>{row.purchaseDate}</td>
-                      <td>{row.paymentDueDate}</td>
-                      <td>{row.cgst}</td>
-                      <td>{row.sgst}</td>
-                      <td>{row.igst}</td>
-                      <td>{row.totalAmount}</td>
-                      <td>{row.paidAmount}</td>
-                      <td>{row.balanceAmount}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="12" className="text-center">
-                      {loading ? "Loading..." : "No data"}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination + range info */}
-          <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-2 gap-2">
-            <nav aria-label="Page navigation" className="order-1 order-md-0">
-              <ul className="pagination mb-0">
-                <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(1)}
-                  >
-                    « First
-                  </button>
-                </li>
-                <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(page - 1)}
-                  >
-                    ‹ Prev
-                  </button>
-                </li>
-                <li className="page-item disabled">
-                  <span className="page-link">
-                    Page {page} of {totalPages}
-                  </span>
-                </li>
-                <li
-                  className={`page-item ${page === totalPages ? "disabled" : ""
-                    }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(page + 1)}
-                  >
-                    Next ›
-                  </button>
-                </li>
-                <li
-                  className={`page-item ${page === totalPages ? "disabled" : ""
-                    }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(totalPages)}
-                  >
-                    Last »
-                  </button>
-                </li>
-              </ul>
-            </nav>
-
-
-
-            <div className="text-muted small ms-md-3 text-md-end">
-              Showing {startIndex}–{endIndex} of {totalCount}
+            {/* Pagination */}
+            <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-2 gap-2">
+              <nav aria-label="Page navigation">
+                <ul className="pagination mb-0">
+                  <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => handlePageChange(1)}>« First</button>
+                  </li>
+                  <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => handlePageChange(page - 1)}>‹ Prev</button>
+                  </li>
+                  <li className="page-item disabled">
+                    <span className="page-link">Page {page} of {totalPages}</span>
+                  </li>
+                  <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => handlePageChange(page + 1)}>Next ›</button>
+                  </li>
+                  <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <button className="page-link" onClick={() => handlePageChange(totalPages)}>Last »</button>
+                  </li>
+                </ul>
+              </nav>
+              <div className="text-muted small">
+                Showing {startIndex}–{endIndex} of {totalCount}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

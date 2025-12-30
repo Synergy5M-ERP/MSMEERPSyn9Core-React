@@ -108,7 +108,7 @@ ViewEmployees:`${BASE_URL}/HrmMaster/Employee`,
   CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
   ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
 
- 
+ GetApprovedGrn:`${BASE_URL}/GRN/bill-approved-details`,
  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
   // Employee endpoints

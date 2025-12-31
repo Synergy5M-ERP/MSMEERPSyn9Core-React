@@ -1,7 +1,7 @@
 
 
-// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- const BASE_URL = "https://localhost:7145/api";
+const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//  const BASE_URL = "https://localhost:7145/api";
 
 
 

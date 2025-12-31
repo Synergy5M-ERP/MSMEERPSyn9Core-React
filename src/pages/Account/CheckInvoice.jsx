@@ -218,8 +218,8 @@ const fetchInvoiceTableData = async (buyerId) => {
     taxAmount: Number(item.taxAmount) || 0,                                 // ✅ total tax amount
     totalItemValue: item.totalItemValue || 0,
 
-    billCheck: false,
-    isSelected: false,
+    billCheck: item.isChecked === true,
+    isSelected: item.isChecked === true,
     receivedUnit: "pcs"
   };
 });
@@ -278,7 +278,7 @@ const handleSave = async () => {
       IGST: Number(item.igst) || 0,
       TotalTax: Number(item.taxAmount) || 0,
       TotalAmount: Number(item.totalItemValue) || 0,
-      CheckSale: true
+      CheckSale: item.billCheck === true
     }))
   };
 

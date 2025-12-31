@@ -771,120 +771,120 @@ const ApprovedPayable = () => {
 
 
   // -------------------- LOAD GRN + DETAILS --------------------
- const loadAllGrnsWithDetails = useCallback(async (sellerId) => {
-  try {
-    setLoading(true);
+  const loadAllGrnsWithDetails = useCallback(async (sellerId) => {
+    try {
+      setLoading(true);
 
-    console.log("🔍 FETCHING GRNs for sellerId:", sellerId);
-    const res = await fetch(`${API_ENDPOINTS.GetGRNsBySeller}?sellerId=${sellerId}`);
-    if (!res.ok) throw new Error("Failed to load GRNs");
+      console.log("🔍 FETCHING GRNs for sellerId:", sellerId);
+      const res = await fetch(`${API_ENDPOINTS.GetGRNsBySeller}?sellerId=${sellerId}`);
+      if (!res.ok) throw new Error("Failed to load GRNs");
 
-    const data = await safeJson(res);
-    console.log("🔍 FULL API RESPONSE:", JSON.stringify(data.data, null, 2));
+      const data = await safeJson(res);
+      console.log("🔍 FULL API RESPONSE:", JSON.stringify(data.data, null, 2));
 
-    const grnsWithDetails = (data.data || []).map((row, index) => {
-      const header = row.header || {};
-      const items = row.items || [];
+      const grnsWithDetails = (data.data || []).map((row, index) => {
+        const header = row.header || {};
+        const items = row.items || [];
 
-      console.log(`🔍 PROCESSING GRN ${header.grnNumber || header.GRNNumber}: ${items.length} items`);
+        console.log(`🔍 PROCESSING GRN ${header.grnNumber || header.GRNNumber}: ${items.length} items`);
 
-      // ✅ COMPLETE MAPPING with ALL field variations
-      const mappedItems = items.map((it, idx) => {
-        // 🔍 DEBUG: Log ALL possible BillApprove fields
-        console.log("🔍 RAW ITEM DEBUG:", {
-          itemName: it.itemName,
-          accountGRNDetailsId: it.accountGRNDetailsId || it.AccountGRNDetailsId,
-          allKeys: Object.keys(it),
-          billApprove: it.billApprove,
-          BillApprove: it.BillApprove,
-          bill_approve: it.bill_approve
+        // ✅ COMPLETE MAPPING with ALL field variations
+        const mappedItems = items.map((it, idx) => {
+          // 🔍 DEBUG: Log ALL possible BillApprove fields
+          console.log("🔍 RAW ITEM DEBUG:", {
+            itemName: it.itemName,
+            accountGRNDetailsId: it.accountGRNDetailsId || it.AccountGRNDetailsId,
+            allKeys: Object.keys(it),
+            billApprove: it.billApprove,
+            BillApprove: it.BillApprove,
+            bill_approve: it.bill_approve
+          });
+
+          // ✅ TRY ALL POSSIBLE FIELD NAMES
+          const rawBillApprove =
+            it.billApprove ??      // lowercase (JSON you showed)
+            it.BillApprove ??      // PascalCase
+            it.bill_approve ??     // snake_case  
+            it.RawBillApprove_DB ?? // debug field
+            0;                     // default fallback
+
+          console.log(`🔍 MAPPING "${it.itemName}": rawBillApprove=${rawBillApprove} (type: ${typeof rawBillApprove})`);
+
+          // ✅ Convert ANY format → boolean
+          const billApproveBool =
+            rawBillApprove === true ||
+            rawBillApprove === 1 ||
+            rawBillApprove === "1";
+
+          console.log(`🔍 RESULT "${it.itemName}": toggle=${billApproveBool}`);
+
+          return {
+            // ✅ IDs (handle both cases)
+            id: it.accountGRNDetailsId || it.AccountGRNDetailsId || `${header.accountGRNId || header.AccountGRNId}-${idx}`,
+
+            // ✅ Header fields
+            itemId: it.itemId || it.ItemId,
+            itemName: it.itemName || "",
+            itemCode: it.item_Code || it.Item_Code || "",
+            grade: it.item_Grade || it.Item_Grade || "",
+
+            // ✅ Quantities
+            receivedQty: Number(it.receivedQty || it.ReceivedQty || 0),
+            approvedQty: Number(it.approvedQty || it.ApprovedQty || 0),
+            damagedQty: Number(it.damagedQty || it.DamagedQty || 0),
+            unit: it.unit || it.Unit || "",
+
+            // ✅ Taxes
+            taxType: it.taxType || it.TaxType || "",
+            cgst: Number(it.cgst || it.CGST || 0),
+            sgst: Number(it.sgst || it.SGST || 0),
+            igst: Number(it.igst || it.IGST || 0),
+
+            // ✅ Amounts
+            totalTaxValue: Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
+            totalItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0),
+            billItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0) +
+              Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
+
+            // ✅ TOGGLE STATE - SINGLE SOURCE OF TRUTH
+            billApprove: billApproveBool
+          };
         });
 
-        // ✅ TRY ALL POSSIBLE FIELD NAMES
-        const rawBillApprove = 
-          it.billApprove ??      // lowercase (JSON you showed)
-          it.BillApprove ??      // PascalCase
-          it.bill_approve ??     // snake_case  
-          it.RawBillApprove_DB ?? // debug field
-          0;                     // default fallback
+        // ✅ Calculate approved total
+        const approvedGrandTotal = mappedItems
+          .filter((i) => i.billApprove)
+          .reduce((sum, i) => sum + (parseFloat(i.billItemValue) || 0), 0);
 
-        console.log(`🔍 MAPPING "${it.itemName}": rawBillApprove=${rawBillApprove} (type: ${typeof rawBillApprove})`);
-
-        // ✅ Convert ANY format → boolean
-        const billApproveBool = 
-          rawBillApprove === true || 
-          rawBillApprove === 1 || 
-          rawBillApprove === "1";
-
-        console.log(`🔍 RESULT "${it.itemName}": toggle=${billApproveBool}`);
+        console.log(`🔍 GRN ${header.grnNumber}: ${mappedItems.filter(i => i.billApprove).length} approved items, total=₹${approvedGrandTotal}`);
 
         return {
-          // ✅ IDs (handle both cases)
-          id: it.accountGRNDetailsId || it.AccountGRNDetailsId || `${header.accountGRNId || header.AccountGRNId}-${idx}`,
-          
-          // ✅ Header fields
-          itemId: it.itemId || it.ItemId,
-          itemName: it.itemName || "",
-          itemCode: it.item_Code || it.Item_Code || "",
-          grade: it.item_Grade || it.Item_Grade || "",
-          
-          // ✅ Quantities
-          receivedQty: Number(it.receivedQty || it.ReceivedQty || 0),
-          approvedQty: Number(it.approvedQty || it.ApprovedQty || 0),
-          damagedQty: Number(it.damagedQty || it.DamagedQty || 0),
-          unit: it.unit || it.Unit || "",
-          
-          // ✅ Taxes
-          taxType: it.taxType || it.TaxType || "",
-          cgst: Number(it.cgst || it.CGST || 0),
-          sgst: Number(it.sgst || it.SGST || 0),
-          igst: Number(it.igst || it.IGST || 0),
-          
-          // ✅ Amounts
-          totalTaxValue: Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
-          totalItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0),
-          billItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0) + 
-                        Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
-          
-          // ✅ TOGGLE STATE - SINGLE SOURCE OF TRUTH
-          billApprove: billApproveBool
+          index,
+          grnId: header.accountGRNId || header.AccountGRNId,
+          grnNumber: header.grnNumber || header.GRNNumber,
+          grnDate: header.grnDate || header.GRNDate,
+          invoiceNumber: header.invoiceNumber || header.InvoiceNumber,
+          invoiceDate: header.invoiceDate || header.InvoiceDate,
+          poNumber: header.poNumber || header.PONumber,
+          poDate: header.poDate || header.PODate,
+          transporterName: header.transporterName || header.TransporterName,
+          totalAmount: Number(header.totalAmount || header.TotalAmount || 0),
+          totalTaxAmount: Number(header.totalTaxAmount || header.TotalTaxAmount || 0),
+          grandAmount: Number(header.grandAmount || header.GrandAmount || 0),
+          items: mappedItems,
+          approvedGrandTotal
         };
       });
 
-      // ✅ Calculate approved total
-      const approvedGrandTotal = mappedItems
-        .filter((i) => i.billApprove)
-        .reduce((sum, i) => sum + (parseFloat(i.billItemValue) || 0), 0);
-
-      console.log(`🔍 GRN ${header.grnNumber}: ${mappedItems.filter(i => i.billApprove).length} approved items, total=₹${approvedGrandTotal}`);
-
-      return {
-        index,
-        grnId: header.accountGRNId || header.AccountGRNId,
-        grnNumber: header.grnNumber || header.GRNNumber,
-        grnDate: header.grnDate || header.GRNDate,
-        invoiceNumber: header.invoiceNumber || header.InvoiceNumber,
-        invoiceDate: header.invoiceDate || header.InvoiceDate,
-        poNumber: header.poNumber || header.PONumber,
-        poDate: header.poDate || header.PODate,
-        transporterName: header.transporterName || header.TransporterName,
-        totalAmount: Number(header.totalAmount || header.TotalAmount || 0),
-        totalTaxAmount: Number(header.totalTaxAmount || header.TotalTaxAmount || 0),
-        grandAmount: Number(header.grandAmount || header.GrandAmount || 0),
-        items: mappedItems,
-        approvedGrandTotal
-      };
-    });
-
-    console.log("🔍 FINAL grnsData:", grnsData.length, "GRNs loaded");
-    setGrnsData(grnsWithDetails);
-  } catch (error) {
-    console.error("🔍 ERROR loading GRNs:", error);
-    toast.error("Error loading GRN details");
-  } finally {
-    setLoading(false);
-  }
-}, []);
+      console.log("🔍 FINAL grnsData:", grnsData.length, "GRNs loaded");
+      setGrnsData(grnsWithDetails);
+    } catch (error) {
+      console.error("🔍 ERROR loading GRNs:", error);
+      toast.error("Error loading GRN details");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
 
   // -------------------- EFFECTS --------------------
@@ -1003,18 +1003,18 @@ const ApprovedPayable = () => {
       //         BillApprove: item.billApprove ? 1 : 0
       //       })),
       //   }));
-const payload = grnsData
-  .filter((grn) => grn.items.some((item) => item.billApprove))
-  .map((grn) => ({
-    AccountGRNId: grn.grnId,
-    BillStatus: "Approved",
-    Items: grn.items
-      .filter((item) => item.billApprove)
-      .map((item) => ({
-        AccountGRNDetailsId: item.id,
-        BillApprove: 1  // ✅ Sends INT 1
-      })),
-  }));
+      const payload = grnsData
+        .filter((grn) => grn.items.some((item) => item.billApprove))
+        .map((grn) => ({
+          AccountGRNId: grn.grnId,
+          BillStatus: "Approved",
+          Items: grn.items
+            .filter((item) => item.billApprove)
+            .map((item) => ({
+              AccountGRNDetailsId: item.id,
+              BillApprove: 1  // ✅ Sends INT 1
+            })),
+        }));
 
 
       console.log("Payload:", payload);
@@ -1211,17 +1211,17 @@ const payload = grnsData
                                         "en-IN"
                                       )}
                                     </td>
-                                   <td>
-  <div className="form-check form-switch">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      checked={item.billApprove}  // ✅ true = ON, false = OFF
-      onChange={() => handleBillApproveToggle(grn.grnNumber, itemIndex)}
-      id={`approve-${grn.grnNumber}-${item.id}`}
-    />
-  </div>
-</td>
+                                    <td>
+                                      <div className="form-check form-switch">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={item.billApprove}  // ✅ true = ON, false = OFF
+                                          onChange={() => handleBillApproveToggle(grn.grnNumber, itemIndex)}
+                                          id={`approve-${grn.grnNumber}-${item.id}`}
+                                        />
+                                      </div>
+                                    </td>
 
                                     <td>
                                       <button
@@ -1480,8 +1480,8 @@ const payload = grnsData
 
                         <span
                           className={`badge fs-5 px-4 py-3 fw-bold ${selectedItem.billApprove
-                              ? "bg-success shadow-lg"
-                              : "bg-warning shadow-lg border"
+                            ? "bg-success shadow-lg"
+                            : "bg-warning shadow-lg border"
                             }`}
                         >
                           {selectedItem.billApprove

@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 import { toast, ToastContainer } from "react-toastify";
@@ -57,77 +55,165 @@ const PaymentAllocation = () => {
     loadLedgers();
   }, []);
 
-  // Load approved GRNs - Updated for your backend structure
-  useEffect(() => {
-    const fetchPayments = async () => {
-      setLoading(true);
-      setError("");
+  // ✅ FIXED: Load approved GRNs with COMPLETE dependencies & params
+  // useEffect(() => {
+  //   const fetchPayments = async () => {
+  //     setLoading(true);
+  //     setError("");
 
-      try {
-        const params = new URLSearchParams({
-          ...(selectedVendor ? { vendor: selectedVendor } : {}),
-          page: page.toString(),
-          pageSize: pageSize.toString()
-        });
+  //     try {
+  //       const params = new URLSearchParams({
+  //         ledgerId,           // ✅ Added
+  //         date,               // ✅ Added
+  //         ...(selectedVendor ? { vendor: selectedVendor } : {}),
+  //         page: page.toString(),
+  //         pageSize: pageSize.toString()
+  //       });
 
-        const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params}`);
+  //       console.log('Fetching GRNs with params:', params.toString());
 
-        if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
+  //       const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
 
-        const data = await res.json();
-        console.log('API Response:', data);
+  //       if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
 
-        const items = data.data || [];
-        console.log('Items count:', items.length);
+  //       const data = await res.json();
+  //       console.log('API Response:', data);
 
-        // ✅ Sort DESC by date (newest first)
-        const sortedItems = items.sort((a, b) =>
-          new Date(b.grnDate) - new Date(a.grnDate)
-        );
+  //       const items = data.data || [];
+  //       console.log('Items count:', items.length);
 
-        const mapped = sortedItems.map((r) => {
-          const totalAmount = Number(r.TotalAmount || r.totalAmount || r.grandTotal || 0);
-          const paidAmount = Number(r.paidAmount || 0);
-          const balanceAmount = totalAmount - paidAmount;
+  //       // ✅ Sort DESC by date (newest first)
+  //       const sortedItems = items.sort((a, b) =>
+  //         new Date(b.grnDate) - new Date(a.grnDate)
+  //       );
 
-          return {
-            accountGRNId: r.AccountGRNId || r.accountGRNId,
-            grnNumber: r.GRNNumber || r.grnNumber,
-            grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
-            vendorName: r.Description || r.VendorName || r.vendorName,
-            poNumber: r.poNumber || r.PONumber || '',
-            poDate: r.poDate || r.PODate || '',
-            invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
-            invoiceDate: r.invoiceDate || r.InvoiceDate || '',
-            cgst: Number(r.CGST || r.cgst || 0),
-            sgst: Number(r.SGST || r.sgst || 0),
-            igst: Number(r.IGST || r.igst || 0),
-            totalAmount,
-            paidAmount,
-            balanceAmount,
-            isChecked: balanceAmount === 0
-          };
-        });
+  //       const mapped = sortedItems.map((r) => {
+  //         const totalAmount = Number(r.TotalAmount || r.totalAmount || r.grandTotal || 0);
+  //         const paidAmount = Number(r.paidAmount || 0);
+  //         const balanceAmount = totalAmount - paidAmount;
 
-        setRows(mapped);
-        setTotalCount(data.totalCount || items.length);
+  //         return {
+  //           accountGRNId: r.AccountGRNId || r.accountGRNId,
+  //           grnNumber: r.GRNNumber || r.grnNumber,
+  //           grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
+  //           vendorName: r.Description || r.VendorName || r.vendorName,
+  //           poNumber: r.poNumber || r.PONumber || '',
+  //           poDate: r.poDate || r.PODate || '',
+  //           invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
+  //           invoiceDate: r.invoiceDate || r.InvoiceDate || '',
+  //           cgst: Number(r.CGST || r.cgst || 0),
+  //           sgst: Number(r.SGST || r.sgst || 0),
+  //           igst: Number(r.IGST || r.igst || 0),
+  //           totalAmount,
+  //           paidAmount,
+  //           balanceAmount,
+  //           isChecked: balanceAmount === 0
+  //         };
+  //       });
 
-        const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
-        setActualBal(Math.max(0, baseActualBal - totalPaid));
+  //       setRows(mapped);
+  //       setTotalCount(data.totalCount || items.length);
 
-      } catch (err) {
-        console.error('Fetch error:', err);
-        toast.error("Unable to load approved GRNs.");
-        setError("Unable to load approved GRNs.");
-        setRows([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
+  //       setActualBal(Math.max(0, baseActualBal - totalPaid));
 
-    fetchPayments();
-  }, [page, pageSize, selectedVendor, baseActualBal]);
+  //     } catch (err) {
+  //       console.error('Fetch error:', err);
+  //       toast.error("Unable to load approved GRNs.");
+  //       setError("Unable to load approved GRNs.");
+  //       setRows([]);
+  //       setTotalCount(0);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   // ✅ Only fetch if we have required params
+  //   if (ledgerId && date) {
+  //     fetchPayments();
+  //   }
+  // }, [ledgerId, date, page, pageSize, selectedVendor, baseActualBal]); // ✅ COMPLETE deps
+
+
+// ✅ Update API_ENDPOINTS in apiconfig.js
+// GetApprovedGrn: '/api/grn/bill-approved-details',
+
+// ✅ FIXED Frontend - Only page/pageSize params
+useEffect(() => {
+  const fetchPayments = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const params = new URLSearchParams({
+        // ✅ REMOVED ledgerId, date - backend doesn't use them
+        page: page.toString(),
+        pageSize: pageSize.toString()
+      });
+
+      console.log('Fetching GRNs with params:', params.toString());
+
+      const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
+
+      if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
+
+      const data = await res.json();
+      console.log('API Response:', data);
+
+      const items = data.data || [];
+      console.log('Items count:', items.length);
+
+      // ✅ Updated mapping for your backend response
+      const sortedItems = items.sort((a, b) =>
+        new Date(b.GRNDate || b.grnDate) - new Date(a.GRNDate || a.grnDate)
+      );
+
+      const mapped = sortedItems.map((r) => {
+        const totalAmount = Number(r.TotalAmount || r.totalAmount || r.TotalTaxAmount || 0);
+        const paidAmount = Number(r.PaidAmount || r.paidAmount || 0);
+        const balanceAmount = totalAmount - paidAmount;
+
+        return {
+          accountGRNId: r.AccountGRNId || r.accountGRNId,
+          grnNumber: r.GRNNumber || r.grnNumber,
+          grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
+          vendorName: r.VendorName || r.Description || r.vendorName,
+          poNumber: r.poNumber || r.PONumber || '',
+          poDate: r.poDate || r.PODate || '',
+          invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
+          invoiceDate: r.invoiceDate || r.InvoiceDate || '',
+          cgst: Number(r.CGST || r.cgst || 0),
+          sgst: Number(r.SGST || r.sgst || 0),
+          igst: Number(r.IGST || r.igst || 0),
+          totalAmount,
+          paidAmount,
+          balanceAmount,
+          isChecked: balanceAmount === 0
+        };
+      });
+
+      setRows(mapped);
+      setTotalCount(data.totalCount || items.length); // ✅ Backend provides totalCount
+
+      const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
+      setActualBal(Math.max(0, baseActualBal - totalPaid));
+
+    } catch (err) {
+      console.error('Fetch error:', err);
+      toast.error("Unable to load approved GRNs.");
+      setError("Unable to load approved GRNs.");
+      setRows([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPayments(); // ✅ Always fetch - no ledgerId/date dependency
+}, [page, pageSize]); // ✅ ONLY pagination dependencies
+
+
+
 
   // ✅ REAL-TIME balance validation
   const handlePaidChange = (accountGRNId, value) => {
@@ -221,7 +307,7 @@ const PaymentAllocation = () => {
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
-    setPage(1);
+    setPage(1); // ✅ Reset to first page
   };
 
   const uniqueVendors = [...new Set(rows.map(r => r.vendorName))].filter(Boolean);
@@ -238,82 +324,68 @@ const PaymentAllocation = () => {
           <div className="card-body">
             {/* Filters */}
             <div className="row g-3 mb-3">
-              <div className="col">
-                <label className="form-label">Date</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setPage(1);
-                  }}
-                />
-              </div>
-
-              {/* <div className="col">
-                <label className="form-label">Vendor</label>
-                <select
-                  className="form-select"
-                  value={selectedVendor}
-                  onChange={(e) => {
-                    setSelectedVendor(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">All Vendors</option>
-                  {uniqueVendors.map((vendor, idx) => (
-                    <option key={idx} value={vendor}>{vendor}</option>
-                  ))}
-                </select>
-              </div> */}
-
-              <div className="col">
-                <label className="form-label">Ledger Account</label>
-                <select
-                  className="form-select"
-                  value={ledgerId}
-                  onChange={(e) => {
-                    const id = e.target.value;
-                    setLedgerId(id);
-                    setPage(1);
-                    const selected = ledgerOptions.find(
-                      (l) => l.accountLedgerId.toString() === id
-                    );
-                    if (selected) {
-                      const bal = Number(selected.closingBal || 0);
-                      setBaseActualBal(bal);
-                      setActualBal(bal);
-                    }
-                  }}
-                >
-                  <option value="">Select ledger</option>
-                  {ledgerOptions.map((l) => (
-                    <option key={l.accountLedgerId} value={l.accountLedgerId}>
-                      {l.accountLedgerName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col">
-                <label className="form-label">Amount</label>
-                <div className={`alert ${actualBal === 0 ? 'alert-danger' :
-                    actualBal < rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0) * 0.1 ? 'alert-warning' : 'alert-success'
-                  } `}>
-
-                  Balance: ₹{actualBal.toFixed(2)} | Allocated: ₹{rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0).toFixed(2)}
-
+              <div className="row align-items-end">
+                <div className="col">
+                  <label className="form-label">Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={date}
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      setPage(1);
+                    }}
+                    style={{ height: '40px' }}
+                  />
+                </div>
+                {/* Ledger Account Column */}
+                <div className="col">
+                  <label className="form-label">Ledger Account</label>
+                  <select
+                    className="form-select"
+                    style={{ height: '40px' }}
+                    value={ledgerId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setLedgerId(id);
+                      setPage(1);
+                      const selected = ledgerOptions.find(
+                        (l) => l.accountLedgerId.toString() === id
+                      );
+                      if (selected) {
+                        const bal = Number(selected.closingBal || 0);
+                        setBaseActualBal(bal);
+                        setActualBal(bal);
+                      }
+                    }}
+                  >
+                    <option value="">Select ledger</option>
+                    {ledgerOptions.map((l) => (
+                      <option key={l.accountLedgerId} value={l.accountLedgerId}>
+                        {l.accountLedgerName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
+                {/* Amount/Balance Column */}
+                <div className="col">
+                  <label className="form-label m-2">Balance Details</label>
+                  <div
+                    className={`alert mb-0 d-flex align-items-center ${
+                      actualBal === 0 ? 'alert-danger' :
+                        actualBal < rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0) * 0.1 ? 'alert-warning' : 'alert-success'
+                    }`}
+                    style={{ height: '40px', paddingTop: '0', paddingBottom: '0' }}
+                  >
+                    <span>
+                      <strong>Balance:</strong> ₹{actualBal.toFixed(2)} |
+                      <strong> Allocated:</strong> ₹{rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
-
-
             </div>
-
-            {/* Balance Status */}
-            {/* <div className="row mb-3"> */}
-
 
             {/* Error & loading */}
             {error && (
@@ -332,19 +404,11 @@ const PaymentAllocation = () => {
                   value={pageSize}
                   onChange={handlePageSizeChange}
                 >
-                  {[5, 10, 25, 50, 100].map((size) => (
+                  {[1,3,5, 10, 25, 50, 100].map((size) => (
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
               </div>
-              {/* 
-              <button
-                className="btn btn-primary"
-                onClick={handleSave}
-                disabled={loading || rows.filter(r => r.paidAmount > 0).length === 0}
-              >
-                Save Payment Allocations
-              </button> */}
             </div>
 
             {/* ✅ Grouped Table Display */}
@@ -367,75 +431,71 @@ const PaymentAllocation = () => {
                     <th>Balance Amount</th>
                   </tr>
                 </thead>
-           <tbody>
-  {Object.keys(groupedRows).length > 0 ? (
-    Object.entries(groupedRows).map(([vendorName, vendorRows]) => (
-      <React.Fragment key={vendorName}>
-    
-
-        {/* Vendor GRNs */}
-        {vendorRows.map((row) => (
-          <tr key={row.accountGRNId} className="table-hover">
-            <td className="text-center align-middle">
-              <div className="form-check">
-                <input
-                  className="form-check-input shadow-sm"
-                  type="checkbox"
-                  checked={row.isChecked}
-                  disabled={row.balanceAmount > 0}
-                  onChange={() => handleCheckboxChange(row.accountGRNId)}
-                />
-              </div>
-            </td>
-            <td className="fw-semibold align-middle">{row.grnNumber}</td>
-            <td className="align-middle">{row.grnDate}</td>
-            <td className="fw-medium align-middle">{row.vendorName}</td>
-            <td className="align-middle">{row.poNumber}</td>
-            <td className="align-middle">{row.invoiceNumber}</td>
-            <td className="align-middle">{row.invoiceDate}</td>
-            <td className="text-end align-middle text-muted small">₹{row.cgst.toFixed(2)}</td>
-            <td className="text-end align-middle text-muted small">₹{row.sgst.toFixed(2)}</td>
-            <td className="text-end align-middle text-muted small">₹{row.igst.toFixed(2)}</td>
-            <td className="text-end align-middle fw-bold text-primary">
-              ₹{row.totalAmount.toFixed(2)}
-            </td>
-            <td className="align-middle">
-              <input
-                type="number"
-                className="form-control form-control-sm shadow-sm"
-                style={{ minWidth: "120px" }}
-                min="0"
-                max={row.totalAmount}
-                value={row.paidAmount}
-                onChange={(e) => handlePaidChange(row.accountGRNId, e.target.value)}
-              />
-            </td>
-            <td className="text-end align-middle">
-              <span className={`badge fs-6 fw-semibold px-3 py-2 shadow-sm ${
-                row.balanceAmount === 0 
-                  ? 'bg-success text-white border border-2 border-success' 
-                  : 'bg-warning text-dark border border-2 border-warning'
-              }`}>
-                ₹{row.balanceAmount.toFixed(2)}
-              </span>
-            </td>
-          </tr>
-        ))}
-      </React.Fragment>
-    ))
-  ) : (
-    <tr>
-      <td colSpan="13" className="text-center py-5">
-        <div className="py-5">
-          <i className="fas fa-inbox display-4 text-muted mb-4 d-block"></i>
-          <h5 className="text-muted mb-1">{loading ? "Loading approved GRNs..." : "No approved GRNs found"}</h5>
-          <p className="text-muted">Check your filters or vendor selection</p>
-        </div>
-      </td>
-    </tr>
-  )}
-</tbody>
-
+                <tbody>
+                  {Object.keys(groupedRows).length > 0 ? (
+                    Object.entries(groupedRows).map(([vendorName, vendorRows]) => (
+                      <React.Fragment key={vendorName}>
+                        {/* Vendor GRNs */}
+                        {vendorRows.map((row) => (
+                          <tr key={row.accountGRNId} className="table-hover">
+                            <td className="text-center align-middle">
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input shadow-sm"
+                                  type="checkbox"
+                                  checked={row.isChecked}
+                                  disabled={row.balanceAmount > 0}
+                                  onChange={() => handleCheckboxChange(row.accountGRNId)}
+                                />
+                              </div>
+                            </td>
+                            <td className="align-middle text-muted small">{row.grnNumber}</td>
+                            <td className="fw-semibold align-middle text-muted small">{row.grnDate}</td>
+                            <td className="fw-semibold align-middle text-muted small">{row.vendorName}</td>
+                            <td className="fw-semibold align-middle text-muted small">{row.poNumber}</td>
+                            <td className="fw-semibold align-middle text-muted small">{row.invoiceNumber}</td>
+                            <td className="fw-semibold align-middle text-muted small">{row.invoiceDate}</td>
+                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.cgst.toFixed(2)}</td>
+                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.sgst.toFixed(2)}</td>
+                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.igst.toFixed(2)}</td>
+                            <td className="fw-semibold text-end align-middle fw-bold text-primary">
+                              ₹{row.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="align-middle">
+                              <input
+                                type="number"
+                                className="form-control form-control-sm shadow-sm"
+                                style={{ minWidth: "120px" }}
+                                min="0"
+                                max={row.totalAmount}
+                                value={row.paidAmount}
+                                onChange={(e) => handlePaidChange(row.accountGRNId, e.target.value)}
+                              />
+                            </td>
+                            <td className="text-end align-middle">
+                              <span className={`badge fs-6 fw-semibold px-3 py-2 shadow-sm ${
+                                row.balanceAmount === 0
+                                  ? 'bg-success text-white border border-2 border-success'
+                                  : 'bg-warning text-dark border border-2 border-warning'
+                              }`}>
+                                ₹{row.balanceAmount.toFixed(2)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="13" className="text-center py-5">
+                        <div className="py-5">
+                          <h5 className="text-muted mb-1">{loading ? "Loading approved GRNs..." : "No approved GRNs found"}</h5>
+                          <p className="text-muted">Check your filters or vendor selection</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
               </table>
             </div>
 

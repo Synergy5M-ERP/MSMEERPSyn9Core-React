@@ -5,7 +5,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 
-
 const unitOptions = [
   { value: "pcs", label: "Pieces" },
   { value: "kg", label: "Kilograms" },
@@ -15,6 +14,11 @@ const taxTypeOptions = [
   { value: "CGST", label: "CGST" },
   { value: "SGST", label: "SGST" },
   { value: "IGST", label: "IGST" },
+];
+
+const categoryOptions = [
+  { value: "seller", label: "Seller" },
+  { value: "buyer", label: "Buyer" },
 ];
 
 const emptyItem = {
@@ -33,13 +37,16 @@ const emptyItem = {
 
 export default function AccountDebitNote() {
   const [vendorOptions, setVendorOptions] = useState([]);
+  const [customerOptions, setCustomerOptions] = useState([]);
   const [invoiceOptions, setInvoiceOptions] = useState([]);
   const [itemOptions, setItemOptions] = useState([]);
-
+  
+  const [category, setCategory] = useState("")
   const [vendor, setVendor] = useState("");
   const [invoice, setInvoice] = useState("");
   const [DebitNoteNo, setDebitNoteNo] = useState("");
-  const [DebitNoteDate, setDebitNoteDate] = useState("");
+  const [DebitNoteDate, setDebitNoteDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentDueDate, setPaymentDueDate] =useState("")
 
   const [item, setItem] = useState(emptyItem);
   const [items, setItems] = useState([]);
@@ -49,14 +56,19 @@ export default function AccountDebitNote() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+      setVendor("");
+    }, [category]);
+
+  useEffect(() => {
     fetchDropdownData();
   }, []);
 
   const fetchDropdownData = async () => {
     setIsLoading(true);
     try {
-      const [vendorRes, invoiceRes, itemRes] = await Promise.all([
-        fetch(API_ENDPOINTS.Company),
+      const [vendorRes, customerRes, invoiceRes, itemRes] = await Promise.all([
+        fetch(API_ENDPOINTS.Vendors),
+        fetch(API_ENDPOINTS.Getbuyers),
         fetch(API_ENDPOINTS.Ledger),
         fetch(API_ENDPOINTS.BankDetails),
       ]);
@@ -65,10 +77,12 @@ export default function AccountDebitNote() {
       }
 
       const vendorData = await vendorRes.json();
+      const customerData = await customerRes.json()
       const invoiceData = await invoiceRes.json();
       const itemData = await itemRes.json();
 
       setVendorOptions(vendorData);
+      setCustomerOptions(customerData)
       setInvoiceOptions(invoiceData);
       setItemOptions(itemData);
 
@@ -137,10 +151,11 @@ export default function AccountDebitNote() {
   };
 
   const handleCancel = () => {
+    setCategory("")
     setVendor("");
     setInvoice("");
     setDebitNoteNo("");
-    setDebitNoteDate("");
+    setDebitNoteDate(new Date().toISOString().split("T")[0]);
     setItems([]);
     setItem(emptyItem);
     setEditingIdx(null);
@@ -152,6 +167,10 @@ export default function AccountDebitNote() {
   const grandTotal = totalAmount + totalTaxAmount;
 
   const handleSave = async () => {
+    if (!category) {
+      toast.warn("Please select a Category");
+      return;
+    }
     if (!vendor) {
       toast.warn("Please select a vendor");
       return;
@@ -174,6 +193,7 @@ export default function AccountDebitNote() {
     }
 
     const DebitNoteData = {
+      category,
       vendor,
       invoice,
       DebitNoteNo,
@@ -242,17 +262,56 @@ export default function AccountDebitNote() {
             border: "2px solid #e2e8f0"
           }}>
             <div className="row">
-              <div className="col-3">
+              <div className="col">
+                <label
+                  style={{
+                    textAlign: "left",
+                    display: "block",
+                    color: "#0066cc",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    marginBottom: "8px",
+                  }}>
+                
+                  Category <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding:"5px 5px",
+                    borderRadius: 10,
+                    border: "2px solid #e2e8f0",
+                    fontSize: 15,
+                    background: "white",
+                    cursor: "pointer",
+                    marginBottom: "9px",
+                    
+                  }}
+                  className="form-select"
+                >
+                  <option value="">Select Category</option>
+                  {categoryOptions.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col">
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
-                }}>Vendor Name <span style={{ color: "#ef4444" }}>*</span></label>
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'}}>
+                  {category === "buyer" ? "Customer Name" : "Vendor Name"} <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={vendor}
                   onChange={e => setVendor(e.target.value)}
-                  disabled={isLoading}
+                  disabled={!category || isLoading}
                   style={{
                     width: "100%",
-                    padding: "12px 16px",
+                  padding:"5px 5px",
                     borderRadius: 10,
                     border: "2px solid #e2e8f0",
                     fontSize: 15,
@@ -261,16 +320,29 @@ export default function AccountDebitNote() {
                     transition: "all 0.2s",
                     marginBottom: '9px'
                   }}
+                  className="form-select"
                 >
-                  <option value="">Select Vendor</option>
-                  {vendorOptions.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
-                  <option value="v1"> v1</option>
+                  <option value="">
+                  {category ? category === "buyer" ? "Select Customer" : "Select Vendor" : "Select Category First"}</option>
+                    {category === "seller" &&
+                      vendorOptions.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.name}
+                        </option>
+                      ))}
+
+                    {category === "buyer" &&
+                      customerOptions.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.name}
+                        </option>
+                        ))}
                 </select>
               </div>
 
-              <div className="col-3">
+              <div className="col">
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Invoice Number <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={invoice}
@@ -278,7 +350,7 @@ export default function AccountDebitNote() {
                   disabled={isLoading}
                   style={{
                     width: "100%",
-                    padding: "12px 16px",
+                  padding:"5px 5px",
                     borderRadius: 10,
                     border: "2px solid #e2e8f0",
                     fontSize: 15,
@@ -286,6 +358,7 @@ export default function AccountDebitNote() {
                     cursor: "pointer",
                     transition: "all 0.2s"
                   }}
+                  className="form-select"
                 >
                   <option value="">Select Invoice</option>
                   {invoiceOptions.map(o => <option key={o.id} value={o.number || o.name}>{o.number || o.name}</option>)}
@@ -293,18 +366,19 @@ export default function AccountDebitNote() {
                 </select>
               </div>
 
-              <div className="col-3">
+              <div className="col">
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Debit Note No <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="text"
                   value={DebitNoteNo}
+                  className="form-text"
                   onChange={e => setDebitNoteNo(e.target.value)}
                   placeholder="DN-001"
                   style={{
                     width: "100%",
-                    padding: "12px 16px",
+                  padding:"5px 5px",
                     borderRadius: 10,
                     border: "2px solid #e2e8f0",
                     fontSize: 15,
@@ -313,9 +387,9 @@ export default function AccountDebitNote() {
                 />
               </div>
 
-              <div className="col-3">
+              <div className="col">
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Debit Note Date <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="date"
@@ -323,7 +397,7 @@ export default function AccountDebitNote() {
                   onChange={e => setDebitNoteDate(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "12px 16px",
+                  padding:"5px 5px",
                     borderRadius: 10,
                     border: "2px solid #e2e8f0",
                     fontSize: 15,
@@ -331,6 +405,34 @@ export default function AccountDebitNote() {
                   }}
                 />
               </div>
+
+              <div className="col">
+              <label
+                style={{
+                  textAlign: "left",
+                  display: "block",
+                  color: "#0066cc",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  marginBottom: "8px",
+                }}
+              >
+                Payment Due Date <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <input
+                type="date"
+                value={paymentDueDate}
+                onChange={(e) => setPaymentDueDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding:"5px 5px",
+                  borderRadius: 10,
+                  border: "2px solid #e2e8f0",
+                  fontSize: 15,
+                  transition: "all 0.2s",
+                }}
+              />
+            </div>
             </div>
 
             <div style={{
@@ -341,14 +443,14 @@ export default function AccountDebitNote() {
             }}>
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '10px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '10px'
                 }}>Item Name <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={item.itemName}
                   onChange={e => setItem(it => ({ ...it, itemName: e.target.value }))}
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -356,8 +458,9 @@ export default function AccountDebitNote() {
                     cursor: "pointer",
                     // marginBottom:'8px'
                   }}
+                  className="form-select"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select Item</option>
                   {itemOptions.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
                   <option value="it"> item1</option>
                 </select>
@@ -365,7 +468,7 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Quantity <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="number"
@@ -375,7 +478,7 @@ export default function AccountDebitNote() {
                   placeholder="0"
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -386,29 +489,29 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Unit <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={item.unit}
                   onChange={e => setItem(it => ({ ...it, unit: e.target.value }))}
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
                     background: "white",
                     cursor: "pointer"
-                  }}
+                  }}className="form-select"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select Unit</option>
                   {unitOptions.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
                 </select>
               </div>
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Price <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="number"
@@ -419,7 +522,7 @@ export default function AccountDebitNote() {
                   placeholder="0.00"
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -430,7 +533,7 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Total Amount</label>
                 <input
                   type="number"
@@ -438,7 +541,7 @@ export default function AccountDebitNote() {
                   readOnly
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -458,29 +561,29 @@ export default function AccountDebitNote() {
             }}>
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Tax Type</label>
                 <select
                   value={item.taxType}
                   onChange={e => setItem(it => ({ ...it, taxType: e.target.value }))}
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                   // padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
                     background: "white",
                     cursor: "pointer"
-                  }}
+                  }}className="form-select"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select Tax Type</option>
                   {taxTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>CGST (%)</label>
                 <input
                   type="number"
@@ -491,7 +594,7 @@ export default function AccountDebitNote() {
                   placeholder="0"
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -502,7 +605,7 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>SGST (%)</label>
                 <input
                   type="number"
@@ -513,7 +616,7 @@ export default function AccountDebitNote() {
                   placeholder="0"
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -524,7 +627,7 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>IGST (%)</label>
                 <input
                   type="number"
@@ -535,7 +638,7 @@ export default function AccountDebitNote() {
                   placeholder="0"
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -546,7 +649,7 @@ export default function AccountDebitNote() {
 
               <div>
                 <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px'
+                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
                 }}>Net Amount</label>
                 <input
                   type="number"
@@ -559,7 +662,7 @@ export default function AccountDebitNote() {
                   readOnly
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -576,7 +679,7 @@ export default function AccountDebitNote() {
                   textAlign: 'left',
                   display: 'block',
                   color: '#0066cc',
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '8px'
                 }}>
@@ -594,7 +697,7 @@ export default function AccountDebitNote() {
                   readOnly
                   style={{
                     width: "100%",
-                    padding: "10px 12px",
+                    padding:"5px 5px",
                     borderRadius: 8,
                     border: "2px solid #e2e8f0",
                     fontSize: 14,
@@ -616,7 +719,7 @@ export default function AccountDebitNote() {
                 padding: "12px 28px",
                 borderRadius: 10,
                 border: "none",
-                background: editingIdx !== null ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: editingIdx !== null ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "linear-gradient(135deg, green 0%, green 100%)",
                 color: "white",
                 fontWeight: 600,
                 fontSize: 15,
@@ -633,7 +736,7 @@ export default function AccountDebitNote() {
                 e.currentTarget.style.boxShadow = editingIdx !== null ? "0 4px 15px rgba(245, 158, 11, 0.4)" : "0 4px 15px rgba(102, 126, 234, 0.4)";
               }}
             >
-              {editingIdx === null ? <><Plus size={18} /> Add </> : <><Edit size={18} /> Update </>}
+              {editingIdx === null ? <> Add </> : <> Update </>}
             </button>
 
             {items.length > 0 ? (

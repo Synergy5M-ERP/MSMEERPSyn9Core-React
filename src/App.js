@@ -18,7 +18,6 @@ import AccountAndFinanceDashboard from "./pages/Account/AccountAndFinanceDashboa
 
 /* OTHER */
 import CreditDebitNote from "./pages/Account/CreditDebitNote";
-import Nullify from "./pages/Account/Nullify";
 import Dashboard from "./pages/Dashboard";
 
 /* MASTERS */
@@ -113,7 +112,6 @@ function App() {
 
         {/* OTHER */}
         <Route path="/creditdebitnote" element={<CreditDebitNote />} />
-        <Route path="/nullify" element={<Nullify />} />
       </Routes>
 
       <Footer />

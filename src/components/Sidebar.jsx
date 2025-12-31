@@ -31,7 +31,6 @@ const Sidebar = ({ selected, onSelect }) => {
     { label: 'Credit Debit Note', icon: <CreditCardIcon />, key: 'CreditDebitNote' },
     { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
       { label: 'Account Sale', icon: <SdCardAlert />, key: 'AccountSale' },
-  { label: 'Nullify', icon: <GppGoodSharp />, key: 'nullify' },
     {
       label: 'Report',
       icon: <SheetIcon />,

@@ -37,6 +37,7 @@
 		<!-- Swagger -->
 	<!--	<PackageReference Include="Microsoft.OpenApi" Version="3.0.0" /> -->
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="8.0.0" />
 
 		<!-- Configuration -->
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />

@@ -15,34 +15,169 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             _context = context;
         }
 
-        [HttpGet("AccountVouchers")]
-        public async Task<IActionResult> GetAllVouchers([FromQuery] bool? isActive)
+        [HttpGet("GetVoucherDetails")]
+        public async Task<IActionResult> GetVoucherDetails([FromQuery] int vendorId,[FromQuery] int voucherTypeId,[FromQuery] int referenceId,[FromQuery] bool? isActive)
         {
-            var vouchers = _context.AccountVoucher.AsQueryable();
-
-            if (isActive.HasValue)
+            try
             {
-                vouchers = vouchers.Where(x => x.IsActive == isActive.Value);
+                string? referenceNo = null;
+
+                // 🔹 Resolve Reference Number based on Voucher Type
+                if (voucherTypeId == 1) // Payment → GRN
+                {
+                    referenceNo = await _context.MMM_GRNTbl
+                        .Where(x => x.Id == referenceId)
+                        .Select(x => x.GRN_NO)
+                        .FirstOrDefaultAsync();
+                }
+                else if (voucherTypeId == 2) // Receipt → Invoice
+                {
+                    referenceNo = await _context.SDM_Inv_VendTbls
+                        .Where(x => x.supplied_id == referenceId)
+                        .Select(x => x.invoice_number)
+                        .FirstOrDefaultAsync();
+                }
+
+                if (string.IsNullOrEmpty(referenceNo))
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Invalid reference number"
+                    });
+                }
+
+                // Base query
+                var query = _context.AccountVoucher
+                    .Where(v =>
+                        v.VendorId == vendorId &&
+                        v.AccountVoucherTypeId == voucherTypeId &&
+                        v.ReferenceNo == referenceId
+                    );
+
+                if (isActive.HasValue)
+                {
+                    query = query.Where(v => v.IsActive == isActive.Value);
+                }
+
+                // Fetch voucher
+                var voucher = await query.FirstOrDefaultAsync();
+
+                if (voucher == null)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "No voucher data found"
+                    });
+                }
+
+                // Voucher Header
+                var header = new
+                {
+                    voucherId = voucher.AccountVoucherId,
+                    voucherNo = voucher.VoucherNo,
+                    vendorId = voucher.VendorId,
+
+                    vendorName = _context.Potential_Vendor
+                        .Where(x => x.Id == voucher.VendorId)
+                        .Select(x => x.Company_Name)
+                        .FirstOrDefault(),
+
+                    voucherType = _context.AccountVoucherType
+                        .Where(x => x.AccountVoucherTypeId == voucher.AccountVoucherTypeId)
+                        .Select(x => x.VoucherType)
+                        .FirstOrDefault(),
+
+                    voucherDate = voucher.VoucherDate,
+                    referenceNo = referenceNo,
+                    totalAmount = voucher.TotalAmount,
+                    paymentDueDate = voucher.PaymentDueDate,
+
+                    paymentMode = _context.AccountPaymentMode
+                        .Where(x => x.PaymentModeId == voucher.PaymentModeId)
+                        .Select(x => x.PaymentMode)
+                        .FirstOrDefault(),
+
+                    status = _context.AccountStatus
+                        .Where(x => x.AccountStatusId == voucher.AccountStatusId)
+                        .Select(x => x.Status)
+                        .FirstOrDefault()
+                };
+
+                // Ledger Records
+                var ledger = await _context.AccountVoucherDetails
+                    .Where(l => l.AccountVoucherId == voucher.AccountVoucherId)
+                    .Select(l => new
+                    {
+                        ledgerName = _context.AccountLedger
+                            .Where(x => x.AccountLedgerId == l.AccountLedgerId)
+                            .Select(x => x.AccountLedgerName)
+                            .FirstOrDefault(),
+
+                        creditAmount = l.CreditAmount,
+                        debitAmount = l.DebitAmount,
+                        description = l.Description
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        header,
+                        ledger
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error fetching voucher details",
+                    error = ex.Message
+                });
+            }
+        }
+
+        //Check Voucher Number is Exists or not
+        [HttpGet("GetNextVoucherNumber")]
+        public async Task<IActionResult> GetNextVoucherNumber(string prefix, int? vendorId = null)
+        {
+            var query = _context.AccountVoucher
+                .Where(x => x.VoucherNo.StartsWith(prefix + "-"));
+
+            // Apply vendor filter only for Vendor Voucher
+            if (vendorId.HasValue)
+            {
+                query = query.Where(x => x.VendorId == vendorId.Value);
             }
 
-            var data = vouchers
-                .Select(v => new
+            var voucherNumbers = await query
+                .Select(x => x.VoucherNo)
+                .ToListAsync();
+
+            int maxNumber = 0;
+
+            foreach (var voucher in voucherNumbers)
+            {
+                var parts = voucher.Split('-');
+                if (parts.Length > 1 && int.TryParse(parts[^1], out int num))
                 {
-                    voucherId = v.AccountVoucherId,
-                    voucherNo = v.VoucherNo,
-                    vendorId = v.VendorId,
-                    voucherTypeId = v.AccountVoucherTypeId,
-                    voucherDate = v.VoucherDate,
-                    referenceNo = v.ReferenceNo,
-                    totalAmount = v.TotalAmount,
-                    paymentDueDate = v.PaymentDueDate,
-                    paymentModeId = v.PaymentModeId,
-                    accountStatusId = v.AccountStatusId,
-                    description = v.Description
-                })
-                .ToList();
-            return Ok(new { data });
-            //return Ok(data);
+                    if (num > maxNumber)
+                        maxNumber = num;
+                }
+            }
+
+            int nextNumber = maxNumber + 1;
+
+            return Ok(new
+            {
+                success = true,
+                voucherNo = $"{prefix}-{nextNumber.ToString("D3")}"
+            });
         }
 
         // Get All vendors lists
@@ -58,9 +193,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         companyName = v.Company_Name
                     })
                     .ToListAsync();
-
-                //if (vendors == null || vendors.Count == 0)
-                //    //return NotFound(new { success = false, message = "No vendors found" });
 
                 return Ok(new { success = true, data = vendors });
             }
@@ -88,7 +220,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 })
                 .ToList();
             return Ok(new { data });
-            //return Ok(data);
         }
 
         // ✅ GET all voucher type
@@ -250,11 +381,14 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 // Step 1: Create main voucher
                 var voucher = new AccountVoucher
                 {
+                    VoucherCategory = model.VoucherCategory,
                     VoucherNo = model.VoucherNo,
                     VendorId = model.VendorId,
+                    OtherVendor =model.OtherVendor,
                     AccountVoucherTypeId = model.AccountVoucherTypeId,
                     VoucherDate = model.VoucherDate,                   // DateOnly from JSON
                     ReferenceNo = model.ReferenceNo,
+                    OtherReferenceNo = model.OtherReferenceNo,
                     TotalAmount = model.TotalAmount,
                     PaymentDueDate = model.PaymentDueDate,             // DateOnly from JSON
                     PaymentModeId = model.PaymentModeId,
@@ -262,8 +396,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     Description = model.Description,
                     CreatedBy = model.CreatedBy,
                     UpdatedBy = model.UpdatedBy,
-                   // CreatedDate = DateOnly.FromDateTime(DateTime.Now),
-                    //UpdatedDate = DateOnly.FromDateTime(DateTime.Now),
                     CreatedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     IsActive = true
@@ -313,7 +445,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
-
+  
 
     }
 }

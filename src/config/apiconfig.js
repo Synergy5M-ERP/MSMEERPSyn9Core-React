@@ -2,7 +2,7 @@
 
 
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//const BASE_URL = "https://localhost:7145/api";
+ //const BASE_URL = "https://localhost:7145/api";
 
 
 
@@ -16,6 +16,9 @@ export const API_ENDPOINTS = {
   DEPARTMENT: `${BASE_URL}/HrmMaster/Department`,
   DESIGNATION: `${BASE_URL}/HrmMaster/Designation`,
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
+GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+    GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
   GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
@@ -37,8 +40,11 @@ export const API_ENDPOINTS = {
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
   UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
-
-
+ EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+  GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
+  SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
+  GetEmployeeByEmpCode: `${BASE_URL}/HrmOrgInfo/GetEmployeeByEmpCode`, // ✅ important
+  DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
   //------------------------Account APIs----------------------------------
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,

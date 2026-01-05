@@ -368,20 +368,49 @@ useEffect(() => {
   return (
     <div className="container py-4">
       <h2 className="text-center text-primary mb-4">CREATE MASTER</h2>
+<div className="mb-3 bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
 
-      {/* FORM TYPE RADIO */}
-      <div className="mb-3 bg-white p-3 rounded shadow-sm">
-       {["Department", "Designation", "AuthorityMatrix", "BuildOrganization", "ViewOrganization"].map((type) => (
-  <label key={type} className="me-4">
-    <input type="radio" checked={formType === type} onChange={() => setFormType(type)} />{" "}
-    {type === "BuildOrganization" ? "Build Organization" : type === "ViewOrganization" ? "View Organization" : type}
-  </label>
-))}
+        <div>
+    {["Department", "Designation", "AuthorityMatrix", "BuildOrganization", "ViewOrganization"].map((type) => (
+      <label key={type} className="me-4">
+        <input
+          type="radio"
+          name="formType"
+          checked={formType === type}
+          onChange={() => setFormType(type)}
+        />{" "}
+        {type === "BuildOrganization"
+          ? "Build Organization"
+          : type === "ViewOrganization"
+          ? "View Organization"
+          : type}
+      </label>
+    ))}
+  </div>
+ {/* ===== RIGHT: ACTIVE / INACTIVE RADIO ===== */}
+  <div>
+    <label className="me-3">
+      <input
+        type="radio"
+        name="activeFilter"
+        checked={activeFilter === "active"}
+        onChange={() => setActiveFilter("active")}
+      />{" "}
+      Active
+    </label>
 
-      </div>
-    
-
-      {/* ================= BUILD ORGANIZATION ================= */}
+    <label>
+      <input
+        type="radio"
+        name="activeFilter"
+        checked={activeFilter === "inactive"}
+        onChange={() => setActiveFilter("inactive")}
+      />{" "}
+      Inactive
+    </label>
+  </div>
+  </div>
+     {/* ================= BUILD ORGANIZATION ================= */}
      {formType === "BuildOrganization" && (
         <div className="bg-white p-4 rounded shadow-sm">
           <h4 className="text-center text-primary mb-4">Build Organization</h4>
@@ -628,26 +657,7 @@ useEffect(() => {
 <div className="col-lg-7">
   <div className="p-3 bg-white rounded shadow-sm table-responsive">
 
-    {/* ACTIVE / INACTIVE RADIO */}
-    <div className="mb-2 text-end">
-      <label className="me-3">
-        <input
-          type="radio"
-          checked={activeFilter === "active"}
-          onChange={() => setActiveFilter("active")}
-        />{" "}
-        Active
-      </label>
-
-      <label>
-        <input
-          type="radio"
-          checked={activeFilter === "inactive"}
-          onChange={() => setActiveFilter("inactive")}
-        />{" "}
-        Inactive
-      </label>
-    </div>
+    
 
     <table className="table table-bordered text-center align-middle">
       <thead className="table-light">

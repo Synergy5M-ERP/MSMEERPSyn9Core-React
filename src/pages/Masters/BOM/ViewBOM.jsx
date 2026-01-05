@@ -398,7 +398,7 @@ const ViewBOM = () => {
     if (!selectedRmItem || !grade) return;
     try {
       const res = await fetch(
-        `hhttps://msmeerpsyn9-core.azurewebsites.net/api/BOM/GetBOMData?category=BUY&itemName=${encodeURIComponent(
+        `https://msmeerpsyn9-core.azurewebsites.net/api/BOM/GetBOMData?category=BUY&itemName=${encodeURIComponent(
           selectedRmItem.value
         )}&grade=${encodeURIComponent(grade)}`
       );
@@ -656,7 +656,6 @@ const ViewBOM = () => {
 
     <div className="p-3">
       <ToastContainer position="top-right" autoClose={3000} />
-      <h3 className="text-primary mb-3">BOM Management</h3>
 
       <div className="d-flex gap-3 m-3">
         {["buyer", "bom", "bought"].map((type) => (
@@ -745,7 +744,7 @@ const ViewBOM = () => {
       )}
 
       {bomList.length === 0 ? (
-        <div className="text-muted">No BOMs found.</div>
+        <div className="bom-headers">No BOMs found.</div>
       ) : (
 
         <div className="container">

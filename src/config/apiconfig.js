@@ -1,7 +1,7 @@
 
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//  const BASE_URL = "https://localhost:7145/api";
+//const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+ const BASE_URL = "https://localhost:7145/api";
 
 
 
@@ -15,14 +15,18 @@ export const API_ENDPOINTS = {
   DEPARTMENT: `${BASE_URL}/HrmMaster/Department`,
   DESIGNATION: `${BASE_URL}/HrmMaster/Designation`,
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
-
-  GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
-  GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
-  GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
+GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+    GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
-  ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+ 
+  GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
+  SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
+  GetEmployeeByEmpCode: `${BASE_URL}/HrmOrgInfo/GetEmployeeByEmpCode`, // ✅ important
+  DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
 
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST

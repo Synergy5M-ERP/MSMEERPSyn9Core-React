@@ -422,7 +422,7 @@ function Header() {
           left: 0,
           width: "100%",
           zIndex: 1500,
-          background: "linear-gradient(90deg, #083967 0%, #0a4684 50%, #0e5ca7 100%)",
+          background: "linear-gradient(90deg, rgba(237, 239, 241, 1) 0%, #eaeef1ff 50%, #eff2f4ff 100%)",
         }}
         className="shadow-sm"
       >
@@ -457,7 +457,7 @@ function Header() {
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <h2
                 style={{
-                  color: "#e6f0fa",
+                  color: "#115293ff",
                   fontWeight: "bold",
                   margin: 0,
                   letterSpacing: 1,
@@ -474,7 +474,7 @@ function Header() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#fff",
+                  color: "#282298ff",
                   fontWeight: "bold",
                   fontSize: "16px",
                   padding: "8px 19px",

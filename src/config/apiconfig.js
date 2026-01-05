@@ -40,8 +40,11 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
   UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
-
-
+ EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+  GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
+  SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
+  GetEmployeeByEmpCode: `${BASE_URL}/HrmOrgInfo/GetEmployeeByEmpCode`, // ✅ important
+  DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
   //------------------------Account APIs----------------------------------
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,

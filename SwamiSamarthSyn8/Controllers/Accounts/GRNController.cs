@@ -256,7 +256,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     GRNDate = request.GrnDate,
                     InvoiceNumber = request.InvoiceNumber,
                     PONumber = request.PoNumber,
-                    PODate=request.poDate,
+                    PODate = request.poDate,
                     InvoiceDate = request.InvoiceDate,
                     Status = request.Status,
                     VehicleNo = request.VehicleNo,
@@ -264,14 +264,14 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     TotalTaxAmount = request.TotalTaxAmount,
                     GrandAmount = request.GrandAmount,
                     Description = request.Description,
-                    TransporterName=request.TransporterName,
-                    BillStatus=request.BillStatus,
+                    TransporterName = request.TransporterName,
+                    BillStatus = "Pending",     // or "Approve Pending"
                     CreatedBy = 0,
                     CreatedDate = DateTime.Now,
                     UpdatedBy = 0,
                     UpdatedDate = DateTime.Now,
                     IsActive = true
-                    
+
                 };
 
                 _context.AccountGRN.Add(grn);
@@ -304,12 +304,13 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                             SGST = i.SGST,
                             IGST = i.IGST,
                             Description = i.Description,
-                         
+
                             Item_Code = product.Item_Code,
                             Item_Grade = product.Item_Descrpition,
                             TotalAmount = i.TotalAmount,
                             TotalTaxAmount = i.TotalTaxAmount,
-                            
+                            BillApprove = false,
+
 
                         };
 
@@ -333,6 +334,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
 
         [HttpGet("GetgrnSellers")]
         public IActionResult GetgrnSellers()

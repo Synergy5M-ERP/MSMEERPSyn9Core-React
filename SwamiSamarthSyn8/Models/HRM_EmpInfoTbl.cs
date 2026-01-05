@@ -264,4 +264,6 @@ public partial class HRM_EmpInfoTbl
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Monthly_Salary { get; set; }
+    public bool? IsActive { get; set; }
+
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;   // <-- change namespace if needed
 using SwamiSamarthSyn8.Models; // <-- change namespace if needed
+using System.Net;
 using System.Net.Mail;
 
 namespace SwamiSamarthSyn8.Controllers.HRM
@@ -44,8 +45,8 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                     FullName = $"{empDto.Name} {empDto.Surname}",
                     Gender = empDto.Gender,
                     DOB = empDto.DOB.HasValue
-    ? DateOnly.FromDateTime(empDto.DOB.Value)
-    : null,
+                     ? DateOnly.FromDateTime(empDto.DOB.Value)
+                     : null,
                     Blood_Group = empDto.Blood_Group,
                     Email = string.IsNullOrEmpty(empDto.Email) ? "hrm@synergy5m.com" : empDto.Email,
                     Contact_NO = empDto.Contact_NO,
@@ -55,8 +56,8 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                     State = empDto.SelectedStateName,
                     City = empDto.SelectedCityName,
                     Date_Of_Joing = empDto.Date_Of_Joing.HasValue
-    ? DateOnly.FromDateTime(empDto.Date_Of_Joing.Value)
-    : null,
+                    ? DateOnly.FromDateTime(empDto.Date_Of_Joing.Value)
+                     : null,
                     SalaryStatus = empDto.SalaryStatus,
                     Status = "Vacant",
                     Joining_CTC_Breakup = empDto.SelectedCTC == "joining" ? "Joining CTC Breakup" : null,
@@ -444,5 +445,61 @@ namespace SwamiSamarthSyn8.Controllers.HRM
 
             return Ok(new { success = true });
         }
+        [HttpGet("GetEmployeeByEmpCode/{*empCode}")] // Catch-all route
+        public async Task<IActionResult> GetEmployeeByEmpCode(string empCode)
+        {
+            if (string.IsNullOrWhiteSpace(empCode))
+                return BadRequest("Employee code is required.");
+
+            // Decode %2F to /
+            string decodedEmpCode = WebUtility.UrlDecode(empCode).Trim();
+
+            var emp = await _context.HRM_EmpInfoTbl
+                .Where(x => x.Emp_Code.Trim().ToLower() == decodedEmpCode.ToLower())
+                .Select(x => new
+                {
+                    id = x.Id,
+                    emp_Code = x.Emp_Code,
+                    name = x.Name,
+                    surname = x.Surname,
+                    fullName = x.FullName,
+                    gender = x.Gender,
+                    dob = x.DOB,
+                    department = x.Department,
+                    joining_Designation = x.Joining_Designation,
+                    date_Of_Joing = x.Date_Of_Joing,
+                    monthly_Salary = x.Monthly_Salary,
+                    city = x.City,
+                    contact_NO = x.Contact_NO,
+                    email = x.Email,
+                    status = x.Status
+                })
+                .FirstOrDefaultAsync();
+
+            if (emp == null)
+                return NotFound($"Employee with code '{decodedEmpCode}' not found.");
+
+            return Ok(emp);
+        }
+        [HttpPut("DeactivateEmployee/{*empCode}")]
+        public async Task<IActionResult> DeactivateEmployee(string empCode)
+        {
+            empCode = Uri.UnescapeDataString(empCode).Trim();
+
+            Console.WriteLine($"EmpCode received: '{empCode}'");
+
+            var emp = await _context.HRM_EmpInfoTbl
+                .FirstOrDefaultAsync(x => x.Emp_Code.Trim() == empCode);
+
+            if (emp == null)
+                return NotFound($"Employee with code '{empCode}' not found");
+
+            emp.IsActive = false;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Employee deactivated successfully" });
+        }
+
+
     }
 }

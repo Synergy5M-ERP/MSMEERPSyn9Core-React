@@ -1,7 +1,3 @@
-// ===============================
-// FULLY FIXED ACCOUNT VOUCHER PAGE
-// ===============================
-
 import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -14,9 +10,11 @@ function AccountVoucher() {
     // ----------------------
     // Main States
     // ----------------------
+    const [otherVendor, setOtherVendor] = useState("");
+    const [voucherCategory, setVoucherCategory] = useState("Vendor Voucher")
     const [voucherNo, setVoucherNo] = useState('');
     const [voucherType, setVoucherType] = useState('');
-    const [voucherDate, setVoucherDate] = useState('');
+    const [voucherDate, setVoucherDate] = useState(new Date().toISOString().split("T")[0]);
     const [referenceNo, setReferenceNo] = useState('');
     const [totalAmount, setTotalAmount] = useState('');
     const [paymentMode, setPaymentMode] = useState('');   // selected value
@@ -32,7 +30,6 @@ function AccountVoucher() {
     const [saleInvoices, setSaleInvoices] = useState([]);
     const [paymentDueDate, setPaymentDueDate] = useState('');
     const [voucherTypeId, setVoucherTypeId] = useState("");
-    const [voucherTypeName, setVoucherTypeName] = useState("");
     
     // Ledger grid row fields
     const [ledgerAccount, setLedgerAccount] = useState('');
@@ -45,40 +42,48 @@ function AccountVoucher() {
     const [gridEntries, setGridEntries] = useState([]);
     const [voucherTypes, setVoucherTypes] = useState([]);
     const [ledgerAccounts, setLedgerAccounts] = useState([]);
-    // const [throughOptions] = useState(['Bank', 'Cash']);
-    // const [statusOptions] = useState(['Draft', 'Posted', 'Approved', 'Cancelled']);
     const [loading, setLoading] = useState(false);
     const [fetchLoading, setFetchLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 4;
     const indexOfLast = currentPage * recordsPerPage;
     const indexOfFirst = indexOfLast - recordsPerPage;
-    //const currentRecords = gridEntries.slice(indexOfFirst, indexOfLast);
 
     // ----------------------
     // Fetch initial dropdown data
     // ----------------------
     useEffect(() => {
         fetchVoucherTypeNames();
-        fetchVendorNames();
         fetchLedgerNames();
         fetchAllVouchers();
         fetchPaymentMode()
         fetchStatus()
     }, []);
 
+    useEffect(() => {
+        if (voucherCategory === "Vendor Voucher") {
+            fetchVendorNames();
+        } else {
+            setVendorNames([]);     // clear vendors
+            setVendorName('');
+            setVendorNumber('');
+        }
+    }, [voucherCategory]);
+
     // ========================
     //  Fetching Functions
     // ========================
 
     const normalize = (json) =>
-        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : [];
+        Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : json && typeof json === 'object' && !Array.isArray(json) ? [json] : [];
 
     const fetchVendorNames = async () => {
         try {
-            const res = await fetch(API_ENDPOINTS.Vendors);
-            const json = await res.json();
-            setVendorNames(normalize(json));
+                const res = await fetch(API_ENDPOINTS.Vendors);
+                console.log((res));
+                
+                const json = await res.json();
+                setVendorNames(normalize(json));
         } catch (err) {
             toast.error("Failed to load vendors");
         }};
@@ -87,7 +92,6 @@ function AccountVoucher() {
         try {
             const res = await fetch(API_ENDPOINTS.VoucherType);
             const json = await res.json();
-            //setVoucherTypes(normalize(json));
             setVoucherTypes(Array.isArray(json) ? json : []); 
         } catch (err) {
             toast.error("Failed to load voucher types");
@@ -154,6 +158,12 @@ function AccountVoucher() {
     // -----------------------------
     // Fetch Amount for GRN / Invoice
     // -----------------------------
+    useEffect(() => {
+    if (voucherCategory === "Other Voucher") {
+        setTotalAmount("");
+        setVendorName("");
+    }
+    }, [voucherCategory]);
 
     const fetchGRNAmount = async (refId) => {
         if (!refId) return;
@@ -197,46 +207,66 @@ function AccountVoucher() {
             toast.error("Failed to load Status");
         } finally {
             setFetchLoading(false);
-        }
-    };
+        }};
     
     // ----------------------
     // Vendor number auto-generate
     // ----------------------
-    const handleVendorChange = (vendorId) => {
+    useEffect(() => {
+        if (voucherCategory === "Other Voucher") {
+           generateOtherVoucherNo()
+        }
+    }, [voucherCategory, vouchers]);
+
+    const generateOtherVoucherNo = async () => {
+        try {
+            const res = await fetch(
+                `${API_ENDPOINTS.GetNextVoucherNumber}?prefix=OV`
+            );
+            const json = await res.json();
+
+            if (json.success) {
+                setVendorNumber(json.voucherNo);
+                setOtherVendor("Other Vendor");
+            } else {
+                toast.error("Failed to generate Other Voucher number");
+            }
+        } catch (err) {
+            toast.error("Error generating Other Voucher number");
+        }
+    };
+
+    const handleVendorChange = async (vendorId) => {
         setVendorName(vendorId);
 
-        const vendor = vendorNames.find((v) => v.vendorId == vendorId);
-        if (!vendor) return setVendorNumber("");
+        const vendor = vendorNames.find(v => v.vendorId == vendorId);
+        if (!vendor) {
+            setVendorNumber("");
+            return;
+        }
 
         const prefix = vendor.companyName
             .split(" ")
-            .map((w) => w[0].toUpperCase())
+            .map(w => w[0].toUpperCase())
             .join("")
             .substring(0, 3);
 
-        const matches = vouchers.filter((v) => v.voucherNo?.startsWith(prefix + "-"));
+        try {
+            const res = await fetch(
+                `${API_ENDPOINTS.GetNextVoucherNumber}?vendorId=${vendorId}&prefix=${prefix}`
+            );
+            const json = await res.json();
 
-        let next = 1;
-        // if (matches.length > 0) {
-        //     next =
-        //         Math.max(...matches.map((m) => parseInt(m.voucherNo.split("-")[1]))) + 1;
-        // }
-        if (matches.length > 0) {
-        const nums = matches.map((m) => {
-            const parts = m.voucherNo.split("-");
-            return parseInt(parts[1], 10) || 0;
-        });
-
-        next = Math.max(...nums) + 1;
+            if (json.success) {
+                setVendorNumber(json.voucherNo);
+            } else {
+                toast.error("Failed to generate voucher number");
+            }
+        } catch (err) {
+            toast.error("Error generating voucher number");
         }
-
-        setVendorNumber(`${prefix}-${String(next).padStart(3, "0")}`);
     };
 
-    // ----------------------
-    // Add Ledger Row to Grid
-    // ----------------------
     const handleAddToGrid = () => {
         if (!ledgerAccount || (!creditAmount && !debitAmount) || !narration.trim()) {
             toast.warning("Fill all ledger fields");
@@ -267,7 +297,7 @@ function AccountVoucher() {
         const newEntry = {
             id: Date.now(),
             ledgerId: ledgerAccount,
-            ledgerName: selectedLedger?.accountLedgerName,
+            ledgerName: typeof selectedLedger?.accountLedgerName === 'string' ? selectedLedger.accountLedgerName : 'Unknown',
             creditAmount: Number(creditAmount) || 0,
             debitAmount: Number(debitAmount) || 0,
             narration,
@@ -291,9 +321,19 @@ function AccountVoucher() {
     };
 
     const handleReferenceNo = async () =>{
+        setTotalAmount('');
+        setPaymentDueDate('');
+        setPaymentMode('');
+        setStatus('');
+        setDescription('');
+        setGridEntries([]);   // Clear table rows
 
+        // Optional → clear ledger input fields too
+        setLedgerAccount('');
+        setCreditAmount('');
+        setDebitAmount('');
+        setNarration('');
     };
-
 
     // ----------------------
     // Save Voucher
@@ -304,15 +344,36 @@ const handleSave = async () => {
     const trimmedReferenceNo = referenceNo?.trim() || "";
     const trimmedDescription = description?.trim() || "";
 
+    const isExists = vouchers.some(
+        v => v.voucherNo?.toLowerCase() === trimmedVoucherNo.toLowerCase()
+    );
+
+    if (isExists) {
+        toast.error("Voucher number already exists. Please try again.");
+        return;
+    }   
+
     // Parse numeric fields
     const parsedTotalAmount = parseFloat(totalAmount);
   
     // Validation
+    if (voucherCategory === "Vendor Voucher" && !vendorName)
+    return toast.warning("Vendor is required!");
+
+    if (voucherCategory === "Other Voucher" && !otherVendor.trim())
+    return toast.warning("Other Vendor is required!");
+
+    if (voucherCategory === "Vendor Voucher" && trimmedReferenceNo === "") {
+    return toast.warning("Reference number is required!");
+    }
+
+    if (voucherCategory === "Other Voucher" && trimmedReferenceNo === "") {
+        return toast.warning("Other reference number is required!");
+    }
+
     if (trimmedVoucherNo === "") return toast.warning("Voucher number is required!");
-    if (!vendorName) return toast.warning("Vendor is required!");
     if (!voucherType) return toast.warning("Voucher type is required!");
     if (!voucherDate) return toast.warning("Voucher date is required!");
-    if (trimmedReferenceNo === "") return toast.warning("Reference number is required!");
     if (!paymentDueDate) return toast.warning("Payment due date is required!");
     if (isNaN(parsedTotalAmount) || parsedTotalAmount <= 0)
         return toast.warning("Total amount must be a valid number greater than 0!");
@@ -332,10 +393,13 @@ const handleSave = async () => {
     // Prepare payload
     const payload = {
         voucherNo: trimmedVoucherNo,
-        vendorId: vendorName,                // numeric ID
+        voucherCategory: voucherCategory,
+        vendorId: voucherCategory === "Vendor Voucher" ? vendorName : null,
+        otherVendor: voucherCategory === "Other Voucher" ? otherVendor.trim() : null, 
         accountVoucherTypeId: parseInt(voucherType),
         voucherDate:voucherDate,       
-        referenceNo: trimmedReferenceNo,
+        referenceNo: voucherCategory === "Vendor Voucher" ? trimmedReferenceNo : 0,        
+        otherReferenceNo: voucherCategory === "Other Voucher" ? trimmedReferenceNo : null,           
         totalAmount: parsedTotalAmount,
         paymentDueDate:paymentDueDate,
         paymentModeId: paymentMode,
@@ -350,14 +414,18 @@ const handleSave = async () => {
         }))
     };
 
+    console.log(payload)
+
     setLoading(true);
 
     try {
-        const res = await fetch(API_ENDPOINTS.Voucher, {
+        const res = await fetch(API_ENDPOINTS.AccountVoucher, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
+
+        console.log(res)
 
         const json = await res.json();
 
@@ -368,6 +436,26 @@ const handleSave = async () => {
                 ...prev,
                 { voucherNo: trimmedVoucherNo, vendorId: vendorName }
                 ]);
+                
+                setNarration('')
+                setVendorName('')
+                setVendorNumber('')
+                setVoucherDate(new Date().toISOString().split("T")[0])
+                setVoucherNo('')
+                setVoucherType('')
+                setReferenceNo('')
+                setTotalAmount('');
+                setPaymentDueDate('');
+                setPaymentMode('');
+                setStatus('');
+                setDescription('');
+                setGridEntries([]);   // Clear table rows
+
+                // Optional → clear ledger input fields too
+                setLedgerAccount('');
+                setCreditAmount('');
+                setDebitAmount('');
+                setNarration('');                   
 
         } else {
             toast.error(json.message || "Save failed!");
@@ -378,7 +466,6 @@ const handleSave = async () => {
         setLoading(false);
     }
 };
-//========================================3
 
     if (fetchLoading) return <LoadingSpinner />;
 
@@ -418,24 +505,42 @@ const handleSave = async () => {
                 {/* ---------------------- */}
                 <div className="row mb-2">
                     <div className="col-3">
-                        <label className="form-label text-primary">Vendor*</label>
-                        <select
-                            className="form-select"
-                            value={vendorName}
-                            onChange={(e) => handleVendorChange(e.target.value)}
-                        >
-                            <option value="">--Select Vendor--</option>
-                            {vendorNames.map((v) => (
-                                <option key={v.vendorId} value={v.vendorId}>
-                                    {v.companyName}
-                                </option>
-                            ))}
+                        <label className="form-label text-primary">Vendor Category*</label>
+                        <select className="form-select" value={voucherCategory}
+                            onChange={(e) => setVoucherCategory(e.target.value)}>
+                            <option value="">--Select Voucher Category--</option>
+                            <option value="Other Voucher">Other Voucher</option>
+                            <option value="Vendor Voucher">Vendor Voucher</option>
                         </select>
                     </div>
 
                     <div className="col-3">
+                        <label className="form-label text-primary">Vendor*</label>
+                        {voucherCategory === "Vendor Voucher" && (
+                                <select className="form-select" value={vendorName}                       
+                                    onChange={(e) => handleVendorChange(e.target.value)}>
+                               
+                                    <option value="">--Select Vendor--</option>
+                                    {Array.isArray(vendorNames) &&
+                                        vendorNames.map((v) => (
+                                            <option key={v.vendorId} value={v.vendorId}>
+                                                {typeof v.companyName === "string"
+                                                    ? v.companyName
+                                                    : "Unknown"}
+                                            </option>
+                                        ))}
+                                </select>
+                            )}
+
+                            {voucherCategory === "Other Voucher" && (
+                                <input type="text" className="form-control" value={otherVendor} readOnly/>                                                                    
+                            )}
+                    </div>
+
+                    <div className="col-3">
                         <label className="form-label text-primary">Voucher Number*</label>
-                        <input className="form-control" value={vendorNumber} readOnly />
+                        <input type="text" value={vendorNumber}
+                        className="form-control" disabled={loading} readOnly />
                     </div>
 
                     <div className="col-3">
@@ -446,16 +551,17 @@ const handleSave = async () => {
                             onChange={(e) => setVoucherType(e.target.value)}
                         >
                             <option value="">--Select Voucher Type--</option>
-                            {voucherTypes.map((t) => (
+                            {Array.isArray(voucherTypes) ? voucherTypes.map((t) => (
                                 <option key={t.accountVoucherTypeId} value={t.accountVoucherTypeId}>
-                                    {t.voucherType}
+                                    {typeof t.voucherType === 'string' ? t.voucherType : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
-
+                </div>
+                <div className="row mb-2">
                     <div className="col-3">
-                        <label className="form-label text-primary">Date*</label>
+                        <label className="form-label text-primary">Voucher Date*</label>
                         <input
                             type="date"
                             className="form-control"
@@ -463,76 +569,86 @@ const handleSave = async () => {
                             onChange={(e) => setVoucherDate(e.target.value)}
                         />
                     </div>
-                </div>
 
-                {/* ---------------------- */}
-                {/* REFERENCE NO SECTION */}
-                {/* ---------------------- */}
-
-                <div className="row">
                     <div className="col-3">
                         <label className="form-label text-primary">Reference No*</label>
+                         {voucherCategory === "Vendor Voucher" ? (
+                            (() => {
+                                const voucherTypeObj = voucherTypes.find(
+                                    (v) => v.accountVoucherTypeId.toString() === voucherType.toString()
+                                );
 
-                        {(() => {
-                        const voucherTypeObj = voucherTypes.find(
-                            (v) => v.accountVoucherTypeId.toString() === voucherType.toString()
-                        );
-
-                        if (voucherTypeObj?.voucherType === "Payment") {
-                            return (
-                                <select
-                                    className="form-select"
-                                    value={referenceNo}
-                                    onChange={(e) => {
-                                        setReferenceNo(e.target.value);
-                                        fetchGRNAmount(parseInt(e.target.value));
-                                    }}
-                                >
-                                    <option value="">--Select GRN--</option>
-                                    {purchaseOrders.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.purchaseOrderNo}
-                                        </option>
-                                    ))}
-                                </select>
-                            );
-                        } else if (voucherTypeObj?.voucherType === "Receipt") {
-                            return (
-                                <select
-                                    className="form-select"
-                                    value={referenceNo}
-                                    onChange={(e) => {
-                                        setReferenceNo(e.target.value);
-                                        fetchInvoiceAmount(parseInt(e.target.value));
-                                    }}
-                                >
-                                    <option value="">--Select Invoice--</option>
-                                    {saleInvoices.map((i) => (
-                                        <option key={i.id} value={i.id}>
-                                            {i.invoiceNo}
-                                        </option>
-                                    ))}
-                                </select>
-                            );
-                        } else {
-                            return (
-                                <input
-                                    className="form-control"
-                                    value={referenceNo}
-                                    onChange={(e) => setReferenceNo(e.target.value)}
-                                />
-                            );
-                        }
-                    })()}
+                                if (voucherTypeObj?.voucherType === "Payment") {
+                                    return (
+                                        <select className="form-select" value={referenceNo}                                                                              
+                                            onChange={(e) => {
+                                                setReferenceNo(e.target.value);
+                                                handleReferenceNo();
+                                                fetchGRNAmount(parseInt(e.target.value));
+                                            }}>
+                                        
+                                            <option value="">--Select GRN--</option>
+                                            {Array.isArray(purchaseOrders) &&
+                                                purchaseOrders.map((p) => (
+                                                    <option key={p.id} value={p.id}>
+                                                        {typeof p.purchaseOrderNo === "string"
+                                                            ? p.purchaseOrderNo
+                                                            : "Unknown"}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    );
+                                } else if (voucherTypeObj?.voucherType === "Receipt") {
+                                    return (
+                                        <select className="form-select" value={referenceNo}                                                                           
+                                            onChange={(e) => {
+                                                setReferenceNo(e.target.value);
+                                                handleReferenceNo();
+                                                fetchInvoiceAmount(parseInt(e.target.value));
+                                            }}>
+                                        
+                                            <option value="">--Select Invoice--</option>
+                                            {Array.isArray(saleInvoices) &&
+                                                saleInvoices.map((i) => (
+                                                    <option key={i.id} value={i.id}>
+                                                        {typeof i.invoiceNo === "string"
+                                                            ? i.invoiceNo
+                                                            : "Unknown"}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    );
+                                } else {
+                                    return (
+                                        <input className="form-control" value={referenceNo}                                                                                     
+                                            onChange={(e) => {
+                                                setReferenceNo(e.target.value);
+                                                handleReferenceNo();
+                                            }}/>                                        
+                                    );
+                                }
+                            })()
+                        ) : (
+                            // For Other Voucher, just show a read-only input or nothing
+                            <input type="text" className="form-control" value={referenceNo}     
+                                    onChange={(e) => setReferenceNo(e.target.value)} placeholder="Enter Reference No"/>                                                                       
+                        )}
                     </div>
 
-                    <div className="col-3">
+                     <div className="col-3">
                         <label className="form-label text-primary">Total Amount*</label>
-                        <input className="form-control" value={totalAmount} readOnly />
+                        <input className="form-control" value={totalAmount}
+                                type ="number" onChange={(e) => setTotalAmount(e.target.value)}
+                                readOnly={voucherCategory !== "Other Voucher"}
+                                placeholder={
+                                    voucherCategory === "Other Voucher"
+                                    ? "Enter Total Amount"
+                                    : ""
+                                } />
                     </div>
 
-                    <div className="col-3">
-                        <label className="form-label text-primary">Payment Due*</label>
+                     <div className="col-3">
+                        <label className="form-label text-primary">Payment Due Date*</label>
                         <input
                             type="date"
                             className="form-control"
@@ -540,7 +656,9 @@ const handleSave = async () => {
                             onChange={(e) => setPaymentDueDate(e.target.value)}
                         />
                     </div>
+                </div>
 
+                <div className="row">                  
                     <div className="col-3">
                         <label className="form-label text-primary">Payment Mode*</label>
                         <select
@@ -549,23 +667,24 @@ const handleSave = async () => {
                             onChange={(e) => setPaymentMode(e.target.value)}
                         >
                             <option value="">--Select Payment Mode--</option>
-                            {paymentModes.map((t) => (
-                               <option key={t.paymentModeId} value={t.paymentModeId}>{t.paymentMode}</option>
-                            ))}
+                            {Array.isArray(paymentModes) ? paymentModes.map((t) => (
+                               <option key={t.paymentModeId} value={t.paymentModeId}>{typeof t.paymentMode === 'string' ? t.paymentMode : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
-                </div>
 
-                <div className="row">
-                    <div className="col-3">
+                     <div className="col-3">
                         <label className="form-label text-primary">Status*</label>
                         <select value={status} onChange={e => setStatus(e.target.value)} className="form-control" disabled={loading}>
                             <option value="">--Select Status--</option>
-                            {statusList.map((t) => (
-                               <option key={t.accountStatusId} value={t.accountStatusId}>{t.status}</option>
-                            ))}
+                            {Array.isArray(statusList) ? statusList.map((t) => (
+                               <option key={t.accountStatusId} value={t.accountStatusId}>{typeof t.status === 'string' ? t.status : 'Unknown'}</option>
+                            )) : []}
                         </select>
                     </div>
+                {/* </div>
+
+                <div className="row">                    */}
                     <div className="col-6">
                         <label className="form-label text-primary">Description*</label>
                         <textarea value={description} onChange={e => setDescription(e.target.value)} className="form-control" rows={2} />
@@ -587,11 +706,11 @@ const handleSave = async () => {
                             onChange={(e) => setLedgerAccount(e.target.value)}
                         >
                             <option value="">--Select--</option>
-                            {ledgerAccounts.map((l) => (
+                            {Array.isArray(ledgerAccounts) ? ledgerAccounts.map((l) => (
                                 <option key={l.id || l.accountLedgerId} value={l.id || l.accountLedgerId}>
-                                    {l.accountLedgerName}
+                                    {typeof l.accountLedgerName === 'string' ? l.accountLedgerName : 'Unknown'}
                                 </option>
-                            ))}
+                            )) : []}
                         </select>
                     </div>
 
@@ -661,7 +780,7 @@ const handleSave = async () => {
                             <tbody>
                                 {gridEntries.map((row, i) => (
                                     <tr key={row.id}>
-                                        <td>{row.ledgerName}</td>
+                                        <td>{typeof row.ledgerName === 'string' ? row.ledgerName : 'Unknown'}</td>
                                         <td>{row.creditAmount}</td>
                                         <td>{row.debitAmount}</td>
                                         <td>{row.narration}</td>

@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus, Save, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,6 +19,11 @@ const taxTypeOptions = [
   { value: "IGST", label: "IGST" },
 ];
 
+const categoryOptions = [
+  { value: "seller", label: "Seller" },
+  { value: "buyer", label: "Buyer" },
+];
+
 const emptyItem = {
   itemName: "",
   qty: 0,
@@ -33,13 +40,16 @@ const emptyItem = {
 
 export default function CreditNote() {
   const [vendorOptions, setVendorOptions] = useState([]);
+  const [customerOptions, setCustomerOptions] = useState([]);
   const [invoiceOptions, setInvoiceOptions] = useState([]);
   const [itemOptions, setItemOptions] = useState([]);
 
+  const [category, setCategory] = useState("");
   const [vendor, setVendor] = useState("");
   const [invoice, setInvoice] = useState("");
   const [creditNoteNo, setCreditNoteNo] = useState("");
-  const [creditNoteDate, setCreditNoteDate] = useState("");
+  const [creditNoteDate, setCreditNoteDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentDueDate, setPaymentDueDate] =useState("")
 
   const [item, setItem] = useState(emptyItem);
   const [items, setItems] = useState([]);
@@ -61,16 +71,22 @@ export default function CreditNote() {
     fetchDropdownData();
   }, []);
 
+  useEffect(() => {
+    setVendor("");
+  }, [category]);
+
   const fetchDropdownData = async () => {
     setIsLoading(true);
     try {
-      const [vendorRes, invoiceRes, itemRes] = await Promise.all([
-        axios.get(API_ENDPOINTS.AllVendor),
+      const [vendorRes, customerRes, invoiceRes, itemRes] = await Promise.all([
+        axios.get(API_ENDPOINTS.Vendors),
+        axios.get(API_ENDPOINTS.Getbuyers),
         axios.get(API_ENDPOINTS.Ledger),
         axios.get(API_ENDPOINTS.BankDetails),
       ]);
 
       setVendorOptions(vendorRes.data || []);
+      setCustomerOptions(customerRes.data || [])
       setInvoiceOptions(invoiceRes.data || []);
       setItemOptions(itemRes.data || []);
 
@@ -139,10 +155,11 @@ export default function CreditNote() {
   };
 
   const handleCancel = () => {
+    setCategory("");
     setVendor("");
     setInvoice("");
     setCreditNoteNo("");
-    setCreditNoteDate("");
+    setCreditNoteDate(new Date().toISOString().split("T")[0]);
     setItems([]);
     setItem(emptyItem);
     setEditingIdx(null);
@@ -160,6 +177,10 @@ export default function CreditNote() {
   const grandTotal = totalAmount + totalTaxAmount;
 
   const handleSave = async () => {
+    if (!category) {
+      toast.warn("Please select a Category");
+      return;
+    }
     if (!vendor) {
       toast.warn("Please select a vendor");
       return;
@@ -182,6 +203,7 @@ export default function CreditNote() {
     }
 
     const creditNoteData = {
+      category,
       vendor,
       invoice,
       creditNoteNo,
@@ -244,51 +266,66 @@ export default function CreditNote() {
         >
           {/* Header Form Fields - ALL ORIGINAL FIELDS */}
           <div className="row">
-            <div className="col-3">
-              <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
-              >
-                Vendor Name <span style={{ color: "#ef4444" }}>*</span>
+            <div className="col">
+                <label style={{ textAlign: "left", display: "block",  color: "#0066cc",
+                  }}>
+                  Category <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={{
+                    width: "100%", padding: "5px 6px", borderRadius: 10, border: "2px solid #e2e8f0",                                                         
+                    fontSize: 15, background: "white",  cursor: "pointer"                                                      
+                  }}
+                  className="form-select"
+                >
+                  <option value="">Select Category</option>
+                  {categoryOptions.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+            <div className="col">
+              <label style={{ textAlign: "left", display: "block", color: "#0066cc", fontSize: "14px",                                                                 
+                  fontWeight: "600", marginBottom: "8px",}}>             
+                {category === "buyer" ? "Customer Name" : "Vendor Name"} <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <select
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
-                disabled={isLoading}
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 15,
-                  background: "white",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  marginBottom: "9px",
+                disabled={!category || isLoading}
+                style={{width: "100%", padding: "5px 6px", borderRadius: 10, border: "2px solid #e2e8f0", fontSize: 15,                                                                                   
+                  background: "white", cursor: "pointer", transition: "all 0.2s", marginBottom: "9px",                                                 
                 }}
-              >
-                <option value="">Select Vendor</option>
-                {vendorOptions.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}
-                  </option>
+                className="form-select"
+                >
+              
+                <option value="">
+                  {category ? category === "buyer" ? "Select Customer" : "Select Vendor" : "Select Category First"}</option>
+                    {category === "seller" &&
+                      vendorOptions.map((o) => (
+                        <option key={o.id} value={o.id}> {o.name} </option>                                            
+                      ))}
+
+                    {category === "buyer" &&
+                      customerOptions.map((o) => (
+                        <option key={o.id} value={o.id}>{o.name} </option>                                             
                 ))}
               </select>
             </div>
 
-            <div className="col-3">
+            <div className="col">
               <label
                 style={{
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -301,7 +338,7 @@ export default function CreditNote() {
                 disabled={isLoading}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "5px 6px",
                   borderRadius: 10,
                   border: "2px solid #e2e8f0",
                   fontSize: 15,
@@ -309,6 +346,7 @@ export default function CreditNote() {
                   cursor: "pointer",
                   transition: "all 0.2s",
                 }}
+                className="form-select"
               >
                 <option value="">Select Invoice</option>
                 {invoiceOptions.map((o) => (
@@ -319,13 +357,13 @@ export default function CreditNote() {
               </select>
             </div>
 
-            <div className="col-3">
+            <div className="col">
               <label
                 style={{
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -339,22 +377,23 @@ export default function CreditNote() {
                 placeholder="CN-001"
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "5px 6px",
                   borderRadius: 10,
                   border: "2px solid #e2e8f0",
                   fontSize: 15,
                   transition: "all 0.2s",
                 }}
+                className="form-text"
               />
             </div>
 
-            <div className="col-3">
+            <div className="col">
               <label
                 style={{
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -367,12 +406,42 @@ export default function CreditNote() {
                 onChange={(e) => setCreditNoteDate(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "5px 6px",
                   borderRadius: 10,
                   border: "2px solid #e2e8f0",
                   fontSize: 15,
                   transition: "all 0.2s",
                 }}
+                className="form-text"
+              />
+            </div>
+
+            <div className="col">
+              <label
+                style={{
+                  textAlign: "left",
+                  display: "block",
+                  color: "#0066cc",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  marginBottom: "8px",
+                }}
+              >
+                Payment Due Date <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <input
+                type="date"
+                value={paymentDueDate}
+                onChange={(e) => setPaymentDueDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "5px 6px",
+                  borderRadius: 10,
+                  border: "2px solid #e2e8f0",
+                  fontSize: 15,
+                  transition: "all 0.2s",
+                }}
+                className="form-select"
               />
             </div>
           </div>
@@ -392,7 +461,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "10px",
                 }}
@@ -404,15 +473,16 @@ export default function CreditNote() {
                 onChange={(e) => setItem((it) => ({ ...it, itemName: e.target.value }))}
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
                   background: "white",
                   cursor: "pointer",
                 }}
+                className="form-select"
               >
-                <option value="">Select</option>
+                <option value="">Select Item </option>
                 {itemOptions.map((o) => (
                   <option key={o.id} value={o.name}>
                     {o.name}
@@ -427,7 +497,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -442,12 +512,13 @@ export default function CreditNote() {
                 placeholder="0"
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
                   textAlign: "right",
                 }}
+                className="form-text"
               />
             </div>
 
@@ -457,7 +528,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -469,15 +540,16 @@ export default function CreditNote() {
                 onChange={(e) => setItem((it) => ({ ...it, unit: e.target.value }))}
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
                   background: "white",
                   cursor: "pointer",
                 }}
+                className="form-select"
               >
-                <option value="">Select</option>
+                <option value="">Select Unit</option>
                 {unitOptions.map((u) => (
                   <option key={u.value} value={u.value}>
                     {u.label}
@@ -492,7 +564,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -508,12 +580,13 @@ export default function CreditNote() {
                 placeholder="0.00"
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
                   textAlign: "right",
                 }}
+                className="form-text"
               />
             </div>
 
@@ -523,7 +596,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -536,7 +609,7 @@ export default function CreditNote() {
                 readOnly
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -544,6 +617,7 @@ export default function CreditNote() {
                   color: "#475569",
                   textAlign: "right",
                 }}
+                className="form-text"
               />
             </div>
           </div>
@@ -563,7 +637,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -575,13 +649,14 @@ export default function CreditNote() {
                 onChange={(e) => setItem((it) => ({ ...it, taxType: e.target.value }))}
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
                   background: "white",
                   cursor: "pointer",
                 }}
+                className="form-select"
               >
                 <option value="">Select</option>
                 {taxTypeOptions.map((o) => (
@@ -598,7 +673,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -614,7 +689,7 @@ export default function CreditNote() {
                 placeholder="0"
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -629,7 +704,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -645,7 +720,7 @@ export default function CreditNote() {
                 placeholder="0"
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -660,7 +735,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -676,7 +751,7 @@ export default function CreditNote() {
                 placeholder="0"
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -691,7 +766,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -712,7 +787,7 @@ export default function CreditNote() {
                 readOnly
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -730,7 +805,7 @@ export default function CreditNote() {
                   textAlign: "left",
                   display: "block",
                   color: "#0066cc",
-                  fontSize: "18px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   marginBottom: "8px",
                 }}
@@ -750,7 +825,7 @@ export default function CreditNote() {
                 readOnly
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
+                  padding: "5px 6px",
                   borderRadius: 8,
                   border: "2px solid #e2e8f0",
                   fontSize: 14,
@@ -777,7 +852,7 @@ export default function CreditNote() {
               background:
                 editingIdx !== null
                   ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  : "linear-gradient(135deg, green 0%, green 100%)",
               color: "white",
               fontWeight: 600,
               fontSize: 15,
@@ -785,7 +860,7 @@ export default function CreditNote() {
               boxShadow:
                 editingIdx !== null
                   ? "0 4px 15px rgba(245, 158, 11, 0.4)"
-                  : "0 4px 15px rgba(102, 126, 234, 0.4)",
+                  : "0 4px 15px green",
               transition: "all 0.3s",
             }}
             onMouseOver={(e) => {
@@ -793,23 +868,23 @@ export default function CreditNote() {
               e.currentTarget.style.boxShadow =
                 editingIdx !== null
                   ? "0 6px 20px rgba(245, 158, 11, 0.5)"
-                  : "0 6px 20px rgba(102, 126, 234, 0.5)";
+                  : "0 6px 20px green";
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow =
                 editingIdx !== null
                   ? "0 4px 15px rgba(245, 158, 11, 0.4)"
-                  : "0 4px 15px rgba(102, 126, 234, 0.4)";
+                  : "0 4px 15px green";
             }}
           >
             {editingIdx === null ? (
               <>
-                <Plus size={18} /> Add
+                 Add
               </>
             ) : (
               <>
-                <Edit size={18} /> Update
+                Update
               </>
             )}
           </button>
@@ -840,7 +915,7 @@ export default function CreditNote() {
                     >
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "left",
@@ -850,7 +925,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
@@ -860,7 +935,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
@@ -870,7 +945,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "right",
@@ -880,7 +955,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "right",
@@ -890,7 +965,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
@@ -900,7 +975,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
@@ -910,7 +985,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
@@ -920,7 +995,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "right",
@@ -930,7 +1005,7 @@ export default function CreditNote() {
                       </th>
                       <th
                         style={{
-                          padding: "16px 12px",
+                          padding: "14px 12px",
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",

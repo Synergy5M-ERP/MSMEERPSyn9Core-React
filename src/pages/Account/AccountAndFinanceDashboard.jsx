@@ -15,8 +15,9 @@ import AccountGRN from './AccountGRN';
 import Masters from '../Masters/Masters';
 import VoucherConfiguration from './VoucherConfiguration';
 import CreditDebitNote from './CreditDebitNote';
-import Nullify from './Nullify';
 import AccountSale from './AccountSale';
+import BalanceSheet from './BalanceSheet';
+import FinancialConfiguration from './FinancialConfiguration';
 const AccountAndFinanceDashboard = () => {
 const [activePage, setActivePage] = useState('Dashboard');
 
@@ -40,10 +41,18 @@ const [activePage, setActivePage] = useState('Dashboard');
           {activePage ==='AccountLedger' && <AccountLedger/>}
           {activePage ==='AccountVoucher' && <VoucherConfiguration/>}
           {activePage ==='AccountJournal' && <AccountJournal/>}
+
            {activePage ==='AccountGRN' && <AccountGRN/>}
                {activePage ==='AccountSale' && <AccountSale/>}
            {activePage ==='CreditDebitNote' && <CreditDebitNote/>}
-           {activePage ==='nullify' && <Nullify/>}
+           {/* {activePage ==='nullify' && <Nullify/>} */}
+            {activePage ==='BalanceSheet' && <BalanceSheet/>}
+            {activePage==='FinancialConfiguration' && <FinancialConfiguration/>}
+
+        
+      
+          {activePage ==='BalanceSheet' && <BalanceSheet/>}
+
           {/* Add more conditions for other pages */}
         </div>
       </div>

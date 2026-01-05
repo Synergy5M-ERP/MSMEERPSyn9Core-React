@@ -5,6 +5,8 @@ import { API_ENDPOINTS } from "../../config/apiconfig";
 //const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
 //const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
 
+const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api';
+
 
 function AccountBankDetails({ view = 'active' }) {
 const [vendorId, setVendorId] = useState('');

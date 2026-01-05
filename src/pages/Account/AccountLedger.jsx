@@ -45,36 +45,27 @@ export default function AccountLedger({ view }) {
 
   const activeFilter = view || "active";
 
-  // Fetch account groups
   useEffect(() => {
-    let isMounted = true;
+          fetchAccountGroup();
+          
+      }, []);
 
-    const fetchAccountGroups = async () => {
-      try {
-        const response = await axios.get(API_ENDPOINTS.AccountGroup);
-        // backend is expected to return: { data: [ { id, name, isActive } ] }
-        const groups = response?.data?.data ?? response?.data ?? [];
-
-        if (!Array.isArray(groups)) throw new Error("Unexpected groups shape");
-
-        if (isMounted) {
-          setAccountGroupOptions(
-            groups.map((g) => ({ id: g.id ?? g.AccountGroupid ?? g.accountGroupId, name: g.name ?? g.AccountGroupName ?? g.accountGroup }))
-          );
+  // Fetch account groups
+ const fetchAccountGroup = async () => {
+    try {
+        const res = await fetch(API_ENDPOINTS.Group);
+        if (!res.ok) {
+            throw new Error("Failed to fetch");
         }
-      } catch (err) {
-        if (isMounted) {
-          toast.error("Failed to fetch account groups");
-          setAccountGroupOptions([]);
-        }
-      }
-    };
 
-    fetchAccountGroups();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+        const json = await res.json();
+
+        // Always store clean array
+        setAccountGroupOptions(Array.isArray(json) ? json : []);
+    } catch (err) {
+        toast.error("Failed to load Account Group");
+    }
+};
 
   // Fetch ledgers / subledgers based on formType and view
   useEffect(() => {
@@ -167,11 +158,11 @@ export default function AccountLedger({ view }) {
     if (formType === "ledger") {
       if (!accountGroup) return "Please select Account Group";
       if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
-      const mobile = String(mobileNo || "").trim();
-      if (mobile) {
-      if (!/^\d{10}$/.test(mobile)) return "Mobile No must be exactly 10 digits";
-      if (!/^[6-9]/.test(mobile)) return "Mobile No must start with 6, 7, 8, or 9";
-      }
+      // const mobile = String(mobileNo || "").trim();
+      // if (mobile) {
+      // if (!/^\d{10}$/.test(mobile)) return "Mobile No must be exactly 10 digits";
+      // if (!/^[6-9]/.test(mobile)) return "Mobile No must start with 6, 7, 8, or 9";
+      // }
       // if (!emailId.trim()) return "Please enter Email ID";
       const validateGST = () => {
       if (gstNo.trim() === "") return true; // Optional
@@ -258,7 +249,7 @@ export default function AccountLedger({ view }) {
     if (formType === "ledger") {
       setLedgerGroupName(item.AccountLedgerName ?? "");
       setDescription(item.AccountLedgerNarration ?? "");
-      // setAccountGroup(item.AccountGroup ?? "");
+      setAccountGroup(item.AccountGroup ?? "");
       setAccountGroup(item.AccountGroupId ?? "");
       // setMobileNo(item.MobileNo ?? "");
       setMobileNo(item.MobileNo ? String(item.MobileNo) : "");

@@ -26,12 +26,11 @@ const Sidebar = ({ selected, onSelect }) => {
    
     // { label: 'AccountVoucher Type', icon: <AccountBalanceTwoTone />, key: 'AccountVoucherType' },
     { label: 'Account Configuration', icon: <AccountCircle />, key: 'Account' },
-    // { label: 'Financial Configuration', icon: <CurrencyRupeeOutlined />, key: 'FinancialConfiguration' },
+    { label: 'Financial Configuration', icon: <CurrencyRupeeOutlined />, key: 'FinancialConfiguration' },
     { label: 'Account Voucher', icon: <VolunteerActivismSharp />, key: 'AccountVoucher' },
     { label: 'Credit Debit Note', icon: <CreditCardIcon />, key: 'CreditDebitNote' },
     { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
       { label: 'Account Sale', icon: <SdCardAlert />, key: 'AccountSale' },
-  { label: 'Nullify', icon: <GppGoodSharp />, key: 'nullify' },
     {
       label: 'Report',
       icon: <SheetIcon />,

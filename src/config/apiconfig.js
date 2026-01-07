@@ -1,7 +1,7 @@
 
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//  const BASE_URL = "https://localhost:7145/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+ const BASE_URL = "https://localhost:7145/api";
 
 
 
@@ -117,41 +117,82 @@ ViewEmployees:`${BASE_URL}/HrmMaster/Employee`,
   Category: `${BASE_URL}/Category`,
 //------------------------Account APIs----------------------------------
 
- 
 
- Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
   // Employee endpoints
-  PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
-  PR_EmployeeDetails: (empId) => `${BASE_URL}/PurchaseReq/employee/${empId}`,
+  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
-  // Item endpoints
-  ItemList: `${BASE_URL}/PurchaseReq/items`,
-  PR_ItemDetails: (itemId) => `${BASE_URL}/PurchaseReq/item/${itemId}`,
+  // Employee Endpoints
+//   PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
+//   PR_EmployeeDetails: (empName) => `${BASE_URL}/PurchaseReq/GetEmpDetails?empName=${encodeURIComponent(empName)}`,
   
-  // Specification/Grade endpoints
-  PR_Specifications: `${BASE_URL}/PurchaseReq/specifications`,
-  GetGradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/grades/${encodeURIComponent(itemName)}`,
-  GetGradeDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/gradedetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
+//   // Item Endpoints
+//   ItemList: `${BASE_URL}/PurchaseReq/GetItemList`,
+//   PR_GradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/GetGradesForItem?itemName=${encodeURIComponent(itemName)}`,
+//   PR_ItemDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/GetGradeDetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
   
-  // Currency and UOM endpoints
-  PR_Currencies: `${BASE_URL}/PurchaseReq/currencies`,
-  PR_UOM: `${BASE_URL}/PurchaseReq/uoms`,
+//   // Budget Endpoint
+//   PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
   
-  // Budget endpoint
-  PR_BudgetByDept: (deptCode) => `${BASE_URL}PurchaseReq/GetLastBudgetBalance/${encodeURIComponent(deptCode)}`,
+//   // Requisition Type Endpoint
+//   ReqTypes: `${BASE_URL}/PurchaseReq/GetRequisitionTypes`,
   
-  // Requisition types
-  ReqRes: `${BASE_URL}/PurchaseReq/requisitions`,
-  
-  // Create Manual PR
-  CreateManualPR: `${BASE_URL}/PurchaseReq/create`,
-  
-  // View List PR
-  ViewListPR: `${BASE_URL}/PurchaseReq/list`,
-  
-  // PR Numbers and Department Names
-  GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPrn`,
-  GetDepartmentNames: `${BASE_URL}/PurchaseReq/departmentnames`,
+//   // Create Purchase Request
+//   CreateManualPR: `${BASE_URL}/PurchaseReq/Create`,
 
+// ExportByPR: (prNumber) => `${BASE_URL}/PurchaseReq/ExportByPR?prNumber=${encodeURIComponent(prNumber)}`,
+//   // Additional endpoints for future use
+//   PR_Specifications: `${BASE_URL}/PurchaseReq/GetSpecifications`,
+//   PR_Currencies: `${BASE_URL}/PurchaseReq/GetCurrencies`,
+//   PR_UOM: `${BASE_URL}/PurchaseReq/GetUOM`,
+//   ReqRes: `${BASE_URL}/PurchaseReq/GetPrn`,
+//   // Currency and UOM endpoints
+//   PR_Currencies: `${BASE_URL}/PurchaseReq/currencies`,
+//   PR_UOM: `${BASE_URL}/PurchaseReq/uoms`,
+  
+//   // Budget endpoint
+//   PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
+  
+//   // Requisition types
+//   ReqRes: `${BASE_URL}/PurchaseReq/requisitions`,
+  
+//   // Create Manual PR
+//   CreateManualPR: `${BASE_URL}/PurchaseReq/create`,
+  
+// ViewManualPRList:`${BASE_URL}/PurchaseReq/GetManualPR`,
+//   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPRNo`,
+// GetPRForEdit:`${BASE_URL}/PurchaseReq/GetPRForEdit`,
+
+
+
+
+// config/apiconfig.js
+
+  
+  // Employee Endpoints
+  PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
+  
+  // Item Endpoints
+  ItemList: `${BASE_URL}/PurchaseReq/GetItemList`,
+  PR_GradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/GetGradesForItem?itemName=${encodeURIComponent(itemName)}`,
+  PR_ItemDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/GetGradeDetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
+  
+  // Requisition Type Endpoints
+  ReqTypes: `${BASE_URL}/PurchaseReq/GetRequisitionTypes`,
+  
+  // Budget Endpoints
+  PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
+  
+  // Purchase Request CRUD Endpoints
+  CreateManualPR: `${BASE_URL}/PurchaseReq/Create`,
+  UpdateManualPR: `${BASE_URL}/PurchaseReq/Update`,
+  GetPRForEdit: `${BASE_URL}/PurchaseReq/GetPRForEdit`,
+  ViewManualPRList: `${BASE_URL}/PurchaseReq/GetManualPR`,
+  GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPRNo`,
+   DeleteManualPR: (prNumber) => 
+    `${BASE_URL}/PurchaseReq/Delete?prNumber=${encodeURIComponent(prNumber)}`,
+  ManualPRReport:`${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
+  // Export Endpoint
+  ExportPRByNumber:`${BASE_URL}/PurchaseReq/ExportByPR`,
+ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`
 };

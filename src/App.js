@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
+import AddEmployee from "./pages/HRM/EmployeeMaster/AddEmployee";
 
 /* AUTH */
 import RegisterPage from "./pages/RegisterPage";
@@ -95,7 +96,8 @@ function App() {
         <Route path="/viewbom" element={<ViewBOM />} />
 
         {/* HRM / SALES */}
-        <Route path="/hrm" element={<HrmConfiguration />} />
+<Route path="/hrm/*" element={<HrmConfiguration />} />
+        
         <Route path="/salesanddistribution" element={<SalesDistribution />} />
         <Route path="/warehouse" element={<WareHouse />} />
 

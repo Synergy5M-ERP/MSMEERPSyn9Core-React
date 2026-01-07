@@ -1,110 +1,106 @@
 // ViewEmployee.jsx
 import React, { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../../../config/apiconfig";
+import { useNavigate } from "react-router-dom";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 const ViewEmployee = () => {
   const [employees, setEmployees] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   const fetchEmployees = async () => {
-  //     setLoading(true);
-  //     setError("");
+  const navigate = useNavigate();
 
-  //     try {
-  //       const params = new URLSearchParams({
-  //         page: page.toString(),
-  //         pageSize: pageSize.toString()
-  //       });
+  /* ---------------- FETCH EMPLOYEES ---------------- */
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
-  //       const res = await fetch(
-  //         `${API_ENDPOINTS.ViewEmployees}`
-  //       );
-  //       console.log(res);
-        
-  //       if (!res.ok) throw new Error("Failed to load employees");
-
-  //       const data = await res.json(); // { items, totalCount }
-  //       setEmployees(data.items || []);
-  //       setTotalCount(data.totalCount || 0);
-  //     } catch (err) {
-  //       console.error(err);
-  //       setError("Unable to load employees.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchEmployees();
-  // }, [page, pageSize]); // Removed filter dependencies
-useEffect(() => {
   const fetchEmployees = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString()
-      });
-
-      const url = `${API_ENDPOINTS.ViewEmployees}?${params.toString()}`;
-      console.log("🔍 Fetching from:", url);
-      
-      const res = await fetch(url);
-      console.log("📡 Raw Response:", {
-        status: res.status,
-        ok: res.ok,
-        headers: Object.fromEntries(res.headers.entries()),
-        type: res.type
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-
-      // 🚨 CRITICAL: Check if response body is accessible
-      const contentType = res.headers.get("content-type");
-      console.log("📄 Content-Type:", contentType);
-      
-      if (!contentType?.includes("application/json")) {
-        const text = await res.text();
-        console.log("❌ Not JSON - Raw text:", text.substring(0, 500));
-        throw new Error("API returned non-JSON response");
-      }
+      const res = await fetch(API_ENDPOINTS.GetAll_Employee);
+      if (!res.ok) throw new Error("Failed to load");
 
       const data = await res.json();
-      console.log("✅ Parsed Data:", {
-        items: data.items?.length || 0,
-        totalCount: data.totalCount,
-        hasItems: !!data.items
-      });
-      
-      setEmployees(data.items || []);
-      setTotalCount(data.totalCount || 0);
-      
+      setEmployees(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("💥 Full Error:", err);
-      setError(`Error: ${err.message}`);
+      console.error(err);
+      setError("Unable to load employees");
     } finally {
       setLoading(false);
     }
   };
+const handleEdit = async (emp) => {
+  try {
+    const encodedEmpCode = encodeURIComponent(emp.emp_Code);
+    const url = `${API_ENDPOINTS.GetEmployeeByEmpCode}/${encodedEmpCode}`;
+    console.log("Calling API:", url); // should print full correct URL
 
-  fetchEmployees();
-}, [page, pageSize]);
+    const res = await fetch(url);
 
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("API returned error:", text);
+      throw new Error(`Failed to fetch employee. Status: ${res.status}`);
+    }
+
+    const empData = await res.json();
+// For editing an employee
+  navigate(`/hrm/employee/edit/${encodedEmpCode}`);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load employee details for edit");
+  }
+};
+
+
+
+
+
+ const handleDeactivate = async (empCode) => {
+  if (!window.confirm("Are you sure you want to deactivate this employee?"))
+    return;
+
+  try {
+    const encodedEmpCode = encodeURIComponent(empCode);
+
+    const url = `${API_ENDPOINTS.DeactivateEmployee}/${encodedEmpCode}`;
+    console.log("Calling API:", url);
+
+    const res = await fetch(url, {
+      method: "PUT",
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
+    }
+
+    alert("Employee deactivated successfully");
+    fetchEmployees(); // reload list
+  } catch (err) {
+    console.error(err);
+    alert("Failed to deactivate employee");
+  }
+};
+
+
+  /* ---------------- PAGINATION ---------------- */
+  const totalCount = employees.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startIndex = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endIndex = Math.min(page * pageSize, totalCount);
 
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setPage(newPage);
+  const pagedEmployees = employees.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
+
+  const handlePageChange = (p) => {
+    if (p >= 1 && p <= totalPages) setPage(p);
   };
 
   const handlePageSizeChange = (e) => {
@@ -112,80 +108,109 @@ useEffect(() => {
     setPage(1);
   };
 
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleDateString() : "-";
+
   return (
     <div className="container my-4">
-      <div className="card shadow-sm">
+      <div className="card shadow">
         <div className="card-header bg-secondary text-white">
           <h5 className="mb-0">View Employees</h5>
         </div>
 
         <div className="card-body">
-          {/* Error & loading */}
-          {error && (
-            <div className="alert alert-danger py-2 mb-3" role="alert">
-              {error}
-            </div>
-          )}
-          {loading && (
-            <div className="alert alert-info py-2 mb-3" role="alert">
-              Loading...
-            </div>
-          )}
+          {error && <div className="alert alert-danger">{error}</div>}
+          {loading && <div className="alert alert-info">Loading...</div>}
 
-          {/* Rows per page selector */}
-          <div className="d-flex align-items-center gap-2 mb-2">
+          {/* Rows per page */}
+          <div className="d-flex align-items-center gap-2 mb-3">
             <span>Rows per page:</span>
             <select
               className="form-select form-select-sm"
-              style={{ width: "90px" }}
+              style={{ width: 100 }}
               value={pageSize}
               onChange={handlePageSizeChange}
             >
-              {[5, 10, 25, 50, 100].map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {[5, 10, 25, 50].map((s) => (
+                <option key={s} value={s}>
+                  {s}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Employee table */}
+          {/* Table */}
           <div className="table-responsive">
-            <table className="table table-striped table-hover table-bordered align-middle">
+            <table className="table table-bordered table-striped">
               <thead className="table-light">
                 <tr>
                   <th>Emp Code</th>
-                  <th>Full Name</th>
+                  <th>Name</th>
                   <th>Gender</th>
                   <th>DOB</th>
                   <th>Department</th>
                   <th>Designation</th>
                   <th>Joining Date</th>
-                  <th>Monthly Salary</th>
+                  <th>Salary</th>
                   <th>City</th>
                   <th>Contact</th>
+                  <th>Edit</th>
+                  <th>Deactive</th>
                 </tr>
               </thead>
               <tbody>
-                {employees.length > 0 ? (
-                  employees.map((e) => (
-                    <tr key={e.id}>
+                {pagedEmployees.length ? (
+                  pagedEmployees.map((e) => (
+                    <tr key={e.emp_Code}>
                       <td>{e.emp_Code}</td>
                       <td>{e.fullName}</td>
                       <td>{e.gender}</td>
-                      <td>{e.dob}</td>
+                      <td>{formatDate(e.dob)}</td>
                       <td>{e.department}</td>
                       <td>{e.joining_Designation}</td>
-                      <td>{e.date_Of_Joing}</td>
+                      <td>{formatDate(e.date_Of_Joing)}</td>
                       <td>{e.monthly_Salary}</td>
                       <td>{e.city}</td>
                       <td>{e.contact_NO}</td>
+                     <td className="text-center">
+  {/* EDIT */}
+ <button
+  className="btn btn-sm me-2"
+  onClick={() => handleEdit(e)}
+  title="Edit Employee"
+  style={{
+    padding: "4px 8px",
+    background: "none",   // removes background color
+    border: "none",       // removes border
+    color: "#0066cc",     // optional: set icon color
+    cursor: "pointer",    // pointer on hover
+  }}
+>
+  <FaEdit />
+</button>
+
+</td><td>
+  {/* DELETE / DEACTIVATE */}
+  <span
+    title="Delete Employee"
+    onClick={() => handleDeactivate(e.emp_Code)}
+    style={{
+      cursor: "pointer",
+      fontSize: "18px",
+      color: "#dc3545",
+      verticalAlign: "middle"
+    }}
+  >
+    <FaTrash />
+  </span>
+</td>
+
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="10" className="text-center">
-                      {loading ? "Loading..." : "No data"}
+                    <td colSpan="11" className="text-center">
+                      No data found
                     </td>
                   </tr>
                 )}
@@ -193,62 +218,26 @@ useEffect(() => {
             </table>
           </div>
 
-          {/* Pagination controls */}
-          <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-2 gap-2">
-            <nav aria-label="Page navigation" className="order-1 order-md-0">
-              <ul className="pagination mb-0">
-                <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(1)}
-                  >
-                    « First
-                  </button>
-                </li>
-                <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(page - 1)}
-                  >
-                    ‹ Prev
-                  </button>
-                </li>
-                <li className="page-item disabled">
-                  <span className="page-link">
-                    Page {page} of {Math.max(1, Math.ceil(totalCount / pageSize))}
-                  </span>
-                </li>
-                <li
-                  className={`page-item ${
-                    page >= Math.ceil(totalCount / pageSize) ? "disabled" : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(page + 1)}
-                  >
-                    Next ›
-                  </button>
-                </li>
-                <li
-                  className={`page-item ${
-                    page >= Math.ceil(totalCount / pageSize) ? "disabled" : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() =>
-                      handlePageChange(Math.max(1, Math.ceil(totalCount / pageSize)))
-                    }
-                  >
-                    Last »
-                  </button>
-                </li>
-              </ul>
-            </nav>
-
-            <div className="text-muted small ms-md-3 text-md-end">
-              Showing {startIndex}–{endIndex} of {totalCount}
+          {/* Pagination */}
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <div>
+              <button
+                className="btn btn-sm btn-outline-secondary me-1"
+                disabled={page === 1}
+                onClick={() => handlePageChange(page - 1)}
+              >
+                Prev
+              </button>
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                disabled={page === totalPages}
+                onClick={() => handlePageChange(page + 1)}
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>

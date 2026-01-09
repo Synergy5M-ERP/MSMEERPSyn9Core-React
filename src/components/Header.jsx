@@ -653,9 +653,38 @@ function Header() {
           >
             MATERIAL MANAGEMENT
           </NavLink>
-
+   <NavLink
+                  to="/production"
+                  className="nav-link text-white fw-bold"
+            style={({ isActive }) =>
+              isActive
+                ? activeStyle
+                : {
+                    ...activeStyle,
+                    backgroundColor: "rgba(33, 118, 189, 0.23)",
+                    color: "#e6f0fa",
+                  }
+            }
+                >
+                 PRODUCTION 
+                </NavLink>
+                <NavLink
+                  to="/quality"
+                  className="nav-link text-white fw-bold"
+            style={({ isActive }) =>
+              isActive
+                ? activeStyle
+                : {
+                    ...activeStyle,
+                    backgroundColor: "rgba(33, 118, 189, 0.23)",
+                    color: "#e6f0fa",
+                  }
+            }
+                >
+                  QUALITY
+                </NavLink>
           {/* PRODUCTION & QUALITY DROPDOWN */}
-          <div
+          {/* <div
             className="position-relative"
             style={{ margin: "0 8px" }}
             ref={pqDropdownRef}
@@ -718,7 +747,7 @@ function Header() {
                 </NavLink>
               </div>
             )}
-          </div>
+          </div> */}
 
           <NavLink
             to="/salesanddistribution"

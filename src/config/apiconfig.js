@@ -1,12 +1,6 @@
 
-
-
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- //const BASE_URL = "https://localhost:7145/api";
-
-
-
-
+// const BASE_URL="https://localhost:7145/api"
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
@@ -144,6 +138,11 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
 
 
+  
+  // Employee endpoints
+  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
+  
+
   Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
 
   // Employee endpoints
@@ -179,4 +178,34 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPrn`,
   GetDepartmentNames: `${BASE_URL}/PurchaseReq/departmentnames`,
 
+
+// config/apiconfig.js
+
+  
+  // Employee Endpoints
+  PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
+  
+  // Item Endpoints
+  ItemList: `${BASE_URL}/PurchaseReq/GetItemList`,
+  PR_GradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/GetGradesForItem?itemName=${encodeURIComponent(itemName)}`,
+  PR_ItemDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/GetGradeDetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
+  
+  // Requisition Type Endpoints
+  ReqTypes: `${BASE_URL}/PurchaseReq/GetRequisitionTypes`,
+  
+  // Budget Endpoints
+  PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
+  
+  // Purchase Request CRUD Endpoints
+  CreateManualPR: `${BASE_URL}/PurchaseReq/Create`,
+  UpdateManualPR: `${BASE_URL}/PurchaseReq/Update`,
+  GetPRForEdit: `${BASE_URL}/PurchaseReq/GetPRForEdit`,
+  ViewManualPRList: `${BASE_URL}/PurchaseReq/GetManualPR`,
+  GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPRNo`,
+   DeleteManualPR: (prNumber) => 
+    `${BASE_URL}/PurchaseReq/Delete?prNumber=${encodeURIComponent(prNumber)}`,
+  ManualPRReport:`${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
+  // Export Endpoint
+  ExportPRByNumber:`${BASE_URL}/PurchaseReq/ExportByPR`,
+ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -14,6 +14,11 @@ const PaymentAllocation = () => {
 
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
+  
+  // ✅ Track original vs modified data
+  const [originalRows, setOriginalRows] = useState([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const originalRowsRef = useRef([]);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -27,6 +32,11 @@ const PaymentAllocation = () => {
     acc[row.vendorName].push(row);
     return acc;
   }, {});
+
+  // ✅ Check if data has unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    return JSON.stringify(rows) !== JSON.stringify(originalRows);
+  }, [rows, originalRows]);
 
   // Load ledgers on mount
   useEffect(() => {
@@ -47,7 +57,9 @@ const PaymentAllocation = () => {
         }
       } catch (err) {
         console.error(err);
-        toast.error("Unable to load ledger list.");
+        toast.error("❌ Unable to load ledger list", {
+          toastId: "ledger-load-error"
+        });
         setError("Unable to load ledger list.");
       }
     };
@@ -55,167 +67,84 @@ const PaymentAllocation = () => {
     loadLedgers();
   }, []);
 
-  // ✅ FIXED: Load approved GRNs with COMPLETE dependencies & params
-  // useEffect(() => {
-  //   const fetchPayments = async () => {
-  //     setLoading(true);
-  //     setError("");
-
-  //     try {
-  //       const params = new URLSearchParams({
-  //         ledgerId,           // ✅ Added
-  //         date,               // ✅ Added
-  //         ...(selectedVendor ? { vendor: selectedVendor } : {}),
-  //         page: page.toString(),
-  //         pageSize: pageSize.toString()
-  //       });
-
-  //       console.log('Fetching GRNs with params:', params.toString());
-
-  //       const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
-
-  //       if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
-
-  //       const data = await res.json();
-  //       console.log('API Response:', data);
-
-  //       const items = data.data || [];
-  //       console.log('Items count:', items.length);
-
-  //       // ✅ Sort DESC by date (newest first)
-  //       const sortedItems = items.sort((a, b) =>
-  //         new Date(b.grnDate) - new Date(a.grnDate)
-  //       );
-
-  //       const mapped = sortedItems.map((r) => {
-  //         const totalAmount = Number(r.TotalAmount || r.totalAmount || r.grandTotal || 0);
-  //         const paidAmount = Number(r.paidAmount || 0);
-  //         const balanceAmount = totalAmount - paidAmount;
-
-  //         return {
-  //           accountGRNId: r.AccountGRNId || r.accountGRNId,
-  //           grnNumber: r.GRNNumber || r.grnNumber,
-  //           grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
-  //           vendorName: r.Description || r.VendorName || r.vendorName,
-  //           poNumber: r.poNumber || r.PONumber || '',
-  //           poDate: r.poDate || r.PODate || '',
-  //           invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
-  //           invoiceDate: r.invoiceDate || r.InvoiceDate || '',
-  //           cgst: Number(r.CGST || r.cgst || 0),
-  //           sgst: Number(r.SGST || r.sgst || 0),
-  //           igst: Number(r.IGST || r.igst || 0),
-  //           totalAmount,
-  //           paidAmount,
-  //           balanceAmount,
-  //           isChecked: balanceAmount === 0
-  //         };
-  //       });
-
-  //       setRows(mapped);
-  //       setTotalCount(data.totalCount || items.length);
-
-  //       const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
-  //       setActualBal(Math.max(0, baseActualBal - totalPaid));
-
-  //     } catch (err) {
-  //       console.error('Fetch error:', err);
-  //       toast.error("Unable to load approved GRNs.");
-  //       setError("Unable to load approved GRNs.");
-  //       setRows([]);
-  //       setTotalCount(0);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   // ✅ Only fetch if we have required params
-  //   if (ledgerId && date) {
-  //     fetchPayments();
-  //   }
-  // }, [ledgerId, date, page, pageSize, selectedVendor, baseActualBal]); // ✅ COMPLETE deps
-
-
-// ✅ Update API_ENDPOINTS in apiconfig.js
-// GetApprovedGrn: '/api/grn/bill-approved-details',
-
-// ✅ FIXED Frontend - Only page/pageSize params
-useEffect(() => {
-  const fetchPayments = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const params = new URLSearchParams({
-        // ✅ REMOVED ledgerId, date - backend doesn't use them
-        page: page.toString(),
-        pageSize: pageSize.toString()
-      });
-
-      console.log('Fetching GRNs with params:', params.toString());
-
-      const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
-
-      if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
-
-      const data = await res.json();
-      console.log('API Response:', data);
-
-      const items = data.data || [];
-      console.log('Items count:', items.length);
-
-      // ✅ Updated mapping for your backend response
-      const sortedItems = items.sort((a, b) =>
-        new Date(b.GRNDate || b.grnDate) - new Date(a.GRNDate || a.grnDate)
-      );
-
-      const mapped = sortedItems.map((r) => {
-        const totalAmount = Number(r.TotalAmount || r.totalAmount || r.TotalTaxAmount || 0);
-        const paidAmount = Number(r.PaidAmount || r.paidAmount || 0);
-        const balanceAmount = totalAmount - paidAmount;
-
-        return {
-          accountGRNId: r.AccountGRNId || r.accountGRNId,
-          grnNumber: r.GRNNumber || r.grnNumber,
-          grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
-          vendorName: r.VendorName || r.Description || r.vendorName,
-          poNumber: r.poNumber || r.PONumber || '',
-          poDate: r.poDate || r.PODate || '',
-          invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
-          invoiceDate: r.invoiceDate || r.InvoiceDate || '',
-          cgst: Number(r.CGST || r.cgst || 0),
-          sgst: Number(r.SGST || r.sgst || 0),
-          igst: Number(r.IGST || r.igst || 0),
-          totalAmount,
-          paidAmount,
-          balanceAmount,
-          isChecked: balanceAmount === 0
-        };
-      });
-
-      setRows(mapped);
-      setTotalCount(data.totalCount || items.length); // ✅ Backend provides totalCount
-
-      const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
-      setActualBal(Math.max(0, baseActualBal - totalPaid));
-
-    } catch (err) {
-      console.error('Fetch error:', err);
-      toast.error("Unable to load approved GRNs.");
-      setError("Unable to load approved GRNs.");
-      setRows([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
+  // ✅ Store original data when rows load
+  useEffect(() => {
+    if (rows.length > 0) {
+      originalRowsRef.current = [...rows];
+      setOriginalRows([...rows]);
+      setIsDirty(false);
     }
-  };
+  }, [rows.length]);
 
-  fetchPayments(); // ✅ Always fetch - no ledgerId/date dependency
-}, [page, pageSize]); // ✅ ONLY pagination dependencies
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setLoading(true);
+      setError("");
 
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString()
+        });
 
+        const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
 
+        if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
 
-  // ✅ REAL-TIME balance validation
+        const data = await res.json();
+        const items = data.data || [];
+
+        const sortedItems = items.sort((a, b) =>
+          new Date(b.GRNDate || b.grnDate) - new Date(a.GRNDate || a.grnDate)
+        );
+
+        const mapped = sortedItems.map((r) => {
+          const totalAmount = Number(r.TotalAmount || r.totalAmount || r.TotalTaxAmount || 0);
+          const paidAmount = Number(r.PaidAmount || r.paidAmount || 0);
+          const balanceAmount = totalAmount - paidAmount;
+
+          return {
+            accountGRNId: r.AccountGRNId || r.accountGRNId,
+            grnNumber: r.GRNNumber || r.grnNumber,
+            grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
+            vendorName: r.VendorName || r.Description || r.vendorName,
+            poNumber: r.poNumber || r.PONumber || '',
+            poDate: r.poDate || r.PODate || '',
+            invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
+            invoiceDate: r.invoiceDate || r.InvoiceDate || '',
+            cgst: Number(r.CGST || r.cgst || 0),
+            sgst: Number(r.SGST || r.sgst || 0),
+            igst: Number(r.IGST || r.igst || 0),
+            totalAmount,
+            paidAmount,
+            balanceAmount,
+            isChecked: balanceAmount === 0
+          };
+        });
+
+        setRows(mapped);
+        setTotalCount(data.totalCount || items.length);
+
+        const totalPaid = mapped.reduce((sum, row) => sum + (row.paidAmount || 0), 0);
+        setActualBal(Math.max(0, baseActualBal - totalPaid));
+
+      } catch (err) {
+        console.error('Fetch error:', err);
+        toast.error("❌ Unable to load approved GRNs", {
+          toastId: "grn-load-error"
+        });
+        setError("Unable to load approved GRNs.");
+        setRows([]);
+        setTotalCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPayments();
+  }, [page, pageSize, baseActualBal]);
+
+  // ✅ Enhanced handlePaidChange with toast
   const handlePaidChange = (accountGRNId, value) => {
     const numeric = Number(value);
     const paidVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
@@ -228,8 +157,8 @@ useEffect(() => {
 
       if (proposedTotalPaid > baseActualBal) {
         toast.error(
-          `Insufficient balance! Available: ₹${baseActualBal.toFixed(2)}, ` +
-          `Proposed total: ₹${proposedTotalPaid.toFixed(2)}`
+          `⚠️ Insufficient balance!\nAvailable: ₹${baseActualBal.toFixed(2)}\nProposed total: ₹${proposedTotalPaid.toFixed(2)}`,
+          { toastId: "balance-error" }
         );
         return prevRows;
       }
@@ -248,6 +177,7 @@ useEffect(() => {
 
       const totalPaid = updated.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
       setActualBal(Math.max(0, baseActualBal - totalPaid));
+      setIsDirty(true);
       return updated;
     });
   };
@@ -257,28 +187,51 @@ useEffect(() => {
       prevRows.map(row => {
         if (row.accountGRNId !== accountGRNId) return row;
         if (row.balanceAmount > 0) return row;
-        return { ...row, isChecked: !row.isChecked };
+        const updated = { ...row, isChecked: !row.isChecked };
+        setIsDirty(true);
+        return updated;
       })
     );
   };
 
+  // ✅ ENHANCED SAVE with detailed toast
   const handleSave = async () => {
     const selectedRows = rows.filter(r => r.paidAmount > 0);
-
+debugger;
     if (selectedRows.length === 0) {
-      toast.warning("Please enter paid amounts for at least one GRN");
+      toast.warning("⚠️ Please enter paid amounts for at least one GRN", {
+        toastId: "no-payments"
+      });
       return;
     }
 
+    const totalAmount = selectedRows.reduce((sum, r) => sum + r.paidAmount, 0);
+    
+    if (!window.confirm(
+      `💰 Save ${selectedRows.length} payment allocation(s)?\n\n` +
+      `Total Amount: ₹${totalAmount.toFixed(2)}\nLedger: ${ledgerOptions.find(l => l.accountLedgerId.toString() === ledgerId)?.accountLedgerName || 'N/A'}\nDate: ${date}`
+    )) {
+      return;
+    }
+
+    toast.loading("💾 Saving payment allocations...", { toastId: "save-loading" });
+
     try {
       const payload = {
-        ledgerId: Number(ledgerId),
-        date,
-        payments: selectedRows.map(row => ({
-          accountGRNId: row.accountGRNId,
-          paidAmount: row.paidAmount
-        }))
-      };
+  ledgerId: Number(ledgerId),
+  date,
+  payments: selectedRows.map(row => ({
+    accountGRNId: row.accountGRNId,
+    paidAmount: row.paidAmount,
+    totalAmount: row.totalAmount,
+    balanceAmount: row.balanceAmount,
+    cgst: row.cgst,
+    sgst: row.sgst,
+    igst: row.igst,
+    rtgsNo: "" // optional
+  }))
+};
+
 
       const res = await fetch(API_ENDPOINTS.SavePaymentAllocation, {
         method: "POST",
@@ -286,13 +239,56 @@ useEffect(() => {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Failed to save payment allocations");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to save payment allocations");
+      }
 
-      toast.success("Payment allocations saved successfully!");
+      toast.dismiss("save-loading");
+      toast.success(`✅ Payment allocations saved successfully!\nTotal: ₹${totalAmount.toFixed(2)}`, {
+        toastId: "save-success"
+      });
+      
+      setIsDirty(false);
+      setOriginalRows([...rows]);
+      originalRowsRef.current = [...rows];
       setPage(1);
+      
     } catch (err) {
+      toast.dismiss("save-loading");
+      toast.error(`❌ Save failed: ${err.message}`, {
+        toastId: "save-error"
+      });
       console.error(err);
-      toast.error("Failed to save payment allocations");
+    }
+  };
+
+  // ✅ ENHANCED CANCEL with detailed toast
+  const handleCancel = () => {
+    if (!hasUnsavedChanges()) {
+      toast.info("ℹ️ No changes to cancel", {
+        toastId: "no-changes"
+      });
+      return;
+    }
+
+    const changesCount = rows.filter((row, idx) => 
+      row.paidAmount !== originalRowsRef.current.find(r => r.accountGRNId === row.accountGRNId)?.paidAmount
+    ).length;
+
+    if (window.confirm(`🚫 Discard ${changesCount} unsaved changes?`)) {
+      toast.loading("🔄 Restoring original data...", { toastId: "cancel-loading" });
+      
+      setRows([...originalRowsRef.current]);
+      setIsDirty(false);
+      
+      const totalPaid = originalRowsRef.current.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
+      setActualBal(Math.max(0, baseActualBal - totalPaid));
+      
+      toast.dismiss("cancel-loading");
+      toast.success("✅ Changes discarded successfully", {
+        toastId: "cancel-success"
+      });
     }
   };
 
@@ -307,14 +303,17 @@ useEffect(() => {
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
-    setPage(1); // ✅ Reset to first page
+    setPage(1);
   };
-
-  const uniqueVendors = [...new Set(rows.map(r => r.vendorName))].filter(Boolean);
 
   return (
     <>
-      <ToastContainer position="top-right" theme="colored" />
+      <ToastContainer 
+        position="top-right" 
+        theme="colored"
+        limit={3}
+        autoClose={4000}
+      />
       <div className="container my-4">
         <div className="card shadow-sm">
           <div className="card-header bg-success text-white">
@@ -325,7 +324,7 @@ useEffect(() => {
             {/* Filters */}
             <div className="row g-3 mb-3">
               <div className="row align-items-end">
-                <div className="col">
+                <div className="col-3">
                   <label className="form-label">Date</label>
                   <input
                     type="date"
@@ -338,8 +337,7 @@ useEffect(() => {
                     style={{ height: '40px' }}
                   />
                 </div>
-                {/* Ledger Account Column */}
-                <div className="col">
+                <div className="col-4">
                   <label className="form-label">Ledger Account</label>
                   <select
                     className="form-select"
@@ -368,8 +366,7 @@ useEffect(() => {
                   </select>
                 </div>
 
-                {/* Amount/Balance Column */}
-                <div className="col">
+                <div className="col-4">
                   <label className="form-label m-2">Balance Details</label>
                   <div
                     className={`alert mb-0 d-flex align-items-center ${
@@ -384,6 +381,19 @@ useEffect(() => {
                     </span>
                   </div>
                 </div>
+                <div className="col-1">
+                  <label className="form-label m-2">Pages:</label>
+                  <select
+                    className="form-select"
+                    style={{ width: "90px" }}
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                  >
+                    {[1,3,5, 10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -395,24 +405,30 @@ useEffect(() => {
               <div className="alert alert-info py-2 mb-3" role="alert">Loading...</div>
             )}
 
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <div className="d-flex align-items-center gap-2">
-                <span>Rows per page:</span>
-                <select
-                  className="form-select form-select-sm"
-                  style={{ width: "90px" }}
-                  value={pageSize}
-                  onChange={handlePageSizeChange}
-                >
-                  {[1,3,5, 10, 25, 50, 100].map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
+            {/* ✅ Unsaved changes warning */}
+            {/* {isDirty && (
+              <div className="alert alert-warning py-2 mb-3 d-flex align-items-center" role="alert">
+                <i className="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div>
+                  <strong>Unsaved changes detected</strong> ({rows.filter(r => r.paidAmount > 0).length} payments)
+                  <br className="d-none d-md-block" />
+                  <small className="d-md-block">Use Save/Cancel buttons below</small>
+                </div>
               </div>
-            </div>
+            )} */}
 
-            {/* ✅ Grouped Table Display */}
-            <div className="table-responsive">
+            {/* Table */}
+            <div 
+              className="table-responsive" 
+              style={{ 
+                maxHeight: '350px',
+                overflowY: 'auto',
+                overflowX: 'auto',
+                border: '1px solid #dee2e6',
+                borderRadius: '0.375rem',
+                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.075)'
+              }}
+            >
               <table className="table table-striped table-hover table-bordered align-middle">
                 <thead className="table-light">
                   <tr>
@@ -432,10 +448,10 @@ useEffect(() => {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Table body remains exactly the same */}
                   {Object.keys(groupedRows).length > 0 ? (
                     Object.entries(groupedRows).map(([vendorName, vendorRows]) => (
                       <React.Fragment key={vendorName}>
-                        {/* Vendor GRNs */}
                         {vendorRows.map((row) => (
                           <tr key={row.accountGRNId} className="table-hover">
                             <td className="text-center align-middle">
@@ -499,8 +515,8 @@ useEffect(() => {
               </table>
             </div>
 
-            {/* Pagination */}
-            <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-2 gap-2">
+            {/* ✅ PAGINATION */}
+            <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-3 mb-3 gap-2">
               <nav aria-label="Page navigation">
                 <ul className="pagination mb-0">
                   <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
@@ -523,6 +539,34 @@ useEffect(() => {
               <div className="text-muted small">
                 Showing {startIndex}–{endIndex} of {totalCount}
               </div>
+            </div>
+
+            {/* ✅ NEW: Save/Cancel Buttons AT BOTTOM AFTER TABLE */}
+            <div className="d-flex justify-content-center gap-3 p-3 bg-light border-top rounded-bottom">
+              <button 
+                className="btn btn-secondary btn-lg px-4 py-2 shadow-sm"
+                onClick={handleCancel}
+                disabled={!isDirty || loading}
+              >
+                {/* <i className="bi bi-x-circle-fill me-2"></i> */}
+                Cancel 
+              </button>
+              <button 
+                className={`btn btn-success btn-lg px-4 py-2 shadow-sm position-relative ${
+                  !isDirty || rows.filter(r => r.paidAmount > 0).length === 0 ? 'opacity-50' : ''
+                }`}
+                onClick={handleSave}
+                disabled={!isDirty || loading || rows.filter(r => r.paidAmount > 0).length === 0}
+              >
+                {/* <i className="bi bi-check-circle-fill me-2"></i> */}
+                Save 
+                {isDirty && rows.filter(r => r.paidAmount > 0).length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {rows.filter(r => r.paidAmount > 0).length}
+                    <span className="visually-hidden">payments ready</span>
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>

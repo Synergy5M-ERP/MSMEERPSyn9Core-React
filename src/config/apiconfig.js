@@ -104,6 +104,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
+  SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
 
 
   Ledger: `${BASE_URL}/AccountLedger`,

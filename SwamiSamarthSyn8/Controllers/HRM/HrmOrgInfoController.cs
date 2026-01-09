@@ -459,21 +459,125 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                 .Select(x => new
                 {
                     id = x.Id,
-                    emp_Code = x.Emp_Code,
                     name = x.Name,
+                    middleName = x.Middle_Name,
                     surname = x.Surname,
                     fullName = x.FullName,
+
+                    empCode = x.Emp_Code,
                     gender = x.Gender,
                     dob = x.DOB,
-                    department = x.Department,
-                    joining_Designation = x.Joining_Designation,
-                    date_Of_Joing = x.Date_Of_Joing,
-                    monthly_Salary = x.Monthly_Salary,
-                    city = x.City,
-                    contact_NO = x.Contact_NO,
+                    bloodGroup = x.Blood_Group,
                     email = x.Email,
-                    status = x.Status
+                    contactNo = x.Contact_NO,
+                    telephone = x.Telephone,
+
+                    marriedStatus = x.Married_Status,
+                    qualification = x.Quallification,
+
+                    address = x.Address,
+                    permanentAddress = x.permanent_Address,
+                    city = x.City,
+                    state = x.State,
+                    country = x.Country,
+
+                    adharNo = x.AdharNO,
+                    panNo = x.PanNo,
+
+                    bankAccountNo = x.BankAccountNo,
+                    bankName = x.BankName,
+                    ifscCode = x.IFSC_Code,
+
+                    department = x.Department,
+                    departmentCode = x.DepartmentCode,
+
+                    joiningDesignation = x.Joining_Designation,
+                    designationCode = x.DesignationCode,
+
+                    dateOfJoining = x.Date_Of_Joing,
+                    joiningAuthorityLevel = x.Joining_AuthorityLevel,
+                    authorityCode = x.AuthorityCode,
+
+                    noticesPeriod = x.Notices_Period,
+                    relievingDate = x.Relieving_Date,
+
+                    currentDesignation = x.Current_Designation,
+                    currentAuthorityLevel = x.Current_Authoritylevel,
+
+                    joiningCTCBreakup = x.Joining_CTC_Breakup,
+                    currentCTCBreakup = x.Current_CTC_Breakup,
+                    currentCTC = x.Current_CTC,
+
+                    basicSalary = x.Basic_Salary,
+                    houseRentAllowance = x.House_rent_Allownce,
+                    medicalAllowance = x.Medical_Allownce,
+                    leaveTravelAllowance = x.Leave_travel_Allowance,
+                    additionalBenefits = x.Additional_Benefits,
+                    performanceIncentive = x.Performance_Incentive,
+
+                    pfContribution = x.PF_Conrtibution,
+                    estContribution = x.EST_Conrtibution,
+                    pfContri = x.PFContri,
+                    esic = x.ESIC,
+                    pTax = x.PTax,
+                    professionalTax = x.Professional_Tax,
+
+                    uan = x.UAN,
+                    epfoAccountNo = x.EPFO_A_C_NO,
+                    pfNo = x.PF_No,
+                    esicNo = x.ESIC_No,
+
+                    stockOption = x.Stock_Option,
+                    car = x.car,
+
+                    totalMonth = x.Total_Month,
+                    annualCTC = x.Annual_CTC_Rs,
+                    totalSalary = x.Total_Salary,
+                    monthlySalary = x.Monthly_Salary,
+                    monthlyGrossSalary = x.Monthly_Gross_Salary,
+
+                    salaryPerDay = x.Salary_Per_Day,
+                    salaryPerHour = x.Salary_Per_Hour,
+                    dailySalary = x.Daily_Salary,
+                    hourlySalary = x.Hourly_Salary,
+
+                    averageMonthlyHours = x.Average_Monthly_Hours,
+                    averageMonthlySalary = x.Average_Monthly_Salary,
+
+                    shiftHours = x.Shift_Hours,
+                    weeklyOff = x.Weekly_Off,
+
+                    otCalculation = x.OT_calculation,
+                    otDaily = x.OT_Daily,
+                    otHourly = x.OT_Hourly,
+
+                    da = x.DA,
+                    totalDeduction = x.Total_Deduction,
+                    grossSalaryWithOT = x.Gross_Salary_With_OT,
+
+                    salaryIncrement = x.Salary_Increment,
+                    annualIncrement = x.Annual_Increment,
+                    dateOfIncrement = x.Date_Of_Increment,
+                    annualIncDate = x.Annual_Inc_Date,
+
+                    nominee = x.Nominee,
+                    relation = x.Relation,
+
+                    previousIndustryTitle = x.Previous_Industry_Title,
+
+                    resign = x.Resign,
+                    dol = x.DOL,
+                    salaryStatus = x.SalaryStatus,
+
+                    currency = x.Currency,
+                    title = x.Title,
+
+
+                    status = x.Status,
+                    isActive = x.IsActive
                 })
+
+
                 .FirstOrDefaultAsync();
 
             if (emp == null)

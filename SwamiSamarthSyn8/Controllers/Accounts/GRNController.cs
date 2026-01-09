@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Models.Accounts;
+using static SwamiSamarthSyn8.Controllers.Accounts.GRNController;
+using static SwamiSamarthSyn8.Models.Accounts.PaymentAllocationDtos;
 
 namespace SwamiSamarthSyn8.Controllers.Accounts
 {
@@ -99,61 +101,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             return Ok(new { success = true, data = poDetails });
         }
 
-        //// ✔ GET FULL GRN DETAILS
-        //[HttpGet("GetGRNDetails")]
-        //public async Task<IActionResult> GetGRNDetails([FromQuery] int grnId)
-        //{
-        //    if (grnId <= 0)
-        //        return BadRequest(new { success = false, message = "Valid GRN ID is required" });
 
-        //    var header = await _context.MMM_GRNTbl
-        //        .Where(g => g.Id == grnId)
-        //        .Select(g => new
-        //        {
-        //            g.Id,
-        //            grnNumber = g.GRN_NO,
-        //            poNumber = g.PO_No,
-        //            g.Supplier_Name,
-        //            g.Supplier_Address,
-        //            g.GRN_Date,
-        //            g.Invoice_NO,
-        //            g.Invoice_Date,
-        //            g.Vehicle_No,
-        //            g.Transporter
-        //        })
-        //        .FirstOrDefaultAsync();
-
-        //    if (header == null)
-        //        return NotFound(new { success = false, message = "GRN not found" });
-
-        //    var items = await _context.MMM_GRNProductTbl
-        //        .Where(i => i.G_Id == grnId)
-        //        .Select(i => new
-        //        {
-        //            i.G_Id,
-        //            itemName = i.Item_Name,
-        //            receivedQty = i.Received_Qty,
-        //            acceptedQty = i.Accepted_Qty,
-        //            rejectedQty = i.Rejected_Qty,
-        //            rate = i.Rate,
-        //            taxType = i.TaxType,
-        //            taxRate = i.TaxRate,
-        //            taxAmount = i.TaxAmount,
-        //            netAmount = i.NetAmount
-        //        })
-        //        .ToListAsync();
-
-        //    return Ok(new
-        //    {
-        //        success = true,
-        //        data = new
-        //        {
-        //            header,
-        //            items
-        //        }
-        //    });
-
-        //}
         // ✔ GET FULL GRN DETAILS (Including PO No & PO Date)
         [HttpGet("GetGRNDetails")]
         public async Task<IActionResult> GetGRNDetails([FromQuery] int grnId)
@@ -217,10 +165,10 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                             taxRate = i.TaxRate,
                             taxAmount = i.TaxAmount,
                             netAmount = i.NetAmount,
-                            totalTaxValue=i.InvTotalTaxValue,
-                            cgst =i.Cgst_Tax_Amt,
-                            igst=i.Igst_Tax_Amt,
-                            sgst=i.Sgst_Tax_Amt,
+                            totalTaxValue = i.InvTotalTaxValue,
+                            cgst = i.Cgst_Tax_Amt,
+                            igst = i.Igst_Tax_Amt,
+                            sgst = i.Sgst_Tax_Amt,
                         })
                         .ToListAsync()
                 }
@@ -352,85 +300,30 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             return Ok(new { success = true, data = sellers });
         }
 
-
         [HttpGet("GetGRNsBySeller")]
         public async Task<IActionResult> GetGRNsBySeller(int sellerId)
         {
             try
             {
-                // 1️⃣ Fetch GRNs for the seller safely
                 var grns = await _context.AccountGRN
-                    .Where(g => g.VendorId == sellerId)
+                    .Where(g =>
+                        g.VendorId == sellerId &&
+                        g.IsActive == true &&
+                        g.BillStatus != null &&
+                        g.BillStatus.Trim().ToLower() == "pending"
+                    )
                     .OrderByDescending(g => g.GRNDate ?? DateTime.MinValue)
                     .Select(g => new
                     {
                         g.AccountGRNId,
                         g.VendorId,
-                        GRNNumber = g.GRNNumber ?? "",
-                        GRNDate = g.GRNDate,
-                        InvoiceNumber = g.InvoiceNumber ?? "",
-                        InvoiceDate = g.InvoiceDate,
-                        PONumber = g.PONumber ?? "",
-                        PODate = g.PODate,
-                        PaymentDueDate = g.PaymentDueDate,
-                        Status = g.Status ?? "",
-                        VehicleNo = g.VehicleNo ?? "",
-                        TransporterName = g.TransporterName ?? "",
-                        TotalAmount = g.TotalAmount ?? 0m,
-                        TotalTaxAmount = g.TotalTaxAmount ?? 0m,
-                        GrandAmount = g.GrandAmount ?? 0m,
-                        Description = g.Description ?? "",
-                        g.CreatedBy,
-                        g.CreatedDate,
-                        g.UpdatedBy,
-                        g.UpdatedDate,
-                        g.IsActive,
-                        g.BillStatus
-                    })
-                    .Take(200000)
-                    .ToListAsync();
-
-                // 2️⃣ Get GRN Ids
-                var grnIds = grns.Select(g => g.AccountGRNId).ToList();
-
-                // 3️⃣ Fetch GRN Details safely
-                var grnDetails = await _context.AccountGRNDetails
-                    .Where(d => grnIds.Contains(d.AccountGRNId))
-                    .Select(d => new
-                    {
-                        d.AccountGRNDetailsId,
-                        d.AccountGRNId,
-                        d.ItemId,
-                        Item_Grade = d.Item_Grade ?? "",
-                        Item_Code = d.Item_Code ?? "",
-                        itemName = d.Description ?? "",            // frontend expects itemName
-                        ReceivedQty = d.ReceivedQty ,
-                        ApprovedQty = d.ApprovedQty,
-                        DamagedQty = d.DamagedQty,
-                        Unit = d.Unit ?? "",
-                        TaxType = d.TaxType ?? "",
-                        CGST = d.CGST ?? 0,
-                        SGST = d.SGST ?? 0,
-                        IGST = d.IGST ?? 0,
-                        totalTaxValue = d.TotalTaxAmount ?? 0,   // frontend expects totalTaxValue
-                        totalItemValue = d.TotalAmount ?? 0      // frontend expects totalItemValue
-                    })
-                    .ToListAsync();
-
-                // 4️⃣ Map GRN headers + details
-                var result = grns.Select(g => new
-                {
-                    header = new
-                    {
-                        g.AccountGRNId,
-                        g.VendorId,
                         g.GRNNumber,
-                        GRNDate = g.GRNDate?.ToString("yyyy-MM-dd") ?? "",
+                        g.GRNDate,
                         g.InvoiceNumber,
-                        InvoiceDate = g.InvoiceDate?.ToString("yyyy-MM-dd") ?? "",
+                        g.InvoiceDate,
                         g.PONumber,
-                        PODate = g.PODate?.ToString("yyyy-MM-dd") ?? "",
-                        PaymentDueDate = g.PaymentDueDate?.ToString("yyyy-MM-dd") ?? "",
+                        g.PODate,
+                        g.PaymentDueDate,
                         g.Status,
                         g.VehicleNo,
                         g.TransporterName,
@@ -439,16 +332,49 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         g.GrandAmount,
                         g.Description,
                         g.CreatedBy,
-                        CreatedDate = g.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                        g.CreatedDate,
                         g.UpdatedBy,
-                        UpdatedDate = g.UpdatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
+                        g.UpdatedDate,
                         g.IsActive,
                         g.BillStatus
-                    },
-                    items = grnDetails
-                        .Where(d => d.AccountGRNId == g.AccountGRNId)
-                        .ToList()
-                }).ToList();
+                    })
+                    .ToListAsync();
+
+                if (!grns.Any())
+                    return Ok(new { success = true, data = new object[0], message = "No pending GRNs found" });
+
+                var grnIds = grns.Select(g => g.AccountGRNId).ToList();
+
+                var grnDetails = await _context.AccountGRNDetails
+                    .Where(d =>
+                        grnIds.Contains(d.AccountGRNId) &&
+                        (d.BillApprove == false || d.BillApprove == null)
+                    )
+                    .Select(d => new
+                    {
+                        d.AccountGRNDetailsId,
+                        d.AccountGRNId,
+                        d.ItemId,
+                        itemName = d.Description ?? "",
+                        d.ReceivedQty,
+                        d.ApprovedQty,
+                        d.DamagedQty,
+                        d.TotalAmount,
+                        d.TotalTaxAmount,
+
+                        Unit = d.Unit ?? "",
+                        d.BillApprove
+                    })
+                    .ToListAsync();
+
+                var result = grns
+                    .Select(g => new
+                    {
+                        header = g,
+                        items = grnDetails.Where(d => d.AccountGRNId == g.AccountGRNId).ToList()
+                    })
+                    .Where(x => x.items.Any())
+                    .ToList();
 
                 return Ok(new { success = true, data = result });
             }
@@ -457,6 +383,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 return StatusCode(500, ex.ToString());
             }
         }
+
         [HttpPost("SaveMultipleGRN")]
         public IActionResult SaveMultipleGRN([FromBody] List<GRNApprovalDto> approvals)
         {
@@ -502,6 +429,200 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             public int AccountGRNDetailsId { get; set; }
             public bool? BillApprove { get; set; }
         }
+        [HttpGet("GRNApprovedDetails")]
+        public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                if (page <= 0) page = 1;
+                if (pageSize <= 0) pageSize = 10;
+
+                // 1️⃣ Base GRN data
+                var grnQuery =
+                    from g in _context.AccountGRN
+                    join d in _context.AccountGRNDetails
+                        on g.AccountGRNId equals d.AccountGRNId
+                    where g.IsActive
+                          && g.BillStatus != null
+                          && (g.BillStatus.ToLower() == "approved"
+                              || g.BillStatus.ToLower() == "partially paid")
+                          && d.BillApprove == true
+                    group d by new
+                    {
+                        g.AccountGRNId,
+                        g.GRNNumber,
+                        g.GRNDate,
+                        g.Description,
+                        g.PONumber,
+                        g.InvoiceNumber,
+                        g.InvoiceDate
+                    }
+                    into grp
+                    select new GRNApprovedDto
+                    {
+                        AccountGRNId = grp.Key.AccountGRNId,
+                        GRNNumber = grp.Key.GRNNumber,
+                        GRNDate = grp.Key.GRNDate,
+                        VendorName = grp.Key.Description,
+                        PONumber = grp.Key.PONumber,
+                        InvoiceNumber = grp.Key.InvoiceNumber,
+                        InvoiceDate = grp.Key.InvoiceDate,
+
+                        CGST = grp.Sum(x => x.CGST ?? 0),
+                        SGST = grp.Sum(x => x.SGST ?? 0),
+                        IGST = grp.Sum(x => x.IGST ?? 0),
+
+                        TotalAmount =
+                            grp.Sum(x => x.TotalAmount ?? 0) +
+                            grp.Sum(x => x.TotalTaxAmount ?? 0),
+
+                        PaidAmount = 0,
+                        BalanceAmount = 0
+                    };
+
+                var grnList = await grnQuery.ToListAsync();
+
+                // 2️⃣ Payment aggregation
+                var paymentData = await _context.AccountPaymentAllocation
+                    .Where(x => x.IsActive)
+                    .GroupBy(x => x.GRNNo)
+                    .Select(g => new
+                    {
+                        GRNNo = g.Key,
+                        PaidAmount = g.Sum(x => x.PaidAmount),
+                        BalanceAmount = g.Sum(x => x.BalanceAmount)
+                    })
+                    .ToListAsync();
+
+                // 3️⃣ Merge payment into GRN list
+                foreach (var grn in grnList)
+                {
+                    var pay = paymentData.FirstOrDefault(p => p.GRNNo == grn.GRNNumber);
+                    if (pay != null)
+                    {
+                        grn.PaidAmount = pay.PaidAmount;
+                        grn.BalanceAmount = pay.BalanceAmount;
+                    }
+                    else
+                    {
+                        grn.BalanceAmount = grn.TotalAmount;
+                    }
+                }
+
+                var totalCount = grnList.Count;
+
+                var data = grnList
+                    .OrderByDescending(x => x.GRNDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data,
+                    totalCount
+                });
+            }
+            catch (Exception ex)
+            {
+                // 🔥 SEE REAL ERROR IN CONSOLE
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        public class GRNApprovedDto
+        {
+            public int AccountGRNId { get; set; }
+            public string GRNNumber { get; set; }
+            public DateTime? GRNDate { get; set; }
+            public string VendorName { get; set; }
+            public string PONumber { get; set; }
+            public string InvoiceNumber { get; set; }
+            public DateTime? InvoiceDate { get; set; }
+            public decimal CGST { get; set; }
+            public decimal SGST { get; set; }
+            public decimal IGST { get; set; }
+            public decimal TotalAmount { get; set; }
+    public decimal PaidAmount { get; set; }        // ✅ ADD
+    public decimal BalanceAmount { get; set; }
+        }
+        [HttpPost("SavePaymentAllocation")]
+        public async Task<IActionResult> SavePaymentAllocation(
+      [FromBody] PaymentAllocationRequest request)
+        {
+            if (request?.Payments == null || !request.Payments.Any())
+                return BadRequest(new { success = false, message = "No payment data received" });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var payment in request.Payments)
+                {
+                    var grn = await _context.AccountGRN
+                        .FirstOrDefaultAsync(x => x.AccountGRNId == payment.AccountGRNId && x.IsActive);
+
+                    if (grn == null)
+                        return BadRequest(new { success = false, message = "GRN not found" });
+
+                    if (payment.PaidAmount <= 0)
+                        return BadRequest(new { success = false, message = "Paid amount must be greater than 0" });
+
+                    if (payment.PaidAmount > payment.TotalAmount)
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message = "Paid amount cannot exceed total amount"
+                        });
+
+                    var allocation = new AccountPaymentAllocation
+                    {
+                        GRNNo = grn.GRNNumber,
+                        GRNDate = grn.GRNDate,
+                        PurchaseNo = grn.PONumber,
+                        PaymentDueDate = grn.PaymentDueDate,
+                        VendorId = grn.VendorId,
+
+                        CGST = payment.CGST,
+                        SGST = payment.SGST,
+                        IGST = payment.IGST,
+
+                        TotalTaxAmount = payment.CGST + payment.SGST + payment.IGST,
+                        TotalAmount = payment.TotalAmount,
+
+                        PaidAmount = payment.PaidAmount,
+                        BalanceAmount = payment.BalanceAmount,
+
+                        RTGSNo = payment.RTGSNo ?? "",
+                        RTGSAmount = payment.PaidAmount,
+                        RTGSDate = request.Date,
+
+                        Description = $"Payment against GRN {grn.GRNNumber}",
+                        IsActive = true
+                    };
+
+                    _context.AccountPaymentAllocation.Add(allocation);
+
+                    grn.BillStatus = payment.BalanceAmount == 0
+                        ? "Paid"
+                        : "Partially Paid";
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { success = true, message = "Payment allocation saved successfully" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+
 
     }
 }

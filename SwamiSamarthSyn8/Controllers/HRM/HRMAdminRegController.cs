@@ -329,7 +329,7 @@ public class HRMAdminRegAPIController : ControllerBase
                     Joining_AuthorityLevel = m.reg.Joining_AuthorityLevel,
                     Current_Designation = m.reg.Current_Designation,
                     Emp_Code = m.reg.Emp_Code,
-                    Annual_CTC_Rs_ = m.reg.Annual_CTC_Rs_,
+                    Annual_CTC_Rs_ = m.reg.Annual_CTC_Rs,
 
                     // Permissions
                     MaterialManagement = m.log.MaterialManagement ?? false,

@@ -104,7 +104,7 @@ namespace SwamiSamarthSyn8.Models
             public string Car { get; set; }
             public string Telephone { get; set; }
             public decimal? Total_Month { get; set; }
-            public decimal? Annual_CTC_Rs_ { get; set; }
+            public decimal? Annual_CTC_Rs { get; set; }
             public decimal? Current_CTC { get; set; }
             public string Password { get; set; }
             public string ConfirmPassword { get; set; }

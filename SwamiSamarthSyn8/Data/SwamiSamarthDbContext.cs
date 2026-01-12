@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Models.Accounts;
+using SwamiSamarthSyn8.Models.HRM;
 
 namespace SwamiSamarthSyn8.Data;
 
@@ -77,7 +78,9 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<HRM_DailywagesSalary> HRM_DailywagesSalarie { get; set; }
 
-    public virtual DbSet<HRM_DepartmentTbl> HRM_DepartmentTbl { get; set; }
+    public DbSet<HRM_Department> HRM_Department { get; set; }
+    public DbSet<HRM_Designation> HRM_Designation { get; set; }
+    public DbSet<HRM_AuthorityMatrix> HRM_AuthorityMatrix { get; set; }
 
     public virtual DbSet<HRM_DesignationTbl> HRM_DesignationTbl { get; set; }
 
@@ -237,7 +240,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=synergy-swamisamarth.database.windows.net;Database=SwamiSamarthDb;User ID=swamisamarthsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;");
+        optionsBuilder.UseSqlServer("Server=tcp:synergy-msmecore.database.windows.net,1433;Initial Catalog=MsmeERPDb;Persist Security Info=False;User ID=synergymsmecoresyn9;Password=Synergy@786;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

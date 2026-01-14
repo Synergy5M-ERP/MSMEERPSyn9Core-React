@@ -18,7 +18,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetIndustry")]
     public async Task<IActionResult> GetIndustry()
     {
-        var industryList = await _db.Industries
+        var industryList = await _db.Master_Industry
             .Select(i => new { i.IndustryId, i.IndustryName })
             .ToListAsync();
 
@@ -31,7 +31,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetSource")]
     public async Task<IActionResult> GetSource()
     {
-        var source = await _db.MergeTblDatas
+        var source = await _db.Master_MergeLocation
                         .Select(i => i.src_name)
                         .Distinct()
                         .ToListAsync();
@@ -45,7 +45,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetContinent")]
     public async Task<IActionResult> GetContinent(string source)
     {
-        var continentList = await _db.MergeTblDatas
+        var continentList = await _db.Master_MergeLocation
             .Where(c => c.src_name == source)
             .Select(c => c.conti_name)
             .Distinct()
@@ -60,7 +60,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetCountry")]
     public async Task<IActionResult> GetCountry(string source, string continent)
     {
-        var countryList = await _db.MergeTblDatas
+        var countryList = await _db.Master_MergeLocation
             .Where(c => c.src_name == source && c.conti_name == continent)
             .Select(c => c.Country_Name)
             .Distinct()
@@ -75,7 +75,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetState")]
     public async Task<IActionResult> GetState(string source, string continent, string country)
     {
-        var states = await _db.MergeTblDatas
+        var states = await _db.Master_MergeLocation
             .Where(c => c.src_name == source && c.conti_name == continent && c.Country_Name == country)
             .Select(c => c.state_name)
             .Distinct()
@@ -90,7 +90,7 @@ public class HRMAdminRegAPIController : ControllerBase
     [HttpGet("GetCity")]
     public async Task<IActionResult> GetCity(string source, string continent, string country, string state)
     {
-        var cities = await _db.MergeTblDatas
+        var cities = await _db.Master_MergeLocation
             .Where(c => c.src_name == source && c.conti_name == continent && c.Country_Name == country && c.state_name == state)
             .Select(c => c.city_name)
             .Distinct()

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Models.Accounts;
 using SwamiSamarthSyn8.Models.HRM;
+using SwamiSamarthSyn8.Models.Masters;
 
 namespace SwamiSamarthSyn8.Data;
 
@@ -40,7 +41,26 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<AccountGRN> AccountGRN { get; set; }
     public virtual DbSet<AccountBankDetails> AccountBankDetails { get; set; }
     //---------Accounts-------//
+    //---------Master Tables-------//
 
+    public virtual DbSet<Master_Category> Master_Category { get; set; }
+    public virtual DbSet<Master_Subcategory> Master_Subcategory { get; set; }
+    public virtual DbSet<Master_Industry> Master_Industry { get; set; }
+
+    public virtual DbSet<Master_City> Master_City { get; set; }
+    public virtual DbSet<Master_State> Master_State { get; set; }
+    public virtual DbSet<Master_Country> Master_Country { get; set; }
+    public virtual DbSet<Master_Continent> Master_Continent { get; set; }
+
+    public virtual DbSet<Master_Source> Master_Source { get; set; }
+    public virtual DbSet<Master_MergeLocation> Master_MergeLocation { get; set; }
+
+    public virtual DbSet<Master_Currency> Master_Currency { get; set; }
+    public virtual DbSet<Master_UOM> Master_UOM { get; set; }
+
+    public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
+    public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
+         //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
     public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction{ get; set; }
 
@@ -63,6 +83,7 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<CountryTbl> CountryTbl { get; set; }
 
     public virtual DbSet<Currencytbl> Currencytbl { get; set; }
+    public virtual DbSet<HRM_Organization> HRM_Organization { get; set; }
 
     public virtual DbSet<Demo_tbl> Demo_tbl { get; set; }
 

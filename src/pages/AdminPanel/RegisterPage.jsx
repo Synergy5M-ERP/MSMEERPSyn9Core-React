@@ -547,8 +547,10 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  //const apiBase = "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI";
+
   const apiBase =
-    "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI";
+    "https://localhost:7145/api/HRMAdminRegAPI";
 
   // ---------- VALIDATION ----------
   const validateField = (name, value) => {
@@ -664,8 +666,13 @@ function Register() {
             "https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster/Designation"
           ),
         ]);
-        setSources(srcRes.data || []);
-        setAuthorities(authRes.data || []);
+const srcData = Array.isArray(srcRes.data)
+  ? srcRes.data
+  : Object.values(srcRes.data);
+
+setSources(srcData);
+
+     setAuthorities(authRes.data || []);
         setDesignations(desRes.data || []);
       } catch {
         toast.error("Failed to load dropdowns");
@@ -788,7 +795,7 @@ function Register() {
         headers: { "Content-Type": "application/json" },
       });
       if (res.data?.success) {
-        toast.success("Registration successful");
+        toast.success("Registration successfull");
         setFormData({
           company_name: "",
           contact_person: "",
@@ -959,18 +966,20 @@ function Register() {
               Source<span className="required-star">*</span>
             </label>
             <select
-              name="source"
-              value={formData.source}
-              onChange={handleChange}
-              className={inputClass("source")}
-            >
-              <option value="">Select Source</option>
-              {sources.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+  name="source"
+  value={formData.source}
+  onChange={handleChange}
+  className="form-control"
+>
+  <option value="">Select Source</option>
+  {sources.length > 0 &&
+    sources.map((src, index) => (
+      <option key={index} value={src}>
+        {src}
+      </option>
+    ))}
+</select>
+
             {touched.source && errors.source && (
               <small className="text-danger">{errors.source}</small>
             )}

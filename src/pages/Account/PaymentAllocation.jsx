@@ -145,54 +145,49 @@ const PaymentAllocation = () => {
   }, [page, pageSize, baseActualBal]);
 
   // ✅ Enhanced handlePaidChange with toast
-  const handlePaidChange = (accountGRNId, value) => {
-    const numeric = Number(value);
-    const paidVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
+const handlePaidChange = (accountGRNId, value) => {
+  const numeric = Number(value);
+  const paidVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
 
-    setRows(prevRows => {
-      const currentTotalPaid = prevRows.reduce((sum, row) =>
-        row.accountGRNId === accountGRNId ? sum : sum + (row.paidAmount || 0), 0
-      );
-      const proposedTotalPaid = currentTotalPaid + paidVal;
+  setRows(prevRows => {
+    const updated = prevRows.map(row => {
+      if (row.accountGRNId !== accountGRNId) return row;
 
-      if (proposedTotalPaid > baseActualBal) {
-        toast.error(
-          `⚠️ Insufficient balance!\nAvailable: ₹${baseActualBal.toFixed(2)}\nProposed total: ₹${proposedTotalPaid.toFixed(2)}`,
-          { toastId: "balance-error" }
-        );
-        return prevRows;
-      }
+      // ✅ Here we calculate balance considering already paid amount
+      const totalPaidSoFar = paidVal; // overwrite paidAmount with typed value
+      const newBalance = row.totalAmount - totalPaidSoFar;
 
-      const updated = prevRows.map(row => {
-        if (row.accountGRNId !== accountGRNId) return row;
-        const newPaid = Math.min(paidVal, row.totalAmount);
-        const newBalance = row.totalAmount - newPaid;
-        return {
-          ...row,
-          paidAmount: newPaid,
-          balanceAmount: newBalance,
-          isChecked: newBalance === 0
-        };
-      });
-
-      const totalPaid = updated.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
-      setActualBal(Math.max(0, baseActualBal - totalPaid));
-      setIsDirty(true);
-      return updated;
+      return {
+        ...row,
+        paidAmount: totalPaidSoFar,
+        balanceAmount: newBalance,
+        isChecked: newBalance === 0
+      };
     });
-  };
 
-  const handleCheckboxChange = (accountGRNId) => {
-    setRows(prevRows =>
-      prevRows.map(row => {
-        if (row.accountGRNId !== accountGRNId) return row;
-        if (row.balanceAmount > 0) return row;
-        const updated = { ...row, isChecked: !row.isChecked };
-        setIsDirty(true);
-        return updated;
-      })
-    );
-  };
+    const totalPaid = updated.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
+    setActualBal(Math.max(0, baseActualBal - totalPaid));
+    setIsDirty(true);
+    return updated;
+  });
+};
+
+const handleCheckboxChange = (accountGRNId) => {
+  setRows(prevRows =>
+    prevRows.map(row => {
+      if (row.accountGRNId !== accountGRNId) return row;
+
+      // Only allow toggle if fully paid
+      if (row.balanceAmount > 0) return row;
+
+      return {
+        ...row,
+        isChecked: !row.isChecked
+      };
+    })
+  );
+  setIsDirty(true);
+};
 
   // ✅ ENHANCED SAVE with detailed toast
   const handleSave = async () => {

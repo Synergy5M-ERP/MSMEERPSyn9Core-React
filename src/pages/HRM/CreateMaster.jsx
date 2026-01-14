@@ -134,13 +134,14 @@ const fetchCountries = async () => {
   setCities([]);
 };
 
-const fetchStates = async (country) => {
+const fetchStates = async (countryId) => {
   const res = await axios.get(API_ENDPOINTS.GET_STATE, {
-    params: { country },
+    params: { countryId },   // ✅ MATCH API
   });
   setStates(res.data);
   setCities([]);
 };
+
 
 const fetchCities = async (country, state) => {
   const res = await axios.get(API_ENDPOINTS.GET_CITY, {
@@ -196,6 +197,20 @@ const fetchCities = async (country, state) => {
       onboardDate: ""
     });
   };
+  // COUNTRY → STATE
+useEffect(() => {
+  if (orgForm.country) {
+    fetchStates(orgForm.country); // countryId
+  }
+}, [orgForm.country]);
+
+// STATE → CITY
+useEffect(() => {
+  if (orgForm.country && orgForm.state) {
+    fetchCities(orgForm.country, orgForm.state);
+  }
+}, [orgForm.state]);
+
 useEffect(() => {
   fetchDepartments();
   fetchDesignations();
@@ -306,64 +321,113 @@ useEffect(() => {
     setIsActive(true);
   };
 
-  const handleSave = async () => {
-    if (!name.trim()) {
-      toast.warning("Enter name");
-      return;
-    }
+const handleSave = async () => {
+  if (!name.trim()) {
+    toast.warning("Enter name");
+    return;
+  }
+  // 🔹 EDIT MODE → PUT
+  if (editingId) {
+    updateMaster(editingId);
+    return;
+  }
+  let payload = { IsActive: isActive };
 
-    let payload = { isActive };
-    if (formType === "Department") payload.DepartmentName = name;
-    if (formType === "Designation") payload.DesignationName = name;
-    if (formType === "AuthorityMatrix") payload.AuthorityName = name;
+  if (formType === "Department") {
+    payload.DeptName = name;
+  }
 
-    try {
-      if (editingId) {
-        await axios.put(
-          `${API_BASE_URL}/${formType}/${editingId}`,
-          payload
-        );
-      } else {
-        await axios.post(`${API_BASE_URL}/${formType}`, payload);
-      }
+  if (formType === "Designation") {
+    payload.DesignationName = name;
+  }
 
-      toast.success("Saved successfully");
-      fetchTableData();
-      resetForm();
-    } catch {
-      toast.error("Save failed");
-    }
-  };
+  if (formType === "AuthorityMatrix") {
+    payload.AuthorityMatrixName = name; // ✅ FIXED
+  }
+
+  try {
+    await axios.post(`${API_BASE_URL}/${formType}`, payload);
+
+    toast.success("Saved successfully");
+    fetchTableData();
+    resetForm();
+  } catch (err) {
+    console.error(err.response?.data);
+    toast.error("Save failed");
+  }
+};
 
   const handleEdit = (item) => {
-    setEditingId(item.id);
-    setIsActive(item.isActive ?? true);
+  setEditingId(
+    formType === "Department"
+      ? item.deptId
+      : formType === "Designation"
+      ? item.designationId
+      : item.authorityMatrixId
+  );
 
-    setName(
-      item.departmentName ||
-        item.designationName ||
-        item.authorityName
-    );
+  setIsActive(item.isActive ?? true);
 
-    setCode(
-      item.department_code ||
-        item.designation_code ||
-        item.authority_code
-    );
+  setName(
+    item.deptName ||
+    item.designationName ||
+    item.authorityMatrixName
+  );
+
+  setCode(
+    item.deptCode ||
+    item.designationCode ||
+    item.authorityMatrixCode
+  );
+};
+const updateMaster = async (id, extraPayload = {}) => {
+  let payload = {
+    IsActive: isActive,
+    ...extraPayload,
   };
 
-  const toggleActive = async (id, activate) => {
-    try {
-      await axios.put(`${API_BASE_URL}/${formType}/${id}`, {
-        isActive: activate,
-      });
-      toast.success(activate ? "Activated" : "Deactivated");
-      fetchTableData();
-    } catch {
-      toast.error("Status update failed");
-    }
-  };
+  if (formType === "Department") {
+    payload.DeptName = name;
+  }
 
+  if (formType === "Designation") {
+    payload.DesignationName = name;
+  }
+
+  if (formType === "AuthorityMatrix") {
+    payload.AuthorityMatrixName = name;
+  }
+
+  try {
+    await axios.put(
+      `${API_BASE_URL}/${formType}/${id}`,
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    toast.success("Updated successfully");
+    fetchTableData();
+    resetForm();
+  } catch (err) {
+    console.error(err.response?.data);
+    toast.error("Update failed");
+  }
+};
+
+
+ const toggleActive = async (id, activate) => {
+  try {
+    await axios.put(`${API_BASE_URL}/${formType}/${id}`, {
+      IsActive: activate,   // ✅ FIXED
+    });
+
+    toast.success(activate ? "Activated" : "Deactivated");
+    fetchTableData();
+  } catch (err) {
+    console.error(err);
+    toast.error("Status update failed");
+  }
+};
   /* ================= JSX ================= */
   return (
     <div className="container py-4">
@@ -426,11 +490,12 @@ useEffect(() => {
     onChange={handleOrgChange}
   >
     <option value="">Select Department</option>
-    {departments.map((d) => (
-      <option key={d.id} value={d.departmentName}>
-        {d.departmentName}
-      </option>
-    ))}
+   {departments.map((d) => (
+  <option key={d.deptId} value={d.deptName}>
+    {d.deptName}
+  </option>
+))}
+
   </select>
 </div>
 
@@ -445,11 +510,12 @@ useEffect(() => {
     onChange={handleOrgChange}
   >
     <option value="">Select Position</option>
-    {designations.map((d) => (
-      <option key={d.id} value={d.designationName}>
-        {d.designationName}
-      </option>
-    ))}
+  {designations.map((d) => (
+  <option key={d.designationId} value={d.designationName}>
+    {d.designationName}
+  </option>
+))}
+
   </select>
 </div>
 
@@ -496,11 +562,12 @@ useEffect(() => {
     onChange={handleOrgChange}
   >
     <option value="">Select Industry</option>
-    {industries.map((ind) => (
-      <option key={ind.industryId} value={ind.industryName}>
-        {ind.industryName}
-      </option>
-    ))}
+   {industries.map((ind) => (
+  <option key={ind.industryId} value={ind.industryName}>
+    {ind.industryName}
+  </option>
+))}
+
   </select>
 </div>
 
@@ -509,16 +576,22 @@ useEffect(() => {
 <div className="col-md-3">
   <label className="fw-bold">Country</label>
   <select
-    className="form-control"
-    name="country"
-    value={orgForm.country}
-    onChange={handleOrgChange}
-  >
-    <option value="">Select Country</option>
-    {countries.map((c) => (
-      <option key={c} value={c}>{c}</option>
-    ))}
-  </select>
+  name="country"
+  value={orgForm.country}
+  onChange={handleOrgChange}
+  className="form-control"
+>
+  <option value="">Select Country</option>
+
+  {countries.map((c) => (
+  <option key={c.country_id} value={c.country_id}>
+    {c.country_name}
+  </option>
+))}
+
+
+</select>
+
 </div>
 
 {/* STATE */}
@@ -532,7 +605,9 @@ useEffect(() => {
   >
     <option value="">Select State</option>
     {states.map((s) => (
-      <option key={s} value={s}>{s}</option>
+<option key={s.state_id} value={s.state_id}>
+  {s.state_name}
+</option>
     ))}
   </select>
 </div>
@@ -547,9 +622,13 @@ useEffect(() => {
     onChange={handleOrgChange}
   >
     <option value="">Select City</option>
-    {cities.map((ci) => (
-      <option key={ci} value={ci}>{ci}</option>
-    ))}
+   {cities.map((ci) => (
+  <option key={ci.city_id} value={ci.city_id}>
+    {ci.city_name}
+  </option>
+))}
+
+  
   </select>
 </div>
 <div className="col-md-3">
@@ -562,10 +641,11 @@ useEffect(() => {
   >
     <option value="">Select Currency</option>
     {currencies.map((c) => (
-      <option key={c.id} value={c.currency_Code}>
-        {c.currency_Code}
-      </option>
-    ))}
+  <option key={c.currencyId} value={c.currency_Code}>
+    {c.currency_Code}
+  </option>
+))}
+
   </select>
 </div>
 
@@ -636,12 +716,7 @@ useEffect(() => {
           onChange={(e) => setName(e.target.value)}
         />
 
-        <label className="fw-bold">Code</label>
-        <input
-          className="form-control mb-3"
-          value={code || "Auto Generated"}
-          readOnly
-        />
+
 
         <button className="btn btn-success me-2" onClick={handleSave}>
           <Save size={16} /> Save
@@ -669,58 +744,85 @@ useEffect(() => {
         </tr>
       </thead>
 
-      <tbody>
-        {tableData.length > 0 ? (
-          tableData.map((item) => (
-            <tr key={item.id}>
-              <td>
-                {formType === "Department"
-                  ? item.departmentName
-                  : formType === "Designation"
-                  ? item.designationName
-                  : item.authorityName}
-              </td>
+   <tbody>
+  {tableData.length > 0 ? (
+    tableData.map((item) => (
+      <tr
+        key={
+          formType === "Department"
+            ? item.deptId
+            : formType === "Designation"
+            ? item.designationId
+            : item.authorityMatrixId
+        }
+      >
+        <td>
+          {formType === "Department"
+            ? item.deptName
+            : formType === "Designation"
+            ? item.designationName
+            : item.authorityMatrixName}
+        </td>
 
-              <td>
-                {formType === "Department"
-                  ? item.department_code
-                  : formType === "Designation"
-                  ? item.designation_code
-                  : item.authority_code}
-              </td>
+        <td>
+          {formType === "Department"
+            ? item.deptCode
+            : formType === "Designation"
+            ? item.designationCode
+            : item.authorityMatrixCode}
+        </td>
 
-              <td>
-                <Edit
-                  role="button"
-                  className="text-primary"
-                  onClick={() => handleEdit(item)}
-                />
-              </td>
+        <td>
+          <Edit
+            role="button"
+            className="text-primary"
+            onClick={() => handleEdit(item)}
+          />
+        </td>
 
-              <td>
-                {activeFilter === "active" ? (
-                  <Trash2
-                    role="button"
-                    className="text-danger"
-                    onClick={() => toggleActive(item.id, false)}
-                  />
-                ) : (
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={() => toggleActive(item.id, true)}
-                  >
-                    Activate
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="4">No Records Found</td>
-          </tr>
-        )}
-      </tbody>
+        <td>
+          {activeFilter === "active" ? (
+            <Trash2
+              role="button"
+              className="text-danger"
+              onClick={() =>
+                toggleActive(
+                  formType === "Department"
+                    ? item.deptId
+                    : formType === "Designation"
+                    ? item.designationId
+                    : item.authorityMatrixId,
+                  false
+                )
+              }
+            />
+          ) : (
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() =>
+                toggleActive(
+                  formType === "Department"
+                    ? item.deptId
+                    : formType === "Designation"
+                    ? item.designationId
+                    : item.authorityMatrixId,
+                  true
+                )
+              }
+            >
+              Activate
+            </button>
+          )}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="4">No Records Found</td>
+    </tr>
+  )}
+</tbody>
+
     </table>
   </div>
 </div>

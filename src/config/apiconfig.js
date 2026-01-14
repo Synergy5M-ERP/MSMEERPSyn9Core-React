@@ -1,6 +1,6 @@
 
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-// const BASE_URL="https://localhost:7145/api"
+ //const BASE_URL="https://localhost:7145/api"
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
@@ -23,11 +23,11 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
-  GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
-  GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
-  GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
-  GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
-  ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+ // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
+ // GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
+  ///GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
+  //GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
+  //ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST

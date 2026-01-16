@@ -15,9 +15,10 @@ const LEVEL_OPTIONS = [
   { label: "Select Level", value: "" },
   ...Array.from({ length: 9 }, (_, i) => ({
     label: `${i + 1}`,
-    value: `${i + 1}`,
+    value: i + 1,   // ✅ NUMBER
   })),
 ];
+
 
 const QUALIFICATION_OPTIONS = [
   { label: "Select Qualification", value: "" },
@@ -46,7 +47,6 @@ const EXPERIENCE_OPTIONS = [
   { label: "10-20 YEAR", value: "10-20 YEAR" },
   { label: "20 YEAR AND ABOVE", value: "20 YEAR AND ABOVE" },
 ];
-
 function CreateMaster() {
   const [formType, setFormType] = useState("Department");
   const [tableData, setTableData] = useState([]);
@@ -63,6 +63,30 @@ const [states, setStates] = useState([]);
 const [cities, setCities] = useState([]);
 const [industries, setIndustries] = useState([]);
 const [organizationTable, setOrganizationTable] = useState([]);
+const [editingOrgId, setEditingOrgId] = useState(null);
+const [editingOrgIndex, setEditingOrgIndex] = useState(null);
+
+// ------------------ BUILD ORGANIZATION FORM STATE ------------------
+const [orgForm, setOrgForm] = useState({
+  department: "",
+  position: "",
+  level: "",
+
+  qualification: "",
+  experience: "",
+  industry: "",
+  country: "",
+  state: "",
+  city: "",
+  currency: "",
+  budgetMin: "",
+  budgetMax: "",
+  onboardDate: "",
+});
+
+// ORGANIZATION TABLE
+const [orgTable, setOrgTable] = useState([]);
+
 
 useEffect(() => {
   fetchIndustries();
@@ -73,23 +97,37 @@ useEffect(() => {
 }, []);
 
 
+const fetchOrganizations = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/Organization`);
+    let data = res.data || [];
+
+    // ✅ NORMALIZE BACKEND FIELD
+    data = data.map(x => ({
+      ...x,
+      isActive: x.IsActive ?? x.isActive   // 🔥 KEY FIX
+    }));
+
+    // ✅ FILTER WORKS CORRECTLY NOW
+    data = data.filter(x =>
+      activeFilter === "active"
+        ? x.isActive === true || x.isActive === 1
+        : x.isActive === false || x.isActive === 0
+    );
+
+    setOrganizationTable(data);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load organization data");
+  }
+};
+
+
+
+
 useEffect(() => {
   if (formType === "ViewOrganization") {
-    const fetchOrganizationData = async () => {
-      try {
-        // ✅ Correct URL here
-        const res = await axios.get(`${API_BASE_URL}/Organization`);
-        let data = res.data || [];
-        data = data.filter((x) =>
-          activeFilter === "active" ? x.isActive !== false : x.isActive === false
-        );
-        setOrganizationTable(data);
-      } catch (err) {
-        toast.error("Failed to load organization data");
-        console.error(err);
-      }
-    };
-    fetchOrganizationData();
+    fetchOrganizations();
   }
 }, [formType, activeFilter]);
 
@@ -97,27 +135,52 @@ const deleteOrgRow = (index) => {
   setOrgTable((prev) => prev.filter((_, i) => i !== index));
 };
 const editOrgRow = (row, index) => {
-  setOrgForm({ ...row });        // put data back into form
-  setOrgTable((prev) => prev.filter((_, i) => i !== index)); // remove temp row
+  setEditingOrgIndex(index);
+  setEditingOrgId(row.organizationId);
+
+  // Map the row values to match dropdown IDs
+  setOrgForm({
+    department: row.deptId ?? "",           // should match departments.deptId
+    position: row.designationId ?? "",      // should match designations.designationId
+    level: row.level ?? "",
+    qualification: row.qualification ?? "",
+    experience: row.experience ?? "",
+    industry: row.industryId ?? "",         // industries.industryId
+    country: row.countryId ?? "",           // countries.country_id
+    state: row.stateId ?? "",               // states.state_id
+    city: row.cityId ?? "",                 // cities.city_id
+    currency: row.currencyId ?? "",         // currencies.currencyId
+    budgetMin: row.minBudget ?? "",
+    budgetMax: row.maxBudget ?? "",
+    onboardDate: row.onBoardDate?.split("T")[0] ?? "",
+  });
+
+  // fetch dependent dropdowns
+  if (row.countryId) fetchStates(Number(row.countryId));
+  if (row.stateId) fetchCities(Number(row.stateId));
 };
+
 
 const toggleOrganizationActive = async (id, activate) => {
   try {
-    await axios.put(`${API_BASE_URL}/Organization/${id}`, { isActive: activate });
-    toast.success(activate ? "Activated" : "Deactivated");
-
-    // Refresh
-    const res = await axios.get(`${API_BASE_URL}/Organization`);
-    let data = res.data || [];
-    data = data.filter((x) =>
-      activeFilter === "active" ? x.isActive !== false : x.isActive === false
+    await axios.put(
+      `${API_BASE_URL}/Organization/${id}`,
+      { isActive: activate }   // ✅ MUST be isActive
     );
-    setOrganizationTable(data);
+
+    toast.success(
+      activate ? "Organization activated" : "Organization deactivated"
+    );
+
+    fetchOrganizations();
   } catch (err) {
-    toast.error("Status update failed");
     console.error(err);
+    toast.error("Failed to update status");
   }
 };
+
+
+
 
 
 
@@ -142,45 +205,60 @@ const fetchStates = async (countryId) => {
   setCities([]);
 };
 
+useEffect(() => {
+  if (orgForm.state) {
+    fetchCities(Number(orgForm.state)); // ✅ convert to number
+  }
+}, [orgForm.state]);
 
-const fetchCities = async (country, state) => {
-  const res = await axios.get(API_ENDPOINTS.GET_CITY, {
-    params: { country, state },
-  });
-  setCities(res.data);
+const fetchCities = async (stateId) => {
+  if (!stateId) return;
+  try {
+    const res = await axios.get(API_ENDPOINTS.GET_CITY, {
+      params: { stateId }  // ✅ match API
+    });
+    setCities(res.data);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load cities");
+  }
 };
+
+
 
   /* ================= BUILD ORGANIZATION ================= */
-  const [orgForm, setOrgForm] = useState({
-    department: "",
-    position: "",
-    level: "",
-    qualification: "",
-    experience: "",
-    industry: "",
-    country: "",
-    state: "",
-    city: "",
-    currency: "",
-    budgetMin: "",
-    budgetMax: "",
-    onboardDate: "",
-  });
 
-  const [orgTable, setOrgTable] = useState([]);
 
- const handleOrgChange = (e) => {
+const handleOrgChange = (e) => {
   const { name, value } = e.target;
-  setOrgForm((prev) => ({ ...prev, [name]: value }));
+
+  setOrgForm((prev) => ({
+    ...prev,
+    [name]: name === "level" ? Number(value) : value,
+  }));
 };
 
-  // ================= ADD ROW =================
-  const addOrgRow = () => {
-    if (Object.values(orgForm).some((v) => !v)) {
-      toast.warning("Please fill all fields");
-      return;
-    }
+const addOrgRow = () => {
+  if (Object.values(orgForm).some((v) => !v)) {
+    toast.warning("Please fill all fields");
+    return;
+  }
+
+  if (editingOrgIndex !== null) {
+    // update row
+    setOrgTable((prev) =>
+      prev.map((row, idx) =>
+        idx === editingOrgIndex ? { ...orgForm, isActive: true } : row
+      )
+    );
+    setEditingOrgIndex(null);
+  } else {
+    // add new row
     setOrgTable((prev) => [...prev, { ...orgForm, isActive: true }]);
+  }
+
+  // ✅ CLEAR FORM ONLY WHEN NOT UPDATING
+  if (!editingOrgId) {
     setOrgForm({
       department: "",
       position: "",
@@ -194,22 +272,13 @@ const fetchCities = async (country, state) => {
       currency: "",
       budgetMin: "",
       budgetMax: "",
-      onboardDate: ""
+      onboardDate: "",
     });
-  };
-  // COUNTRY → STATE
-useEffect(() => {
-  if (orgForm.country) {
-    fetchStates(orgForm.country); // countryId
   }
-}, [orgForm.country]);
+};
 
-// STATE → CITY
-useEffect(() => {
-  if (orgForm.country && orgForm.state) {
-    fetchCities(orgForm.country, orgForm.state);
-  }
-}, [orgForm.state]);
+
+
 
 useEffect(() => {
   fetchDepartments();
@@ -257,38 +326,114 @@ useEffect(() => {
 }, [orgForm.country]); // ✅ correct
 
 // STATE → CITY
+
 useEffect(() => {
-  if (orgForm.country && orgForm.state) {
-    fetchCities(orgForm.country, orgForm.state);
+  if (orgForm.state) {
+    fetchCities(Number(orgForm.state));
   }
 }, [orgForm.state]);
 
-
-
- const submitOrganization = async () => {
-  if (orgTable.length === 0) {
-    toast.warning("No data to submit");
-    return;
-  }
-
+const submitOrganization = async () => {
   try {
-    await axios.post(
-      API_ENDPOINTS.ORG_CHART_WITH_BUDGET,
-      orgTable,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    if (orgTable.length === 0) {
+      toast.error("Please add at least one organization row");
+      return;
+    }
 
-    toast.success("Organization submitted successfully!");
+    const payload = orgTable.map(row => {
+      const dept = departments.find(d => d.deptId == row.department);
+      const desig = designations.find(d => d.designationId == row.position);
+      const ind = industries.find(i => i.industryId == row.industry);
+      const country = countries.find(c => c.country_id == row.country);
+      const state = states.find(s => s.state_id == row.state);
+      const city = cities.find(c => c.city_id == row.city);
+      const currency = currencies.find(c => c.currencyId == row.currency);
+
+      if (!dept || !desig || !ind || !country || !state || !city || !currency) {
+        throw new Error("Invalid dropdown mapping");
+      }
+
+      return {
+        Department: dept.deptName,
+        Position: desig.designationName,
+        Industry: ind.industryName,
+        Country: country.country_name,
+        State: state.state_name,
+        City: city.city_name,
+        Currency: currency.currency_Code,
+        Level: Number(row.level),
+        Qualification: row.qualification,
+        Experience: row.experience,
+        BudgetMin: Number(row.budgetMin),
+        BudgetMax: Number(row.budgetMax),
+        OnboardDate: row.onboardDate
+      };
+    });
+
+    await axios.post(`${API_BASE_URL}/OrgChartWithBudget`, payload);
+
+    toast.success("Organization created successfully");
     setOrgTable([]);
+    setFormType("ViewOrganization");
+
   } catch (err) {
     console.error(err);
-    toast.error("Submission failed");
+    toast.error("Save failed: " + err.message);
   }
 };
+const updateOrganization = async () => {
+  try {
+    if (!editingOrgId) {
+      toast.warning("No organization selected");
+      return;
+    }
+
+    if (!orgForm.onboardDate) {
+      toast.error("Onboard Date is required");
+      return;
+    }
+    if (!orgForm.qualification || !orgForm.experience) {
+  toast.error("Qualification and Experience are required");
+  return;
+}
+
+
+  const payload = {
+  DeptId: Number(orgForm.department),
+  DesignationId: Number(orgForm.position),
+  IndustryId: Number(orgForm.industry),
+  CountryId: Number(orgForm.country),
+  StateId: Number(orgForm.state),
+  CityId: Number(orgForm.city),
+  CurrencyId: Number(orgForm.currency),
+  Level: Number(orgForm.level),
+  Qualification: orgForm.qualification,
+  Experience: orgForm.experience,
+  MinBudget: Number(orgForm.budgetMin),
+  MaxBudget: Number(orgForm.budgetMax),
+  OnBoardDate: orgForm.onboardDate // yyyy-MM-dd is OK
+};
+
+    await axios.put(
+      `${API_BASE_URL}/OrganizationUpdate/${editingOrgId}`,
+      payload
+    );
+
+    toast.success("Organization updated successfully");
+
+    setEditingOrgId(null);
+    setEditingOrgIndex(null);
+    setFormType("ViewOrganization");
+
+    const res = await axios.get(`${API_BASE_URL}/Organization`);
+    setOrganizationTable(res.data || []);
+  } catch (err) {
+    console.error(err);
+    toast.error("Update failed");
+  }
+};
+
+
 
 
 
@@ -428,6 +573,51 @@ const updateMaster = async (id, extraPayload = {}) => {
     toast.error("Status update failed");
   }
 };
+const handleEditOrganization = (row) => {
+  setEditingOrgId(row.organizationId);
+
+  const dept = departments.find(d => d.deptName === row.deptName);
+  const desig = designations.find(d => d.designationName === row.designationName);
+  const ind = industries.find(i => i.industryName === row.industryName);
+  const country = countries.find(c => c.country_name === row.countryName);
+  const currency = currencies.find(c => c.currency_Code === row.currencyName);
+
+  // fetch states AFTER country resolved
+  if (country) {
+    fetchStates(country.country_id);
+  }
+
+  setTimeout(() => {
+    const state = states.find(s => s.state_name === row.stateName);
+    if (state) {
+      fetchCities(state.state_id);
+    }
+
+    setTimeout(() => {
+      const city = cities.find(c => c.city_name === row.cityName);
+
+      setOrgForm({
+       department: row.deptId ?? "",
+  position: row.designationId ?? "",
+  level: row.level ?? "",
+  qualification: row.qualification ?? "",
+  experience: row.experience ?? "",
+  industry: row.industryId ?? "",
+  country: row.countryId ?? "",
+  state: row.stateId ?? "",
+  city: row.cityId ?? "",
+  currency: row.currencyId ?? "",
+  budgetMin: row.minBudget ?? "",
+  budgetMax: row.maxBudget ?? "",
+ onboardDate: row.onBoardDate
+      ? row.onBoardDate.split("T")[0]
+      : "",      });
+    }, 300);
+  }, 300);
+
+  setFormType("BuildOrganization");
+};
+
   /* ================= JSX ================= */
   return (
     <div className="container py-4">
@@ -491,7 +681,7 @@ const updateMaster = async (id, extraPayload = {}) => {
   >
     <option value="">Select Department</option>
    {departments.map((d) => (
-  <option key={d.deptId} value={d.deptName}>
+  <option key={d.deptId} value={d.deptId}>
     {d.deptName}
   </option>
 ))}
@@ -511,7 +701,7 @@ const updateMaster = async (id, extraPayload = {}) => {
   >
     <option value="">Select Position</option>
   {designations.map((d) => (
-  <option key={d.designationId} value={d.designationName}>
+  <option key={d.designationId} value={d.designationId}>
     {d.designationName}
   </option>
 ))}
@@ -563,7 +753,7 @@ const updateMaster = async (id, extraPayload = {}) => {
   >
     <option value="">Select Industry</option>
    {industries.map((ind) => (
-  <option key={ind.industryId} value={ind.industryName}>
+  <option key={ind.industryId} value={ind.industryId}>
     {ind.industryName}
   </option>
 ))}
@@ -622,7 +812,7 @@ const updateMaster = async (id, extraPayload = {}) => {
     onChange={handleOrgChange}
   >
     <option value="">Select City</option>
-   {cities.map((ci) => (
+  {cities.map((ci) => (
   <option key={ci.city_id} value={ci.city_id}>
     {ci.city_name}
   </option>
@@ -641,7 +831,7 @@ const updateMaster = async (id, extraPayload = {}) => {
   >
     <option value="">Select Currency</option>
     {currencies.map((c) => (
-  <option key={c.currencyId} value={c.currency_Code}>
+  <option key={c.currencyId} value={c.currencyId}>
     {c.currency_Code}
   </option>
 ))}
@@ -664,8 +854,14 @@ const updateMaster = async (id, extraPayload = {}) => {
 
             <div className="col-md-3">
               <label className="fw-bold">Onboard Date</label>
-              <input type="date" className="form-control"
-                name="onboardDate" value={orgForm.onboardDate} onChange={handleOrgChange} />
+             <input
+  type="date"
+  name="onboardDate"
+  value={orgForm.onboardDate}
+  onChange={handleOrgChange}
+  className="form-control"
+/>
+
             </div>
 
             <div className="col-md-3 d-flex align-items-end">
@@ -860,19 +1056,20 @@ const updateMaster = async (id, extraPayload = {}) => {
         <tbody>
           {orgTable.map((row, index) => (
             <tr key={index}>
-              <td>{row.department}</td>
-              <td>{row.position}</td>
-              <td>{row.level}</td>
-              <td>{row.qualification}</td>
-              <td>{row.experience}</td>
-              <td>{row.industry}</td>
-              <td>{row.country}</td>
-              <td>{row.state}</td>
-              <td>{row.city}</td>
-              <td>{row.currency}</td>
-              <td>{row.budgetMin}</td>
-              <td>{row.budgetMax}</td>
-              <td>{row.onboardDate}</td>
+             <td>{departments.find(d => d.deptId == row.department)?.deptName}</td>
+<td>{designations.find(d => d.designationId == row.position)?.designationName}</td>
+<td>{row.level}</td>
+<td>{row.qualification}</td>
+<td>{row.experience}</td>
+<td>{industries.find(i => i.industryId == row.industry)?.industryName}</td>
+<td>{countries.find(c => c.country_id == row.country)?.country_name}</td>
+<td>{states.find(s => s.state_id == row.state)?.state_name}</td>
+<td>{cities.find(c => c.city_id == row.city)?.city_name}</td>
+<td>{currencies.find(c => c.currencyId == row.currency)?.currency_Code}</td>
+<td>{row.budgetMin}</td>
+<td>{row.budgetMax}</td>
+<td>{row.onboardDate}</td>
+
                 {/* EDIT TEMP */}
       <td>
         <Edit
@@ -899,12 +1096,14 @@ const updateMaster = async (id, extraPayload = {}) => {
     </div>
 
     <div className="text-center mt-3">
-      <button
-        className="btn btn-success px-5"
-        onClick={submitOrganization}
-      >
-        SUBMIT
-      </button>
+       <button
+    className="btn btn-success px-5"
+  onClick={editingOrgId ? updateOrganization : submitOrganization}
+    disabled={orgTable.length === 0} // disable until a row is added
+  >
+    {editingOrgId ? "UPDATE" : "SUBMIT"}
+  </button>
+
     </div>
   </div>
 )}
@@ -913,25 +1112,7 @@ const updateMaster = async (id, extraPayload = {}) => {
   <div className="bg-white p-3 rounded shadow-sm">
     <h4 className="text-center text-primary mb-4">View Organization</h4>
 
-    <div className="mb-2 text-end">
-      <label className="me-3">
-        <input
-          type="radio"
-          checked={activeFilter === "active"}
-          onChange={() => setActiveFilter("active")}
-        />{" "}
-        Active
-      </label>
-      <label>
-        <input
-          type="radio"
-          checked={activeFilter === "inactive"}
-          onChange={() => setActiveFilter("inactive")}
-        />{" "}
-        Inactive
-      </label>
-    </div>
-
+   
     <div className="table-responsive">
       <table className="table table-bordered text-center">
         <thead className="table-light">
@@ -949,39 +1130,48 @@ const updateMaster = async (id, extraPayload = {}) => {
             <th>Budget Min</th>
             <th>Budget Max</th>
             <th>Onboard Date</th>
-<th>Deactivate</th>
+<th>Edit</th>
+
+<th>{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
           </tr>
         </thead>
         <tbody>
           {organizationTable.length > 0 ? (
             organizationTable.map((row) => (
-              <tr key={row.id}>
-                <td>{row.department || "-"}</td>
-                <td>{row.position || "-"}</td>
-                <td>{row.level || "-"}</td>
-                <td>{row.qualification || "-"}</td>
-                <td>{row.experience || "-"}</td>
-                <td>{row.industry || "-"}</td>
-                <td>{row.country || "-"}</td>
-                <td>{row.state || "-"}</td>
-                <td>{row.city || "-"}</td>
-                <td>{row.currency || "-"}</td>
-                <td>{row.budgetMin || "-"}</td>
-                <td>{row.budgetMax || "-"}</td>
-                <td>{row.onboardDate || "-"}</td>
-                 
+<tr key={row.organizationId}>
+  <td>{row.deptName}</td>
+  <td>{row.designationName}</td>
+  <td>{row.level}</td>
+  <td>{row.qualification}</td>
+  <td>{row.experience}</td>
+  <td>{row.industryName}</td>
+  <td>{row.countryName}</td>
+  <td>{row.stateName}</td>
+  <td>{row.cityName}</td>
+  <td>{row.currencyName}</td>
+  <td>{row.minBudget}</td>
+  <td>{row.maxBudget}</td>
+  <td>{row.onBoardDate}</td>
 <td>
-  <Trash2
+  <Edit
     size={20}
     role="button"
-    className="text-danger"
-    title="Delete"
-    onClick={() => toggleOrganizationActive(row.id, false)}
+    className="text-primary"
+    onClick={() => handleEditOrganization(row)}
   />
 </td>
 
+  <td>
+    <Trash2
+      size={20}
+      role="button"
+      className="text-danger"
+      title="Deactivate"
+  onClick={() => toggleOrganizationActive(row.organizationId, false)}
 
-              </tr>
+    />
+  </td>
+</tr>
             ))
           ) : (
             <tr>

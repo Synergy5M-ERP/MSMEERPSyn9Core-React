@@ -18,41 +18,50 @@ public class HrmMasterController : ControllerBase
     [HttpGet("GetCountry")]
     public async Task<IActionResult> GetCountry()
     {
-        var countryList = await _context.Master_MergeLocation
-            .Where(x => x.Country_Name != null)
-            .Select(x => x.Country_Name)
-            .Distinct()
+        var countries = await _context.Master_Country
+            .Where(x => x.IsActive)
+            .Select(x => new
+            {
+                country_id = x.country_id,
+                country_name = x.country_name
+            })
+            .OrderBy(x => x.country_name)
             .ToListAsync();
 
-        return Ok(countryList);
+        return Ok(countries);
     }
+
     [HttpGet("GetState")]
-    public IActionResult GetState(int countryId)
+    public async Task<IActionResult> GetState(int countryId)
     {
-        var states = _context.Master_State
-            .Where(x => x.country_id == countryId)
-            .Select(x => x.state_name)
-            .ToList();
+        var states = await _context.Master_State
+            .Where(x => x.country_id == countryId && x.IsActive)
+            .Select(x => new
+            {
+                state_id = x.state_id,
+                state_name = x.state_name
+            })
+            .OrderBy(x => x.state_name)
+            .ToListAsync();
 
         return Ok(states);
     }
-
     [HttpGet("GetCity")]
-    public async Task<IActionResult> GetCity(
-        [FromQuery] string country,
-        [FromQuery] string state)
+    public async Task<IActionResult> GetCity(int stateId)
     {
-        if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(state))
-            return BadRequest("Country and State are required");
-
-        var cities = await _context.Master_MergeLocation
-            .Where(x => x.Country_Name == country && x.state_name == state)
-            .Select(x => x.city_name)
-            .Distinct()
+        var cities = await _context.Master_City
+            .Where(x => x.state_id == stateId && x.IsActive)
+            .Select(x => new
+            {
+                city_id = x.city_id,
+                city_name = x.city_name
+            })
+            .OrderBy(x => x.city_name)
             .ToListAsync();
 
         return Ok(cities);
     }
+
     [HttpGet("GetCurrency")]
     public async Task<IActionResult> GetCurrency()
     {
@@ -278,38 +287,75 @@ public class HrmMasterController : ControllerBase
                 return BadRequest("Invalid type");
         }
     }
-
-    //// ================= GET ALL ORGANIZATION =================
     [HttpGet("Organization")]
     public IActionResult GetOrganization([FromQuery] string status = "active")
     {
         try
         {
-            var data = _context.HRM_Organization.AsQueryable();
+            var result =
+                (from o in _context.HRM_Organization
 
-            if (status.ToLower() == "active")
-                data = data.Where(x => x.IsActive == true);
-            else if (status.ToLower() == "inactive")
-                data = data.Where(x => x.IsActive == false);
+                 join d in _context.HRM_Department
+                     on o.DeptId equals d.DeptId into deptJoin
+                 from d in deptJoin.DefaultIfEmpty()
 
-            var result = data.Select(x => new
-            {
-                x.OrganizationId,
-                x.DeptId,
-                x.DesignationId,
-                x.Level,
-                x.Qualification,
-                x.Experience,
-                x.IndustryId,
-                x.CountryId,
-                x.StateId,
-                x.CityId,
-                x.CurrencyId,
-                MinBudget = x.MinBudget,
-                MaxBudget = x.MaxBudget,
-                OnBoardDate = x.OnBoardDate,
-                x.IsActive
-            }).ToList();
+                 join des in _context.HRM_Designation
+                     on o.DesignationId equals des.DesignationId into desJoin
+                 from des in desJoin.DefaultIfEmpty()
+
+                 join ind in _context.Master_Industry
+                     on o.IndustryId equals ind.IndustryId into indJoin
+                 from ind in indJoin.DefaultIfEmpty()
+
+                 join c in _context.Master_Country
+                     on o.CountryId equals c.country_id into countryJoin
+                 from c in countryJoin.DefaultIfEmpty()
+
+                 join s in _context.Master_State
+                     on o.StateId equals s.state_id into stateJoin
+                 from s in stateJoin.DefaultIfEmpty()
+
+                 join city in _context.Master_City
+                     on o.CityId equals city.city_id into cityJoin
+                 from city in cityJoin.DefaultIfEmpty()
+
+                 join cur in _context.Master_Currency
+                     on o.CurrencyId equals cur.CurrencyId into currencyJoin
+                 from cur in currencyJoin.DefaultIfEmpty()
+
+                 where status == "active" ? o.IsActive :
+                       status == "inactive" ? !o.IsActive : true
+
+                 select new
+                 {
+                     o.OrganizationId,
+
+                     // IDs (for edit / delete)
+                     o.DeptId,
+                     o.DesignationId,
+                     o.IndustryId,
+                     o.CountryId,
+                     o.StateId,
+                     o.CityId,
+                     o.CurrencyId,
+
+                     // DISPLAY TEXT
+                     DeptName = d != null ? d.DeptName : "",
+                     DesignationName = des != null ? des.DesignationName : "",
+                     IndustryName = ind != null ? ind.IndustryName : "",
+                     CountryName = c != null ? c.country_name : "",
+                     StateName = s != null ? s.state_name : "",
+                     CityName = city != null ? city.city_name : "",
+                     CurrencyName = cur != null ? cur.Currency_Code : "",
+
+                     o.Level,
+                     Qualification = o.Qualification ?? "",
+                     Experience = o.Experience ?? "",
+                     o.MinBudget,
+                     o.MaxBudget,
+                     o.OnBoardDate,
+                     o.IsActive
+                 }).ToList();
 
             return Ok(result);
         }
@@ -359,21 +405,21 @@ public class HrmMasterController : ControllerBase
                             .Where(x => x.IndustryName == job.Industry)
                             .Select(x => x.IndustryId)
                             .FirstOrDefault(),
-
                 CountryId = _context.Master_Country
-                            .Where(x => x.country_name == job.Country)
-                            .Select(x => x.country_id)
-                            .FirstOrDefault(),
+    .Where(x => x.country_name.Trim().ToLower() == job.Country.Trim().ToLower())
+    .Select(x => x.country_id)
+    .FirstOrDefault(),
 
                 StateId = _context.Master_State
-                            .Where(x => x.state_name == job.State)
-                            .Select(x => x.state_id)
-                            .FirstOrDefault(),
+    .Where(x => x.state_name.Trim().ToLower() == job.State.Trim().ToLower())
+    .Select(x => x.state_id)
+    .FirstOrDefault(),
 
                 CityId = _context.Master_City
-                            .Where(x => x.city_name == job.City)
-                            .Select(x => x.city_id)
-                            .FirstOrDefault(),
+    .Where(x => x.city_name.Trim().ToLower() == job.City.Trim().ToLower())
+    .Select(x => x.city_id)
+    .FirstOrDefault(),
+
 
                 CurrencyId = _context.Master_Currency
                             .Where(x => x.Currency_Code == job.Currency)
@@ -397,5 +443,36 @@ public class HrmMasterController : ControllerBase
         _context.SaveChanges();
         return Ok(new { message = "Saved successfully" });
     }
+    [HttpPut("OrganizationUpdate/{id}")]
+    public IActionResult UpdateOrganization(
+       int id,
+       [FromBody] OrganizationUpdateDto dto
+   )
+    {
+        var org = _context.HRM_Organization
+            .FirstOrDefault(x => x.OrganizationId == id);
+
+        if (org == null)
+            return NotFound("Organization not found");
+
+        org.DeptId = dto.DeptId;
+        org.DesignationId = dto.DesignationId;
+        org.Level = dto.Level;
+        org.Qualification = dto.Qualification;
+        org.Experience = dto.Experience;
+        org.IndustryId = dto.IndustryId;
+        org.CountryId = dto.CountryId;
+        org.StateId = dto.StateId;
+        org.CityId = dto.CityId;
+        org.CurrencyId = dto.CurrencyId;
+        org.MinBudget = dto.MinBudget;
+        org.MaxBudget = dto.MaxBudget;
+        org.OnBoardDate = dto.OnBoardDate;
+
+        _context.SaveChanges();
+
+        return Ok(new { message = "Organization updated successfully" });
+    }
+
 
 }

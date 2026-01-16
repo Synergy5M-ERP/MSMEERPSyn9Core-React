@@ -4,13 +4,14 @@ namespace SwamiSamarthSyn8.Models.HRM
 {
     public class HRM_Organization
     {
+
         [Key] // ✅ REQUIRED
         public int OrganizationId { get; set; }
         public int? DeptId { get; set; }
         public int? DesignationId { get; set; }
-        public string Level { get; set; }
-        public string Qualification { get; set; }
-        public string Experience { get; set; }
+        public int? Level { get; set; }
+        public string? Qualification { get; set; }
+        public string? Experience { get; set; }
         public int? IndustryId { get; set; }
         public int? CountryId { get; set; }
         public int? StateId { get; set; }

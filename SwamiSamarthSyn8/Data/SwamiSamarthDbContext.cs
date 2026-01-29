@@ -101,6 +101,11 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public DbSet<HRM_Department> HRM_Department { get; set; }
     public DbSet<HRM_Designation> HRM_Designation { get; set; }
+    public DbSet<HRM_User> HRM_User { get; set; }
+    public DbSet<HRM_Admin> HRM_Admin { get; set; }
+    public DbSet<HRM_Employee> HRM_Employee { get; set; }
+    public DbSet<HRM_EmployerDetails> HRM_EmployerDetails { get; set; }
+    public DbSet<HRM_EmployeeSalaryDetails> HRM_EmployeeSalaryDetails { get; set; }
     public DbSet<HRM_AuthorityMatrix> HRM_AuthorityMatrix { get; set; }
 
     public virtual DbSet<HRM_DesignationTbl> HRM_DesignationTbl { get; set; }
@@ -119,7 +124,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<HRM_OrganizationDataTbl> HRM_OrganizationDataTbl { get; set; }
 
-    public virtual DbSet<HRM_UserTbl> HRM_UserTbl { get; set; }
+    //public virtual DbSet<HRM_UserTbl> HRM_UserTbl { get; set; }
 
     public virtual DbSet<Import_Price_Calculation> Import_Price_Calculation { get; set; }
 

@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SwamiSamarthSyn8.Models.HRM
 {
+    [Table("HRM_User")] // ✅ FORCE TABLE NAME
+
     public class HRM_User
     {
         [Key] // ✅ REQUIRED

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SwamiSamarthSyn8.Models.HRM
 {
@@ -16,7 +17,7 @@ namespace SwamiSamarthSyn8.Models.HRM
         public decimal? LeaveTravelAllowance { get; set; }
         public decimal? AdditionalBenefits { get; set; }
         public decimal? PerformanceIncentive { get; set; }
-        public decimal? PFcontribution { get; set; }
+        public decimal? PFContributionAmount { get; set; }
         public decimal? ESIC { get; set; }
         public decimal? StockOption { get; set; }
         public decimal? CarAllowance { get; set; }
@@ -26,9 +27,11 @@ namespace SwamiSamarthSyn8.Models.HRM
         public decimal? HourlySalary { get; set; }
         public decimal? AnnualIncrement { get; set; }
         public DateTime? AnnualIncrementDate { get; set; }
-        public int? TotalMonth { get; set; }
+        public decimal? TotalMonth { get; set; }
         public decimal? ProfessionalTax { get; set; }
         public decimal? AnnualCTC { get; set; }
+        [ForeignKey("EmployeeId")]
+        public HRM_Employee Employee { get; set; }
     }
 
 }

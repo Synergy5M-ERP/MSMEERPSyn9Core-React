@@ -35,28 +35,59 @@ const ViewEmployee = () => {
       setLoading(false);
     }
   };
+  const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB"); // dd/mm/yyyy
+};
+
+
+
+
 const handleEdit = async (emp) => {
   try {
-    const encodedEmpCode = encodeURIComponent(emp.emp_Code);
-    const url = `${API_ENDPOINTS.GetEmployeeByEmpCode}/${encodedEmpCode}`;
-    console.log("Calling API:", url); // should print full correct URL
+    // ✅ 1. Check that the employee object has employeeId
+    if (!emp || !emp.employeeId) {
+      console.error("employeeId missing:", emp);
+      alert("Employee ID not found");
+      return;
+    }
+
+    const employeeId = emp.employeeId;
+    console.log("Editing EmployeeId:", employeeId);
+
+    // ✅ 2. Call the API to fetch employee details
+    const url = `${API_ENDPOINTS.GetEmployeeById}/${employeeId}`;
+    console.log("Calling API:", url);
 
     const res = await fetch(url);
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("API returned error:", text);
-      throw new Error(`Failed to fetch employee. Status: ${res.status}`);
+      throw new Error(text);
     }
 
     const empData = await res.json();
-// For editing an employee
-  navigate(`/hrm/employee/edit/${encodedEmpCode}`);
-  } catch (err) {
-    console.error(err);
-    alert("Failed to load employee details for edit");
+    console.log("Employee Data:", empData);
+
+    // ✅ 3. Optionally, you can populate your form directly here
+    // setEmployeeInfo({ ...empData }); 
+    // setEmployerInfo({ ...empData }); 
+    // setSalaryStructure({ ...empData });
+
+    // ✅ 4. Navigate to Edit page with correct ID
+  navigate(`/hrm/employee/edit/${emp.employeeId}`); // ✅ use employeeId
+
+  } catch (error) {
+    console.error("Failed to load employee:", error);
+    alert("Failed to load employee");
   }
 };
+
+
+
+
+
 
 
 
@@ -108,9 +139,7 @@ const handleEdit = async (emp) => {
     setPage(1);
   };
 
-  const formatDate = (date) =>
-    date ? new Date(date).toLocaleDateString() : "-";
-
+  
   return (
     <div className="container my-4">
       <div className="card shadow">
@@ -150,6 +179,7 @@ const handleEdit = async (emp) => {
                   <th>DOB</th>
                   <th>Department</th>
                   <th>Designation</th>
+                  <th>Authority</th>
                   <th>Joining Date</th>
                   <th>Salary</th>
                   <th>City</th>
@@ -158,63 +188,52 @@ const handleEdit = async (emp) => {
                   <th>Deactive</th>
                 </tr>
               </thead>
-              <tbody>
-                {pagedEmployees.length ? (
-                  pagedEmployees.map((e) => (
-                    <tr key={e.emp_Code}>
-                      <td>{e.emp_Code}</td>
-                      <td>{e.fullName}</td>
-                      <td>{e.gender}</td>
-                      <td>{formatDate(e.dob)}</td>
-                      <td>{e.department}</td>
-                      <td>{e.joining_Designation}</td>
-                      <td>{formatDate(e.date_Of_Joing)}</td>
-                      <td>{e.monthly_Salary}</td>
-                      <td>{e.city}</td>
-                      <td>{e.contact_NO}</td>
-                     <td className="text-center">
-  {/* EDIT */}
- <button
-  className="btn btn-sm me-2"
-  onClick={() => handleEdit(e)}
-  title="Edit Employee"
-  style={{
-    padding: "4px 8px",
-    background: "none",   // removes background color
-    border: "none",       // removes border
-    color: "#0066cc",     // optional: set icon color
-    cursor: "pointer",    // pointer on hover
-  }}
->
-  <FaEdit />
-</button>
+             <tbody>
+  {pagedEmployees.length ? (
+    pagedEmployees.map((e) => (
+      <tr key={e.empCode}>
+        <td>{e.empCode}</td>
+        <td>{e.fullName}</td>
+        <td>{e.gender}</td>
+<td>{formatDate(e.dob)}</td>
+<td>{e.departmentName}</td>
+<td>{e.designationName}</td>
+<td>{e.authorityName}</td>
 
-</td><td>
-  {/* DELETE / DEACTIVATE */}
-  <span
-    title="Delete Employee"
-    onClick={() => handleDeactivate(e.emp_Code)}
-    style={{
-      cursor: "pointer",
-      fontSize: "18px",
-      color: "#dc3545",
-      verticalAlign: "middle"
-    }}
-  >
-    <FaTrash />
-  </span>
-</td>
+<td>{formatDate(e.joiningDate)}</td>
+        <td>{e.monthlySalary}</td>
+        <td>{e.city}</td>
+        <td>{e.contactNo}</td>
 
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="11" className="text-center">
-                      No data found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+        <td className="text-center">
+          <button
+            className="btn btn-sm"
+            onClick={() => handleEdit(e)}
+            style={{ background: "none", border: "none", color: "#0066cc" }}
+          >
+            <FaEdit />
+          </button>
+        </td>
+
+        <td>
+          <span
+            onClick={() => handleDeactivate(e.empCode)}
+            style={{ cursor: "pointer", color: "#dc3545" }}
+          >
+            <FaTrash />
+          </span>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="12" className="text-center">
+        No data found
+      </td>
+    </tr>
+  )}
+</tbody>
+
             </table>
           </div>
 

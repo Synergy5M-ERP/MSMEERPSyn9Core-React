@@ -99,30 +99,21 @@ useEffect(() => {
 
 const fetchOrganizations = async () => {
   try {
-    const res = await axios.get(`${API_BASE_URL}/Organization`);
-    let data = res.data || [];
-
-    // ✅ NORMALIZE BACKEND FIELD
-    data = data.map(x => ({
-      ...x,
-      isActive: x.IsActive ?? x.isActive   // 🔥 KEY FIX
-    }));
-
-    // ✅ FILTER WORKS CORRECTLY NOW
-    data = data.filter(x =>
-      activeFilter === "active"
-        ? x.isActive === true || x.isActive === 1
-        : x.isActive === false || x.isActive === 0
+    const res = await axios.get(
+      `${API_BASE_URL}/Organization`,
+      {
+        params: {
+          status: activeFilter   // ✅ SEND active / inactive
+        }
+      }
     );
 
-    setOrganizationTable(data);
+    setOrganizationTable(res.data || []);
   } catch (err) {
     console.error(err);
     toast.error("Failed to load organization data");
   }
 };
-
-
 
 
 useEffect(() => {
@@ -1145,10 +1136,11 @@ const handleEditOrganization = (row) => {
   <td>{row.qualification}</td>
   <td>{row.experience}</td>
   <td>{row.industryName}</td>
-  <td>{row.countryName}</td>
-  <td>{row.stateName}</td>
-  <td>{row.cityName}</td>
-  <td>{row.currencyName}</td>
+ <td>{row.countryName}</td>
+<td>{row.stateName}</td>
+<td>{row.cityName}</td>
+<td>{row.currencyName}</td>
+
   <td>{row.minBudget}</td>
   <td>{row.maxBudget}</td>
   <td>{row.onBoardDate}</td>

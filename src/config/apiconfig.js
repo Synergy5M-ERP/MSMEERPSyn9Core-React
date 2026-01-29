@@ -37,7 +37,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
   GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
-  GetEmployeeByEmpCode: `${BASE_URL}/HrmOrgInfo/GetEmployeeByEmpCode`, // ✅ important
+GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
   //------------------------Account APIs----------------------------------
   Ledger: `${BASE_URL}/AccountLedger/`,

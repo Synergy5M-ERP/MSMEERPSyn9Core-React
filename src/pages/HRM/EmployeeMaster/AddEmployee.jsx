@@ -28,19 +28,21 @@ const AddEmployee = () => {
   const [currencyList, setCurrencyList] = useState([]);
 const [authorityLevel, setAuthorityLevel] = useState("");
 const [authorities, setAuthorities] = useState([]);
-
+const [expandedSections, setExpandedSections] = useState({
+  employee: true,
+  employer: true,
+  salary: true
+});
 const location = useLocation();
 const navigate = useNavigate();
 
-// 👇 if data exists → edit mode
-const { empCode } = useParams();
-const isEditMode = Boolean(empCode);
+const { employeeId } = useParams(); // <-- get ID from URL
+const isEditMode = Boolean(employeeId);
+
 
   const [employeeInfo, setEmployeeInfo] = useState({
     title: '',
-    name: '',
-    middleName: '',
-    surname: '',
+         fullName: "",
     gender: '',
     dob: '',
     bloodGroup: '',
@@ -51,9 +53,9 @@ const isEditMode = Boolean(empCode);
     sameAsAddress: false,
     permanentAddress: '',
     qualification: '',
-    country: '',
-    state: '',
-    city: '',
+  countryId: "",
+  stateId: "",
+  cityId: "",
     aadharNo: '',
     panNo: '',
     bankAccountNo: '',
@@ -99,7 +101,7 @@ const isEditMode = Boolean(empCode);
     leaveTravelAllowance: '',
     additionalBenefits: '',
     performanceIncentive: '',
-    pfContribution: '',
+  pfContributionAmount: "",
     esic: '',
     stockOption: '',
     car: '',
@@ -110,117 +112,12 @@ const isEditMode = Boolean(empCode);
     hourlySalary: '',
     annualIncrement: '',
     annualIncDate: '',
-    totalMonth: '',
+        totalMonth: '',
     professionalTax: '',
-    annualCtcRs: ''
+    annualCtcRs: '',
   });
-  const decodedEmpCode = decodeURIComponent(empCode); // "25/00001"
-  console.log(decodedEmpCode);
-  const [expandedSections, setExpandedSections] = useState({
-    employee: true,
-    employer: true,
-    salary: true
-  });
-useEffect(() => {
-  if (isEditMode) {
-    fetchEmployeeData();
-  }
-}, [empCode]);
-const fetchEmployeeData = async () => {
-  try {
-   const res = await axios.get(
-  `${API_ENDPOINTS.GetEmployeeByEmpCode}/${encodeURIComponent(decodedEmpCode)}`
-);
+  
 
-    const data = res.data;
-
-    // ✅ Employee Info
-    setEmployeeInfo({
-      title: data.title ?? "",
-      name: data.name ?? "",
-      middleName: data.middleName ?? "",
-      surname: data.surname ?? "",
-      gender: data.gender ?? "",
-      dob: data.dob ? data.dob.split("T")[0] : "",
-      bloodGroup: data.bloodGroup ?? "",
-      email: data.email ?? "",
-      contactNo: data.contact_NO ?? "",
-      marriedStatus: data.marriedStatus ?? "",
-      address: data.address ?? "",
-      sameAsAddress: false,
-      permanentAddress: data.permanentAddress ?? "",
-      qualification: data.qualification ?? "",
-      country: data.country ?? "",
-      state: data.state ?? "",
-      city: data.city ?? "",
-      aadharNo: data.aadharNo ?? "",
-      panNo: data.panNo ?? "",
-      bankAccountNo: data.bankAccountNo ?? "",
-      bankName: data.bankName ?? "",
-      ifscCode: data.ifscCode ?? "",
-      nominee: data.nominee ?? "",
-      relation: data.relation ?? "",
-      uan: data.uan ?? "",
-      epfoAcNo: data.epfoAcNo ?? "",
-      previousExperience: data.previousExperience ?? "",
-      previousIndustry: data.previousIndustry ?? "",
-      department: data.department ?? "",
-      designation: data.designation ?? ""
-    });
-
-    // ✅ Employer Info
-    setEmployerInfo({
-      category: data.category ?? "",
-      dateOfJoining: data.dateOfJoining?.split("T")[0] ?? "",
-      noticesPeriod: data.noticesPeriod ?? "",
-      weeklyOff: data.weeklyOff ?? "",
-      dateOfLeaving: data.dateOfLeaving?.split("T")[0] ?? "",
-      dateOfReleaving: data.dateOfReleaving?.split("T")[0] ?? "",
-      shiftHours: data.shiftHours ?? "",
-      department: data.department ?? "",
-      otCalculation: data.otCalculation ?? "",
-      esicPwnNo: data.esicPwnNo ?? "",
-      pfContribution: data.pfContribution ?? "",
-      currency: data.currency ?? "INR",
-      pfNo: data.pfNo ?? "",
-      esicNoPwnNo: data.esicNoPwnNo ?? "",
-      authorityLevel: data.authorityLevel ?? "",
-      designation: data.joining_Designation ?? "",
-      ctc: data.ctc ?? "",
-      aadharPancard: null
-    });
-
-    // ✅ Salary Structure
-    setSalaryStructure({
-      monthlyGrossSalary: data.monthlyGrossSalary ?? "",
-      monthlyBasicSalary: data.monthlyBasicSalary ?? "",
-      da: data.da ?? "",
-      dailySalary: data.dailySalary ?? "",
-      monthlySalary: data.monthlySalary ?? "",
-      leaveTravelAllowance: data.leaveTravelAllowance ?? "",
-      additionalBenefits: data.additionalBenefits ?? "",
-      performanceIncentive: data.performanceIncentive ?? "",
-      pfContribution: data.pfContribution ?? "",
-      esic: data.esic ?? "",
-      stockOption: data.stockOption ?? "",
-      car: data.car ?? "",
-      telephone: data.telephone ?? "",
-      medicalAllowance: data.medicalAllowance ?? "",
-      totalDeduction: data.totalDeduction ?? "",
-      houseRentAllowance: data.houseRentAllowance ?? "",
-      hourlySalary: data.hourlySalary ?? "",
-      annualIncrement: data.annualIncrement ?? "",
-      annualIncDate: data.annualIncDate?.split("T")[0] ?? "",
-      totalMonth: data.totalMonth ?? "",
-      professionalTax: data.professionalTax ?? "",
-      annualCtcRs: data.annualCtcRs ?? ""
-    });
-
-  } catch (err) {
-    console.error("Failed to fetch employee:", err);
-    toast.error("Employee not found");
-  }
-};
 
 
   // --- Profile completeness helpers ---
@@ -341,97 +238,154 @@ const fetchCurrency = async () => {
       [section]: !prev[section]
     }));
   };
-const fetchEmployeeByEmpCode = async (code) => {
-  try {
-    const res = await axios.get(
-      `${API_ENDPOINTS.GetEmployeeByEmpCode}/${code}`
-    );
+ // Fetch Employee Data in Edit Mode
+  // ========================
+  useEffect(() => {
+  if (!isEditMode || !employeeId) return;
 
-    const data = res.data;
+  const fetchEmployeeById = async () => {
+    try {
+      const res = await axios.get(`${API_ENDPOINTS.GetEmployeeById}/${employeeId}`);
+      const data = res.data;
 
-    // ✅ map backend → frontend fields
-    setEmployeeInfo(prev => ({
-      ...prev,
-      name: data.name,
-      surname: data.surname,
-      gender: data.gender,
-      dob: data.dob?.split("T")[0],
-      email: data.email,
-      contactNo: data.contact_NO,
-      department: data.department,
-      city: data.city
-    }));
+      // Map Employee Info
+      const emp = data.employee;
+      const empEmployer = data.employer;
+      const empSalary = data.salary;
 
-    setEmployerInfo(prev => ({
-      ...prev,
-      designation: data.joining_Designation,
-      dateOfJoining: data.date_Of_Joing?.split("T")[0]
-    }));
+      setEmployeeInfo({
+        fullName: emp.fullName ?? "",
+        title: emp.title ?? "",
+        middleName: emp.middleName ?? "",
+        surname: emp.surname ?? "",
+        gender: emp.gender ?? "",
+        dob: emp.dob ? emp.dob.split("T")[0] : "",
+        bloodGroup: emp.bloodGroup ?? "",
+        email: emp.email ?? "",
+        contactNo: emp.contactNo ?? "",
+        marriedStatus: emp.maritualStatus ?? "",
+        address: emp.address ?? "",
+        sameAsAddress: false,
+        permanentAddress: emp.permanentAddress ?? "",
+        qualification: emp.qualification ?? "",
+        countryId: emp.countryId ?? "",
+        stateId: emp.stateId ?? "",
+        cityId: emp.cityId ?? "",
+        aadharNo: emp.aadharNo ?? "",
+        panNo: emp.panNo ?? "",
+        bankAccountNo: emp.bankAccountNo ?? "",
+        bankName: emp.bankName ?? "",
+        ifscCode: emp.ifscCode ?? "",
+        nominee: emp.nominee ?? "",
+        relation: emp.relation ?? "",
+        uan: emp.uanNo ?? "",
+        epfoAcNo: emp.epfoNo ?? "",
+        previousExperience: emp.previousExperience ?? "",
+        previousIndustry: emp.previousIndustry ?? "",
+        department: emp.deptId ?? "",
+        designation: emp.designationId ?? ""
+      });
 
-    setSalaryStructure(prev => ({
-      ...prev,
-      monthlySalary: data.monthly_Salary
-    }));
+      // Map Employer Info
+      setEmployerInfo({
+        category: empEmployer.category ?? "",
+        dateOfJoining: empEmployer.joiningDate ? empEmployer.joiningDate.split("T")[0] : "",
+        noticesPeriod: empEmployer.noticePeriod ?? "",
+        weeklyOff: empEmployer.weeklyOff ?? "",
+        dateOfLeaving: empEmployer.leaveDate ? empEmployer.leaveDate.split("T")[0] : "",
+        dateOfReleaving: empEmployer.relievingDate ? empEmployer.relievingDate.split("T")[0] : "",
+        shiftHours: empEmployer.shiftHours ?? "",
+        department: empEmployer.deptId ?? "",
+        otCalculation: empEmployer.oTcalculation ?? "",
+        esicPwnNo: empEmployer.esisNo ?? "",
+        pfContribution: empEmployer.pfContribution ?? "",
+        currency: empEmployer.currency ?? "INR",
+        pfNo: empEmployer.pfNo ?? "",
+        authorityLevel: empEmployer.authorityLevel ?? "",
+        designation: empEmployer.designationId ?? "",
+        ctc: empEmployer.ctc ?? "",
+        aadharPancard: null
+      });
 
-  } catch (error) {
-    console.error("Employee fetch failed", error);
-    toast.error("Employee not found");
-  }
-};
-useEffect(() => {
-  if (empCode) {
-    fetchEmployeeByEmpCode(empCode);
-  }
-}, [empCode]);
+      // Map Salary Structure
+      setSalaryStructure({
+        monthlyGrossSalary: empSalary.monthlyGrossSalary ?? "",
+        monthlyBasicSalary: empSalary.monthlyBasicSalary ?? "",
+        da: empSalary.da ?? "",
+        dailySalary: empSalary.dailySalary ?? "",
+        monthlySalary: empSalary.monthlySalary ?? "",
+        leaveTravelAllowance: empSalary.leaveTravelAllowance ?? "",
+        additionalBenefits: empSalary.additionalBenefits ?? "",
+        performanceIncentive: empSalary.performanceIncentive ?? "",
+        pfContributionAmount: empSalary.pfContributionAmount ?? "",
+        esic: empSalary.esic ?? "",
+        stockOption: empSalary.stockOption ?? "",
+        car: empSalary.carAllowance ?? "",
+        medicalAllowance: empSalary.medicalAllowance ?? "",
+        totalDeduction: empSalary.totalDeduction ?? "",
+        houseRentAllowance: empSalary.houseRentAllowance ?? "",
+        hourlySalary: empSalary.hourlySalary ?? "",
+        annualIncrement: empSalary.annualIncrement ?? "",
+        annualIncDate: empSalary.annualIncrementDate ? empSalary.annualIncrementDate.split("T")[0] : "",
+        totalMonth: empSalary.totalMonth ?? "",
+        professionalTax: empSalary.professionalTax ?? "",
+        annualCtcRs: empSalary.annualCTC ?? ""
+      });
 
-  const handleEmployeeChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    } catch (err) {
+      console.error("Failed to fetch employee data:", err);
+      toast.error("Employee not found");
+    }
+  };
 
-    setEmployeeInfo((prev) => {
+  fetchEmployeeById();
+}, [isEditMode, employeeId]);
 
-      // ✅ Same as Address checkbox
-      if (name === "sameAsAddress") {
-        return {
-          ...prev,
-          sameAsAddress: checked,
-          permanentAddress: checked ? prev.address : ""
-        };
-      }
+const handleEmployeeChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
-      // ✅ Country change → reset state & city
-      if (name === "country") {
-        return {
-          ...prev,
-          country: value,
-          state: "",
-          city: ""
-        };
-      }
+  setEmployeeInfo((prev) => {
 
-      // ✅ State change → reset city
-      if (name === "state") {
-        return {
-          ...prev,
-          state: value,
-          city: ""
-        };
-      }
-
-      // ✅ Address sync when checkbox is checked
-      if (name === "address" && prev.sameAsAddress) {
-        return {
-          ...prev,
-          address: value,
-          permanentAddress: value
-        };
-      }
-
+    if (name === "sameAsAddress") {
       return {
         ...prev,
-        [name]: type === "checkbox" ? checked : value
+        sameAsAddress: checked,
+        permanentAddress: checked ? prev.address : ""
       };
-    });
-  };
+    }
+
+    if (name === "countryId") {
+      return {
+        ...prev,
+        countryId: value,
+        stateId: "",
+        cityId: ""
+      };
+    }
+
+    if (name === "stateId") {
+      return {
+        ...prev,
+        stateId: value,
+        cityId: ""
+      };
+    }
+
+    if (name === "address" && prev.sameAsAddress) {
+      return {
+        ...prev,
+        address: value,
+        permanentAddress: value
+      };
+    }
+
+    return {
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    };
+  });
+};
+
 
 
  
@@ -455,23 +409,25 @@ useEffect(() => {
   }
 }, [employeeInfo.department]);
 const handleDepartmentChange = async (e) => {
-  const departmentName = e.target.value;
+  const deptId = e.target.value;   // ✅ DEFINE HERE
 
-  setEmployeeInfo(prev => ({
+  setEmployerInfo(prev => ({
     ...prev,
-    department: departmentName,
+    department: deptId,
     designation: ""
   }));
 
-  if (!departmentName) {
+  if (!deptId) {
     setDesignations([]);
     return;
   }
 
   try {
     const res = await axios.get(
-      `https://localhost:7145/api/HrmOrgInfo/vacant-designations`,
-      { params: { department: departmentName } }
+      "https://msmeerpsyn9-core.azurewebsites.net/api/HrmOrgInfo/vacant-designations",
+      {
+        params: { deptId }   // ✅ SAFE TO USE
+      }
     );
 
     setDesignations(res.data);
@@ -481,46 +437,58 @@ const handleDepartmentChange = async (e) => {
   }
 };
 
+
   useEffect(() => {
-    if (employeeInfo.country) {
-      fetch(
-        `${API_ENDPOINTS.GET_STATE}?country=${encodeURIComponent(employeeInfo.country)}`
-      )
-        .then(res => res.json())
-        .then(data => setStates(data))
-        .catch(err => console.error("State API Error:", err));
-    } else {
-      setStates([]);
-      setCities([]);
-    }
-  }, [employeeInfo.country]);
-
-
- useEffect(() => {
-  if (employeeInfo.country && employeeInfo.state) {
-    fetch(
-      `${API_ENDPOINTS.GET_CITY}?country=${encodeURIComponent(
-        employeeInfo.country
-      )}&state=${encodeURIComponent(employeeInfo.state)}`
-    )
-      .then(res => res.json())
-      .then(data => setCities(data))
-      .catch(err => {
-        console.error("City API Error:", err);
-        setCities([]);
-      });
-  } else {
+  if (!employeeInfo.countryId) {
+    setStates([]);
     setCities([]);
+    return;
   }
-}, [employeeInfo.country, employeeInfo.state]);
 
-  const handleEmployerChange = (e) => {
-    const { name, value, files } = e.target;
+  fetch(`${API_ENDPOINTS.GET_STATE}?countryId=${employeeInfo.countryId}`)
+    .then(res => res.json())
+    .then(data => setStates(data))
+    .catch(err => {
+      console.error("State API Error:", err);
+      setStates([]);
+    });
+}, [employeeInfo.countryId]);
+
+useEffect(() => {
+  if (!employeeInfo.stateId) {
+    setCities([]);
+    return;
+  }
+
+  fetch(`${API_ENDPOINTS.GET_CITY}?stateId=${employeeInfo.stateId}`)
+    .then(res => res.json())
+    .then(data => setCities(data))
+    .catch(err => {
+      console.error("City API Error:", err);
+      setCities([]);
+    });
+}, [employeeInfo.stateId]);
+
+
+ const handleEmployerChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "joiningAuthorityId") {
+    const selected = authorities.find(
+      a => a.authorityMatrixId === parseInt(value)
+    );
+
     setEmployerInfo(prev => ({
       ...prev,
-      [name]: files ? files[0] : value
+      joiningAuthorityId: value,
+      joiningAuthorityName: selected?.authorityMatrixName || ""
     }));
-  };
+    return;
+  }
+
+  setEmployerInfo(prev => ({ ...prev, [name]: value }));
+};
+
 
 const handleSalaryChange = (e) => {
   const { name, value, type } = e.target;
@@ -671,37 +639,113 @@ const handleSave = async () => {
     { id: 'salary', icon: DollarSign, label: 'Salary Structure' }
   ];
 
-
 const handleSubmit = async () => {
   try {
     const formData = new FormData();
 
-    Object.entries(employeeInfo).forEach(([k, v]) => formData.append(k, v ?? ""));
-    Object.entries(employerInfo).forEach(([k, v]) => {
-      if (k === "aadharPancard" && v) formData.append("AdhaarFile", v);
-      else formData.append(k, v ?? "");
-    });
-    Object.entries(salaryStructure).forEach(([k, v]) => formData.append(k, v ?? ""));
+    // ===============================
+    // 1️⃣ Resolve AuthorityMatrixId
+    // ===============================
+    let finalAuthorityMatrixId = "";
 
+    if (authorityLevel === "joining") {
+      finalAuthorityMatrixId = employerInfo.joiningAuthorityId;
+    } else if (authorityLevel === "current") {
+      finalAuthorityMatrixId = employerInfo.currentAuthorityId;
+    }
+
+    if (!finalAuthorityMatrixId) {
+      toast.error("Please select Authority Level");
+      return;
+    }
+
+    // ===============================
+    // 2️⃣ Employee Info
+    // ===============================
+    Object.entries(employeeInfo).forEach(([k, v]) =>
+      formData.append(k, v ?? "")
+    );
+
+    // Add missing backend fields mapping
+    formData.append("MaritualStatus", employeeInfo.marriedStatus ?? "");
+    formData.append("UANNo", employeeInfo.uan ?? "");
+    formData.append("EPFONo", employeeInfo.epfoAcNo ?? "");
+
+    // ===============================
+    // 3️⃣ Employer Info
+    // ===============================
+    Object.entries(employerInfo).forEach(([k, v]) => {
+      if (k === "AadharCardFile" && v) {
+        formData.append("AadharCardFile", v);
+      } else if (k === "PancardNoFile" && v) {
+        formData.append("PancardNoFile", v);
+      } else {
+        formData.append(k, v ?? "");
+      }
+    });
+
+    // Add missing employer fields mapping
+    formData.append("DeptId", employerInfo.department ?? "");
+    formData.append("JoiningDate", employerInfo.dateOfJoining ?? "");
+    formData.append("NoticePeriod", employerInfo.noticesPeriod ?? "");
+    formData.append("LeaveDate", employerInfo.dateOfLeaving ?? "");
+    formData.append("RelievingDate", employerInfo.dateOfReleaving ?? "");
+    formData.append("ESISNo", employerInfo.esicPwnNo ?? "");
+    formData.append("PFContributionAuthorityLevel", employerInfo.authorityLevel ?? "");
+formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
+
+    // 🔥 IMPORTANT: send AuthorityMatrixId
+    formData.append("AuthorityMatrixId", finalAuthorityMatrixId);
+
+    // ===============================
+    // 4️⃣ Salary Structure
+    // ===============================
+    Object.entries(salaryStructure).forEach(([k, v]) =>
+      formData.append(k, v ?? "")
+    );
+
+    // Add missing salary fields mapping
+    formData.append("CarAllowance", salaryStructure.car ?? "");
+    formData.append("AnnualIncrementDate", salaryStructure.annualIncDate ?? "");
+    formData.append("AnnualCTC", salaryStructure.annualCtcRs ?? "");
+
+    // ===============================
+    // 5️⃣ Default Password
+    // ===============================
+    formData.append("Password", "Temp@123");
+    formData.append("ConfirmPassword", "Temp@123");
+
+    // ===============================
+    // 6️⃣ API Call
+    // ===============================
     if (isEditMode) {
-      formData.append("id", empCode); // Pass empCode to update
+      formData.append("id", employeeId);
       await axios.put(API_ENDPOINTS.UPDATE_EMPLOYEE, formData);
-      toast.success("Employee updated successfully");
+      toast.success("Employee updated successfully ✅");
     } else {
       await axios.post(API_ENDPOINTS.SaveEmployee, formData);
-      toast.success("Employee added successfully");
+      toast.success("Employee added successfully 🎉");
     }
 
     navigate("/employee-list");
   } catch (err) {
     console.error(err);
-    toast.error("Operation failed");
+
+    const errorMessage =
+      err?.response?.data?.message ||
+      err?.response?.data ||
+      "Failed to save employee";
+
+    toast.error(errorMessage);
   }
 };
+
 
   return (
     <div style={{ backgroundColor: '#f5f5f5', minHeight: '80vh', marginBottom:'100px'}}>
       {/* Header Section */}
+            <h2>{isEditMode ? "Edit Employee" : "Add Employee"}</h2>
+
       <div style={{ backgroundColor: 'white', borderBottom: '3px solid #4CAF50' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           {/* Progress Bar */}
@@ -726,7 +770,7 @@ const handleSubmit = async () => {
                 flex: 1,
                 height: '4px',
                 backgroundColor: '#4CAF50',
-                position: 'relative',
+                position: 'relative', 
                 top: '0'
               }}
             />
@@ -886,35 +930,17 @@ const handleSubmit = async () => {
                       </select>
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Name</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="name"
-                        value={employeeInfo.name}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>Middle Name</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="middleName"
-                        value={employeeInfo.middleName}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>Surname</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="surname"
-                        value={employeeInfo.surname}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
+  <label style={labelStyle}>Full Name</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="fullName"
+    value={employeeInfo.fullName}
+    onChange={handleEmployeeChange}
+    placeholder="Enter full name"
+  />
+</div>
+
                     <div className='col'>
                       <label style={labelStyle}>Gender</label>
                       <select
@@ -1053,61 +1079,61 @@ const handleSubmit = async () => {
                     </div>
                     <div className='col'>
                       <label style={labelStyle}>Country</label>
-                      <select
-                        name="country"
-                        value={employeeInfo.country}
-                        onChange={handleEmployeeChange}
-                        style={inputStyle}
-                      >
-                        <option value="">Select Country</option>
-                        {countries.map(country => (
-                          <option key={country} value={country}>
-                            {country}
-                          </option>
-                        ))}
-                      </select>
+                    <select
+  name="countryId"
+  value={employeeInfo.countryId || ""}
+  onChange={handleEmployeeChange}
+  style={inputStyle}
+>
+  <option value="">Select Country</option>
 
+  {countries.map((country) => (
+    <option
+      key={country.country_id}
+      value={country.country_id}
+    >
+      {country.country_name}
+    </option>
+  ))}
+</select>
 
-                    </div>
-
-                    <div className='col'>
-                      <label style={labelStyle}>State</label>
-                      <select
-                        style={inputStyle}
-                        name="state"
-                        value={employeeInfo.state}
-                        onChange={handleEmployeeChange}
-                        disabled={!states.length}
-                      >
-                        <option value="">Select State</option>
-                        {states.map(state => (
-                          <option key={state} value={state}>
-                            {state}
-                          </option>
-                        ))}
-                      </select>
-
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>City</label>
-                      <select
-                        style={inputStyle}
-                        name="city"
-                        value={employeeInfo.city}
-                        onChange={handleEmployeeChange}
-                        disabled={!Array.isArray(cities) || cities.length === 0}
-                      >
-                        <option value="">Select City</option>
-                        {Array.isArray(cities) &&
-                          cities.map(city => (
-                            <option key={city} value={city}>
-                              {city}
-                            </option>
-                          ))}
-                      </select>
 
 
                     </div>
+<div className="col">
+  <label style={labelStyle}>State</label>
+  <select
+    name="stateId"
+    value={employeeInfo.stateId}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+  >
+    <option value="">Select State</option>
+    {states.map((s) => (
+      <option key={s.state_id} value={s.state_id}>
+        {s.state_name}
+      </option>
+    ))}
+  </select>
+</div>
+<div className="col">
+  <label style={labelStyle}>City</label>
+  <select
+    name="cityId"
+    value={employeeInfo.cityId}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+    disabled={!cities || cities.length === 0}
+  >
+    <option value="">Select City</option>
+    {cities.map((c) => (
+      <option key={c.city_id} value={c.city_id}>
+        {c.city_name}
+      </option>
+    ))}
+  </select>
+</div>
+
                     <div className='col'>
                       <label style={labelStyle}>Aadhar No</label>
                       <input
@@ -1355,12 +1381,13 @@ const handleSubmit = async () => {
                       <option value="12">12 Hours</option>
                     </select>
                   </div>
-                  <div className='col'>
+                 <div className="col">
   <label style={labelStyle}>Department</label>
+
   <select
     style={inputStyle}
     name="department"
-value={employerInfo.department}
+    value={employerInfo.department}
     onChange={handleDepartmentChange}
   >
     <option value="">Select Department</option>
@@ -1368,14 +1395,15 @@ value={employerInfo.department}
     {Array.isArray(departments) &&
       departments.map(dep => (
         <option
-          key={dep.departmentName}
-          value={dep.departmentName}   // ✅ IMPORTANT FIX
+          key={dep.deptId}          // ✅ unique key
+          value={dep.deptId}        // ✅ save ID (BEST PRACTICE)
         >
-          {dep.departmentName}
+          {dep.deptName}          
         </option>
       ))}
   </select>
 </div>
+
 
                   <div className='col'>
                     <label style={labelStyle}>OT Calculation</label>
@@ -1479,6 +1507,7 @@ value={employerInfo.department}
     <label style={labelStyle}>
       Joining Authority Level <span className="text-danger">*</span>
     </label>
+
     <select
       style={inputStyle}
       name="joiningAuthorityId"
@@ -1486,19 +1515,28 @@ value={employerInfo.department}
       onChange={handleEmployerChange}
     >
       <option value="">Select Joining Authority Level</option>
-      {authorities.map(auth => (
-        <option key={auth.id} value={auth.id}>
-          {auth.authorityName}
-        </option>
-      ))}
+
+      {Array.isArray(authorities) &&
+        authorities
+          .filter(a => a.isActive)
+          .map(auth => (
+            <option
+              key={auth.authorityMatrixId}
+              value={auth.authorityMatrixId}
+            >
+              {auth.authorityMatrixName}
+            </option>
+          ))}
     </select>
   </div>
 )}
+
 {authorityLevel === "current" && (
   <div className="col">
     <label style={labelStyle}>
       Current Authority Level <span className="text-danger">*</span>
     </label>
+
     <select
       style={inputStyle}
       name="currentAuthorityId"
@@ -1506,14 +1544,22 @@ value={employerInfo.department}
       onChange={handleEmployerChange}
     >
       <option value="">Select Current Authority Level</option>
-      {authorities.map(auth => (
-        <option key={auth.id} value={auth.id}>
-          {auth.authorityName}
-        </option>
-      ))}
+
+      {Array.isArray(authorities) &&
+        authorities
+          .filter(a => a.isActive)
+          .map(auth => (
+            <option
+              key={auth.authorityMatrixId}
+              value={auth.authorityMatrixId}
+            >
+              {auth.authorityMatrixName}
+            </option>
+          ))}
     </select>
   </div>
 )}
+
 
 
                 </div>
@@ -1523,29 +1569,34 @@ value={employerInfo.department}
                 >
 <div className='col'>
   <label style={labelStyle}>Designation</label>
-  <select
-    style={inputStyle}
-   name="designation"
-value={employerInfo.designation}
-onChange={handleEmployerChange}
+ <select
+  style={inputStyle}
+  name="designationId"
+  value={employerInfo.designationId || ""}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    const selectedObj = designations.find(d => d.id == selectedId);
 
-  >
-    <option value="">Select Designation</option>
+    setEmployerInfo(prev => ({
+      ...prev,
+      designationId: selectedId,
+      designationName: selectedObj ? selectedObj.designationName : ""
+    }));
+  }}
+>
+  <option value="">Select Designation</option>
 
-    {Array.isArray(designations) && designations.length === 0 && (
-      <option disabled>No Vacant Position</option>
-    )}
+  {designations.length === 0 && (
+    <option disabled>No Vacant Position</option>
+  )}
 
-    {Array.isArray(designations) &&
-      designations.map(des => (
-        <option
-          key={des.id}
-          value={des.id}
-        >
-          {des.designationName}
-        </option>
-      ))}
-  </select>
+  {designations.map(des => (
+    <option key={des.id} value={des.id}>
+      {des.designationName}
+    </option>
+  ))}
+</select>
+
 </div>
 
                   <div className='col'>
@@ -1697,26 +1748,28 @@ onChange={handleEmployerChange}
                       onChange={handleSalaryChange}
                     />
                   </div>
-                  <div className='col'>
-                    <label style={labelStyle}>PF Contribution</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="pfContribution"
-                      value={salaryStructure.pfContribution}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>ESIC</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="esic"
-                      value={salaryStructure.esic}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
+                 <div className='col'>
+  <label style={labelStyle}>PF Contribution Amount</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="pfContributionAmount"          // ✅ CHANGED
+    value={salaryStructure.pfContributionAmount || ""}
+    onChange={handleSalaryChange}
+  />
+</div>
+
+<div className='col'>
+  <label style={labelStyle}>ESIC</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="esic"
+    value={salaryStructure.esic || ""}
+    onChange={handleSalaryChange}
+  />
+</div>
+
                   
 
 </div>
@@ -1832,15 +1885,10 @@ onChange={handleEmployerChange}
                 <div
                   className='row'
                 >
-
-
-
-
-                 
+      
 
                 
              
-                
                   <div className='col'>
                     <label style={labelStyle}>Professional Tax</label>
                     <input

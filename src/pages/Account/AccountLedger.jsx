@@ -53,7 +53,7 @@ export default function AccountLedger({ view }) {
   // Fetch account groups
  const fetchAccountGroup = async () => {
     try {
-        const res = await fetch(API_ENDPOINTS.Group);
+        const res = await fetch(API_ENDPOINTS.AccountGroup);
         if (!res.ok) {
             throw new Error("Failed to fetch");
         }

@@ -1,5 +1,5 @@
-  const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- // const BASE_URL = "https://localhost:7145/api";
+  //const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+  const BASE_URL = "https://localhost:7145/api";
 
 export const API_ENDPOINTS = {
  // ================= HRM ADMIN =================
@@ -60,8 +60,8 @@ export const API_ENDPOINTS = {
   Invoices: `${BASE_URL}/Invoices/`,
   AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
-  CreditNote: `${BASE_URL}/credit-note`,
-  DebitNote: `${BASE_URL}/Debit-note`,
+  // CreditNote: `${BASE_URL}/credit-note`,
+  // DebitNote: `${BASE_URL}/Debit-note`,
 
   OutwardQc:`${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty:`${BASE_URL}/SaveRejectionQty`,
@@ -81,12 +81,12 @@ export const API_ENDPOINTS = {
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
 
   // Ledger: `${BASE_URL}/AccountLedger`,
-  AllVendor: `${BASE_URL}/GetAllVendorsApi`,
+ // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
   UpdateVendor: `${BASE_URL}/UpdateVendorApi`,
 
   AccountVoucher: `${BASE_URL}/AccountVoucher`,
-  Vendors: `${BASE_URL}/vendors`,
+  CategoryVendors: `${BASE_URL}/CategoryVendors`,
   PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
   SalesInvoices: `${BASE_URL}/SalesInvoices`,
   GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
@@ -104,6 +104,17 @@ export const API_ENDPOINTS = {
   ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
 
   Category: `${BASE_URL}/Category`,
+  GetSellerGRNNumbers: `${BASE_URL}/GetSellerGRNNumbers`,
+  GetBuyersInvoiceNumbers: `${BASE_URL}/GetBuyersInvoiceNumbers`,
+  GetItemsByGRN: `${BASE_URL}/GetItemsByGRN`,
+  GetItemsByInvoice: `${BASE_URL}/GetItemsByInvoice`,
+  GetGRNItemsDetails: `${BASE_URL}/GetGRNItemsDetails`,
+  GetInvoiceItemsDetails: `${BASE_URL}/GetInvoiceItemsDetails`,
+  GetNextCreditNoteNo: `${BASE_URL}/GetNextCreditNoteNo`,
+  SaveCreditNote: `${BASE_URL}/SaveCreditNote`,
+  GetUnits: `${BASE_URL}/GetUnits`,
+  GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
+  SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
 //------------------------Account APIs----------------------------------
 
  

@@ -48,8 +48,6 @@ const loadAllinvoicesWithDetails = useCallback(async (buyerId) => {
     if (!res.ok) throw new Error("Failed to load invoices");
     const data = await safeJson(res);
 
-    console.log("invoice List API Response (first item):", data.data?.checkSale);
-
     const invoicesList = data.data?.checkSale
       ? [{
           invoiceNumber: data.data.checkSale.invoiceNo || "N/A",
@@ -72,7 +70,8 @@ const loadAllinvoicesWithDetails = useCallback(async (buyerId) => {
           const itemsData = data.data.items || [];
 
           const items = itemsData.map((item, idx) => ({
-            id: `${invoice.invoiceNumber}-${item.itemName}-${idx}`,
+            id: `${invoice.invoiceNumber}-${item.Item_Name || item.itemName}-${idx}`,
+            itemName: item.Item_Name || item.itemName || "N/A",
             itemName: item.itemName || "",
             itemCode: item.itemCode || "",
             approvedQty: item.approvedQty || 0,
@@ -87,6 +86,8 @@ const loadAllinvoicesWithDetails = useCallback(async (buyerId) => {
             approvedSale: false,
             rate: parseFloat(item.ratePerUnit) || 0,
           }));
+
+          console.log(items)
           
           const grandTotal = items.reduce((sum, i) => sum + i.totalItemValue, 0);
           const approvedGrandTotal = items

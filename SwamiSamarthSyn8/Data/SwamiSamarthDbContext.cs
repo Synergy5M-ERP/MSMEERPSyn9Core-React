@@ -17,6 +17,10 @@ public partial class SwamiSamarthDbContext : DbContext
     }
     //---------Accounts-------//
 
+    public virtual DbSet<AccountDebitNote> AccountDebitNote { get; set; }
+    public virtual DbSet<AccountDebitNoteDetails> AccountDebitNoteDetails { get; set; }
+    public virtual DbSet<AccountCreditNote> AccountCreditNote { get; set; }
+    public virtual DbSet<AccountCreditNoteDetails> AccountCreditNoteDetails { get; set; }
     public virtual DbSet<AccountSale> AccountSale { get; set; }
     public virtual DbSet<AccountSaleDetails> AccountSaleDetail { get; set; }
     public virtual DbSet<AccountPaymentMode> AccountPaymentMode { get; set; }

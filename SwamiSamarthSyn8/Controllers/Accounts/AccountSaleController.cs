@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Differencing;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models.Accounts;
@@ -51,10 +52,11 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 var invoices = await _context.SDM_Inv_VendTbls
                     .Where(i => i.Buyer_code == buyerCode &&
                                 !string.IsNullOrEmpty(i.invoice_number))
-                    .Select(i => new
+                    .GroupBy(i => i.invoice_number)
+                    .Select(g => new
                     {
-                        invoiceNumber = i.invoice_number,
-                        buyerIdd = i.supplied_id
+                        invoiceNumber = g.Key,
+                        buyerIdd = g.First().supplied_id
                     })
                     .OrderBy(i => i.invoiceNumber)
                     .ToListAsync();
@@ -144,92 +146,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
-
-        //[HttpGet("GetInvoiceItemDetails")]
-        //public async Task<IActionResult> GetInvoiceItemDetails(int buyerId)
-        //{
-        //    try
-        //    {
-        //        var header = await _context.SDM_Inv_VendTbls
-        //            .Where(i => i.supplied_id == buyerId)
-        //            .Select(i => new
-        //            {
-        //                invoiceNumber = i.invoice_number,
-        //                invoiceDate = i.invoice_issue_date,
-        //                paymentDueDate = i.due_date,
-        //                poNumber = i.invoice_po_no,
-        //                poDate = i.invoice_po_date,
-        //                vehicleNo = i.vehicle_no,
-        //                transporterName = i.transporters_name
-        //            })
-        //            .FirstOrDefaultAsync();
-
-
-        //        var rawInvoices = await _context.SDM_InvItemTbls
-        //            .Where(i => i.supplied_id_id == buyerId)
-        //            .Select(i => new
-        //            {
-        //                itemName = i.ProductDiscription ?? "",
-        //                itemCode = i.ItemCode ?? "",
-        //                itemGrade = i.Grade ?? "",
-        //                approvedQty = i.Quantity ?? 0,
-        //                rejectedQty = i.RejectedQty ?? 0,
-        //                ratePerUnit = i.RatePerUnit ?? 0,
-        //                taxRate = i.Tax_Rate ?? "",
-        //                taxAmount = i.total_amount ?? 0,
-        //                totalItemValue = i.Total_Item_Value ?? 0
-        //            })
-        //            .ToListAsync();
-
-        //        var items = rawInvoices.Select(i =>
-        //        {
-        //            decimal cgst = 0, sgst = 0, igst = 0;
-
-        //            if (!string.IsNullOrEmpty(i.taxRate))
-        //            {
-        //                foreach (var tax in i.taxRate.Split(';'))
-        //                {
-        //                    if (tax.Contains("CGST"))
-        //                        decimal.TryParse(tax.Replace("CGST", "").Replace("%", ""), out cgst);
-        //                    else if (tax.Contains("SGST"))
-        //                        decimal.TryParse(tax.Replace("SGST", "").Replace("%", ""), out sgst);
-        //                    else if (tax.Contains("IGST"))
-        //                        decimal.TryParse(tax.Replace("IGST", "").Replace("%", ""), out igst);
-        //                }
-        //            }
-
-        //            return new
-        //            {
-        //                i.itemName,
-        //                i.itemCode,
-        //                i.itemGrade,
-        //                i.rejectedQty,
-        //                i.approvedQty,
-        //                i.ratePerUnit,
-        //                cgst,
-        //                sgst,
-        //                igst,
-        //                i.taxAmount,
-        //                i.totalItemValue
-        //            };
-        //        });
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            data = new
-        //            {
-        //                header,
-        //                items
-        //            }
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { success = false, message = ex.Message });
-        //    }
-        //}
-
         [HttpPost("AccountSale")]
         public async Task<IActionResult> AddAccountSale([FromBody] AccountSale model)
         {
@@ -240,17 +156,16 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
             try
             {
-                // Step 1: Create main voucher
                 var sale = new AccountSale
                 {
                     BuyerId = model.BuyerId,
-                    InvoiceNo = model.InvoiceNo,
+                    InvoiceNo = model.InvoiceNo ?? "",
                     InvoiceDate = model.InvoiceDate,
-                    PONumber = model.PONumber,                   // DateOnly from JSON
+                    PONumber = model.PONumber ?? "",
                     PODate = model.PODate,
-                    VehicleNo = model.VehicleNo,
-                    PaymentDueDate = model.PaymentDueDate,             // DateOnly from JSON
-                    TranspoterName = model.TranspoterName,
+                    VehicleNo = model.VehicleNo ?? "",
+                    PaymentDueDate = model.PaymentDueDate,
+                    TranspoterName = model.TranspoterName ?? "",
                     CreatedBy = model.CreatedBy,
                     UpdatedBy = model.UpdatedBy,
                     CreatedDate = DateTime.Now,
@@ -260,22 +175,22 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                 _context.AccountSale.Add(sale);
                 await _context.SaveChangesAsync();
+                int SaleId = sale.AccountSaleId;
 
-                int SaleId = sale.AccountSaleId; // Get inserted ID
-
-                // Step 2: Insert ledger entries
                 if (model.Items != null && model.Items.Count > 0)
                 {
                     foreach (var item in model.Items)
                     {
+                        // Validate ItemCode exists in DB
                         var GetItemId = await _context.MASTER_ItemTbl
                             .Where(i => i.Item_Code == item.ItemCode)
-                            .Select(item => item.Id)
+                            .Select(i => i.Id)
                             .FirstOrDefaultAsync();
 
                         if (GetItemId == 0)
                         {
-                            throw new Exception($"Item not found: {item.ItemCode}");
+                            await transaction.RollbackAsync();
+                            return BadRequest(new { success = false, message = $"Item not found: {item.ItemCode}" });
                         }
 
                         var detail = new AccountSaleDetails
@@ -283,7 +198,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                             AccountSaleId = SaleId,
                             ItemId = GetItemId,
                             ItemCode = item.ItemCode,
-                            Grade = item.Grade,
+                            Grade = item.Grade ?? "",
                             ApprovedQty = item.ApprovedQty,
                             DamagedQty = item.DamagedQty,
                             PricePerUnit = item.PricePerUnit,
@@ -305,32 +220,21 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                 await transaction.CommitAsync();
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Account Sale saved successfully",
-                    SaleId = SaleId
-                });
+                return Ok(new { success = true, message = "Account Sale saved successfully", SaleId });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.InnerException?.Message,   // REAL ERROR
-                    stack = ex.ToString()
-                });
+                return StatusCode(500, new { success = false, message = ex.Message, stack = ex.ToString() });
             }
         }
-
-        //------------------------------------Approved Sale--------------------------------------------------------
 
         [HttpGet("CheckedSaleDetails")]
         public async Task<IActionResult> GetCheckInvoiceDetails(int buyerId)
         {
             try
             {
+                // 1️⃣ Get Account Sale Header
                 var checkSale = await _context.AccountSale
                     .Where(s => s.BuyerId == buyerId)
                     .Select(s => new
@@ -343,53 +247,45 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         paymentDueDate = s.PaymentDueDate,
                         vehicleNo = s.VehicleNo,
                         transporterName = s.TranspoterName
-                    }).FirstOrDefaultAsync();
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (checkSale == null)
-                    return Ok(new { success = true });
-
-                var checkSaleItems = await _context.AccountSaleDetail
-                    .Where(i => i.AccountSaleId == checkSale.accountSaleId)
-                    .Select(i => new
-                    {
-                        itemId = i.ItemId,
-                        itemName = _context.MASTER_ItemTbl
-                              .Where(m => m.Id == i.ItemId)
-                              .Select(m => m.Item_Name)
-                              .FirstOrDefault(),
-
-                        itemCode = i.ItemCode,
-                        itemGrade = i.Grade,
-                        approvedQty = i.ApprovedQty,
-                        rejectedQty = i.DamagedQty,
-                        ratePerUnit = i.PricePerUnit,
-                        cgst = i.CGST,
-                        sgst = i.SGST,
-                        igst = i.IGST,
-                        totalTax = i.TotalTax,
-                        totalAmount = i.TotalAmount,
-                        grandAmount = i.GrandAmount,
-                    }).ToListAsync();
-
-                var items = checkSaleItems.Select(i =>
                 {
-                    return new
+                    return Ok(new
                     {
-                        i.itemName,
-                        i.itemCode,
-                        i.itemGrade,
-                        i.rejectedQty,
-                        i.approvedQty,
-                        i.ratePerUnit,
-                        i.cgst,
-                        i.sgst,
-                        i.igst,
-                        i.totalTax,
-                        i.totalAmount,
-                        i.grandAmount
-                    };
-                });
+                        success = true,
+                        data = new { }
+                    });
+                }
 
+                // 2️⃣ Get Item Details (PROPER JOIN)
+                var items = await (
+                    from d in _context.AccountSaleDetail
+                    join m in _context.MASTER_ItemTbl
+                        on d.ItemId equals m.Id
+                    where d.AccountSaleId == checkSale.accountSaleId
+                    select new
+                    {
+                        accountSaleDetailedId = d.AccountSaleDetailedId,
+                        itemId = d.ItemId,
+                        itemName = m.Item_Name,          // ✅ FIXED
+                        itemCode = d.ItemCode,
+                        itemGrade = d.Grade,
+                        approvedQty = d.ApprovedQty,
+                        rejectedQty = d.DamagedQty,
+                        ratePerUnit = d.PricePerUnit,
+                        cgst = d.CGST,
+                        sgst = d.SGST,
+                        igst = d.IGST,
+                        totalTax = d.TotalTax,
+                        totalAmount = d.TotalAmount,
+                        grandAmount = d.GrandAmount,
+                        approvedSale = d.ApprovedSale    // useful for UI
+                    }
+                ).ToListAsync();
+
+                // 3️⃣ Final Response
                 return Ok(new
                 {
                     success = true,
@@ -400,10 +296,13 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     }
                 });
             }
-
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 
@@ -427,9 +326,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             await _context.SaveChangesAsync();
             return Ok(new { success = true });
         }
-
-
-
-
     }
 }
+

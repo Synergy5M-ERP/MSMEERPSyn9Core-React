@@ -7,7 +7,9 @@ import Header from '../../components/Header';
 import HrmDashboard from './HrmDashboard';
 import HrmSidebar from './HrmSidebar';
 import CreateMaster from './CreateMaster';
-import AddEmployee from './AddEmployee';
+import { Routes, Route, useLocation } from "react-router-dom";
+import AddEmployee from "./EmployeeMaster/AddEmployee";
+
 import CreateMatrix from './CreateMatrix';
 import VacantPosition from './VacantPosition';
 import SalaryMIS from './SalaryMIS';
@@ -15,10 +17,14 @@ import Attendence from './Attendence';
 import Report from './Report';
 import EmployeeLetter from './EmployeeLetter';
 import GrossSalary from './GrossSalary';
+import EmployeeMaster from './EmployeeMaster/EmployeeMaster';
 
 
 const HrmConfiguration = () => {
 const [activePage, setActivePage] = useState('Dashboard');
+const location = useLocation();
+
+const isEmployeeRoute = location.pathname.startsWith("/employee");
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -34,8 +40,14 @@ const [activePage, setActivePage] = useState('Dashboard');
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
        {activePage === 'Dashboard' && <HrmDashboard />}
         {activePage ==="createmaster" && <CreateMaster/>}
-        {activePage === "AddEmp" && <AddEmployee/>}
-        {activePage==="createMatrix" && <CreateMatrix/>}
+{(activePage === "AddEmp" || isEmployeeRoute) && (
+  <Routes>
+    <Route index element={<EmployeeMaster />} />
+    <Route path="employee/add" element={<AddEmployee />} />
+    <Route path="employee/edit/:employeeId/*" element={<AddEmployee />} />
+  </Routes>
+)}
+   {activePage==="createMatrix" && <CreateMatrix/>}
         {activePage === "vacantposition" && <VacantPosition/>}
               {activePage==="GrossSalary" && <GrossSalary/>}
 

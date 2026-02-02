@@ -1,484 +1,491 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Download, Search, Calendar, FileText, Filter, FileSpreadsheet, File, Edit3, Trash2, X, Save } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  FileSpreadsheet, Edit3, FilterX, Loader2, Trash2, Download, ListOrdered
+} from 'lucide-react';
 import axios from 'axios';
-import { API_ENDPOINTS,} from '../../config/apiconfig'
-const ViewManualPR = () => {
-  const [filters, setFilters] = useState({
-    prNumber: '',
-    department: '',
-    startDate: '',
-    endDate: ''
-  });
-  
+import { API_ENDPOINTS } from '../../config/apiconfig';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const ViewManualPR = ({ onEdit }) => {
+  // --- State Management ---
+  const [filters, setFilters] = useState({ prNumber: '', department: '', startDate: '', endDate: '' });
   const [data, setData] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [prNumbers, setPrNumbers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [exportFormat, setExportFormat] = useState('excel');
-  
-  // Modal states
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [deletingItem, setDeletingItem] = useState(null);
 
-  // Fetch data from backend
-  const fetchData = useCallback(async (page = 1) => {
+  // Reactive Entries Per Page
+  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Helper to show NA if data is missing
+  const formatDisplayValue = (val) => (val === undefined || val === null || val === "" ? "N/A" : val);
+
+  // --- Data Fetching ---
+  const fetchTableData = useCallback(async (page = 1, pageSize = entriesPerPage) => {
     setLoading(true);
     try {
       const params = {
         page,
-        pageSize: entriesPerPage,
-        prNumber: filters.prNumber || undefined,
-        department: filters.department || undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined
+        pageSize: pageSize,
+        ...filters
       };
 
-      const response = await axios.get(`${API_ENDPOINTS.GetPRNumbers}`);
-    if (Array.isArray(response.data)) {
-        setPrNumbers(response.data); 
-      } else if (response.data.prNumbers) {
-        // In case structure changes back to object
-        setPrNumbers(response.data.prNumbers);
-      }
+      const response = await axios.get(API_ENDPOINTS.ViewManualPRList, { params });
+      const result = response.data;
+
+      setData(result.data || []);
+      setTotalRecords(result.totalCount || result.totalRecords || result.total || 0);
+      setTotalPages(result.totalPages || Math.ceil((result.totalCount || result.total || 0) / pageSize));
+      setCurrentPage(page);
+
+      // Fetch PR numbers for filter dropdown
+      const prRes = await axios.get(API_ENDPOINTS.GetPRNumbers);
+      setPrNumbers(prRes.data || []);
     } catch (error) {
-      console.error('Error fetching PR data:', error);
+      console.error('Fetch error:', error);
+      toast.error("Error loading table data");
       setData([]);
     } finally {
       setLoading(false);
     }
   }, [filters, entriesPerPage]);
 
+  const fetchMasterData = useCallback(async () => {
+    try {
+      const deptRes = await axios.get(API_ENDPOINTS.Departments);
+      setDepartments(deptRes.data || []);
+    } catch (e) {
+      console.error("Master data fetch failed:", e);
+    }
+  }, []);
+
+  // --- Effects ---
   useEffect(() => {
-    fetchData(1);
-  }, [fetchData]);
+    fetchMasterData();
+  }, [fetchMasterData]);
 
-  const handleFilterChange = (field, value) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
-    setCurrentPage(1);
+  useEffect(() => {
+    fetchTableData(1, entriesPerPage);
+  }, [filters, entriesPerPage, fetchTableData]);
+
+  // --- Event Handlers ---
+  const handlePageSizeChange = (e) => {
+    const newSize = parseInt(e.target.value);
+    setEntriesPerPage(newSize);
+    // useEffect will trigger fetchTableData(1, newSize)
   };
 
-  // Edit handlers
-  const handleEdit = (item) => {
-    setEditingItem({ ...item });
-    setShowEditModal(true);
+  const handleEditClick = (item) => {
+    if (onEdit) onEdit(item);
   };
 
-  const handleSaveEdit = async () => {
-    if (!editingItem) return;
-    try {
-      setLoading(true);
-      await axios.put(`/api/purchase-requisitions/${editingItem.id || editingItem.prNo}`, editingItem);
-      setShowEditModal(false);
-      setEditingItem(null);
-      fetchData(currentPage);
-      alert('PR updated successfully!');
-    } catch (error) {
-      console.error('Update failed:', error);
-      alert('Update failed. Please try again.');
-    } finally {
-      setLoading(false);
+  const handleDeleteClick = async (item) => {
+    if (window.confirm(`Are you sure you want to delete PR ${item.prNo || item.id}?`)) {
+      try {
+        await axios.delete(API_ENDPOINTS.DeleteManualPR(item.prNo));
+        toast.success('PR deleted successfully');
+        fetchTableData(currentPage);
+      } catch (error) {
+        toast.error('Failed to delete PR');
+      }
     }
   };
 
-  // Delete handlers
-  const handleDelete = (item) => {
-    setDeletingItem(item);
-    setShowDeleteModal(true);
-  };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingItem) return;
+// Add a helper function for the download logic
+const downloadFile = async (url, fileName, type) => {
     try {
-      setLoading(true);
-      await axios.delete(`/api/purchase-requisitions/${deletingItem.id || deletingItem.prNo}`);
-      setShowDeleteModal(false);
-      setDeletingItem(null);
-      fetchData(currentPage);
-      alert('PR deleted successfully!');
+        toast.info(`Generating ${type}...`);
+        const response = await axios.get(url, { responseType: 'blob' });
+        const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        toast.success(`${type} downloaded successfully`);
     } catch (error) {
-      console.error('Delete failed:', error);
-      alert('Delete failed. Please try again.');
-    } finally {
-      setLoading(false);
+        toast.error(`Failed to export ${type}`);
     }
-  };
+};
 
-  const handleEntriesPerPageChange = (pageSize) => {
-    setEntriesPerPage(Number(pageSize));
-    setCurrentPage(1);
-  };
+const handleExportExcel = (item) => {
+    const fileName = `PR_${(item.prNo || item.id).replace(/[\\/]/g, '_')}.xlsx`;
+    const url = `${API_ENDPOINTS.ExportPRByNumber}?prNumber=${item.prNo || item.id}`;
+    downloadFile(url, fileName, 'Excel');
+};
 
-  const handleExport = async () => {
+const handleExportPdf = (item) => {
+    const fileName = `PR_${(item.prNo || item.id).replace(/[\\/]/g, '_')}.pdf`;
+    // Ensure you add this endpoint to your apiconfig.js
+    const url = `${API_ENDPOINTS.ExportPRByNumberPdf}?prNumber=${item.prNo || item.id}`;
+    downloadFile(url, fileName, 'PDF');
+};
+
+  const handleExportClick = async (item) => {
     try {
-      const format = exportFormat;
-      const endpoint = format === 'pdf' 
-        ? '/api/purchase-requisitions/export/pdf'
-        : format === 'csv'
-        ? '/api/purchase-requisitions/export/csv'
-        : '/api/purchase-requisitions/export/excel';
-
-      const response = await axios.get(endpoint, {
-        params: filters,
-        responseType: 'blob'
-      });
-      
-      const fileExtension = format === 'pdf' ? 'pdf' : format === 'csv' ? 'csv' : 'xlsx';
-      const fileName = `PR_Report_${new Date().toISOString().split('T')[0]}.${fileExtension}`;
-      
+      toast.info(`Generating Excel for ${item.prNo || item.id}...`);
+      const response = await axios.get(
+        `${API_ENDPOINTS.ExportPRByNumber}?prNumber=${item.prNo || item.id}`,
+        { responseType: 'blob' }
+      );
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PR_${(item.prNo || item.id).replace(/[\\/]/g, '_')}.xlsx`;
+      a.click();
+      toast.success('Excel exported successfully');
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+      toast.error('Failed to export Excel');
     }
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  // --- Pagination Controls ---
+  const PaginationControls = () => (
+    <div style={{
+      padding: '20px',
+      background: 'linear-gradient(to bottom, #f8fafc, #f1f5f9)',
+      borderTop: '2px solid #e2e8f0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '12px'
+    }}>
 
-  const exportOptions = [
-    { value: 'excel', label: 'Excel (.xlsx)' },
-    { value: 'csv', label: 'CSV (.csv)' },
-    { value: 'pdf', label: 'PDF (.pdf)' }
-  ];
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className='mb-4'>
+        <button
+          className="pagination-btn"
+          onClick={() => fetchTableData(currentPage - 1)}
+          disabled={currentPage === 1}
+          style={{
+            padding: '10px 16px',
+            border: '2px solid #e2e8f0',
+            background: currentPage === 1 ? '#f1f5f9' : 'white',
+            borderRadius: '8px',
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            fontWeight: 600, fontSize: '14px'
+          }}
+        >
+          Previous
+        </button>
+
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          const pageNum = currentPage <= 3 ? i + 1 : (currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i);
+          if (pageNum <= 0 || pageNum > totalPages) return null;
+          return (
+            <button
+              key={pageNum}
+              onClick={() => fetchTableData(pageNum)}
+              style={{
+                minWidth: '40px', height: '36px', borderRadius: '6px',
+                border: currentPage === pageNum ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                background: currentPage === pageNum ? '#3b82f6' : 'white',
+                color: currentPage === pageNum ? 'white' : '#374151',
+                cursor: 'pointer', fontWeight: 700
+              }}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
+
+        <button
+          className="pagination-btn"
+          onClick={() => fetchTableData(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          style={{
+            padding: '10px 16px',
+            border: '2px solid #e2e8f0',
+            background: currentPage === totalPages ? '#f1f5f9' : 'white',
+            borderRadius: '8px',
+            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            fontWeight: 600, fontSize: '14px'
+          }}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom right, #eff6ff, #eef2ff, #faf5ff)', padding: '24px' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        
-     
+    <div style={{ minHeight: '80vh' }}>
+      <ToastContainer theme="colored" position="top-right" />
 
-        {/* Filters Section - RESTORED COMPLETE */}
-        <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', padding: '24px', marginBottom: '24px', border: '1px solid #c7d2fe' }}>
-         
-          
-          <div className='row'>
-            
-            {/* PR Number - RESTORED */}
-            <div className='col'>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                PR Number
-              </label>
-              <select
-                value={filters.prNumber}
-                onChange={(e) => handleFilterChange('prNumber', e.target.value)}
-                style={{ width: '100%', padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', outline: 'none' }}
-              >
-                <option value="">Select PR Number</option>
-                {prNumbers.map(pr => (
-                  <option key={pr} value={pr}>{pr}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Department - RESTORED */}
-            <div className='col'>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Department
-              </label>
-              <select
-                value={filters.department}
-                onChange={(e) => handleFilterChange('department', e.target.value)}
-                style={{ width: '100%', padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', outline: 'none' }}
-              >
-                <option value="">Select Department</option>
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Start Date - RESTORED */}
-            <div className='col'>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                style={{ width: '100%', padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', outline: 'none' }}
-              />
-            </div>
-
-            {/* End Date - RESTORED */}
-            <div className='col'>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                End Date
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                style={{ width: '100%', padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', outline: 'none' }}
-              />
-            </div>
-
-                 {/* Action Buttons - RESTORED */}
+      {/* FILTER SECTION */}
+      <div style={{ background: 'white', borderRadius: '12px', padding: '15px', marginBottom: '15px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+        {/* <div style={{ marginBottom: '12px' }}>
+          <h6 style={{ margin: 0, color: '#1e293b', fontWeight: 700, fontSize: '16px' }}>Filter Purchase Requisitions</h6>
+        </div> */}
+        <div className='row'>
+          <div className="col">
+            <label className="filter-label">PR Number</label>
+            <select className="filter-input" value={filters.prNumber} onChange={(e) => setFilters({ ...filters, prNumber: e.target.value })}>
+              <option value="">All PRs</option>
+              {prNumbers.map(pr => <option key={pr.id} value={pr.id}>{pr.id}</option>)}
+            </select>
+          </div>
+          <div className="col">
+            <label className="filter-label">Department</label>
+            <select className="filter-input" value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })}>
+              <option value="">All Departments</option>
+              {departments.map(d => <option key={d.id} value={d.departmentName}>{d.departmentName}</option>)}
+            </select>
+          </div>
+          <div className="col">
+            <label className="filter-label">Start Date</label>
+            <input type="date" className="filter-input" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} />
+          </div>
+          <div className="col">
+            <label className="filter-label">End Date</label>
+            <input type="date" className="filter-input" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} />
+          </div>
           <div className='col'>
-        
-
-            {/* Export Dropdown - RESTORED */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #d1d5db', borderRadius: '8px', padding: ' 4px',marginTop:'22px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <Download style={{ width: '18px', height: '18px', color: '#059669' }} />
-              <select
-                value={exportFormat}
-                onChange={(e) => setExportFormat(e.target.value)}
-                disabled={loading}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  outline: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  padding: '4px 8px'
-                }}
-              >
-                {exportOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleExport}
-                disabled={loading}
-                style={{ 
-                  padding: '8px 16px', 
-                  background: loading ? '#9ca3af' : '#059669', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  cursor: loading ? 'not-allowed' : 'pointer', 
-                  fontSize: '13px', 
-                  fontWeight: '500',
-                  boxShadow: '0 2px 4px rgba(5, 150, 105, 0.3)'
-                }}
-              >
-                Export
-              </button>
-            </div>
+            <label className="filter-label">Clear</label>
+            <button className="btn-clear" onClick={() => setFilters({ prNumber: '', department: '', startDate: '', endDate: '' })}>
+              <FilterX size={18} />
+            </button>
           </div>
-
-        
-          </div>
-
-     
-        </div>
-
-        {/* Data Table with Actions Column */}
-        <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', border: '1px solid #c7d2fe', overflow: 'hidden' }}>
-          
-          {/* Entries Per Page */}
-          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(to right, #eef2ff, #faf5ff)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px', color: '#374151' }}>Show</span>
-              <select
-                value={entriesPerPage}
-                onChange={(e) => handleEntriesPerPageChange(e.target.value)}
-                disabled={loading}
-                style={{ 
-                  padding: '6px 12px', border: '1px solid #d1d5db', borderRadius: '8px', 
-                  fontSize: '14px', outline: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.6 : 1
-                }}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-              </select>
-              <span style={{ fontSize: '14px', color: '#374151' }}>entries</span>
-            </div>
-            <div style={{ fontSize: '14px', color: '#374151' }}>
-              {loading ? 'Loading...' : `Showing ${data.length} entries`}
-            </div>
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div style={{ padding: '64px 16px', textAlign: 'center', color: '#6b7280' }}>
-              <div style={{ 
-                width: '48px', height: '48px', border: '4px solid #e5e7eb', 
-                borderTop: '4px solid #4f46e5', borderRadius: '50%', 
-                animation: 'spin 1s linear infinite', margin: '0 auto 16px' 
-              }} />
-              <p style={{ fontSize: '16px', fontWeight: '500' }}>Loading purchase requisitions...</p>
-            </div>
-          )}
-
-          {/* Table with Actions - SAME AS BEFORE */}
-          {!loading && (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ background: 'linear-gradient(to right, #4f46e5, #9333ea)', color: 'white' }}>
-                  <tr>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>PR No</th>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Date</th>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Department</th>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Item Code & Name</th>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Grade</th>
-                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>UOM</th>
-                    <th style={{ padding: '16px', textAlign: 'right', fontSize: '14px', fontWeight: '600' }}>Required Qty</th>
-                    <th style={{ padding: '16px', textAlign: 'right', fontSize: '14px', fontWeight: '600' }}>Avg Price</th>
-                    <th style={{ padding: '16px', textAlign: 'right', fontSize: '14px', fontWeight: '600' }}>Value</th>
-                    <th style={{ padding: '16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', width: '120px' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.length > 0 ? (
-                    data.map((item, index) => (
-                      <tr key={`${item.prNo}-${index}`} style={{ borderBottom: '1px solid #e5e7eb', transition: 'background 0.2s' }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = '#eef2ff'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#4f46e5' }}>{item.prNo}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', color: '#374151' }}>{item.date}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
-                          <span style={{ padding: '4px 12px', background: '#f3e8ff', color: '#7c3aed', borderRadius: '16px', fontSize: '12px', fontWeight: '500' }}>
-                            {item.department}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>{item.itemCode}</div>
-                          <div style={{ color: '#6b7280', fontSize: '12px' }}>{item.itemName}</div>
-                        </td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
-                          <span style={{ 
-                            padding: '4px 8px', borderRadius: '16px', fontSize: '12px', fontWeight: '500',
-                            background: item.grade === 'A' ? '#d1fae5' : item.grade === 'B' ? '#fef3c7' : '#f3f4f6',
-                            color: item.grade === 'A' ? '#065f46' : item.grade === 'B' ? '#92400e' : '#374151'
-                          }}>
-                            {item.grade}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', color: '#374151' }}>{item.uom}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', fontWeight: '500', color: '#111827' }}>{item.requiredQty}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.avgPrice)}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', fontWeight: '600', color: '#4f46e5' }}>{formatCurrency(item.value)}</td>
-                        <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <button
-                              onClick={() => handleEdit(item)}
-                              disabled={loading}
-                              title="Edit PR"
-                              style={{
-                                padding: '6px',
-                                background: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                opacity: loading ? 0.6 : 1
-                              }}
-                            >
-                              <Edit3 size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item)}
-                              disabled={loading}
-                              title="Delete PR"
-                              style={{
-                                padding: '6px',
-                                background: '#ef4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                opacity: loading ? 0.6 : 1
-                              }}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="10" style={{ padding: '48px 16px', textAlign: 'center', color: '#6b7280' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                          <Search style={{ width: '48px', height: '48px', color: '#d1d5db' }} />
-                          <p style={{ fontSize: '18px', fontWeight: '500' }}>No data found</p>
-                          <p style={{ fontSize: '14px' }}>Try adjusting your filters</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Edit Modal & Delete Modal - SAME AS BEFORE */}
-      {showEditModal && editingItem && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-          {/* Edit Modal content - same as previous version */}
-          <div style={{
-            background: 'white', borderRadius: '16px', width: '90vw', maxWidth: '600px', maxHeight: '90vh',
-            overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          }}>
-            <div style={{ padding: '24px', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937' }}>
-                  <Edit3 style={{ width: '20px', height: '20px', color: '#3b82f6', marginRight: '8px', display: 'inline' }} />
-                  Edit PR - {editingItem.prNo}
-                </h2>
-                <button onClick={() => setShowEditModal(false)} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-            {/* Rest of edit modal form - same as before */}
-            <div style={{ padding: '24px' }}>
-              {/* Form fields here - same as previous */}
-            </div>
-            <div style={{ padding: '24px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => setShowEditModal(false)} style={{ padding: '10px 24px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-                Cancel
-              </button>
-              <button onClick={handleSaveEdit} disabled={loading} style={{ padding: '10px 24px', background: loading ? '#9ca3af' : '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer' }}>
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
+      {/* TABLE SECTION */}
+      <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} className='row'>
+        <div style={{ padding: '13px 12px', background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', borderBottom: '2px solid #e2e8f0' }} className='col'>
+          <h6 style={{ margin: 0, color: '#1e293b', fontSize: '13px' }}>
+            <FileSpreadsheet size={20} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
+            Purchase Requisition Records
+            {!loading && data.length > 0 && (
+              <span style={{ marginLeft: '12px', fontSize: '13px', color: '#64748b', fontWeight: 500 }}>
+                Page {currentPage} of {totalPages} ({totalRecords} total)
+              </span>
+            )}
+          </h6>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} className='col'>
+          {/* Page Size Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', color: '#f8fafc', fontWeight: 600 }}>Show</span>
+            <select
+              value={entriesPerPage}
+              onChange={handlePageSizeChange}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '2px solid #cbd5e1',
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#1e293b'
+              }}
+            ><option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <div style={{ color: '#64748b', fontSize: '13px', fontWeight: 500 }}>
+            Showing {((currentPage - 1) * entriesPerPage) + 1} to {Math.min(currentPage * entriesPerPage, totalRecords)} of {totalRecords}
           </div>
         </div>
-      )}
+        {loading ? (
+          <div style={{ padding: '80px', textAlign: 'center' }}>
+            <Loader2 size={48} className="spinner" style={{ color: '#3b82f6' }} />
+            <p style={{ marginTop: '16px', color: '#64748b', fontSize: '15px' }}>Loading data...</p>
+          </div>
+        ) : data.length === 0 ? (
+          <div style={{ padding: '80px', textAlign: 'center', color: '#64748b' }}>
+            <FileSpreadsheet size={56} style={{ opacity: 0.3, marginBottom: '16px' }} />
+            <p style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No Records Found</p>
+          </div>
+        ) : (
+          <>
+            {/* 1. Wrapper to contain the scroll */}
+            <div style={{
+              maxHeight: '360px',
+              overflowY: 'auto',
+              position: 'relative',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                <thead style={{
+                  /* 2. Makes the header stay at the top */
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 10,
+                  background: '#f1f5f9',
+                  boxShadow: '0 1px 0 #e2e8f0'
+                }}>
+                  <tr>
+                    <th className="th-cell">PR No</th>
+                    <th className="th-cell">Date</th>
+                    <th className="th-cell">Department</th>
+                    <th className="th-cell">Item Details</th>
+                    <th className="th-cell">Grade</th>
+                    <th className="th-cell">Quantity</th>
+                    <th className="th-cell">Value</th>
+                    <th className="th-cell text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item, index) => (
+                    <tr key={item.id} className="table-row" style={{ background: index % 2 === 0 ? 'white' : '#fafbfc' }}>
+                      <td className="td-cell" style={{ fontWeight: 500, fontSize: '13px', fontFamily: 'monospace' }}>
+                        {formatDisplayValue(item.prNo)}
+                      </td>
+                      <td className="td-cell" style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'monospace' }}>
+                        {item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td >
+                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.department)}</div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.itemName)}</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Code: {item.itemCode}</div>
+                      </td>
+                      <td  style={{ fontWeight: 600 }}>{formatDisplayValue(item.grade)}</td>
+                      <td >
+                        <span style={{ fontWeight: 600 }}>{formatDisplayValue(item.requiredQty)}</span>
+                        {item.uom && <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>{item.uom}</span>}
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: 700, color: '#059669' }}>
+                          {item.value || item.totalValue ? `₹${parseFloat(item.value || item.totalValue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'N/A'}
+                        </span>
+                      </td>
 
-      {/* Delete Modal - same as before */}
-      {showDeleteModal && deletingItem && (
-        // Delete modal content - same as previous
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          {/* Delete modal content */}
-        </div>
-      )}
+<td className="td-cell text-center">
+  <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+    {/* Edit Button */}
+    <button onClick={() => handleEditClick(item)} title="Edit" style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+      <Edit3 size={14} />
+    </button>
 
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
+    {/* Export Group */}
+    <div className="export-group" style={{ display: 'flex', border: '1px solid #86efac', borderRadius: '6px', overflow: 'hidden' }}>
+      <button 
+        onClick={() => handleExportExcel(item)} 
+        title="Export Excel"
+        style={{ background: '#dcfce7', color: '#166534', border: 'none', borderRight: '1px solid #86efac', padding: '6px 8px', cursor: 'pointer' }}
+      >
+        <FileSpreadsheet size={14} />
+      </button>
+      <button 
+        onClick={() => handleExportPdf(item)} 
+        title="Export PDF"
+        style={{ background: '#fef2f2', color: '#991b1b', border: 'none', padding: '6px 8px', cursor: 'pointer' }}
+      >
+        <Download size={14} />
+      </button>
+    </div>
+
+    {/* Delete Button */}
+    <button onClick={() => handleDeleteClick(item)} title="Delete" style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+      <Trash2 size={14} />
+    </button>
+  </div>
+</td>
+
+                      {/* <td className="td-cell text-center">
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <button onClick={() => handleEditClick(item)} style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Edit3 size={14} />
+                          </button>
+                          <button onClick={() => handleExportClick(item)} style={{ background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '1px solid #86efac', color: '#166534', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Download size={14} />
+                          </button>
+                          <button onClick={() => handleDeleteClick(item)} style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td> */}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ background: 'linear-gradient(to bottom, #f1f5f9, #e2e8f0)' }}>
+                  <tr>
+                    <th className="th-cell">PR No</th>
+                    <th className="th-cell">Date</th>
+                    <th className="th-cell">Department</th>
+                    <th className="th-cell">Item Details</th>
+                    <th className="th-cell">Grade</th>
+                    <th className="th-cell">Quantity</th>
+                    <th className="th-cell">Value</th>
+                    <th className="th-cell text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item, index) => (
+                    <tr key={item.id} className="table-row" style={{ background: index % 2 === 0 ? 'white' : '#fafbfc' }}>
+                      <td className="td-cell">
+                        <span style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'monospace' }}>
+                          {formatDisplayValue(item.prNo)}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'monospace' }} >
+                        {item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.department)}</div>
+                      </td>
+                      <td >
+                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.itemName)}</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Code: {item.itemCode}</div>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{formatDisplayValue(item.grade)}</td>
+                      <td >
+                        <span style={{ fontWeight: 600 }}>{formatDisplayValue(item.requiredQty)}</span>
+                        {item.uom && <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>{item.uom}</span>}
+                      </td>
+                      <td >
+                        <span style={{ fontWeight: 700, color: '#059669' }}>
+                          {item.value || item.totalValue ? `₹${parseFloat(item.value || item.totalValue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'N/A'}
+                        </span>
+                      </td>
+                      <td className="td-cell text-center">
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <button onClick={() => handleEditClick(item)} style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Edit3 size={14} /> 
+                          </button>
+                          <button onClick={() => handleExportClick(item)} style={{ background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '1px solid #86efac', color: '#166534', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Download size={14} /> 
+                          </button>
+                          <button onClick={() => handleDeleteClick(item)} style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Trash2 size={14} /> 
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div> */}
+            <PaginationControls />
+          </>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+        .filter-label { display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 6px; }
+        .filter-input { width: 100%; padding: 6px 4px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; }
+        .btn-clear { background: linear-gradient(to bottom, #f8fafc, #f1f5f9) !important; border: 2px solid #cbd5e1 !important; padding: 6px 4px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; color: #475569; text-transform: uppercase; }
+        .th-cell { padding: 10px; text-align: left; font-size: 12px; font-weight: 500; color: #334155; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
+        .td-cell { padding: 10px 10px; font-size: 14px; color: #1e293b; border-bottom: 1px solid #f1f5f9; }
+        .table-row:hover { background: #f8fafc !important; }
+        button:hover:not(:disabled) { transform: translateY(-1px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
       `}</style>
     </div>
   );

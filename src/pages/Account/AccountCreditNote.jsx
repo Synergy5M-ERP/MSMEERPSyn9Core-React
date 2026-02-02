@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus, Save, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -46,10 +47,10 @@ export default function AccountCreditNote() {
 });
 
   const [invoice, setInvoice] = useState("");
-  const [CreditNoteNo, setCreditNoteNo] = useState("");
-  const [CreditNoteDate, setCreditNoteDate] = useState(new Date().toISOString().split("T")[0]);
-  const [paymentDueDate, setPaymentDueDate] = useState("")
-
+  const [creditNoteNo, setCreditNoteNo] = useState("");
+  const [creditNoteDate, setCreditNoteDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentDueDate, setPaymentDueDate] =useState("")
+  
   const [item, setItem] = useState(emptyItem);
   const [items, setItems] = useState([]);
   const [editingIdx, setEditingIdx] = useState(null);
@@ -262,30 +263,6 @@ const fetchItemDetails = async (itemId) => {
           taxType: d.taxType || "CGST_SGST"
         };
       });
-
-    // setItem(prev => ({
-    //   ...prev,
-
-    //   // quantity & pricing
-    //   itemQty: Number(d.itemQty) || 0,
-    //   unitId: d.unitId ?? prev.unitId,
-    //   itemUnit: d.unitName ?? prev.itemUnit,
-    //   price: Number(d.itemPrice) || 0,
-
-    //   // tax rates
-    //   cgst: Number(d.cgst) || 0,
-    //   sgst: Number(d.sgst) || 0,
-    //   igst: Number(d.igst) || 0,
-
-    //   // totals
-    //   totalTaxAmount: Number(d.totalTaxAmt) || 0,
-    //   totalAmount: Number(d.totalAmount) || 0,
-    //   netAmount: Number(d.netAmount) || 0,
-
-    //   // 🔥 source of truth from backend
-    //   taxType: d.taxType || "CGST_SGST"
-    // }));
-
   } catch (err) {
     console.error("fetchItemDetails error:", err);
     toast.error("Failed to load item details");
@@ -375,11 +352,11 @@ const fetchItemDetails = async (itemId) => {
       toast.warn("Please select an invoice");
       return;
     }
-    if (!CreditNoteNo) {
+    if (!creditNoteNo) {
       toast.warn("Please enter Credit note number");
       return;
     }
-    if (!CreditNoteDate) {
+    if (!creditNoteDate) {
       toast.warn("Please select Credit note date");
       return;
     }
@@ -392,8 +369,8 @@ const fetchItemDetails = async (itemId) => {
   category,
   vendorId: vendor.vendorId,
   invoiceNoId: invoice,
-  CreditNoteNo,
-  creditNoteDate: CreditNoteDate,
+  creditNoteNo,
+  creditNoteDate: creditNoteDate,
   paymentDueDate,
 
   totalAmount,
@@ -597,7 +574,7 @@ console.log(CreditNoteData)
                 disabled={!vendor || isLoading}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "5px 6px",
                   borderRadius: 10,
                   border: "2px solid #e2e8f0",
                   fontSize: 15,
@@ -623,7 +600,7 @@ console.log(CreditNoteData)
               }}>Credit Note No <span style={{ color: "#ef4444" }}>*</span></label>
               <input
                 type="text"
-                value={CreditNoteNo}
+                value={creditNoteNo}
                 onChange={e => setCreditNoteNo(e.target.value)}
                 placeholder="CN-001"
                 style={{
@@ -639,7 +616,7 @@ console.log(CreditNoteData)
               }}>Credit Note Date <span style={{ color: "#ef4444" }}>*</span></label>
               <input
                 type="date"
-                value={CreditNoteDate}
+                value={creditNoteDate}
                 onChange={e => setCreditNoteDate(e.target.value)}
                 style={{
                   width: "100%", padding: "12px 16px", borderRadius: 10,
@@ -647,7 +624,7 @@ console.log(CreditNoteData)
                 }} />
             </div>
 
-            <div className="col-3">
+            <div className="col">
               <label
                 style={{
                   textAlign: "left", display: "block", color: "#0066cc", fontSize: "14px", fontWeight: "600", marginBottom: "8px",
@@ -807,6 +784,7 @@ console.log(CreditNoteData)
                   width: "100%", padding: "10px 12px", borderRadius: 8, border: "2px solid #e2e8f0",
                   fontSize: 14, background: "#f1f5f9", color: "#475569", textAlign: "right", fontWeight: 600
                 }}
+                className="form-text"
               />
             </div>
 

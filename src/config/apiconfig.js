@@ -2,7 +2,7 @@
   //const BASE_URL = "https://localhost:7145/api";
 
 export const API_ENDPOINTS = {
- // ================= HRM ADMIN =================
+  // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
   GetUserDetails: `${BASE_URL}/HRMAdminRegAPI/GetUserDetails`,
   GetUserModules: `${BASE_URL}/HRMAdminRegAPI/GetUserModules`,
@@ -10,22 +10,35 @@ export const API_ENDPOINTS = {
   DEPARTMENT: `${BASE_URL}/HrmMaster/Department`,
   DESIGNATION: `${BASE_URL}/HrmMaster/Designation`,
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
+GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+    GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
   GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
-  GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
+
+  GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
   GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
-  ORG_CHART_WITH_BUDGET:`${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+  ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+
+ // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
+ // GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
+  ///GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
+  //GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
+  //ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
   UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
-  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`, 
-
-
+  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+ EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+  GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
+  SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
+GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+  DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
   //------------------------Account APIs----------------------------------
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -47,7 +60,7 @@ export const API_ENDPOINTS = {
   Journal: `${BASE_URL}/journals`,
   AccountType: `${BASE_URL}/Account/AccountType`,
   Voucher: `${BASE_URL}/vouchers`,
-  AccountGroup: `${BASE_URL}/AccountGroups`,
+  Group: `${BASE_URL}/AccountGroups`,
   AccountSubGroup: `${BASE_URL}/Subgroups`,
   AccountSubSubGroup: `${BASE_URL}/SubSubgroups`,
 
@@ -63,9 +76,15 @@ export const API_ENDPOINTS = {
   // CreditNote: `${BASE_URL}/credit-note`,
   // DebitNote: `${BASE_URL}/Debit-note`,
 
-  OutwardQc:`${BASE_URL}/OutwardQCReport`,
-  SaveRejectionQty:`${BASE_URL}/SaveRejectionQty`,
-  SubmitButtonDisable:`${BASE_URL}/SubmitButtonDisable`,
+  OutwardQc: `${BASE_URL}/OutwardQCReport`,
+  SaveRejectionQty: `${BASE_URL}/SaveRejectionQty`,
+  SubmitButtonDisable: `${BASE_URL}/SubmitButtonDisable`,
+
+  ViewEmployees: `${BASE_URL}/HrmMaster/Employee`,
+
+  OutwardQc: `${BASE_URL}/OutwardQCReport`,
+  SaveRejectionQty: `${BASE_URL}/SaveRejectionQty`,
+  SubmitButtonDisable: `${BASE_URL}/SubmitButtonDisable`,
 
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,
@@ -79,7 +98,10 @@ export const API_ENDPOINTS = {
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
+  SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
 
+
+  Ledger: `${BASE_URL}/AccountLedger`,
   // Ledger: `${BASE_URL}/AccountLedger`,
  // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
@@ -93,8 +115,13 @@ export const API_ENDPOINTS = {
   GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
   PaymentMode: `${BASE_URL}/PaymentMode`,
   Status: `${BASE_URL}/Status`,
+
+  //===========BOM API========================
+  //===========Enquiry API====================
+  GetPRNumbers: `${BASE_URL}/Enquiry/GetPRNumbers`,
+  GetPRItemDetails: `${BASE_URL}/Enquiry/GetPRItemDetails`,
   GetNextVoucherNumber: `${BASE_URL}/GetNextVoucherNumber`,
-  GetVoucherDetails:`${BASE_URL}/GetVoucherDetails`,
+  GetVoucherDetails: `${BASE_URL}/GetVoucherDetails`,
 
   AccountSale: `${BASE_URL}/AccountSale`,
   Getbuyers: `${BASE_URL}/Buyers`,
@@ -117,40 +144,74 @@ export const API_ENDPOINTS = {
   SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
 //------------------------Account APIs----------------------------------
 
- 
- Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
+GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
+  GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
+  Category: `${BASE_URL}/Category`,
+  //------------------------Account APIs----------------------------------
+
+  // Employee endpoints
+  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
+
+  Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
+
   // Employee endpoints
   PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
   PR_EmployeeDetails: (empId) => `${BASE_URL}/PurchaseReq/employee/${empId}`,
-  
+
   // Item endpoints
   ItemList: `${BASE_URL}/PurchaseReq/items`,
   PR_ItemDetails: (itemId) => `${BASE_URL}/PurchaseReq/item/${itemId}`,
-  
+
   // Specification/Grade endpoints
   PR_Specifications: `${BASE_URL}/PurchaseReq/specifications`,
   GetGradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/grades/${encodeURIComponent(itemName)}`,
   GetGradeDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/gradedetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
-  
+
   // Currency and UOM endpoints
   PR_Currencies: `${BASE_URL}/PurchaseReq/currencies`,
   PR_UOM: `${BASE_URL}/PurchaseReq/uoms`,
-  
+
   // Budget endpoint
   PR_BudgetByDept: (deptCode) => `${BASE_URL}PurchaseReq/GetLastBudgetBalance/${encodeURIComponent(deptCode)}`,
-  
+
   // Requisition types
   ReqRes: `${BASE_URL}/PurchaseReq/requisitions`,
-  
+
   // Create Manual PR
   CreateManualPR: `${BASE_URL}/PurchaseReq/create`,
-  
+
   // View List PR
   ViewListPR: `${BASE_URL}/PurchaseReq/list`,
-  
+
   // PR Numbers and Department Names
   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPrn`,
   GetDepartmentNames: `${BASE_URL}/PurchaseReq/departmentnames`,
 
+  // Employee Endpoints
+  PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
+  
+  // Item Endpoints
+  ItemList: `${BASE_URL}/PurchaseReq/GetItemList`,
+  PR_GradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/GetGradesForItem?itemName=${encodeURIComponent(itemName)}`,
+  PR_ItemDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/GetGradeDetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
+  
+  // Requisition Type Endpoints
+  ReqTypes: `${BASE_URL}/PurchaseReq/GetRequisitionTypes`,
+  
+  // Budget Endpoints
+  PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
+  
+  // Purchase Request CRUD Endpoints
+  CreateManualPR: `${BASE_URL}/PurchaseReq/Create`,
+  UpdateManualPR: `${BASE_URL}/PurchaseReq/Update`,
+  GetPRForEdit: `${BASE_URL}/PurchaseReq/GetPRForEdit`,
+  ViewManualPRList: `${BASE_URL}/PurchaseReq/GetManualPR`,
+  GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPRNo`,
+   DeleteManualPR: (prNumber) => 
+    `${BASE_URL}/PurchaseReq/Delete?prNumber=${encodeURIComponent(prNumber)}`,
+  ManualPRReport:`${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
+  // Export Endpoint
+  ExportPRByNumber:`${BASE_URL}/PurchaseReq/ExportByPR`,
+ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`
 };

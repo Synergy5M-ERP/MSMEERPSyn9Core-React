@@ -1,223 +1,8 @@
-// // React version of the given ASP.NET MVC Employee Registration Form
-// // NOTE:
-// // - This keeps structure & fields same as your Razor view
-// // - Uses uncontrolled inputs for simplicity (like MVC helpers)
-// // - You can later convert to controlled inputs / validation
-
-// import React, { useState } from "react";
-// import "bootstrap/dist/css/bootstrap.min.css";
-
-// const EmployeeRegistration = () => {
-//   const [collapsed, setCollapsed] = useState(false);
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     alert("Form submitted (hook API here)");
-//   };
-
-//   return (
-//     <div className="container" style={{ maxWidth: 1462 }}>
-//       <h2 className="text-center text-primary fw-bold">
-//         NEW EMPLOYEE REGISTRATION FORM
-//       </h2>
-
-//       <form onSubmit={handleSubmit} encType="multipart/form-data">
-//         {/* ================= EMPLOYEE INFORMATION ================= */}
-//         <div className="accordion" id="employeeAccordion">
-//           <div className="accordion-item">
-//             <h2 className="accordion-header">
-//               <button
-//                 className="accordion-button"
-//                 type="button"
-//                 data-bs-toggle="collapse"
-//                 data-bs-target="#employeeInfo"
-//               >
-//                 EMPLOYEE INFORMATION
-//               </button>
-//             </h2>
-
-//             <div id="employeeInfo" className="accordion-collapse collapse show">
-//               <div className="accordion-body">
-//                 <div className="row">
-//                   <div className="col-md-3">
-//                     <label>Title</label>
-//                     <select className="form-control" name="Title">
-//                       <option value="">SELECT</option>
-//                       <option>MR</option>
-//                       <option>MS</option>
-//                       <option>MRS</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Name</label>
-//                     <input className="form-control" name="Name" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Middle Name</label>
-//                     <input className="form-control" name="Middle_Name" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Surname</label>
-//                     <input className="form-control" name="Surname" />
-//                   </div>
-//                 </div>
-
-//                 <div className="row mt-3">
-//                   <div className="col-md-3">
-//                     <label>Gender</label>
-//                     <select className="form-control" name="Gender">
-//                       <option value="">SELECT</option>
-//                       <option>MALE</option>
-//                       <option>FEMALE</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>DOB</label>
-//                     <input type="date" className="form-control" name="DOB" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Blood Group</label>
-//                     <select className="form-control" name="Blood_Group">
-//                       <option>SELECT</option>
-//                       <option>A+</option><option>A-</option>
-//                       <option>B+</option><option>B-</option>
-//                       <option>AB+</option><option>AB-</option>
-//                       <option>O+</option><option>O-</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Email</label>
-//                     <input type="email" className="form-control" name="Email" />
-//                   </div>
-//                 </div>
-
-//                 <div className="row mt-3">
-//                   <div className="col-md-3">
-//                     <label>Contact No</label>
-//                     <input className="form-control" maxLength="10" name="Contact_NO" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Married Status</label>
-//                     <select className="form-control" name="Married_Status">
-//                       <option>SELECT</option>
-//                       <option>MARRIED</option>
-//                       <option>UNMARRIED</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Address</label>
-//                     <textarea className="form-control" name="Address" rows="3" />
-//                   </div>
-
-//                   <div className="col-md-3 mt-4">
-//                     <input type="checkbox" /> Same as Address
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* ================= EMPLOYER INFORMATION ================= */}
-//         <div className="accordion mt-3">
-//           <div className="accordion-item">
-//             <h2 className="accordion-header">
-//               <button className="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#employerInfo">
-//                 EMPLOYER INFORMATION
-//               </button>
-//             </h2>
-
-//             <div id="employerInfo" className="accordion-collapse collapse">
-//               <div className="accordion-body">
-//                 <div className="row">
-//                   <div className="col-md-3">
-//                     <label>Category</label>
-//                     <select className="form-control" name="SalaryStatus">
-//                       <option>SELECT</option>
-//                       <option>STAFF</option>
-//                       <option>EMPLOYEE</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Date Of Joining</label>
-//                     <input type="date" className="form-control" name="Date_Of_Joining" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Notice Period</label>
-//                     <input className="form-control" name="Notices_Period" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Weekly Off</label>
-//                     <select className="form-control" name="Weekly_Off">
-//                       <option>YES</option>
-//                       <option>NO</option>
-//                     </select>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* ================= SALARY STRUCTURE ================= */}
-//         <div className="accordion mt-3">
-//           <div className="accordion-item">
-//             <h2 className="accordion-header">
-//               <button className="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#salaryInfo">
-//                 SALARY STRUCTURE
-//               </button>
-//             </h2>
-
-//             <div id="salaryInfo" className="accordion-collapse collapse">
-//               <div className="accordion-body">
-//                 <div className="row">
-//                   <div className="col-md-3">
-//                     <label>Monthly Gross Salary</label>
-//                     <input className="form-control" name="Monthly_Gross_Salary" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Basic Salary</label>
-//                     <input className="form-control" name="Basic_Salary" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>DA</label>
-//                     <input className="form-control" name="DA" />
-//                   </div>
-
-//                   <div className="col-md-3">
-//                     <label>Daily Salary</label>
-//                     <input className="form-control" name="Daily_Salary" />
-//                   </div>
-//                 </div>
-
-//                 <div className="text-center mt-4">
-//                   <button className="btn btn-success" type="submit">SUBMIT</button>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default EmployeeRegistration;
-
 import React, { useState, useEffect } from 'react';
+import axios from "axios";   // ✅ REQUIRED
+import { useLocation, useNavigate,useParams  } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
   User,
   FileText,
@@ -231,8 +16,8 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { API_ENDPOINTS } from "../../config/apiconfig";
-const EmployeeManagementSystem = () => {
+import { API_ENDPOINTS } from "../../../config/apiconfig";
+const AddEmployee = () => {
   const [activeSection, setActiveSection] = useState('employee');
   const [currentForm, setCurrentForm] = useState('employee'); // 'employee', 'employer', 'salary'
   const [countries, setCountries] = useState([]);
@@ -240,12 +25,24 @@ const EmployeeManagementSystem = () => {
   const [cities, setCities] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
+const [authorityLevel, setAuthorityLevel] = useState("");
+const [authorities, setAuthorities] = useState([]);
+const [expandedSections, setExpandedSections] = useState({
+  employee: true,
+  employer: true,
+  salary: true
+});
+const location = useLocation();
+const navigate = useNavigate();
+
+const { employeeId } = useParams(); // <-- get ID from URL
+const isEditMode = Boolean(employeeId);
+
 
   const [employeeInfo, setEmployeeInfo] = useState({
     title: '',
-    name: '',
-    middleName: '',
-    surname: '',
+         fullName: "",
     gender: '',
     dob: '',
     bloodGroup: '',
@@ -256,9 +53,9 @@ const EmployeeManagementSystem = () => {
     sameAsAddress: false,
     permanentAddress: '',
     qualification: '',
-    country: '',
-    state: '',
-    city: '',
+  countryId: "",
+  stateId: "",
+  cityId: "",
     aadharNo: '',
     panNo: '',
     bankAccountNo: '',
@@ -269,7 +66,9 @@ const EmployeeManagementSystem = () => {
     uan: '',
     epfoAcNo: '',
     previousExperience: '',
-    previousIndustry: ''
+    previousIndustry: '',
+    department: "",
+  designation: ""
   });
 
   const [employerInfo, setEmployerInfo] = useState({
@@ -302,7 +101,7 @@ const EmployeeManagementSystem = () => {
     leaveTravelAllowance: '',
     additionalBenefits: '',
     performanceIncentive: '',
-    pfContribution: '',
+  pfContributionAmount: "",
     esic: '',
     stockOption: '',
     car: '',
@@ -313,16 +112,13 @@ const EmployeeManagementSystem = () => {
     hourlySalary: '',
     annualIncrement: '',
     annualIncDate: '',
-    totalMonth: '',
+        totalMonth: '',
     professionalTax: '',
-    annualCtcRs: ''
+    annualCtcRs: '',
   });
+  
 
-  const [expandedSections, setExpandedSections] = useState({
-    employee: true,
-    employer: true,
-    salary: true
-  });
+
 
   // --- Profile completeness helpers ---
   const getFilledPercentage = (obj, keys) => {
@@ -390,6 +186,30 @@ const EmployeeManagementSystem = () => {
         setDesignations([]);
       });
   }, []);
+useEffect(() => {
+  fetchCurrency();
+}, []);
+useEffect(() => {
+  axios
+    .get(API_ENDPOINTS.AUTHORITY_MATRIX)
+    .then(res => {
+      setAuthorities(Array.isArray(res.data) ? res.data : []);
+    })
+    .catch(err => {
+      console.error("Authority API error:", err);
+      setAuthorities([]);
+    });
+}, []);
+
+
+const fetchCurrency = async () => {
+  try {
+    const res = await axios.get(API_ENDPOINTS.GET_CURRENCY);
+    setCurrencyList(res.data);
+  } catch (error) {
+    console.error("Error fetching currency", error);
+  }
+};
 
   // --- Previous / Next navigation ---
   const formOrder = ['employee', 'employer', 'salary'];
@@ -418,189 +238,319 @@ const EmployeeManagementSystem = () => {
       [section]: !prev[section]
     }));
   };
+ // Fetch Employee Data in Edit Mode
+  // ========================
+  useEffect(() => {
+  if (!isEditMode || !employeeId) return;
 
-  const handleEmployeeChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const fetchEmployeeById = async () => {
+    try {
+      const res = await axios.get(`${API_ENDPOINTS.GetEmployeeById}/${employeeId}`);
+      const data = res.data;
 
-    setEmployeeInfo((prev) => {
+      // Map Employee Info
+      const emp = data.employee;
+      const empEmployer = data.employer;
+      const empSalary = data.salary;
 
-      // ✅ Same as Address checkbox
-      if (name === "sameAsAddress") {
-        return {
-          ...prev,
-          sameAsAddress: checked,
-          permanentAddress: checked ? prev.address : ""
-        };
-      }
+      setEmployeeInfo({
+        fullName: emp.fullName ?? "",
+        title: emp.title ?? "",
+        middleName: emp.middleName ?? "",
+        surname: emp.surname ?? "",
+        gender: emp.gender ?? "",
+        dob: emp.dob ? emp.dob.split("T")[0] : "",
+        bloodGroup: emp.bloodGroup ?? "",
+        email: emp.email ?? "",
+        contactNo: emp.contactNo ?? "",
+        marriedStatus: emp.maritualStatus ?? "",
+        address: emp.address ?? "",
+        sameAsAddress: false,
+        permanentAddress: emp.permanentAddress ?? "",
+        qualification: emp.qualification ?? "",
+        countryId: emp.countryId ?? "",
+        stateId: emp.stateId ?? "",
+        cityId: emp.cityId ?? "",
+        aadharNo: emp.aadharNo ?? "",
+        panNo: emp.panNo ?? "",
+        bankAccountNo: emp.bankAccountNo ?? "",
+        bankName: emp.bankName ?? "",
+        ifscCode: emp.ifscCode ?? "",
+        nominee: emp.nominee ?? "",
+        relation: emp.relation ?? "",
+        uan: emp.uanNo ?? "",
+        epfoAcNo: emp.epfoNo ?? "",
+        previousExperience: emp.previousExperience ?? "",
+        previousIndustry: emp.previousIndustry ?? "",
+        department: emp.deptId ?? "",
+        designation: emp.designationId ?? ""
+      });
 
-      // ✅ Country change → reset state & city
-      if (name === "country") {
-        return {
-          ...prev,
-          country: value,
-          state: "",
-          city: ""
-        };
-      }
+      // Map Employer Info
+      setEmployerInfo({
+        category: empEmployer.category ?? "",
+        dateOfJoining: empEmployer.joiningDate ? empEmployer.joiningDate.split("T")[0] : "",
+        noticesPeriod: empEmployer.noticePeriod ?? "",
+        weeklyOff: empEmployer.weeklyOff ?? "",
+        dateOfLeaving: empEmployer.leaveDate ? empEmployer.leaveDate.split("T")[0] : "",
+        dateOfReleaving: empEmployer.relievingDate ? empEmployer.relievingDate.split("T")[0] : "",
+        shiftHours: empEmployer.shiftHours ?? "",
+        department: empEmployer.deptId ?? "",
+        otCalculation: empEmployer.oTcalculation ?? "",
+        esicPwnNo: empEmployer.esisNo ?? "",
+        pfContribution: empEmployer.pfContribution ?? "",
+        currency: empEmployer.currency ?? "INR",
+        pfNo: empEmployer.pfNo ?? "",
+        authorityLevel: empEmployer.authorityLevel ?? "",
+        designation: empEmployer.designationId ?? "",
+        ctc: empEmployer.ctc ?? "",
+        aadharPancard: null
+      });
 
-      // ✅ State change → reset city
-      if (name === "state") {
-        return {
-          ...prev,
-          state: value,
-          city: ""
-        };
-      }
+      // Map Salary Structure
+      setSalaryStructure({
+        monthlyGrossSalary: empSalary.monthlyGrossSalary ?? "",
+        monthlyBasicSalary: empSalary.monthlyBasicSalary ?? "",
+        da: empSalary.da ?? "",
+        dailySalary: empSalary.dailySalary ?? "",
+        monthlySalary: empSalary.monthlySalary ?? "",
+        leaveTravelAllowance: empSalary.leaveTravelAllowance ?? "",
+        additionalBenefits: empSalary.additionalBenefits ?? "",
+        performanceIncentive: empSalary.performanceIncentive ?? "",
+        pfContributionAmount: empSalary.pfContributionAmount ?? "",
+        esic: empSalary.esic ?? "",
+        stockOption: empSalary.stockOption ?? "",
+        car: empSalary.carAllowance ?? "",
+        medicalAllowance: empSalary.medicalAllowance ?? "",
+        totalDeduction: empSalary.totalDeduction ?? "",
+        houseRentAllowance: empSalary.houseRentAllowance ?? "",
+        hourlySalary: empSalary.hourlySalary ?? "",
+        annualIncrement: empSalary.annualIncrement ?? "",
+        annualIncDate: empSalary.annualIncrementDate ? empSalary.annualIncrementDate.split("T")[0] : "",
+        totalMonth: empSalary.totalMonth ?? "",
+        professionalTax: empSalary.professionalTax ?? "",
+        annualCtcRs: empSalary.annualCTC ?? ""
+      });
 
-      // ✅ Address sync when checkbox is checked
-      if (name === "address" && prev.sameAsAddress) {
-        return {
-          ...prev,
-          address: value,
-          permanentAddress: value
-        };
-      }
+    } catch (err) {
+      console.error("Failed to fetch employee data:", err);
+      toast.error("Employee not found");
+    }
+  };
 
+  fetchEmployeeById();
+}, [isEditMode, employeeId]);
+
+const handleEmployeeChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  setEmployeeInfo((prev) => {
+
+    if (name === "sameAsAddress") {
       return {
         ...prev,
-        [name]: type === "checkbox" ? checked : value
+        sameAsAddress: checked,
+        permanentAddress: checked ? prev.address : ""
       };
-    });
-  };
+    }
+
+    if (name === "countryId") {
+      return {
+        ...prev,
+        countryId: value,
+        stateId: "",
+        cityId: ""
+      };
+    }
+
+    if (name === "stateId") {
+      return {
+        ...prev,
+        stateId: value,
+        cityId: ""
+      };
+    }
+
+    if (name === "address" && prev.sameAsAddress) {
+      return {
+        ...prev,
+        address: value,
+        permanentAddress: value
+      };
+    }
+
+    return {
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    };
+  });
+};
 
 
-  // const handleEmployeeChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
 
-
-  //   setEmployeeInfo((prev) => {
-  //     // When "Same as Address" is checked
-  //     if (name === "sameAsAddress") {
-  //       if (name === "country") {
-  //         return { ...prev, country: value, state: "", city: "" };
-  //       }
-
-  //       if (name === "state") {
-  //         return { ...prev, state: value, city: "" };
-  //       }
-
-  //       return {
-  //         ...prev,
-  //         sameAsAddress: checked,
-  //         permanentAddress: checked ? prev.address : ""
-  //       };
-  //     }
-
-  //     // When Address changes & checkbox is checked
-  //     if (name === "address" && prev.sameAsAddress) {
-  //       return {
-  //         ...prev,
-  //         address: value,
-  //         permanentAddress: value
-  //       };
-  //     }
-
-  //     return {
-  //       ...prev,
-  //       [name]: type === "checkbox" ? checked : value
-  //     };
-  //   });
-  // };
+ 
   useEffect(() => {
-    if (employeeInfo.country) {
-      fetch(
-        `${API_ENDPOINTS.GET_STATE}?country=${encodeURIComponent(employeeInfo.country)}`
-      )
-        .then(res => res.json())
-        .then(data => setStates(data))
-        .catch(err => console.error("State API Error:", err));
-    } else {
+  if (employeeInfo.department) {
+    fetch(
+      `${API_ENDPOINTS.DESIGNATION_BY_DEPARTMENT}?department=${encodeURIComponent(
+        employeeInfo.department
+      )}`
+    )
+      .then(res => res.json())
+      .then(data => {
+        setDesignations(Array.isArray(data) ? data : []);
+      })
+      .catch(err => {
+        console.error("Designation API Error:", err);
+        setDesignations([]);
+      });
+  } else {
+    setDesignations([]);
+  }
+}, [employeeInfo.department]);
+const handleDepartmentChange = async (e) => {
+  const deptId = e.target.value;   // ✅ DEFINE HERE
+
+  setEmployerInfo(prev => ({
+    ...prev,
+    department: deptId,
+    designation: ""
+  }));
+
+  if (!deptId) {
+    setDesignations([]);
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      "https://msmeerpsyn9-core.azurewebsites.net/api/HrmOrgInfo/vacant-designations",
+      {
+        params: { deptId }   // ✅ SAFE TO USE
+      }
+    );
+
+    setDesignations(res.data);
+  } catch (err) {
+    console.error(err);
+    setDesignations([]);
+  }
+};
+
+
+  useEffect(() => {
+  if (!employeeInfo.countryId) {
+    setStates([]);
+    setCities([]);
+    return;
+  }
+
+  fetch(`${API_ENDPOINTS.GET_STATE}?countryId=${employeeInfo.countryId}`)
+    .then(res => res.json())
+    .then(data => setStates(data))
+    .catch(err => {
+      console.error("State API Error:", err);
       setStates([]);
+    });
+}, [employeeInfo.countryId]);
+
+useEffect(() => {
+  if (!employeeInfo.stateId) {
+    setCities([]);
+    return;
+  }
+
+  fetch(`${API_ENDPOINTS.GET_CITY}?stateId=${employeeInfo.stateId}`)
+    .then(res => res.json())
+    .then(data => setCities(data))
+    .catch(err => {
+      console.error("City API Error:", err);
       setCities([]);
-    }
-  }, [employeeInfo.country]);
+    });
+}, [employeeInfo.stateId]);
 
 
-  useEffect(() => {
-    if (employeeInfo.state) {
-      fetch(
-        `${API_ENDPOINTS.GET_CITY}?state=${encodeURIComponent(employeeInfo.state)}`
-      )
-        .then(res => res.json())
-        .then(res => {
-          // ✅ normalize response to array
-          if (Array.isArray(res)) {
-            setCities(res);
-          } else if (res?.data && Array.isArray(res.data)) {
-            setCities(res.data);
-          } else if (res?.cities && Array.isArray(res.cities)) {
-            setCities(res.cities);
-          } else {
-            setCities([]); // fallback
-          }
-        })
-        .catch(err => {
-          console.error("City API Error:", err);
-          setCities([]);
-        });
-    } else {
-      setCities([]);
-    }
-  }, [employeeInfo.state]);
+ const handleEmployerChange = (e) => {
+  const { name, value } = e.target;
 
+  if (name === "joiningAuthorityId") {
+    const selected = authorities.find(
+      a => a.authorityMatrixId === parseInt(value)
+    );
 
-
-  const handleEmployerChange = (e) => {
-    const { name, value, files } = e.target;
     setEmployerInfo(prev => ({
       ...prev,
-      [name]: files ? files[0] : value
+      joiningAuthorityId: value,
+      joiningAuthorityName: selected?.authorityMatrixName || ""
     }));
-  };
+    return;
+  }
 
-  const handleSalaryChange = (e) => {
-    const { name, value } = e.target;
-    setSalaryStructure(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  setEmployerInfo(prev => ({ ...prev, [name]: value }));
+};
 
-  const handleSave = async () => {
-    try {
-      const formData = new FormData();
 
-      Object.keys(employeeInfo).forEach(key => {
-        formData.append(`employeeInfo.${key}`, employeeInfo[key]);
-      });
+const handleSalaryChange = (e) => {
+  const { name, value, type } = e.target;
 
-      Object.keys(employerInfo).forEach(key => {
-        if (key === 'aadharPancard' && employerInfo[key]) {
-          formData.append('aadharPancard', employerInfo[key]);
-        } else {
-          formData.append(`employerInfo.${key}`, employerInfo[key]);
-        }
-      });
-
-      Object.keys(salaryStructure).forEach(key => {
-        formData.append(`salaryStructure.${key}`, salaryStructure[key]);
-      });
-
-      const response = await fetch('https://your-api-url.com/api/employee', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        alert('Employee data saved successfully!');
-      } else {
-        alert('Failed to save employee data');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      alert('Error saving data');
+  // Allow only numbers for numeric fields
+  if (type === "text" || type === "number") {
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return; // block non-numeric characters
     }
-  };
+  }
+
+  // For date or other types, accept the value
+  setSalaryStructure(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+const handleSave = async () => {
+  try {
+    const formData = new FormData();
+
+    // Employee info
+    Object.keys(employeeInfo).forEach(key => {
+      formData.append(key, employeeInfo[key]);
+    });
+
+    // Employer info (file handling)
+    Object.keys(employerInfo).forEach(key => {
+      if (key === "aadharPancard" && employerInfo[key]) {
+        formData.append("AdhaarFile", employerInfo[key]); // must match API param
+      } else {
+        formData.append(key, employerInfo[key]);
+      }
+    });
+
+    // Salary structure
+    Object.keys(salaryStructure).forEach(key => {
+      formData.append(key, salaryStructure[key]);
+    });
+
+    const response = await fetch(API_ENDPOINTS.SaveEmployee, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
+    const result = await response.json();
+
+    alert("Employee saved successfully!");
+    console.log("API response:", result);
+
+  } catch (error) {
+    console.error("Save employee failed:", error);
+    alert("Failed to save employee");
+  }
+};
+
 
   const handleReset = () => {
     if (currentForm === 'employee') {
@@ -689,22 +639,113 @@ const EmployeeManagementSystem = () => {
     { id: 'salary', icon: DollarSign, label: 'Salary Structure' }
   ];
 
-  // const getFormTitle = () => {
-  //   switch (currentForm) {
-  //     case 'employee':
-  //       return 'Employee Information (AY 2025-2026)';
-  //     case 'employer':
-  //       return 'Employer Information (AY 2025-2026)';
-  //     case 'salary':
-  //       return 'Salary Structure (AY 2025-2026)';
-  //     default:
-  //       return 'Employee Management';
-  //   }
-  // };
+const handleSubmit = async () => {
+  try {
+    const formData = new FormData();
+
+    // ===============================
+    // 1️⃣ Resolve AuthorityMatrixId
+    // ===============================
+    let finalAuthorityMatrixId = "";
+
+    if (authorityLevel === "joining") {
+      finalAuthorityMatrixId = employerInfo.joiningAuthorityId;
+    } else if (authorityLevel === "current") {
+      finalAuthorityMatrixId = employerInfo.currentAuthorityId;
+    }
+
+    if (!finalAuthorityMatrixId) {
+      toast.error("Please select Authority Level");
+      return;
+    }
+
+    // ===============================
+    // 2️⃣ Employee Info
+    // ===============================
+    Object.entries(employeeInfo).forEach(([k, v]) =>
+      formData.append(k, v ?? "")
+    );
+
+    // Add missing backend fields mapping
+    formData.append("MaritualStatus", employeeInfo.marriedStatus ?? "");
+    formData.append("UANNo", employeeInfo.uan ?? "");
+    formData.append("EPFONo", employeeInfo.epfoAcNo ?? "");
+
+    // ===============================
+    // 3️⃣ Employer Info
+    // ===============================
+    Object.entries(employerInfo).forEach(([k, v]) => {
+      if (k === "AadharCardFile" && v) {
+        formData.append("AadharCardFile", v);
+      } else if (k === "PancardNoFile" && v) {
+        formData.append("PancardNoFile", v);
+      } else {
+        formData.append(k, v ?? "");
+      }
+    });
+
+    // Add missing employer fields mapping
+    formData.append("DeptId", employerInfo.department ?? "");
+    formData.append("JoiningDate", employerInfo.dateOfJoining ?? "");
+    formData.append("NoticePeriod", employerInfo.noticesPeriod ?? "");
+    formData.append("LeaveDate", employerInfo.dateOfLeaving ?? "");
+    formData.append("RelievingDate", employerInfo.dateOfReleaving ?? "");
+    formData.append("ESISNo", employerInfo.esicPwnNo ?? "");
+    formData.append("PFContributionAuthorityLevel", employerInfo.authorityLevel ?? "");
+formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
+
+    // 🔥 IMPORTANT: send AuthorityMatrixId
+    formData.append("AuthorityMatrixId", finalAuthorityMatrixId);
+
+    // ===============================
+    // 4️⃣ Salary Structure
+    // ===============================
+    Object.entries(salaryStructure).forEach(([k, v]) =>
+      formData.append(k, v ?? "")
+    );
+
+    // Add missing salary fields mapping
+    formData.append("CarAllowance", salaryStructure.car ?? "");
+    formData.append("AnnualIncrementDate", salaryStructure.annualIncDate ?? "");
+    formData.append("AnnualCTC", salaryStructure.annualCtcRs ?? "");
+
+    // ===============================
+    // 5️⃣ Default Password
+    // ===============================
+    formData.append("Password", "Temp@123");
+    formData.append("ConfirmPassword", "Temp@123");
+
+    // ===============================
+    // 6️⃣ API Call
+    // ===============================
+    if (isEditMode) {
+      formData.append("id", employeeId);
+      await axios.put(API_ENDPOINTS.UPDATE_EMPLOYEE, formData);
+      toast.success("Employee updated successfully ✅");
+    } else {
+      await axios.post(API_ENDPOINTS.SaveEmployee, formData);
+      toast.success("Employee added successfully 🎉");
+    }
+
+    navigate("/employee-list");
+  } catch (err) {
+    console.error(err);
+
+    const errorMessage =
+      err?.response?.data?.message ||
+      err?.response?.data ||
+      "Failed to save employee";
+
+    toast.error(errorMessage);
+  }
+};
+
 
   return (
     <div style={{ backgroundColor: '#f5f5f5', minHeight: '80vh', marginBottom:'100px'}}>
       {/* Header Section */}
+            <h2>{isEditMode ? "Edit Employee" : "Add Employee"}</h2>
+
       <div style={{ backgroundColor: 'white', borderBottom: '3px solid #4CAF50' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           {/* Progress Bar */}
@@ -729,7 +770,7 @@ const EmployeeManagementSystem = () => {
                 flex: 1,
                 height: '4px',
                 backgroundColor: '#4CAF50',
-                position: 'relative',
+                position: 'relative', 
                 top: '0'
               }}
             />
@@ -875,58 +916,40 @@ const EmployeeManagementSystem = () => {
                   <div className='row'>
 
                     <div className='col'>
-                      <label style={labelStyle}>TITLE</label>
+                      <label style={labelStyle}>Title</label>
                       <select
                         style={inputStyle}
                         name="title"
                         value={employeeInfo.title}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT</option>
+                        <option value="">Select</option>
                         <option value="Mr">Mr</option>
                         <option value="Ms">Ms</option>
                         <option value="Mrs">Mrs</option>
                       </select>
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>NAME</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="name"
-                        value={employeeInfo.name}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
+  <label style={labelStyle}>Full Name</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="fullName"
+    value={employeeInfo.fullName}
+    onChange={handleEmployeeChange}
+    placeholder="Enter full name"
+  />
+</div>
+
                     <div className='col'>
-                      <label style={labelStyle}>MIDDLE NAME</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="middleName"
-                        value={employeeInfo.middleName}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>SURNAME</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="surname"
-                        value={employeeInfo.surname}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>GENDER</label>
+                      <label style={labelStyle}>Gender</label>
                       <select
                         style={inputStyle}
                         name="gender"
                         value={employeeInfo.gender}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT</option>
+                        <option value="">Select</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
@@ -937,7 +960,7 @@ const EmployeeManagementSystem = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>DOB</label>
+                      <label style={labelStyle}>Dob</label>
                       <input
                         type="date"
                         style={inputStyle}
@@ -946,19 +969,29 @@ const EmployeeManagementSystem = () => {
                         onChange={handleEmployeeChange}
                       />
                     </div>
+                   <div className="col">
+  <label style={labelStyle}>Blood Group</label>
+  <select
+    style={inputStyle}
+    name="bloodGroup"
+    value={employeeInfo.bloodGroup}
+    onChange={handleEmployeeChange}
+  >
+    <option value="">Select Blood Group</option>
+    <option value="A+">A+</option>
+    <option value="A-">A-</option>
+    <option value="B+">B+</option>
+    <option value="B-">B-</option>
+    <option value="AB+">AB+</option>
+    <option value="AB-">AB-</option>
+    <option value="O+">O+</option>
+    <option value="O-">O-</option>
+  </select>
+</div>
+
+              
                     <div className='col'>
-                      <label style={labelStyle}>BLOOD GROUP</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        placeholder="AB+"
-                        name="bloodGroup"
-                        value={employeeInfo.bloodGroup}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>EMAIL</label>
+                      <label style={labelStyle}>Email</label>
                       <input
                         type="email"
                         style={inputStyle}
@@ -968,7 +1001,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>CONTACT NO</label>
+                      <label style={labelStyle}>Contact No</label>
                       <input
                         type="tel"
                         style={inputStyle}
@@ -978,23 +1011,23 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>MARRIED STATUS</label>
+                      <label style={labelStyle}>Married Status</label>
                       <select
                         style={inputStyle}
                         name="marriedStatus"
                         value={employeeInfo.marriedStatus}
                         onChange={handleEmployeeChange}
                       >
-                        <option value="">SELECT STATUS</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
+                        <option value="">Select Status</option>
+                        <option value="Single">Married</option>
+                        <option value="Married">UnMarried</option>
                       </select>
                     </div>
                   </div>
 
                   <div className='row'>
                     <div className='col-5'>
-                      <label style={labelStyle}>ADDRESS</label>
+                      <label style={labelStyle}>Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="address"
@@ -1018,11 +1051,11 @@ const EmployeeManagementSystem = () => {
                           checked={employeeInfo.sameAsAddress}
                           onChange={handleEmployeeChange}
                         />
-                        SAME AS ADDRESS
+                        Same As Address
                       </label>
                     </div >
                     <div className='col-5'>
-                      <label style={labelStyle}>PERMANENT ADDRESS</label>
+                      <label style={labelStyle}> Permanent Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="permanentAddress"
@@ -1035,7 +1068,7 @@ const EmployeeManagementSystem = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>QUALIFICATION</label>
+                      <label style={labelStyle}>Qualifiaction</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1045,64 +1078,64 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>COUNTRY</label>
-                      <select
-                        name="country"
-                        value={employeeInfo.country}
-                        onChange={handleEmployeeChange}
-                        style={inputStyle}
-                      >
-                        <option value="">SELECT COUNTRY</option>
-                        {countries.map(country => (
-                          <option key={country} value={country}>
-                            {country}
-                          </option>
-                        ))}
-                      </select>
+                      <label style={labelStyle}>Country</label>
+                    <select
+  name="countryId"
+  value={employeeInfo.countryId || ""}
+  onChange={handleEmployeeChange}
+  style={inputStyle}
+>
+  <option value="">Select Country</option>
 
+  {countries.map((country) => (
+    <option
+      key={country.country_id}
+      value={country.country_id}
+    >
+      {country.country_name}
+    </option>
+  ))}
+</select>
 
-                    </div>
-
-                    <div className='col'>
-                      <label style={labelStyle}>STATE</label>
-                      <select
-                        style={inputStyle}
-                        name="state"
-                        value={employeeInfo.state}
-                        onChange={handleEmployeeChange}
-                        disabled={!states.length}
-                      >
-                        <option value="">SELECT STATE</option>
-                        {states.map(state => (
-                          <option key={state} value={state}>
-                            {state}
-                          </option>
-                        ))}
-                      </select>
-
-                    </div>
-                    <div className='col'>
-                      <label style={labelStyle}>CITY</label>
-                      <select
-                        style={inputStyle}
-                        name="city"
-                        value={employeeInfo.city}
-                        onChange={handleEmployeeChange}
-                        disabled={!Array.isArray(cities) || cities.length === 0}
-                      >
-                        <option value="">SELECT CITY</option>
-                        {Array.isArray(cities) &&
-                          cities.map(city => (
-                            <option key={city} value={city}>
-                              {city}
-                            </option>
-                          ))}
-                      </select>
 
 
                     </div>
+<div className="col">
+  <label style={labelStyle}>State</label>
+  <select
+    name="stateId"
+    value={employeeInfo.stateId}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+  >
+    <option value="">Select State</option>
+    {states.map((s) => (
+      <option key={s.state_id} value={s.state_id}>
+        {s.state_name}
+      </option>
+    ))}
+  </select>
+</div>
+<div className="col">
+  <label style={labelStyle}>City</label>
+  <select
+    name="cityId"
+    value={employeeInfo.cityId}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+    disabled={!cities || cities.length === 0}
+  >
+    <option value="">Select City</option>
+    {cities.map((c) => (
+      <option key={c.city_id} value={c.city_id}>
+        {c.city_name}
+      </option>
+    ))}
+  </select>
+</div>
+
                     <div className='col'>
-                      <label style={labelStyle}>AADHAR NO</label>
+                      <label style={labelStyle}>Aadhar No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1116,7 +1149,7 @@ const EmployeeManagementSystem = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>PAN NO</label>
+                      <label style={labelStyle}>Pan No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1126,7 +1159,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>BANK ACCOUNT NO</label>
+                      <label style={labelStyle}>Bank Account No</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1136,7 +1169,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>BANK NAME</label>
+                      <label style={labelStyle}>Bank Name</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1146,7 +1179,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>IFSC CODE</label>
+                      <label style={labelStyle}>IFSC Code</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1156,7 +1189,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>NOMINEE</label>
+                      <label style={labelStyle}>Nominee</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1170,7 +1203,7 @@ const EmployeeManagementSystem = () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>RELATION</label>
+                      <label style={labelStyle}>Relation</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1200,7 +1233,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>PREVIOUS EXPERIENCE</label>
+                      <label style={labelStyle}>Previous Experience</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1210,7 +1243,7 @@ const EmployeeManagementSystem = () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>PREVIOUS INDUSTRY</label>
+                      <label style={labelStyle}>Previous Industry</label>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1263,20 +1296,20 @@ const EmployeeManagementSystem = () => {
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>CATEGORY</label>
+                    <label style={labelStyle}>Category</label>
                     <select
                       style={inputStyle}
                       name="category"
                       value={employerInfo.category}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT CATEGORY</option>
+                      <option value="">Select Category</option>
                       <option value="Staff">Staff</option>
                       <option value="Employee">Employee</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF JOINING</label>
+                    <label style={labelStyle}>Date Of Joining</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1286,7 +1319,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>NOTICE PERIOD</label>
+                    <label style={labelStyle}>Notice Period</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1296,20 +1329,20 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>WEEKLY OFF</label>
+                    <label style={labelStyle}>Weekly Off</label>
                     <select
                       style={inputStyle}
                       name="weeklyOff"
                       value={employerInfo.weeklyOff}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF LEAVING</label>
+                    <label style={labelStyle}>Date Of Leaving</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1326,7 +1359,7 @@ const EmployeeManagementSystem = () => {
 
 
                   <div className='col'>
-                    <label style={labelStyle}>DATE OF RELEAVING</label>
+                    <label style={labelStyle}>Date Of Releaving</label>
                     <input
                       type="date"
                       style={inputStyle}
@@ -1336,47 +1369,51 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>SHIFT HOURS</label>
+                    <label style={labelStyle}>Shift Hours</label>
                     <select
                       style={inputStyle}
                       name="shiftHours"
                       value={employerInfo.shiftHours}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT HOURS</option>
+                      <option value="">Select Hours</option>
                       <option value="8">8 Hours</option>
                       <option value="12">12 Hours</option>
                     </select>
                   </div>
+                 <div className="col">
+  <label style={labelStyle}>Department</label>
+
+  <select
+    style={inputStyle}
+    name="department"
+    value={employerInfo.department}
+    onChange={handleDepartmentChange}
+  >
+    <option value="">Select Department</option>
+
+    {Array.isArray(departments) &&
+      departments.map(dep => (
+        <option
+          key={dep.deptId}          // ✅ unique key
+          value={dep.deptId}        // ✅ save ID (BEST PRACTICE)
+        >
+          {dep.deptName}          
+        </option>
+      ))}
+  </select>
+</div>
+
+
                   <div className='col'>
-                    <label style={labelStyle}>DEPARTMENT</label>
-                    <select
-                      style={inputStyle}
-                      name="department"
-                      value={employeeInfo.department}
-                      onChange={handleEmployeeChange}
-                    >
-                      <option value="">SELECT DEPARTMENT</option>
-
-                      {Array.isArray(departments) &&
-                        departments.map(dep => (
-                          <option key={dep.id} value={dep.id}>
-                            {dep.departmentName}
-                          </option>
-                        ))}
-                    </select>
-
-
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>OT CALCULATION</label>
+                    <label style={labelStyle}>OT Calculation</label>
                     <select
                       style={inputStyle}
                       name="otCalculation"
                       value={employerInfo.otCalculation}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT OT CALCULATION</option>
+                      <option value="">Select OT Calculation</option>
                       <option value="Hourly">Hourly</option>
                       <option value="Daily">Daily</option>
                     </select>
@@ -1389,7 +1426,7 @@ const EmployeeManagementSystem = () => {
                       value={employerInfo.esicPwnNo}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
@@ -1401,30 +1438,39 @@ const EmployeeManagementSystem = () => {
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>PF CONTRIBUTION</label>
+                    <label style={labelStyle}>PF Contribution</label>
                     <select
                       style={inputStyle}
                       name="pfContribution"
                       value={employerInfo.pfContribution}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT</option>
+                      <option value="">Select</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
                     </select>
                   </div>
+               <div className="col">
+  <label style={labelStyle}>Currency</label>
+
+  <select
+    style={inputStyle}
+    name="currency"
+    value={employerInfo.currency}
+    onChange={handleEmployerChange}
+  >
+    <option value="">Select Currency</option>
+
+    {currencyList.map(cur => (
+      <option key={cur.id} value={cur.currency_Code}>
+        {cur.currency_Code}
+      </option>
+    ))}
+  </select>
+</div>
+
                   <div className='col'>
-                    <label style={labelStyle}>CURRENCY</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="currency"
-                      value={employerInfo.currency}
-                      onChange={handleEmployerChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>PF NO</label>
+                    <label style={labelStyle}>PF No</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1443,50 +1489,116 @@ const EmployeeManagementSystem = () => {
                       onChange={handleEmployerChange}
                     />
                   </div>
-                  <div className='col'>
-                    <label style={labelStyle}>AUTHORITY LEVEL</label>
-                    <select
-                      style={inputStyle}
-                      name="authorityLevel"
-                      value={employerInfo.authorityLevel}
-                      onChange={handleEmployerChange}
-                    >
-                      <option value="">SELECT AUTHORITY LEVEL</option>
-                      <option value="Joining">JOINING AUTHORITY LEVEL</option>
-                      <option value="Current"> CURRENT AUTHORITY LEVEL</option>
-                    </select>
-                  </div>
+                 <div className="col">
+  <label style={labelStyle}>Authority Level</label>
+  <select
+    style={inputStyle}
+    name="authorityLevel"
+    value={authorityLevel}
+    onChange={(e) => setAuthorityLevel(e.target.value)}
+  >
+    <option value="">Select Authority Level</option>
+    <option value="joining">Joining Authority Level</option>
+    <option value="current">Current Authority Level</option>
+  </select>
+</div>
+{authorityLevel === "joining" && (
+  <div className="col">
+    <label style={labelStyle}>
+      Joining Authority Level <span className="text-danger">*</span>
+    </label>
+
+    <select
+      style={inputStyle}
+      name="joiningAuthorityId"
+      value={employerInfo.joiningAuthorityId || ""}
+      onChange={handleEmployerChange}
+    >
+      <option value="">Select Joining Authority Level</option>
+
+      {Array.isArray(authorities) &&
+        authorities
+          .filter(a => a.isActive)
+          .map(auth => (
+            <option
+              key={auth.authorityMatrixId}
+              value={auth.authorityMatrixId}
+            >
+              {auth.authorityMatrixName}
+            </option>
+          ))}
+    </select>
+  </div>
+)}
+
+{authorityLevel === "current" && (
+  <div className="col">
+    <label style={labelStyle}>
+      Current Authority Level <span className="text-danger">*</span>
+    </label>
+
+    <select
+      style={inputStyle}
+      name="currentAuthorityId"
+      value={employerInfo.currentAuthorityId || ""}
+      onChange={handleEmployerChange}
+    >
+      <option value="">Select Current Authority Level</option>
+
+      {Array.isArray(authorities) &&
+        authorities
+          .filter(a => a.isActive)
+          .map(auth => (
+            <option
+              key={auth.authorityMatrixId}
+              value={auth.authorityMatrixId}
+            >
+              {auth.authorityMatrixName}
+            </option>
+          ))}
+    </select>
+  </div>
+)}
+
+
 
                 </div>
 
                 <div
                   className='row'
                 >
+<div className='col'>
+  <label style={labelStyle}>Designation</label>
+ <select
+  style={inputStyle}
+  name="designationId"
+  value={employerInfo.designationId || ""}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    const selectedObj = designations.find(d => d.id == selectedId);
 
+    setEmployerInfo(prev => ({
+      ...prev,
+      designationId: selectedId,
+      designationName: selectedObj ? selectedObj.designationName : ""
+    }));
+  }}
+>
+  <option value="">Select Designation</option>
 
+  {designations.length === 0 && (
+    <option disabled>No Vacant Position</option>
+  )}
 
+  {designations.map(des => (
+    <option key={des.id} value={des.id}>
+      {des.designationName}
+    </option>
+  ))}
+</select>
 
+</div>
 
-                  <div className='col'>
-                    <label style={labelStyle}>DESIGNATION</label>
-                    <select
-                      style={inputStyle}
-                      name="designation"
-                      value={employeeInfo.designation}
-                      onChange={handleEmployeeChange}
-                    >
-                      <option value="">SELECT DESIGNATION</option>
-
-                      {Array.isArray(designations) &&
-                        designations.map(des => (
-                          <option key={des.id} value={des.id}>
-                            {des.designationName}
-                          </option>
-                        ))}
-                    </select>
-
-
-                  </div>
                   <div className='col'>
                     <label style={labelStyle}>CTC</label>
                     <select
@@ -1495,13 +1607,13 @@ const EmployeeManagementSystem = () => {
                       value={employerInfo.ctc}
                       onChange={handleEmployerChange}
                     >
-                      <option value="">SELECT CTC</option>
+                      <option value="">Select CTC</option>
                       <option value="Joinning">Joinning</option>
                       <option value="Current">Current</option>
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>AADHAR/PANCARD</label>
+                    <label style={labelStyle}>Aadhar/Pancard</label>
                     <input
                       type="file"
                       style={inputStyle}
@@ -1552,7 +1664,7 @@ const EmployeeManagementSystem = () => {
 
 <div className='row'>
  <div className='col'>
-                    <label style={labelStyle}>MONTHLY GROSS SALARY</label>
+                    <label style={labelStyle}>Monthly Gross Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1562,7 +1674,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MONTHLY BASIC SALARY</label>
+                    <label style={labelStyle}>Monthly Basic Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1582,7 +1694,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DAILY SALARY</label>
+                    <label style={labelStyle}>Daliy Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1592,7 +1704,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MONTHLY SALARY</label>
+                    <label style={labelStyle}>Monthly Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1607,7 +1719,7 @@ const EmployeeManagementSystem = () => {
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>LEAVE TRAVEL ALLOWANCE</label>
+                    <label style={labelStyle}>Leave Travel Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1617,7 +1729,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ADDITIONAL BENEFITS</label>
+                    <label style={labelStyle}>Addidtion Benefits</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1627,7 +1739,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>PERFORMANCE INCENTIVE</label>
+                    <label style={labelStyle}>Performance Incentive</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1636,33 +1748,35 @@ const EmployeeManagementSystem = () => {
                       onChange={handleSalaryChange}
                     />
                   </div>
-                  <div className='col'>
-                    <label style={labelStyle}>PF CONTRIBUTION</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="pfContribution"
-                      value={salaryStructure.pfContribution}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>ESIC</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="esic"
-                      value={salaryStructure.esic}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
+                 <div className='col'>
+  <label style={labelStyle}>PF Contribution Amount</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="pfContributionAmount"          // ✅ CHANGED
+    value={salaryStructure.pfContributionAmount || ""}
+    onChange={handleSalaryChange}
+  />
+</div>
+
+<div className='col'>
+  <label style={labelStyle}>ESIC</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="esic"
+    value={salaryStructure.esic || ""}
+    onChange={handleSalaryChange}
+  />
+</div>
+
                   
 
 </div>
 
 <div className='row'>
      <div className='col'>
-                    <label style={labelStyle}>STOCK OPTION</label>
+                    <label style={labelStyle}>Stock Option</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1672,7 +1786,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>CAR</label>
+                    <label style={labelStyle}>Car</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1682,7 +1796,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>TELEPHONE</label>
+                    <label style={labelStyle}>Telephone</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1692,7 +1806,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>MEDICAL ALLOWANCE</label>
+                    <label style={labelStyle}>Medical Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1702,7 +1816,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>TOTAL DEDUCTION</label>
+                    <label style={labelStyle}>Total Deduction</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1715,7 +1829,7 @@ const EmployeeManagementSystem = () => {
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>HOUSE RENT ALLOWANCE</label>
+                    <label style={labelStyle}>House Rent Allowance</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1725,7 +1839,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>HOURLY SALARY</label>
+                    <label style={labelStyle}>Hourly Salary</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1735,7 +1849,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL INCREMENT</label>
+                    <label style={labelStyle}>Annual Increment</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1744,18 +1858,20 @@ const EmployeeManagementSystem = () => {
                       onChange={handleSalaryChange}
                     />
                   </div>
+               <div className='col'>
+  <label style={labelStyle}>Annual Inc Date</label>
+  <input
+    type="date"
+    style={inputStyle}
+    name="annualIncDate"
+    value={salaryStructure.annualIncDate}
+    onChange={handleSalaryChange}
+  />
+</div>
+
+
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL INC DATE</label>
-                    <input
-                      type="date"
-                      style={inputStyle}
-                      name="annualIncDate"
-                      value={salaryStructure.annualIncDate}
-                      onChange={handleSalaryChange}
-                    />
-                  </div>
-                  <div className='col'>
-                    <label style={labelStyle}>TOTAL MONTH</label>
+                    <label style={labelStyle}>Total Months</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1769,17 +1885,12 @@ const EmployeeManagementSystem = () => {
                 <div
                   className='row'
                 >
-
-
-
-
-                 
+      
 
                 
              
-                
                   <div className='col'>
-                    <label style={labelStyle}>PROFESSIONAL TAX</label>
+                    <label style={labelStyle}>Professional Tax</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1789,7 +1900,7 @@ const EmployeeManagementSystem = () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ANNUAL CTC RS</label>
+                    <label style={labelStyle}>Annual CTC Rs</label>
                     <input
                       type="text"
                       style={inputStyle}
@@ -1878,20 +1989,21 @@ const EmployeeManagementSystem = () => {
   </button>
 
   <button
-    onClick={handleSave}
-    style={{
-      padding: '10px 30px',
-      backgroundColor: '#2196F3',
-      color: 'white',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500'
-    }}
-  >
-    Save
-  </button>
+  onClick={handleSubmit}
+  style={{
+    padding: '10px 30px',
+    backgroundColor: isEditMode ? '#4CAF50' : '#2196F3',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500'
+  }}
+>
+  {isEditMode ? "Update" : "Save"}
+</button>
+
 </div>
 
       </div>
@@ -1900,7 +2012,9 @@ const EmployeeManagementSystem = () => {
 };
 
 const labelStyle = {
-  color: "#0066cc", fontWeight: "600"
+  color: "#0066cc",
+  fontWeight: "600",
+
 };
 
 const inputStyle = {
@@ -1910,5 +2024,4 @@ const inputStyle = {
   fontSize: '13px',
   backgroundColor: 'white'
 };
-
-export default EmployeeManagementSystem;
+export default AddEmployee;

@@ -2,7 +2,7 @@
 {
     public string Department { get; set; }
     public string Position { get; set; }
-    public string Level { get; set; }
+    public int Level { get; set; }
     public string Qualification { get; set; }
     public string Experience { get; set; }
     public string Industry { get; set; }

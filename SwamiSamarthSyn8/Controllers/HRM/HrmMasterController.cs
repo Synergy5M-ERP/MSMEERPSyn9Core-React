@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SwamiSamarthSyn8.Data;
-using SwamiSamarthSyn8.Models;
+using SwamiSamarthSyn8.Models.HRM;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -18,53 +18,59 @@ public class HrmMasterController : ControllerBase
     [HttpGet("GetCountry")]
     public async Task<IActionResult> GetCountry()
     {
-        var countryList = await _context.MergeTblDatas
-            .Where(x => x.Country_Name != null)
-            .Select(x => x.Country_Name)
-            .Distinct()
+        var countries = await _context.Master_Country
+            .Where(x => x.IsActive)
+            .Select(x => new
+            {
+                country_id = x.country_id,
+                country_name = x.country_name
+            })
+            .OrderBy(x => x.country_name)
             .ToListAsync();
 
-        return Ok(countryList);
+        return Ok(countries);
     }
-    [HttpGet("GetState")]
-    public async Task<IActionResult> GetState([FromQuery] string country)
-    {
-        if (string.IsNullOrEmpty(country))
-            return BadRequest("Country is required");
 
-        var states = await _context.MergeTblDatas
-            .Where(x => x.Country_Name == country)
-            .Select(x => x.state_name)
-            .Distinct()
+    [HttpGet("GetState")]
+    public async Task<IActionResult> GetState(int countryId)
+    {
+        var states = await _context.Master_State
+            .Where(x => x.country_id == countryId && x.IsActive)
+            .Select(x => new
+            {
+                state_id = x.state_id,
+                state_name = x.state_name
+            })
+            .OrderBy(x => x.state_name)
             .ToListAsync();
 
         return Ok(states);
     }
     [HttpGet("GetCity")]
-    public async Task<IActionResult> GetCity(
-        [FromQuery] string country,
-        [FromQuery] string state)
+    public async Task<IActionResult> GetCity(int stateId)
     {
-        if (string.IsNullOrEmpty(country) || string.IsNullOrEmpty(state))
-            return BadRequest("Country and State are required");
-
-        var cities = await _context.MergeTblDatas
-            .Where(x => x.Country_Name == country && x.state_name == state)
-            .Select(x => x.city_name)
-            .Distinct()
+        var cities = await _context.Master_City
+            .Where(x => x.state_id == stateId && x.IsActive)
+            .Select(x => new
+            {
+                city_id = x.city_id,
+                city_name = x.city_name
+            })
+            .OrderBy(x => x.city_name)
             .ToListAsync();
 
         return Ok(cities);
     }
+
     [HttpGet("GetCurrency")]
     public async Task<IActionResult> GetCurrency()
     {
-        var currencyList = await _context.Currencytbl
-            .OrderBy(x => x.Id) // optional, ensures consistent top rows
+        var currencyList = await _context.Master_Currency
+            .OrderBy(x => x.CurrencyId) // optional, ensures consistent top rows
             .Take(200000)
             .Select(x => new
             {
-                x.Id,
+                x.CurrencyId,
                 x.Currency_Code
             })
             .ToListAsync();
@@ -78,310 +84,200 @@ public class HrmMasterController : ControllerBase
     [HttpGet("Department")]
     public async Task<IActionResult> GetDepartment()
     {
-        var data = await _context.HRM_DepartmentTbl.ToListAsync();
+        var data = await _context.HRM_Department.ToListAsync();
         return Ok(data);
     }
 
     [HttpGet("Designation")]
     public async Task<IActionResult> GetDesignation()
     {
-        var data = await _context.HRM_DesignationTbl.ToListAsync();
+        var data = await _context.HRM_Designation.ToListAsync();
         return Ok(data);
     }
 
     [HttpGet("AuthorityMatrix")]
     public async Task<IActionResult> GetAuthorityMatrix()
     {
-        var data = await _context.HRM_AuthorityMatrixTbl.ToListAsync();
+        var data = await _context.HRM_AuthorityMatrix.ToListAsync();
         return Ok(data);
     }
+ 
+
+
     [HttpPost("{type}")]
     public async Task<IActionResult> Create(string type, [FromBody] JObject payload)
     {
         if (payload == null)
-            return BadRequest(new { success = false, message = "Invalid JSON payload." });
-
-        try
-        {
-            switch (type)
-            {
-                // ---------------------------------------------------------
-                //                        DEPARTMENT
-                // ---------------------------------------------------------
-                case "Department":
-                    {
-                        var name = payload.GetValue("DepartmentName", StringComparison.OrdinalIgnoreCase)
-                                          ?.ToString()?.Trim();
-
-                        if (string.IsNullOrWhiteSpace(name))
-                            return BadRequest(new { success = false, message = "Department name is required." });
-
-                        if (await _context.HRM_DepartmentTbl
-                            .AnyAsync(d => d.DepartmentName.ToLower() == name.ToLower()))
-                            return BadRequest(new { success = false, message = "Department already exists." });
-
-                        var nextCode = await GenerateNextCode(
-                            _context.HRM_DepartmentTbl.Select(x => x.Department_code)
-                        );
-
-                        var dept = new HRM_DepartmentTbl
-                        {
-                            DepartmentName = name,
-                            Department_code = nextCode,
-                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
-                                              ?.ToObject<bool?>() ?? true
-                        };
-
-                        _context.HRM_DepartmentTbl.Add(dept);
-
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
-                        }
-
-                        return Ok(new
-                        {
-                            success = true,
-                            data = new
-                            {
-                                dept.Id,
-                                dept.DepartmentName,
-                                dept.Department_code,
-                                dept.IsActive
-                            },
-                            message = "Department added successfully!"
-                        });
-                    }
-
-
-                // ---------------------------------------------------------
-                //                        DESIGNATION
-                // ---------------------------------------------------------
-                case "Designation":
-                    {
-                        var name = payload.GetValue("DesignationName", StringComparison.OrdinalIgnoreCase)
-                                          ?.ToString()?.Trim();
-
-                        if (string.IsNullOrWhiteSpace(name))
-                            return BadRequest(new { success = false, message = "Designation name is required." });
-
-                        if (await _context.HRM_DesignationTbl
-                            .AnyAsync(d => d.DesignationName.ToLower() == name.ToLower()))
-                            return BadRequest(new { success = false, message = "Designation already exists." });
-
-                        var nextCode = await GenerateNextCode(
-                            _context.HRM_DesignationTbl.Select(x => x.Designation_code)
-                        );
-
-                        var desig = new HRM_DesignationTbl
-                        {
-                            DesignationName = name,
-                            Designation_code = nextCode,
-                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
-                                              ?.ToObject<bool?>() ?? true
-                        };
-
-                        _context.HRM_DesignationTbl.Add(desig);
-
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
-                        }
-
-                        return Ok(new
-                        {
-                            success = true,
-                            data = new
-                            {
-                                desig.Id,
-                                desig.DesignationName,
-                                desig.Designation_code,
-                                desig.IsActive
-                            },
-                            message = "Designation added successfully!"
-                        });
-                    }
-
-
-                // ---------------------------------------------------------
-                //                    AUTHORITY MATRIX
-                // ---------------------------------------------------------
-                case "AuthorityMatrix":
-                    {
-                        var name = payload.GetValue("AuthorityName", StringComparison.OrdinalIgnoreCase)
-                                          ?.ToString()?.Trim();
-
-                        if (string.IsNullOrWhiteSpace(name))
-                            return BadRequest(new { success = false, message = "Authority name is required." });
-
-                        if (await _context.HRM_AuthorityMatrixTbl
-                            .AnyAsync(a => a.AuthorityName.ToLower() == name.ToLower()))
-                            return BadRequest(new { success = false, message = "Authority already exists." });
-
-                        var nextCode = await GenerateNextCode(
-                            _context.HRM_AuthorityMatrixTbl.Select(x => x.Authority_code)
-                        );
-
-                        var auth = new HRM_AuthorityMatrixTbl
-                        {
-                            AuthorityName = name,
-                            Authority_code = nextCode,
-                            IsSelected = payload.GetValue("IsSelected", StringComparison.OrdinalIgnoreCase)
-                                                ?.ToString() ?? "No",
-                            IsActive = payload.GetValue("isActive", StringComparison.OrdinalIgnoreCase)
-                                              ?.ToObject<bool?>() ?? true
-                        };
-
-                        _context.HRM_AuthorityMatrixTbl.Add(auth);
-
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            return StatusCode(500, new { success = false, message = "DB Save Error: " + ex.Message });
-                        }
-
-                        return Ok(new
-                        {
-                            success = true,
-                            data = new
-                            {
-                                auth.Id,
-                                auth.AuthorityName,
-                                auth.Authority_code,
-                                auth.IsSelected,
-                                auth.IsActive
-                            },
-                            message = "Authority added successfully!"
-                        });
-                    }
-
-
-                default:
-                    return BadRequest(new { success = false, message = "Invalid type." });
-            }
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { success = false, message = "Server error: " + ex.Message });
-        }
-    }
-
-
-
-    // Helper to generate next code
-    // Helper to generate next code
-    private async Task<string> GenerateNextCode(IQueryable<string> existingCodesQuery)
-    {
-        var existingCodes = await existingCodesQuery.ToListAsync();
-
-        var numbers = existingCodes
-            .Select(c =>
-            {
-                var digits = new string(c?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
-                return int.TryParse(digits, out var n) ? n : 0;
-            })
-            .Where(n => n > 0)
-            .ToList();
-
-        int next;
-        if (!numbers.Any())
-            next = 1;
-        else
-            next = numbers.Max() + 1;
-
-        var nextCode = next.ToString("D2"); // 01, 02, 03...
-
-        Console.WriteLine($"Generated next code: {nextCode}"); // log to console
-        return nextCode;
-    }
-
-
-
-
-
-
-
-    [HttpPut("{type}/{id}")]
-    public async Task<IActionResult> Update(string type, int id, [FromBody] object payload)
-    {
-        if (payload == null) return BadRequest("Invalid data");
-
-        JObject j;
-        try
-        {
-            j = JObject.Parse(payload.ToString());
-        }
-        catch
-        {
-            return BadRequest("Invalid JSON payload");
-        }
+            return BadRequest("Invalid payload");
 
         switch (type)
         {
+            // ===================== DEPARTMENT =====================
             case "Department":
                 {
-                    var dept = await _context.HRM_DepartmentTbl.FindAsync(id);
+                    var name = payload["DeptName"]?.ToString()?.Trim();
+                    if (string.IsNullOrEmpty(name))
+                        return BadRequest("DeptName required");
+
+                    if (await _context.HRM_Department.AnyAsync(x => x.DeptName.ToLower() == name.ToLower()))
+                        return BadRequest("Department already exists");
+
+                    var code = await GenerateNextCode(
+                        _context.HRM_Department.Select(x => x.DeptCode)
+                    );
+
+                    var dept = new HRM_Department
+                    {
+                        DeptName = name,
+                        DeptCode = code,
+                        IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+                        CreatedDate = DateTime.Now,
+                        CreatedBy = 1
+                    };
+
+                    _context.HRM_Department.Add(dept);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(dept);
+                }
+
+            // ===================== DESIGNATION =====================
+            case "Designation":
+                {
+                    var name = payload["DesignationName"]?.ToString()?.Trim();
+                    if (string.IsNullOrEmpty(name))
+                        return BadRequest("DesignationName required");
+
+                    if (await _context.HRM_Designation.AnyAsync(x => x.DesignationName.ToLower() == name.ToLower()))
+                        return BadRequest("Designation already exists");
+
+                    var code = await GenerateNextCode(
+                        _context.HRM_Designation.Select(x => x.DesignationCode)
+                    );
+
+                    var desig = new HRM_Designation
+                    {
+                        DesignationName = name,
+                        DesignationCode = code,
+                        IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+                        CreatedDate = DateTime.Now,
+                        CreatedBy = 1
+                    };
+
+                    _context.HRM_Designation.Add(desig);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(desig);
+                }
+
+            // ===================== AUTHORITY MATRIX =====================
+            case "AuthorityMatrix":
+                {
+                    var name = payload["AuthorityMatrixName"]?.ToString()?.Trim();
+                    if (string.IsNullOrEmpty(name))
+                        return BadRequest("AuthorityMatrixName required");
+
+                    if (await _context.HRM_AuthorityMatrix.AnyAsync(x => x.AuthorityMatrixName.ToLower() == name.ToLower()))
+                        return BadRequest("Authority already exists");
+
+                    var code = await GenerateNextCode(
+                        _context.HRM_AuthorityMatrix.Select(x => x.AuthorityMatrixCode)
+                    );
+
+                    var auth = new HRM_AuthorityMatrix
+                    {
+                        AuthorityMatrixName = name,
+                        AuthorityMatrixCode = code,
+                        IsSelected = payload["IsSelected"]?.ToObject<bool>() ?? false,
+                        IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+                        CreatedDate = DateTime.Now,
+                        CreatedBy = 1
+                    };
+
+                    _context.HRM_AuthorityMatrix.Add(auth);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(auth);
+                }
+
+            default:
+                return BadRequest("Invalid type");
+        }
+    }
+    private async Task<int> GenerateNextCode(IQueryable<int> codes)
+    {
+        var maxCode = await codes.AnyAsync()
+            ? await codes.MaxAsync()
+            : 0;
+
+        return maxCode + 1;
+    }
+
+
+
+
+
+    
+    [HttpPut("{type}/{id}")]
+    public async Task<IActionResult> Update(string type, int id, [FromBody] JObject payload)
+    {
+        switch (type)
+        {
+            // ===================== DEPARTMENT =====================
+            case "Department":
+                {
+                    var dept = await _context.HRM_Department.FindAsync(id);
                     if (dept == null) return NotFound();
 
-                    // Update name if present
-                    var newName = j["DepartmentName"]?.ToString();
-                    if (!string.IsNullOrWhiteSpace(newName)) dept.DepartmentName = newName.Trim();
+                    if (payload["DeptName"] != null)
+                        dept.DeptName = payload["DeptName"].ToString().Trim();
 
-                    // Update isActive if present (accept both "isActive" and "IsActive")
-                    if (j.TryGetValue("isActive", StringComparison.OrdinalIgnoreCase, out var isActiveToken))
-                    {
-                        dept.IsActive = isActiveToken.ToObject<bool>();
-                    }
+                    if (payload["IsActive"] != null)
+                        dept.IsActive = payload["IsActive"].ToObject<bool>();
+
+                    dept.UpdatedDate = DateTime.Now;
+                    dept.UpdatedBy = 1;
 
                     await _context.SaveChangesAsync();
                     return Ok(dept);
                 }
 
+            // ===================== DESIGNATION =====================
             case "Designation":
                 {
-                    var desig = await _context.HRM_DesignationTbl.FindAsync(id);
+                    var desig = await _context.HRM_Designation.FindAsync(id);
                     if (desig == null) return NotFound();
 
-                    var newName = j["DesignationName"]?.ToString();
-                    if (!string.IsNullOrWhiteSpace(newName)) desig.DesignationName = newName.Trim();
+                    if (payload["DesignationName"] != null)
+                        desig.DesignationName = payload["DesignationName"].ToString().Trim();
 
-                    if (j.TryGetValue("isActive", StringComparison.OrdinalIgnoreCase, out var isActiveToken))
-                    {
-                        desig.IsActive = isActiveToken.ToObject<bool>();
-                    }
+                    if (payload["IsActive"] != null)
+                        desig.IsActive = payload["IsActive"].ToObject<bool>();
+
+                    desig.UpdatedDate = DateTime.Now;
+                    desig.UpdatedBy = 1;
 
                     await _context.SaveChangesAsync();
                     return Ok(desig);
                 }
 
+            // ===================== AUTHORITY MATRIX =====================
             case "AuthorityMatrix":
                 {
-                    var auth = await _context.HRM_AuthorityMatrixTbl.FindAsync(id);
+                    var auth = await _context.HRM_AuthorityMatrix.FindAsync(id);
                     if (auth == null) return NotFound();
 
-                    var newName = j["Authority_name"]?.ToString();
-                    if (!string.IsNullOrWhiteSpace(newName)) auth.Authority_name = newName.Trim();
+                    if (payload["AuthorityMatrixName"] != null)
+                        auth.AuthorityMatrixName = payload["AuthorityMatrixName"].ToString().Trim();
 
-                    if (j.TryGetValue("IsSelected", StringComparison.OrdinalIgnoreCase, out var isSelectedToken))
-                    {
-                        auth.IsSelected = isSelectedToken.ToString();
-                    }
+                    if (payload["IsSelected"] != null)
+                        auth.IsSelected = payload["IsSelected"].ToObject<bool>();
 
-                    if (j.TryGetValue("isActive", StringComparison.OrdinalIgnoreCase, out var isActiveToken))
-                    {
-                        auth.IsActive = isActiveToken.ToObject<bool>();
-                    }
+                    if (payload["IsActive"] != null)
+                        auth.IsActive = payload["IsActive"].ToObject<bool>();
+
+                    auth.UpdatedDate = DateTime.Now;
+                    auth.UpdatedBy = 1;
 
                     await _context.SaveChangesAsync();
                     return Ok(auth);
@@ -391,53 +287,98 @@ public class HrmMasterController : ControllerBase
                 return BadRequest("Invalid type");
         }
     }
-    // ================= GET ALL ORGANIZATION =================
     [HttpGet("Organization")]
     public IActionResult GetOrganization([FromQuery] string status = "active")
     {
-        var data = _context.HRM_OganizationTbl.AsQueryable();
-
-        if (status.ToLower() == "active")
-            data = data.Where(x => (bool)x.IsActive);
-        else if (status.ToLower() == "inactive")
-            data = data.Where(x => (bool)!x.IsActive);
-
-        var result = data.Select(x => new
+        try
         {
-            x.Id,
-            x.Department,
-            x.Position,
-            x.Level,
-            x.Qualification,
-            x.Experience,
-            x.Industry,
-            x.Country,
-            x.State,
-            x.City,
-            x.Currency,
-            BudgetMin = x.Minimum_Budget,
-            BudgetMax = x.Maximum_Budget,
-            OnboardDate = x.Onboard_Date.HasValue ? x.Onboard_Date.Value.ToString("yyyy-MM-dd") : null,
-            x.IsActive
-        }).ToList();
+            var result =
+                (from o in _context.HRM_Organization
 
-        return Ok(result);
+                 join d in _context.HRM_Department
+                     on o.DeptId equals d.DeptId into deptJoin
+                 from d in deptJoin.DefaultIfEmpty()
+
+                 join des in _context.HRM_Designation
+                     on o.DesignationId equals des.DesignationId into desJoin
+                 from des in desJoin.DefaultIfEmpty()
+
+                 join ind in _context.Master_Industry
+                     on o.IndustryId equals ind.IndustryId into indJoin
+                 from ind in indJoin.DefaultIfEmpty()
+
+                 join c in _context.Master_Country
+                     on o.CountryId equals c.country_id into countryJoin
+                 from c in countryJoin.DefaultIfEmpty()
+
+                 join s in _context.Master_State
+                     on o.StateId equals s.state_id into stateJoin
+                 from s in stateJoin.DefaultIfEmpty()
+
+                 join city in _context.Master_City
+                     on o.CityId equals city.city_id into cityJoin
+                 from city in cityJoin.DefaultIfEmpty()
+
+                 join cur in _context.Master_Currency
+                     on o.CurrencyId equals cur.CurrencyId into currencyJoin
+                 from cur in currencyJoin.DefaultIfEmpty()
+
+                 where status == "active" ? o.IsActive :
+                       status == "inactive" ? !o.IsActive : true
+
+                 select new
+                 {
+                     o.OrganizationId,
+
+                     // IDs (for edit / delete)
+                     o.DeptId,
+                     o.DesignationId,
+                     o.IndustryId,
+                     o.CountryId,
+                     o.StateId,
+                     o.CityId,
+                     o.CurrencyId,
+
+                     // DISPLAY TEXT
+                     DeptName = d != null ? d.DeptName : "",
+                     DesignationName = des != null ? des.DesignationName : "",
+                     IndustryName = ind != null ? ind.IndustryName : "",
+                     CountryName = c != null ? c.country_name : "",
+                     StateName = s != null ? s.state_name : "",
+                     CityName = city != null ? city.city_name : "",
+                     CurrencyName = cur != null ? cur.Currency_Code : "",
+
+                     o.Level,
+                     Qualification = o.Qualification ?? "",
+                     Experience = o.Experience ?? "",
+                     o.MinBudget,
+                     o.MaxBudget,
+                     o.OnBoardDate,
+                     o.IsActive
+                 }).ToList();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
+
 
     // ================= PUT TO TOGGLE ACTIVE/INACTIVE =================
     [HttpPut("Organization/{id}")]
     public IActionResult ToggleOrganizationStatus(int id, [FromBody] dynamic payload)
     {
-        var org = _context.HRM_OganizationTbl.FirstOrDefault(x => x.Id == id);
-        if (org == null) return NotFound("Organization record not found");
+        var org = _context.HRM_Organization.FirstOrDefault(x => x.OrganizationId == id);
+        if (org == null) return NotFound("Record not found");
 
-        bool activate = payload?.isActive ?? true;
-        org.IsActive = activate;
-
+        org.IsActive = payload?.isActive ?? true;
         _context.SaveChanges();
 
-        return Ok(new { message = activate ? "Activated successfully" : "Deactivated successfully" });
+        return Ok(new { message = "Status updated" });
     }
+
 
     [HttpPost("OrgChartWithBudget")]
     public IActionResult OrgChartWithBudget(
@@ -448,34 +389,90 @@ public class HrmMasterController : ControllerBase
 
         foreach (var job in model)
         {
-            var entity = new HRM_OganizationTbl
+            var entity = new HRM_Organization
             {
-                Department = job.Department,
-                Position = job.Position,
+                DeptId = _context.HRM_Department
+                            .Where(x => x.DeptName == job.Department)
+                            .Select(x => x.DeptId)
+                            .FirstOrDefault(),
+
+                DesignationId = _context.HRM_Designation
+                            .Where(x => x.DesignationName == job.Position)
+                            .Select(x => x.DesignationId)
+                            .FirstOrDefault(),
+
+                IndustryId = _context.Master_Industry
+                            .Where(x => x.IndustryName == job.Industry)
+                            .Select(x => x.IndustryId)
+                            .FirstOrDefault(),
+                CountryId = _context.Master_Country
+    .Where(x => x.country_name.Trim().ToLower() == job.Country.Trim().ToLower())
+    .Select(x => x.country_id)
+    .FirstOrDefault(),
+
+                StateId = _context.Master_State
+    .Where(x => x.state_name.Trim().ToLower() == job.State.Trim().ToLower())
+    .Select(x => x.state_id)
+    .FirstOrDefault(),
+
+                CityId = _context.Master_City
+    .Where(x => x.city_name.Trim().ToLower() == job.City.Trim().ToLower())
+    .Select(x => x.city_id)
+    .FirstOrDefault(),
+
+
+                CurrencyId = _context.Master_Currency
+                            .Where(x => x.Currency_Code == job.Currency)
+                            .Select(x => x.CurrencyId)
+                            .FirstOrDefault(),
+
                 Level = job.Level,
                 Qualification = job.Qualification,
                 Experience = job.Experience,
-                Industry = job.Industry,
-                Country = job.Country,
-                State = job.State,
-                City = job.City,
-                Currency = job.Currency,
-                Minimum_Budget = job.BudgetMin,
-                Maximum_Budget = job.BudgetMax,
-                Onboard_Date = job.OnboardDate.HasValue
-    ? DateOnly.FromDateTime(job.OnboardDate.Value)
-    : null,
-                Status = "Vacant",
-                // CreatedDate = DateTime.Now
-                IsActive = true
+                MinBudget = job.BudgetMin,
+                MaxBudget = job.BudgetMax,
+                OnBoardDate = job.OnboardDate,
+                IsActive = true,
+                CreatedDate = DateTime.Now,
+                CreatedBy = 1
             };
 
-            _context.HRM_OganizationTbl.Add(entity);
+            _context.HRM_Organization.Add(entity);
         }
 
         _context.SaveChanges();
-
         return Ok(new { message = "Saved successfully" });
     }
+    [HttpPut("OrganizationUpdate/{id}")]
+    public IActionResult UpdateOrganization(
+       int id,
+       [FromBody] OrganizationUpdateDto dto
+   )
+    {
+        var org = _context.HRM_Organization
+            .FirstOrDefault(x => x.OrganizationId == id);
+
+        if (org == null)
+            return NotFound("Organization not found");
+
+        org.DeptId = dto.DeptId;
+        org.DesignationId = dto.DesignationId;
+        org.Level = dto.Level;
+        org.Qualification = dto.Qualification;
+        org.Experience = dto.Experience;
+        org.IndustryId = dto.IndustryId;
+        org.CountryId = dto.CountryId;
+        org.StateId = dto.StateId;
+        org.CityId = dto.CityId;
+        org.CurrencyId = dto.CurrencyId;
+        org.MinBudget = dto.MinBudget;
+        org.MaxBudget = dto.MaxBudget;
+        org.OnBoardDate = dto.OnBoardDate;
+
+        _context.SaveChanges();
+
+        return Ok(new { message = "Organization updated successfully" });
+    }
+
 
 }

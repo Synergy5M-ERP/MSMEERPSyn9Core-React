@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Models.Accounts;
+using SwamiSamarthSyn8.Models.HRM;
+using SwamiSamarthSyn8.Models.Masters;
 
 namespace SwamiSamarthSyn8.Data;
 
@@ -22,6 +24,7 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<AccountCreditNote> AccountCreditNote { get; set; }
     public virtual DbSet<AccountCreditNoteDetails> AccountCreditNoteDetails { get; set; }
     public virtual DbSet<AccountSale> AccountSale { get; set; }
+    public virtual DbSet<AccountPaymentAllocation> AccountPaymentAllocation { get; set; }
     public virtual DbSet<AccountSaleDetails> AccountSaleDetail { get; set; }
     public virtual DbSet<AccountPaymentMode> AccountPaymentMode { get; set; }
     public virtual DbSet<AccountStatus> AccountStatus { get; set; }
@@ -42,7 +45,26 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<AccountGRN> AccountGRN { get; set; }
     public virtual DbSet<AccountBankDetails> AccountBankDetails { get; set; }
     //---------Accounts-------//
+    //---------Master Tables-------//
 
+    public virtual DbSet<Master_Category> Master_Category { get; set; }
+    public virtual DbSet<Master_Subcategory> Master_Subcategory { get; set; }
+    public virtual DbSet<Master_Industry> Master_Industry { get; set; }
+
+    public virtual DbSet<Master_City> Master_City { get; set; }
+    public virtual DbSet<Master_State> Master_State { get; set; }
+    public virtual DbSet<Master_Country> Master_Country { get; set; }
+    public virtual DbSet<Master_Continent> Master_Continent { get; set; }
+
+    public virtual DbSet<Master_Source> Master_Source { get; set; }
+    public virtual DbSet<Master_MergeLocation> Master_MergeLocation { get; set; }
+
+    public virtual DbSet<Master_Currency> Master_Currency { get; set; }
+    public virtual DbSet<Master_UOM> Master_UOM { get; set; }
+
+    public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
+    public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
+         //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
     public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction{ get; set; }
 
@@ -65,6 +87,7 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<CountryTbl> CountryTbl { get; set; }
 
     public virtual DbSet<Currencytbl> Currencytbl { get; set; }
+    public virtual DbSet<HRM_Organization> HRM_Organization { get; set; }
 
     public virtual DbSet<Demo_tbl> Demo_tbl { get; set; }
 
@@ -80,7 +103,14 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<HRM_DailywagesSalary> HRM_DailywagesSalarie { get; set; }
 
-    public virtual DbSet<HRM_DepartmentTbl> HRM_DepartmentTbl { get; set; }
+    public DbSet<HRM_Department> HRM_Department { get; set; }
+    public DbSet<HRM_Designation> HRM_Designation { get; set; }
+    public DbSet<HRM_User> HRM_User { get; set; }
+    public DbSet<HRM_Admin> HRM_Admin { get; set; }
+    public DbSet<HRM_Employee> HRM_Employee { get; set; }
+    public DbSet<HRM_EmployerDetails> HRM_EmployerDetails { get; set; }
+    public DbSet<HRM_EmployeeSalaryDetails> HRM_EmployeeSalaryDetails { get; set; }
+    public DbSet<HRM_AuthorityMatrix> HRM_AuthorityMatrix { get; set; }
 
     public virtual DbSet<HRM_DesignationTbl> HRM_DesignationTbl { get; set; }
 
@@ -98,7 +128,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<HRM_OrganizationDataTbl> HRM_OrganizationDataTbl { get; set; }
 
-    public virtual DbSet<HRM_UserTbl> HRM_UserTbl { get; set; }
+    //public virtual DbSet<HRM_UserTbl> HRM_UserTbl { get; set; }
 
     public virtual DbSet<Import_Price_Calculation> Import_Price_Calculation { get; set; }
 
@@ -240,7 +270,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=synergy-swamisamarth.database.windows.net;Database=SwamiSamarthDb;User ID=swamisamarthsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;");
+        optionsBuilder.UseSqlServer("Server=tcp:synergy-msmecore.database.windows.net,1433;Initial Catalog=MsmeERPDb;Persist Security Info=False;User ID=synergymsmecoresyn9;Password=Synergy@786;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

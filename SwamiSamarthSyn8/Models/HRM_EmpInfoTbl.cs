@@ -141,8 +141,7 @@ public partial class HRM_EmpInfoTbl
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Total_Month { get; set; }
 
-    [Column("Annual_CTC(Rs)", TypeName = "decimal(18, 2)")]
-    public decimal? Annual_CTC_Rs_ { get; set; }
+    
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Current_CTC { get; set; }
@@ -264,4 +263,11 @@ public partial class HRM_EmpInfoTbl
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Monthly_Salary { get; set; }
+    public bool? IsActive { get; set; }
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal? Annual_CTC_Rs { get; set; }
+
+
+
+
 }

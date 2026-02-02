@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;   // <-- change namespace if needed
 using SwamiSamarthSyn8.Models; // <-- change namespace if needed
+using SwamiSamarthSyn8.Models.HRM;
+using System.Net;
 using System.Net.Mail;
 
 namespace SwamiSamarthSyn8.Controllers.HRM
@@ -19,103 +21,203 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             _context = db;
         }
         [HttpPost("SaveAddEmployee")]
-        public async Task<IActionResult> SaveEmployee([FromForm] Employee empDto)
+        public async Task<IActionResult> SaveEmployee([FromForm] Employee dto)
         {
-            if (empDto == null)
-                return BadRequest("Invalid employee data");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
-                // Generate Employee Code
-                int maxId = await _context.HRM_EmpInfoTbl.MaxAsync(e => (int?)e.Id) ?? 0;
-                int nextId = maxId + 1;
-                string empCode = empDto.Date_Of_Joing != DateTime.MinValue
-                    ? $"{empDto.Date_Of_Joing:yy}/{nextId:D5}"
-                    : "N/A";
+                // =========================
+                // 🔹 GENERATE EMP CODE
+                // =========================
+                int maxId = await _context.HRM_Employee
+                    .MaxAsync(e => (int?)e.EmployeeId) ?? 0;
 
-                // Map DTO to Entity
-                var empInfo = new HRM_EmpInfoTbl
+                int nextId = maxId + 1;
+
+                string yearPart = dto.JoiningDate.HasValue
+                    ? dto.JoiningDate.Value.ToString("yy")
+                    : DateTime.Now.ToString("yy");
+
+                string empCode = $"{yearPart}/{nextId:D5}";
+
+                // =========================
+                // 1️⃣ HRM_Employee
+                // =========================
+                var employee = new HRM_Employee
                 {
-                    Emp_Code = empCode,
-                    Name = empDto.Name,
-                    Surname = empDto.Surname,
-                    Middle_Name = empDto.Middle_Name,
-                    FullName = $"{empDto.Name} {empDto.Surname}",
-                    Gender = empDto.Gender,
-                    DOB = empDto.DOB.HasValue
-    ? DateOnly.FromDateTime(empDto.DOB.Value)
-    : null,
-                    Blood_Group = empDto.Blood_Group,
-                    Email = string.IsNullOrEmpty(empDto.Email) ? "hrm@synergy5m.com" : empDto.Email,
-                    Contact_NO = empDto.Contact_NO,
-                    Department = empDto.Department,
-                    Joining_Designation = empDto.Position,
-                    Country = empDto.SelectedCountryName,
-                    State = empDto.SelectedStateName,
-                    City = empDto.SelectedCityName,
-                    Date_Of_Joing = empDto.Date_Of_Joing.HasValue
-    ? DateOnly.FromDateTime(empDto.Date_Of_Joing.Value)
-    : null,
-                    SalaryStatus = empDto.SalaryStatus,
-                    Status = "Vacant",
-                    Joining_CTC_Breakup = empDto.SelectedCTC == "joining" ? "Joining CTC Breakup" : null,
-                    Current_CTC_Breakup = empDto.SelectedCTC == "current" ? "Current CTC Breakup" : null
-                    // Map other fields as required...
+                    EmpCode = empCode,
+                    Title = dto.Title,
+                    FullName = $"{dto.FullName}",
+                    Gender = dto.Gender,
+                    DOB = dto.DOB,
+                    BloodGroup = dto.BloodGroup,
+                    Email = dto.Email,
+                    ContactNo = dto.ContactNo,
+                    MaritualStatus = dto.MaritualStatus,
+                    Address = dto.Address,
+                    PermanentAddress = dto.PermanentAddress,
+                    CountryId = dto.CountryId,
+                    StateId = dto.StateId,
+                    CityId = dto.CityId,
+                    Qualification = dto.Qualification,
+                    AadharNo = dto.AadharNo,
+                    PanNo = dto.PanNo,
+                    BankName = dto.BankName,
+                    BankAccountNo = dto.BankAccountNo,
+                    IFSCCode = dto.IFSCCode,
+                    Nominee = dto.Nominee,
+                    Relation = dto.Relation,
+                    UANNo = dto.UANNo,
+                    EPFONo = dto.EPFONo,
+
+                    PreviousExperience = dto.PreviousExperience,
+                    PreviousIndustry = dto.PreviousIndustry,
+                    DeptId = dto.DeptId,
+                    DesignationId = dto.DesignationId,
+                    AuthorityMatrixId = dto.AuthorityMatrixId,   // ✅ IMPORTANT
+
+                    CreatedDate = DateTime.Now,
+                    IsActive = true
                 };
 
-                // Save Aadhaar/ PAN file to Azure
-                if (empDto.AdhaarFile != null && empDto.AdhaarFile.Length > 0)
+                _context.HRM_Employee.Add(employee);
+                await _context.SaveChangesAsync();
+
+                int employeeId = employee.EmployeeId;
+
+                // =========================
+                // 2️⃣ HRM_EmployerDetails
+                // =========================
+                var employer = new HRM_EmployerDetails
                 {
-                    string fileName = await UploadToAzure(empDto.AdhaarFile, empCode, "AadharPanCard");
-                    empInfo.Adhaarcard_PanCard = fileName;
+                    EmployeeId = employeeId,
+                    Category=dto.Category,
+                    JoiningDate = dto.JoiningDate,
+                    NoticePeriod = dto.NoticePeriod,
+                    WeeklyOff = dto.WeeklyOff,
+                    LeaveDate = dto.LeaveDate,
+                    RelievingDate = dto.RelievingDate,
+                    ShiftHours = dto.ShiftHours,
+                    OTcalculation = dto.OTcalculation,
+                    ESISNo = dto.ESISNo,
+                    PFContribution = dto.PFContribution,
+                    Currency = dto.Currency,
+                    PFNo = dto.PFNo,
+                    AuthorityLevel = dto.AuthorityLevel,
+                    DesignationId=dto.DesignationId,
+                    DeptId=dto.DeptId,
+                    CTC = dto.CTC
+                };
+
+                // 🔹 File Uploads
+                if (dto.AadharCardFile != null)
+                {
+                    var path = Path.Combine("Uploads", "Aadhar");
+                    Directory.CreateDirectory(path);
+
+                    var fileName = $"{Guid.NewGuid()}_{dto.AadharCardFile.FileName}";
+                    var fullPath = Path.Combine(path, fileName);
+
+                    using var stream = new FileStream(fullPath, FileMode.Create);
+                    await dto.AadharCardFile.CopyToAsync(stream);
+
+                    employer.AadharCardFile = fullPath;
                 }
 
-                _context.HRM_EmpInfoTbl.Add(empInfo);
-
-                // Update department status
-                var department = await _context.HRM_OganizationTbl.FirstOrDefaultAsync(d => d.Department == empDto.Department);
-                if (department != null)
+                if (dto.PancardNoFile != null)
                 {
-                    department.Status = "Filled";
-                    department.Employee_Name = empInfo.FullName;
-                    department.Emp_Code = empCode;
+                    var path = Path.Combine("Uploads", "PanCard");
+                    Directory.CreateDirectory(path);
+
+                    var fileName = $"{Guid.NewGuid()}_{dto.PancardNoFile.FileName}";
+                    var fullPath = Path.Combine(path, fileName);
+
+                    using var stream = new FileStream(fullPath, FileMode.Create);
+                    await dto.PancardNoFile.CopyToAsync(stream);
+
+                    employer.PancardNoFile = fullPath;
                 }
 
-                // Handle authority
-                var authorityIds = new List<int>();
-                var joiningAuthority = await _context.HRM_AuthorityMatrixTbl.FindAsync(empDto.JoiningAuthorityId);
-                var currentAuthority = await _context.HRM_AuthorityMatrixTbl.FindAsync(empDto.CurrentAuthorityId);
+                _context.HRM_EmployerDetails.Add(employer);
 
-                if (joiningAuthority != null)
+                // =========================
+                // 3️⃣ HRM_EmployeeSalaryDetails
+                // =========================
+                var salary = new HRM_EmployeeSalaryDetails
                 {
-                    empInfo.Joining_AuthorityLevel = joiningAuthority.AuthorityName;
-                    empInfo.AuthorityCode = joiningAuthority.Authority_code;
-                    authorityIds.Add(empDto.JoiningAuthorityId);
+                    EmployeeId = employeeId,
+                    MonthlyBasicSalary = dto.MonthlyBasicSalary,
+                    MonthlyGrossSalary = dto.MonthlyGrossSalary,
+                    DA = dto.DA,
+                    DailySalary = dto.DailySalary,
+                    MonthlySalary = dto.MonthlySalary,
+                    LeaveTravelAllowance = dto.LeaveTravelAllowance,
+                    AdditionalBenefits = dto.AdditionalBenefits,
+                    PerformanceIncentive = dto.PerformanceIncentive,
+                    PFContributionAmount = dto.PFContributionAmount,
+                    ESIC = dto.ESIC,
+                    StockOption = dto.StockOption,
+                    CarAllowance = dto.CarAllowance,
+                    MedicalAllowance = dto.MedicalAllowance,
+                    TotalDeduction = dto.TotalDeduction,
+                    HouseRentAllowance = dto.HouseRentAllowance,
+                    HourlySalary = dto.HourlySalary,
+                    AnnualIncrement = dto.AnnualIncrement,
+                    AnnualIncrementDate = dto.AnnualIncrementDate,
+                    TotalMonth = dto.TotalMonth,
+                    ProfessionalTax = dto.ProfessionalTax,
+                    AnnualCTC = dto.AnnualCTC
+                };
+
+                _context.HRM_EmployeeSalaryDetails.Add(salary);
+                var authority = await _context.HRM_AuthorityMatrix
+    .Where(a => a.AuthorityMatrixId == dto.AuthorityMatrixId && a.IsActive)
+    .Select(a => a.AuthorityMatrixName)
+    .FirstOrDefaultAsync();
+
+                if (string.IsNullOrEmpty(authority))
+                {
+                    throw new Exception("Invalid Authority Matrix selection");
                 }
 
-                if (currentAuthority != null)
+                // =========================
+                // 4️⃣ HRM_User (USERNAME = EMAIL)
+                // =========================
+                var user = new HRM_User
                 {
-                    empInfo.Current_Authoritylevel = currentAuthority.AuthorityName;
-                    empInfo.AuthorityCode = currentAuthority.Authority_code;
-                    authorityIds.Add(empDto.CurrentAuthorityId);
-                }
+                    UserName = dto.Email,
+                    Emp_Code = empCode,
+                    UserRole = authority,   // ✅ From AuthorityMatrix
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
+
+
+
+                _context.HRM_User.Add(user);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // Update User Authority and send mail
-                await UpdateUserAuthority(empInfo.Email, authorityIds, empInfo.Emp_Code);
-                SendMail(empInfo.Email, empInfo.Emp_Code, empInfo.FullName);
-
-                return Ok(new { message = "Employee saved successfully", Emp_Code = empInfo.Emp_Code });
+                return Ok(new
+                {
+                    message = "Employee & User created successfully",
+                    EmployeeId = employeeId,
+                    EmpCode = empCode,
+                    UserName = dto.Email
+                });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, "Error saving employee: " + ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
+
 
         private async Task<string> UploadToAzure(IFormFile file, string empCode, string type)
         {
@@ -135,49 +237,44 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             return result;
         }
 
-        private async Task UpdateUserAuthority(string email, List<int> authorityIds, string empCode)
+        private async Task UpdateUserAuthority(
+          string email,
+          List<int> authorityMatrixIds,
+          string empCode)
         {
-            var user = await _context.HRM_UserTbl.FirstOrDefaultAsync(u => u.username == email);
+            // 1️⃣ Pick highest priority authority (lowest code wins)
+            var authority = await _context.HRM_AuthorityMatrix
+                .Where(a => authorityMatrixIds.Contains(a.AuthorityMatrixId) && a.IsActive)
+                .OrderBy(a => a.AuthorityMatrixCode)
+                .FirstOrDefaultAsync();
+
+            if (authority == null)
+                return;
+
+            // 2️⃣ Get or create user
+            var user = await _context.HRM_User
+                .FirstOrDefaultAsync(u => u.UserName == email);
+
             if (user == null)
             {
-                user = new HRM_UserTbl
+                user = new HRM_User
                 {
-                    username = email,
-                    Emp_Code = empCode
+                    UserName = email,
+                    Emp_Code = empCode,
+                    CreatedDate = DateTime.Now,
+                    IsActive = true
                 };
-                _context.HRM_UserTbl.Add(user);
+                _context.HRM_User.Add(user);
             }
 
-            user.CHIEF_ADMIN = false;
-            user.SUPERADMIN = false;
-            user.DEPUTY_SUPERADMIN = false;
-            user.ADMIN = false;
-            user.DEPUTY_ADMIN = false;
-            user.USER = false;
+            // 3️⃣ Assign authority correctly
+            user.AuthorityMatrixId = authority.AuthorityMatrixId;
+            user.UserRole = authority.AuthorityMatrixName;
+            user.UpdatedDate = DateTime.Now;
 
-            var rolePriority = new Dictionary<int, string>
-            {
-                {1,"CHIEF_ADMIN"},{2,"SUPERADMIN"},{3,"DEPUTY_SUPERADMIN"},
-                {4,"ADMIN"},{5,"DEPUTY_ADMIN"},{6,"USER"}
-            };
-
-            string selectedRole = authorityIds.OrderBy(id => id)
-                                             .Select(id => rolePriority.ContainsKey(id) ? rolePriority[id] : null)
-                                             .FirstOrDefault(r => r != null);
-
-            switch (selectedRole)
-            {
-                case "CHIEF_ADMIN": user.CHIEF_ADMIN = true; break;
-                case "SUPERADMIN": user.SUPERADMIN = true; break;
-                case "DEPUTY_SUPERADMIN": user.DEPUTY_SUPERADMIN = true; break;
-                case "ADMIN": user.ADMIN = true; break;
-                case "DEPUTY_ADMIN": user.DEPUTY_ADMIN = true; break;
-                case "USER": user.USER = true; break;
-            }
-
-            user.UserRole = selectedRole;
             await _context.SaveChangesAsync();
         }
+
 
         private void SendMail(string email, string empCode, string fullName)
         {
@@ -207,11 +304,63 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             }
             catch { /* Handle email errors */ }
         }
-    
-    [HttpGet("GetAllEmployees")]
+        [HttpGet("GetAllEmployees")]
         public async Task<IActionResult> GetAllEmployees()
         {
-            var employees = await _context.HRM_EmpInfoTbl.ToListAsync();
+            var employees = await (
+                from e in _context.HRM_Employee
+
+                    // 🔹 Employer Details
+                join ed in _context.HRM_EmployerDetails
+                    on e.EmployeeId equals ed.EmployeeId into edj
+                from ed in edj.DefaultIfEmpty()
+
+                    // 🔹 Salary
+                join s in _context.HRM_EmployeeSalaryDetails
+                    on e.EmployeeId equals s.EmployeeId into sj
+                from s in sj.DefaultIfEmpty()
+
+                    // 🔹 Department
+                join d in _context.HRM_Department
+                    on e.DeptId equals d.DeptId into dj
+                from d in dj.DefaultIfEmpty()
+
+                    // 🔹 Designation
+                join des in _context.HRM_Designation
+                    on e.DesignationId equals des.DesignationId into desj
+                from des in desj.DefaultIfEmpty()
+
+                    // 🔹 Authority Matrix
+                join a in _context.HRM_AuthorityMatrix
+                    on e.AuthorityMatrixId equals a.AuthorityMatrixId into aj
+                from a in aj.DefaultIfEmpty()
+                    // ✅ CITY JOIN
+                join c in _context.Master_City
+     on e.CityId equals c.city_id.ToString() into cj
+                from c in cj.DefaultIfEmpty()
+
+
+                select new EmployeeListVM
+                {
+                    EmployeeId = e.EmployeeId,
+
+                    EmpCode = e.EmpCode ?? "",
+                    FullName = e.FullName ?? "",
+                    Gender = e.Gender ?? "",
+                    ContactNo = e.ContactNo ?? "",
+                    DOB = e.DOB,
+
+                    DepartmentName = d != null ? d.DeptName : "",
+                    DesignationName = des != null ? des.DesignationName : "",
+                    AuthorityName = a != null ? a.AuthorityMatrixName : "",
+
+                    JoiningDate = ed != null ? ed.JoiningDate : null,
+                    MonthlySalary = s != null ? s.MonthlySalary ?? 0 : 0,
+
+                    City = e.CityId != null ? c.city_name: ""
+                }
+            ).ToListAsync();
+
             return Ok(employees);
         }
 
@@ -358,32 +507,31 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             return Ok(departments);
         }
         [HttpGet("vacant-designations")]
-        public async Task<IActionResult> GetVacantDesignationsByDepartment(
-      [FromQuery] string department)
+        public async Task<IActionResult> GetVacantDesignationsByDepartment([FromQuery] int deptId)
         {
-            if (string.IsNullOrWhiteSpace(department))
-                return BadRequest("Department is required");
+            if (deptId <= 0)
+                return BadRequest("Department Id is required");
 
-            department = department.Trim();
-
-            var designations = await _context.HRM_OganizationTbl
-                .Where(x =>
-                    x.IsActive == true &&
-                    x.Department != null &&
-                    x.Department.Trim() == department &&
-                    x.Status == "Vacant" &&          // ✅ IMPORTANT
-                    x.Position != null
-                )
-                .Select(x => new
+            var designations = await (
+                from org in _context.HRM_Organization
+                join des in _context.HRM_Designation
+                    on org.DesignationId equals des.DesignationId
+                where org.IsActive == true
+                      && des.IsActive == true
+                      && org.DeptId == deptId
+                select new
                 {
-                    id = x.Position_Code,
-                    designationName = x.Position
-                })
-                .Distinct()
-                .ToListAsync();
+                    id = des.DesignationId,
+                    designationName = des.DesignationName   // ✅ REAL NAME
+                }
+            )
+            .Distinct()
+            .ToListAsync();
 
             return Ok(designations);
         }
+
+
 
 
 
@@ -444,5 +592,148 @@ namespace SwamiSamarthSyn8.Controllers.HRM
 
             return Ok(new { success = true });
         }
+        
+        [HttpGet("GetEmployeeById/{employeeId:int}")]
+        public async Task<IActionResult> GetEmployeeById(int employeeId)
+        {
+            if (employeeId <= 0)
+                return BadRequest("Invalid EmployeeId");
+
+            // ================= EMPLOYEE =================
+            var employee = await _context.HRM_Employee
+                .AsNoTracking()
+                .Where(e => e.EmployeeId == employeeId)
+                .Select(e => new
+                {
+                    e.EmployeeId,
+                    e.EmpCode,
+                    e.Title,
+                    e.FullName,
+                    e.Gender,
+                    e.DOB,
+                    e.BloodGroup,
+                    e.Email,
+                    e.ContactNo,
+                    e.MaritualStatus,
+                    e.Address,
+                    e.PermanentAddress,
+                    e.CountryId,
+                    e.StateId,
+                    e.CityId,
+                    e.Pincode,
+                    e.Qualification,
+                    e.AadharNo,
+                    e.PanNo,
+                    e.BankName,
+                    e.BankAccountNo,
+                    e.IFSCCode,
+                    e.BankBranchName,
+                    e.Nominee,
+                    e.Relation,
+                    e.UANNo,
+                    e.EPFONo,
+                    e.PreviousExperience,
+                    e.PreviousIndustry,
+                    e.DeptId,
+                    e.DesignationId,
+                    e.AuthorityMatrixId,
+                    e.IsActive
+                })
+                .FirstOrDefaultAsync();
+
+            if (employee == null)
+                return NotFound("Employee not found");
+
+            // ================= EMPLOYER DETAILS =================
+            var employer = await _context.HRM_EmployerDetails
+                .AsNoTracking()
+                .Where(x => x.EmployeeId == employeeId)
+                .Select(x => new
+                {
+                    x.EmplDetailsId,
+                    x.EmployeeId,
+                    x.Category,
+                    x.JoiningDate,
+                    x.NoticePeriod,
+                    x.WeeklyOff,
+                    x.LeaveDate,
+                    x.RelievingDate,
+                    x.ShiftHours,
+                    x.DeptId,
+                    x.OTcalculation,
+                    x.ESISNo,
+                    x.PFContribution,
+                    x.Currency,
+                    x.PFNo,
+                    x.AuthorityLevel,
+                    x.DesignationId,
+                    x.CTC
+                })
+                .FirstOrDefaultAsync();
+
+            // ================= SALARY DETAILS =================
+            var salary = await _context.HRM_EmployeeSalaryDetails
+                .AsNoTracking()
+                .Where(x => x.EmployeeId == employeeId)
+                .Select(x => new
+                {
+                    x.SalaryDetailsId,
+                    x.MonthlyBasicSalary,
+                    x.MonthlyGrossSalary,
+                    x.DA,
+                    x.DailySalary,
+                    x.MonthlySalary,
+                    x.LeaveTravelAllowance,
+                    x.AdditionalBenefits,
+                    x.PerformanceIncentive,
+                    x.PFContributionAmount,
+                    x.ESIC,
+                    x.StockOption,
+                    x.CarAllowance,
+                    x.MedicalAllowance,
+                    x.TotalDeduction,
+                    x.HouseRentAllowance,
+                    x.HourlySalary,
+                    x.AnnualIncrement,
+                    x.AnnualIncrementDate,
+                    x.TotalMonth,
+                    x.ProfessionalTax,
+                    x.AnnualCTC
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(new
+            {
+                employee,
+                employer,
+                salary
+            });
+        }
+
+
+
+
+
+
+        [HttpPut("DeactivateEmployee/{*empCode}")]
+        public async Task<IActionResult> DeactivateEmployee(string empCode)
+        {
+            empCode = Uri.UnescapeDataString(empCode).Trim();
+
+            Console.WriteLine($"EmpCode received: '{empCode}'");
+
+            var emp = await _context.HRM_EmpInfoTbl
+                .FirstOrDefaultAsync(x => x.Emp_Code.Trim() == empCode);
+
+            if (emp == null)
+                return NotFound($"Employee with code '{empCode}' not found");
+
+            emp.IsActive = false;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Employee deactivated successfully" });
+        }
+
+
     }
 }

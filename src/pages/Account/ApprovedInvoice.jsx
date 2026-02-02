@@ -268,47 +268,59 @@ const handleSaveApproved = async () => {
       
       <div className="container-fluid">
         {/* Buyer Selection */}
-        <div className="Buyer-section mb-4">
-          <div className="row align-items-end">
-            <div className="col-md-6">
-              <label className="form-label fw-semibold mb-2">Select Buyer</label>
-              <select className="form-select form-select-lg"
-                value={selectedBuyer}
-                onChange={handleBuyerChange}>
-                <option value="">Choose Buyer...</option>
-                {Buyers.map(s => (
-                  <option key={s.buyerId} value={s.buyerId}>{s.buyerName}</option>
-                ))}
-              </select>
-            </div>
-            
-            {selectedBuyer && invoicesData.length > 0 && (
-              <div className="col-md-6 text-end">
-                <button
-                  className="btn btn-success btn-lg me-2"
-                  onClick={handleSaveApproved}
-                  disabled={saveLoading || getApprovedCount() === 0}
-                >
-                  {saveLoading ? (
-                    <>
-                      <Loader2 className="me-2 animate-spin" size={20} />
-                      Saving...
-                    </>
-                  ) : (
-                    <>Save</>
-                  )}
-                </button>
-                <button
-                  className="btn btn-secondary btn-lg"
-                  onClick={handleCancel}
-                  disabled={saveLoading}
-                >
-                  Cancel
-                </button>
+       <div className="Buyer-section mb-4">
+  {/* align-items-end ensures buttons align with the select box, not the label */}
+  <div className="row align-items-end">
+    
+    {/* Left Side: Select Dropdown */}
+    <div className="col-md-6">
+      <label className="form-label fw-semibold mb-2">Select Buyer</label>
+      <select 
+        className="form-select form-select-lg"
+        value={selectedBuyer}
+        onChange={handleBuyerChange}
+      >
+        <option value="">Choose Buyer...</option>
+        {Buyers.map(s => (
+          <option key={s.buyerId} value={s.buyerId}>{s.buyerName}</option>
+        ))}
+      </select>
+    </div>
+    
+    {/* Right Side: Buttons */}
+    {selectedBuyer && invoicesData.length > 0 && (
+      <div className="col-md-6">
+        {/* d-flex ensures the buttons stay horizontal within their column */}
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-success btn-lg px-4"
+            style={{ height: "48px" }} // Matches the height of form-select-lg
+            onClick={handleSaveApproved}
+            disabled={saveLoading || getApprovedCount() === 0}
+          >
+            {saveLoading ? (
+              <div className="d-flex align-items-center">
+                <Loader2 className="me-2 animate-spin" size={20} />
+                <span>Saving...</span>
               </div>
+            ) : (
+              "Save"
             )}
-          </div>
+          </button>
+          
+          <button
+            className="cancel-btn btn-lg px-4"
+            style={{ height: "48px" }}
+            onClick={handleCancel}
+            disabled={saveLoading}
+          >
+            Cancel
+          </button>
         </div>
+      </div>
+    )}
+  </div>
+</div>
 
         {/* Loading/Empty States */}
         {loading ? (

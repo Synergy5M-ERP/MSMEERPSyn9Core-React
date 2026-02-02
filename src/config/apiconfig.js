@@ -1,6 +1,6 @@
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-// const BASE_URL="https://localhost:7145/api"
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+const BASE_URL="https://localhost:7145/api"
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
@@ -99,7 +99,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
 
-
+VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,
   // Ledger: `${BASE_URL}/AccountLedger`,
   AllVendor: `${BASE_URL}/GetAllVendorsApi`,
@@ -149,7 +149,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   PR_EmployeeDetails: (empId) => `${BASE_URL}/PurchaseReq/employee/${empId}`,
 
   // Item endpoints
-  ItemList: `${BASE_URL}/PurchaseReq/items`,
+ 
   PR_ItemDetails: (itemId) => `${BASE_URL}/PurchaseReq/item/${itemId}`,
 
   // Specification/Grade endpoints
@@ -206,5 +206,26 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   ManualPRReport:`${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
   // Export Endpoint
   ExportPRByNumber:`${BASE_URL}/PurchaseReq/ExportByPR`,
-ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`
+ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`,
+
+
+
+//Get UOM
+ParametGetUOM: `${BASE_URL}/PlantSettingPara/GetUOM`,
+SaveMachine:`${BASE_URL}/Production/SaveMachine`,
+GetAllMachines:`${BASE_URL}/Production/GetAllMachines`,
+DeleteMachine:`${BASE_URL}/Production/DeleteMachine`,
+UpdateMachine:`${BASE_URL}/Production/UpdateMachineDetails`,
+GetLocation:`${BASE_URL}/Product/GetLocations`,
+Machinenames:`${BASE_URL}/Product/GetMachineNames/`,
+GetSONumber:`${BASE_URL}/Product/GetSONumbers`,
+Machinenames:`${BASE_URL}/Product/GetMachineNames`,
+MachineNumber:`${BASE_URL}/Product/GetMachineNumber`,
+MachineDetails:`${BASE_URL}/Product/GetMachineDetails`,
+OrderDetails:`${BASE_URL}/Product/GetSpecificOrderDetails`,
+SaveExtruderTemp:`${BASE_URL}/PlantSettingPara/SaveExtruderTemp`,
+UniqueItem:`${BASE_URL}/Product/GetUniqueItemNames`,
+Grade:`${BASE_URL}/Product/GetGradesByItem`,
+GetSONumber:`${BASE_URL}/Product/GetSONumbers`,
+GetSpecificOrderDetails:`${BASE_URL}/Product/GetSpecificOrderDetails`,
 };

@@ -21,7 +21,7 @@ const Sidebar = ({ selected, onSelect }) => {
 
   const menuItems = [
     { label: 'Dashboard', icon: <Dashboard />, key: 'Dashboard' },
-     { label: 'Master', icon: <RiMastercardFill />, key: 'Masters' },
+    //  { label: 'Master', icon: <RiMastercardFill />, key: 'Masters' },
     { label: 'Group Configuration', icon: <GroupAddRounded />, key: 'Group' },
    
     // { label: 'AccountVoucher Type', icon: <AccountBalanceTwoTone />, key: 'AccountVoucherType' },

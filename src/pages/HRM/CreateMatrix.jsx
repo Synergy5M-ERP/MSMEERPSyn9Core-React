@@ -258,7 +258,7 @@ const handleEdit = (matrix) => {
 <div className="mb-3 bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
 
   <div className="d-flex gap-3">
-    <label>
+    <label className="label-color">
       <input
         type="radio"
         name="mainView"
@@ -268,7 +268,7 @@ const handleEdit = (matrix) => {
       View Matrix
     </label>
 
-    <label>
+    <label className="label-color">
       <input
         type="radio"
         name="mainView"
@@ -280,7 +280,7 @@ const handleEdit = (matrix) => {
   </div>
 
   <div className="d-flex gap-3">
-    <label>
+    <label className="label-color">
       <input
         type="radio"
         name="statusFilter"
@@ -290,7 +290,7 @@ const handleEdit = (matrix) => {
       Active
     </label>
 
-    <label>
+    <label className="label-color">
       <input
         type="radio"
         name="statusFilter"
@@ -310,9 +310,9 @@ const handleEdit = (matrix) => {
           {/* Authority Matrix Of */}
           <h6 className="bg-warning p-2 mb-3">Authority Matrix Of</h6>
           <div className="row mb-3">
-            <div className="col-md-3">
-              <label>Select Employee</label>
-              <select className="form-control" onChange={handleEmployeeSelect} value={form.employeeId}>
+            <div className="col">
+              <label className="label-color">Employee</label>
+              <select className="select-field-style" onChange={handleEmployeeSelect} value={form.employeeId}>
                 <option value="">Select Employee</option>
                 {employeeList.map((emp) => (
                   <option key={emp.id} value={emp.id}>
@@ -321,52 +321,54 @@ const handleEdit = (matrix) => {
                 ))}
               </select>
             </div>
-            <div className="col-md-3"><label>Employee Code</label><input className="form-control" value={form.empCode} readOnly /></div>
-            <div className="col-md-3"><label>Department</label><input className="form-control" value={form.department} readOnly /></div>
-            <div className="col-md-3"><label>Department Code</label><input className="form-control" value={form.departmentCode} readOnly /></div>
+            <div className="col"><label className="label-color">Employee Code</label><input className="select-field-style" value={form.empCode} readOnly /></div>
+            <div className="col"><label className="label-color">Department</label><input className="select-field-style" value={form.department} readOnly /></div>
+            <div className="col"><label className="label-color">Department Code</label><input className="select-field-style" value={form.departmentCode} readOnly /></div>
+              <div className="col"><label className="label-color">Designation</label><input className="select-field-style" value={form.designation} readOnly /></div>
+           
           </div>
 
           <div className="row mb-3">
-            <div className="col-md-3"><label>Designation</label><input className="form-control" value={form.designation} readOnly /></div>
-            <div className="col-md-3"><label>Designation Code</label><input className="form-control" value={form.designationCode} readOnly /></div>
-            <div className="col-md-3"><label>Authority</label><input className="form-control" value={form.authority} readOnly /></div>
-            <div className="col-md-3"><label>Authority Code</label><input className="form-control" value={form.authorityCode} readOnly /></div>
+           <div className="col"><label className="label-color">Designation Code</label><input className="select-field-style" value={form.designationCode} readOnly /></div>
+            <div className="col"><label className="label-color">Authority</label><input className="select-field-style" value={form.authority} readOnly /></div>
+            <div className="col"><label className="label-color">Authority Code</label><input className="select-field-style" value={form.authorityCode} readOnly /></div>
+            <div className="col"><label className="label-color">Email</label><input className="select-field-style" value={form.email} readOnly /></div>
           </div>
 
-          <div className="row mb-3"><div className="col-md-3"><label>Email</label><input className="form-control" value={form.email} readOnly /></div></div>
 
           {/* Reporting To */}
           <h6 className="bg-warning p-2 mt-4 mb-3">Reporting To</h6>
           <div className="row mb-3">
-            <div className="col-md-3">
-              <label>Reporting Employee</label>
-              <select className="form-control" onChange={handleReportingSelect} value={form.reportingEmployeeId}>
+            <div className="col">
+              <label className="label-color">Reporting Employee</label>
+              <select className="select-field-style" onChange={handleReportingSelect} value={form.reportingEmployeeId}>
                 <option value="">Select Employee</option>
                 {reportingList.map((emp) => (
                   <option key={emp.id} value={emp.id}>{emp.name}</option>
                 ))}
               </select>
             </div>
-            <div className="col-md-3"><label>Employee Code</label><input className="form-control" value={form.reportingEmpCode} readOnly /></div>
-            <div className="col-md-3"><label>Rp Department</label><input className="form-control" value={form.rpDepartment} readOnly /></div>
-            <div className="col-md-3"><label>Rp Department Code</label><input className="form-control" value={form.rpDepartmentCode} readOnly /></div>
+            <div className="col"><label className="label-color">Employee Code</label><input className="select-field-style" value={form.reportingEmpCode} readOnly /></div>
+            <div className="col"><label className="label-color">Rp Department</label><input className="select-field-style" value={form.rpDepartment} readOnly /></div>
+            <div className="col"><label className="label-color">Rp Department Code</label><input className="select-field-style" value={form.rpDepartmentCode} readOnly /></div>
+             <div className="col"><label className="label-color">Rp Designation</label><input className="select-field-style" value={form.rpDesignation} readOnly /></div>
+           
           </div>
 
           <div className="row mb-3">
-            <div className="col-md-3"><label>Rp Designation</label><input className="form-control" value={form.rpDesignation} readOnly /></div>
-            <div className="col-md-3"><label>Rp Designation Code</label><input className="form-control" value={form.rpDesignationCode} readOnly /></div>
-            <div className="col-md-3"><label>Rp Authority</label><input className="form-control" value={form.rpAuthority} readOnly /></div>
-            <div className="col-md-3"><label>Rp Authority Code</label><input className="form-control" value={form.rpAuthorityCode} readOnly /></div>
+            <div className="col"><label className="label-color">Rp Designation Code</label><input className="select-field-style" value={form.rpDesignationCode} readOnly /></div>
+            <div className="col"><label className="label-color">Rp Authority</label><input className="select-field-style" value={form.rpAuthority} readOnly /></div>
+            <div className="col"><label className="label-color">Rp Authority Code</label><input className="select-field-style" value={form.rpAuthorityCode} readOnly /></div>
+              <div className="col"><label className="label-color">Email</label><input className="select-field-style" value={form.reportingEmail} readOnly /></div>
+            <div className="col"><label className="label-color">Matrix Code</label><input className="select-field-style" value={form.matrixCode} readOnly /></div>
+       
           </div>
 
-          <div className="row mb-4">
-            <div className="col-md-3"><label>Email</label><input className="form-control" value={form.reportingEmail} readOnly /></div>
-            <div className="col-md-3"><label>Matrix Code</label><input className="form-control" value={form.matrixCode} readOnly /></div>
-          </div>
+          
 
-          <div className="text-center mb-4">
-            <button type="submit" className="btn btn-success px-5 mr-2">{editId ? "Update" : "Create"}</button>
-            <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancel</button>
+         <div className="d-flex gap-2  mb-5" style={{alignItems:"center"}}>
+            <button type="submit" className="save-btn">{editId ? "Update" : "Create"}</button>
+            <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
           </div>
         </form>
       )}

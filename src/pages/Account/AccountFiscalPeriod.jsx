@@ -230,7 +230,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
         <div className="col-lg-5 mb-4">
           <div className="p-4 bg-white rounded shadow-sm">
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 Fiscal Period Name  <span style={{ color: 'red' }}>*</span>
               </label>
               <input
@@ -244,13 +244,13 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
 
             <div className="row mb-3">
               <div className="col-6">
-                <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <label className="label-color">
                   Start Date  <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input type="date" className="form-control" value={FiscalPeriodStartDate} onChange={(e) => setFiscalPeriodStartDate(e.target.value)} disabled={loading} />
               </div>
               <div className="col-6">
-                <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <label className="label-color">
                   EndDate  <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input type="date" className="form-control" value={FiscalPeriodEndDate} onChange={(e) => setFiscalPeriodEndDate(e.target.value)} disabled={loading} />
@@ -258,7 +258,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
             </div>
 
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 Fiscal Period Status  <span style={{ color: 'red' }}>*</span>
               </label>
               <select className="form-select" value={FiscalPeriodStatus} onChange={(e) => setFiscalPeriodStatus(e.target.value)} disabled={loading}>
@@ -270,7 +270,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
             </div>
 
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 FiscalYear  <span style={{ color: 'red' }}>*</span>
               </label>
               <input
@@ -286,12 +286,11 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               <button
                 onClick={handleSave}
                 disabled={loading || !FiscalPeriodName || !FiscalPeriodStartDate || !FiscalPeriodEndDate || !FiscalPeriodStatus || !FiscalYear}
-                className={`btn ${loading || !FiscalPeriodName || !FiscalPeriodStartDate || !FiscalPeriodEndDate || !FiscalPeriodStatus || !FiscalYear ? 'btn-secondary' : 'btn-primary'} d-flex align-items-center gap-2`}
-              >
+                className="save-btn"  >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 {editingId ? 'Update' : 'Save'}
               </button>
-              <button onClick={handleCancel} disabled={loading} className="btn btn-danger">Cancel</button>
+              <button onClick={handleCancel} disabled={loading} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>

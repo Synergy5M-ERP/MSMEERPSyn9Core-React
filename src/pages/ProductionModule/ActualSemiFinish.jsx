@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 
 import NotCreated from "../../components/NotCreated";
+import SoWiseSemiFinishedProductionPlan from "./SoWiseSemiFinishedProductionPlan";
 
 function ActualSemiFinish() {
   const [selectedPage, setSelectedPage] = useState("SOWise");
@@ -62,7 +63,7 @@ function ActualSemiFinish() {
 
       {/* Render selected page with view prop */}
       <div>
-        {selectedPage==='SOWise'?(<NotCreated/>):<NotCreated/>
+        {selectedPage==='SOWise'?(<SoWiseSemiFinishedProductionPlan/>):<NotCreated/>
         
          
         }

@@ -223,7 +223,7 @@ function VoucherList() {
         <div className="row g-3 mb-4">
           {/* Vendor Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <DollarSign size={16} className="me-1" />
               Vendor Name
             </label>
@@ -248,7 +248,7 @@ function VoucherList() {
 
           {/* Voucher Type Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <FileText size={16} className="me-1" />
               Voucher Type
             </label>
@@ -269,7 +269,7 @@ function VoucherList() {
 
           {/* Reference Number Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <Calendar size={16} className="me-1" />
               Reference No
             </label>

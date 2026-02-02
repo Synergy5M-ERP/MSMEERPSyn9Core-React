@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Pagination from "../../components/Pagination";
 import { API_ENDPOINTS } from "../../config/apiconfig";
-
+import '../../App.css'
 export default function AccountLedger({ view }) {
   const [formType, setFormType] = useState("ledger");
 
@@ -342,11 +342,11 @@ export default function AccountLedger({ view }) {
   if (fetchLoading) return <LoadingSpinner />;
 
   return (
-    <div style={{ background: "#f5f5f5", minHeight: "80vh", padding: "20px" }}>
+    <div style={{ background: "#f5f5f5", minHeight: "80vh", padding: "10px" }}>
       <ToastContainer position="top-right" autoClose={2000} />
 
       <div className="container-fluid">
-        <div style={{ background: "white", padding: "20px", borderRadius: "8px", marginBottom: "20px" }} className="d-flex justify-content-between align-items-center flex-wrap">
+        <div style={{ background: "white", fontSize:"18px", paddingTop: "15px", padding:"15px", borderRadius: "8px", marginBottom: "10px" }}>
           <div>
             <label style={{ marginRight: "20px" }}>
               <input type="radio" name="formType" value="ledger" checked={formType === "ledger"} onChange={() => { setFormType("ledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
@@ -365,7 +365,7 @@ export default function AccountLedger({ view }) {
               <div className="row">
                 {formType === "subledger" && (
                   <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
+                    <label className="label-color">Ledger Name</label>
                     <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="form-control">
                       <option value="">-- Ledger Name --</option>
                       {ledgers.map((l) => (
@@ -377,7 +377,7 @@ export default function AccountLedger({ view }) {
 
                 {formType === "subledger" && (
                   <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Sub-Group Name</label>
+                    <label className="label-color">Ledger Sub-Group Name</label>
                     <input type="text" value={ledgerSubGroupName} onChange={(e) => setLedgerSubGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Sub Group Name" disabled={loading} />
                   </div>
                 )}
@@ -387,7 +387,7 @@ export default function AccountLedger({ view }) {
                 <>
                   <div className="row">
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Group</label>
+                      <label className="label-color">Account Group</label>
                       <select value={accountGroup} onChange={(e) => setAccountGroup(Number(e.target.value))} disabled={loading} className="form-control">
                         <option value="">--Select Group--</option>
                         {accountGroupOptions.map((grp) => (
@@ -397,15 +397,15 @@ export default function AccountLedger({ view }) {
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
+                      <label className="label-color">Ledger Name</label>
                       <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Name" disabled={loading} />
                     </div>
                   </div>
 
                   <div className="row">
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Mobile No</label>
-                      <input type="text" 
+                      <label className="label-color">Mobile No</label>
+                      <input  type="text" 
                       value={mobileNo} 
                       // onChange={(e) => setMobileNo(e.target.value)}
                       onChange={(e) => {
@@ -415,20 +415,20 @@ export default function AccountLedger({ view }) {
                       // Limit to 10 digits
                       if (val.length <= 10) {
                       setMobileNo(val);}}} 
-                      className="form-control" 
+                      className=" form-control" 
                       placeholder="Enter Mobile No"
                       disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Email ID</label>
+                      <label className="label-color">Email ID</label>
                       <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="form-control" placeholder="Enter Email ID" disabled={loading} />
                     </div>
                   </div>
 
                   <div className="row">
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>GSTNo</label>
+                      <label className="label-color">GSTNo</label>
                       <input type="text" 
                       value={gstNo} 
                       maxLength={15}
@@ -439,19 +439,19 @@ export default function AccountLedger({ view }) {
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Address</label>
+                      <label className="label-color">Address</label>
                       <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
                     </div>
                   </div>
 
                   <div className="row">
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Opening Balance</label>
+                      <label className="label-color">Opening Balance</label>
                       <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="form-control" placeholder="Opening Balance" disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Closing Balance</label>
+                      <label className="label-color">Closing Balance</label>
                       <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="form-control" placeholder="Closing Balance" disabled={loading} />
                     </div>
                   </div>
@@ -460,16 +460,16 @@ export default function AccountLedger({ view }) {
 
               <div className="row">
                 <div className="col-12 mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>Description</label>
+                  <label className="label-color">Description</label>
                   <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="form-control" placeholder="Enter description" rows={2} disabled={loading}></textarea>
                 </div>
               </div>
 
               <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={handleSave} className="btn btn-primary save" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
+                <button onClick={handleSave} className="save-btn" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
                   <Save size={18} style={{ marginRight: "6px" }} /> Save
                 </button>
-                <button onClick={handleCancel} className="btn btn-secondary" disabled={loading}>
+                <button onClick={handleCancel} className="cancel-btn" disabled={loading}>
                   Cancel
                 </button>
               </div>
@@ -478,7 +478,7 @@ export default function AccountLedger({ view }) {
 
           <div className="col-lg-5">
             <div style={{ background: "white", padding: "20px", borderRadius: "8px" }}>
-              <h5 style={{ color: "#0066cc", fontWeight: "600" }}>{formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}</h5>
+              <h5 className="label-color">{formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}</h5>
 
               <table className="table table-bordered table-striped mt-3">
                 <thead>

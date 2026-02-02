@@ -44,7 +44,7 @@ const ProductionSidebar = ({ selected, onSelect }) => {
 
     { label: 'SemiFinish Inventory', icon: <Inventory />, key: 'SemiFinishInventory' },
 
-    { label: 'Bought Out Requirement', icon: <ShoppingCart />, key: 'BougthOut' },
+    { label: 'Bougth Out Requirement', icon: <ShoppingCart />, key: 'BrougthOut' },
 
     { label: 'RM Consumption', icon: <PrecisionManufacturing />, key: 'RMConsumption' },
 

@@ -163,10 +163,10 @@ function AccountTypePage() {
         </div>
 
         <div className="form-buttons">
-          <button className="btn-save" onClick={handleSave}>
+          <button className="save-btn" onClick={handleSave}>
             {accountTypeId ? "Update" : "Save"}
           </button>
-          <button className="btn-cancel" onClick={handleCancel}>
+          <button className="cancel-btn" onClick={handleCancel}>
             Cancel
           </button>
         </div>

@@ -14,6 +14,12 @@ import ManualIssuePass from './ManualIssuePass';
 import CrystalReport from './CrystalReport';
 import StandardReport from './StandardReport';
 
+import MachineInformation from './MachineInformation';
+import SettingParameter from './SettingParameter';
+import ExtruderTemperature from './ExtruderTemperature';
+import BrougthOutRequirement from './BrougthOutRequirement';
+import CustomActualPlan from './CustomActualPlan';
+
 
 
 // Your account configuration component
@@ -45,6 +51,11 @@ const ProductionModule = () => {
              {activePage==='ManualIssuePass' && <ManualIssuePass/>}
              {activePage==='crystalReport' && <CrystalReport/>}
               {activePage==='standardReport' && <StandardReport/>}
+              {activePage ==='Machineinfo' && <MachineInformation/>}
+              {activePage ==='settingPara' && <SettingParameter/>}
+              {activePage ==='ExtruderTemp' && <ExtruderTemperature/>}
+       {activePage==='BrougthOut' && <BrougthOutRequirement/>}
+    
           {/* Add more conditions for other pages */}
         </div>
       </div>

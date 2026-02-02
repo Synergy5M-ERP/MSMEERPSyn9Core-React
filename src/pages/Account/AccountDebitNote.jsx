@@ -264,14 +264,7 @@ export default function AccountDebitNote() {
             <div className="row">
               <div className="col">
                 <label
-                  style={{
-                    textAlign: "left",
-                    display: "block",
-                    color: "#0066cc",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    marginBottom: "8px",
-                  }}>
+                 className="label-color">
                 
                   Category <span style={{ color: "#ef4444" }}>*</span>
                 </label>
@@ -302,8 +295,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div className="col">
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'}}>
+                <label className="label-color">
                   {category === "buyer" ? "Customer Name" : "Vendor Name"} <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={vendor}
@@ -341,9 +333,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div className="col">
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Invoice Number <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Invoice Number <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={invoice}
                   onChange={e => setInvoice(e.target.value)}
@@ -367,9 +357,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div className="col">
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Debit Note No <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Debit Note No <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="text"
                   value={DebitNoteNo}
@@ -388,9 +376,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div className="col">
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Debit Note Date <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Debit Note Date <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="date"
                   value={DebitNoteDate}
@@ -408,14 +394,7 @@ export default function AccountDebitNote() {
 
               <div className="col">
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 Payment Due Date <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -442,9 +421,7 @@ export default function AccountDebitNote() {
               marginBottom: 20
             }}>
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '10px'
-                }}>Item Name <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Item Name <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={item.itemName}
                   onChange={e => setItem(it => ({ ...it, itemName: e.target.value }))}
@@ -467,9 +444,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Quantity <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Quantity <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="number"
                   min={0}
@@ -488,9 +463,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Unit <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Unit <span style={{ color: "#ef4444" }}>*</span></label>
                 <select
                   value={item.unit}
                   onChange={e => setItem(it => ({ ...it, unit: e.target.value }))}
@@ -510,9 +483,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Price <span style={{ color: "#ef4444" }}>*</span></label>
+                <label className="label-color">Price <span style={{ color: "#ef4444" }}>*</span></label>
                 <input
                   type="number"
                   min={0}
@@ -532,9 +503,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Total Amount</label>
+                <label className="label-color">Total Amount</label>
                 <input
                   type="number"
                   value={item.qty && item.price ? (item.qty * item.price).toFixed(2) : ""}
@@ -560,9 +529,7 @@ export default function AccountDebitNote() {
               marginBottom: 20
             }}>
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Tax Type</label>
+                <label className="label-color">Tax Type</label>
                 <select
                   value={item.taxType}
                   onChange={e => setItem(it => ({ ...it, taxType: e.target.value }))}
@@ -582,9 +549,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>CGST (%)</label>
+                <label className="label-color">CGST (%)</label>
                 <input
                   type="number"
                   min={0}
@@ -604,9 +569,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>SGST (%)</label>
+                <label className="label-color">SGST (%)</label>
                 <input
                   type="number"
                   min={0}
@@ -626,9 +589,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>IGST (%)</label>
+                <label className="label-color">IGST (%)</label>
                 <input
                   type="number"
                   min={0}
@@ -648,9 +609,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
-                }}>Net Amount</label>
+                <label className="label-color">Net Amount</label>
                 <input
                   type="number"
                   value={
@@ -675,14 +634,7 @@ export default function AccountDebitNote() {
               </div>
 
               <div>
-                <label style={{
-                  textAlign: 'left',
-                  display: 'block',
-                  color: '#0066cc',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  marginBottom: '8px'
-                }}>
+                <label className="label-color">
                   Total Tax Amount
                 </label>
                 <input
@@ -710,23 +662,9 @@ export default function AccountDebitNote() {
               </div>
             </div>
 
-            <button className="mb-2"
+            <button className="mb-2 add-btn"
               onClick={handleAddItem}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "12px 28px",
-                borderRadius: 10,
-                border: "none",
-                background: editingIdx !== null ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "linear-gradient(135deg, green 0%, green 100%)",
-                color: "white",
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: "pointer",
-                boxShadow: editingIdx !== null ? "0 4px 15px rgba(245, 158, 11, 0.4)" : "0 4px 15px rgba(102, 126, 234, 0.4)",
-                transition: "all 0.3s"
-              }}
+             
               onMouseOver={e => {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = editingIdx !== null ? "0 6px 20px rgba(245, 158, 11, 0.5)" : "0 6px 20px rgba(102, 126, 234, 0.5)";
@@ -886,61 +824,14 @@ export default function AccountDebitNote() {
             <div style={{
               display: "flex",
               gap: 16,
-              justifyContent: "flex-end",
+              // justifyContent: "flex-end",
               flexWrap: "wrap"
             }}>
-              <button
-                onClick={handleCancel}
-                disabled={isSaving}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 32px",
-                  borderRadius: 12,
-                  border: "2px solid #e2e8f0",
-                  background: "white",
-                  color: "#64748b",
-                  fontWeight: 600,
-                  fontSize: 15,
-                  cursor: isSaving ? "not-allowed" : "pointer",
-                  transition: "all 0.2s",
-                  opacity: isSaving ? 0.5 : 1
-                }}
-                onMouseOver={e => {
-                  if (!isSaving) {
-                    e.currentTarget.style.borderColor = "#cbd5e1";
-                    e.currentTarget.style.background = "#f8fafc";
-                  }
-                }}
-                onMouseOut={e => {
-                  if (!isSaving) {
-                    e.currentTarget.style.borderColor = "#e2e8f0";
-                    e.currentTarget.style.background = "white";
-                  }
-                }}
-              >
-                <X size={18} />
-                Cancel
-              </button>
+            
               <button
                 onClick={handleSave}
                 disabled={isSaving || items.length === 0}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 32px",
-                  borderRadius: 12,
-                  border: "none",
-                  background: isSaving || items.length === 0 ? "#cbd5e1" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                  color: "white",
-                  fontWeight: 600,
-                  fontSize: 15,
-                  cursor: isSaving || items.length === 0 ? "not-allowed" : "pointer",
-                  boxShadow: isSaving || items.length === 0 ? "none" : "0 4px 15px rgba(16, 185, 129, 0.4)",
-                  transition: "all 0.3s"
-                }}
+             className="save-btn"
                 onMouseOver={e => {
                   if (!isSaving && items.length > 0) {
                     e.currentTarget.style.transform = "translateY(-2px)";
@@ -968,10 +859,31 @@ export default function AccountDebitNote() {
                   </>
                 ) : (
                   <>
-                    <Save size={18} />
+                    {/* <Save size={18} /> */}
                     Save
                   </>
                 )}
+              </button>
+
+                <button
+                onClick={handleCancel}
+                disabled={isSaving}
+               className="cancel-btn"
+                onMouseOver={e => {
+                  if (!isSaving) {
+                    e.currentTarget.style.borderColor = "#cbd5e1";
+                    e.currentTarget.style.background = "#f8fafc";
+                  }
+                }}
+                onMouseOut={e => {
+                  if (!isSaving) {
+                    e.currentTarget.style.borderColor = "#e2e8f0";
+                    e.currentTarget.style.background = "white";
+                  }
+                }}
+              >
+                {/* <X size={18} /> */}
+                Cancel
               </button>
             </div>
           </div>

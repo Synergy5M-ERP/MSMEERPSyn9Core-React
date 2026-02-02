@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CheckCircle, X, Loader } from "lucide-react";
-
+import '../../../App.css'
 export default function CreateVendor() {
   const [formData, setFormData] = useState({
     Vendor_Categories: "",
@@ -444,8 +444,8 @@ export default function CreateVendor() {
               <div className="row">
                 {/* Vendor Category */}
                 <div className="form-group col-3">
-                  <label className="form-label">Vendor Category</label>
-                  <select name="Vendor_Categories" value={formData.Vendor_Categories} onChange={handleInputChange} className="form-input">
+                  <label className="label-color">Vendor Category</label>
+                  <select name="Vendor_Categories" value={formData.Vendor_Categories} onChange={handleInputChange} className="input-field-style">
                     <option value="">Select Vendor Category</option>
                     {dropdowns.vendorCategories.map((vc) => (<option key={vc} value={vc}>{vc}</option>))}
                   </select>
@@ -453,12 +453,12 @@ export default function CreateVendor() {
 
                 {/* Industry */}
                 <div className="form-group col-3">
-                  <label htmlFor="industrySelect" className="form-label">Industry</label>
+                  <label htmlFor="industrySelect" className="label-color">Industry</label>
                   <select
                     id="industrySelect"
                     value={selectedIndustry}
                     onChange={(e) => setSelectedIndustry(e.target.value)}
-                    className="form-input"
+                    className="input-field-style"
                   >
                     <option value="">Select Industry</option>
                     {industries.map((industry) => (
@@ -471,12 +471,12 @@ export default function CreateVendor() {
 
                 {/* Category */}
                 <div className="form-group col-3">
-                  <label htmlFor="categorySelect" className="form-label">Category</label>
+                  <label htmlFor="categorySelect" className="label-color">Category</label>
                   <select
                     id="categorySelect"
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="form-input"
+                    className="input-field-style"
                     disabled={!selectedIndustry || categories.length === 0}
                   >
                     <option value="">Select Category</option>
@@ -490,12 +490,12 @@ export default function CreateVendor() {
 
                 {/* Sub Category */}
                 <div className="form-group col-3">
-                  <label htmlFor="subcategorySelect" className="form-label">Subcategory</label>
+                  <label htmlFor="subcategorySelect" className="label-color">Subcategory</label>
                   <select
                     id="subcategorySelect"
                     value={selectedSubcategory}
                     onChange={(e) => setSelectedSubcategory(e.target.value)}
-                    className="form-input"
+                    className="input-field-style"
                     disabled={!selectedCategory || subcategories.length === 0}
                   >
                     <option value="">Select Subcategory</option>
@@ -512,32 +512,32 @@ export default function CreateVendor() {
             {/* Location Section Row 1 */}
             <div className='row'>
               <div className="form-group col-3">
-                <label className="form-label">Source</label>
-                <select name="Source" value={formData.Source} onChange={handleInputChange} className="form-input">
+                <label className="label-color">Source</label>
+                <select name="Source" value={formData.Source} onChange={handleInputChange} className="input-field-style">
                   <option value="">Select Source</option>
                   {(dropdownData.sources || []).map((s, idx) => (<option key={idx} value={s}>{s}</option>))}
                 </select>
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Continent</label>
-                <select name="Continent" value={formData.Continent} onChange={handleInputChange} disabled={!formData.Source} className="form-input">
+                <label className="label-color">Continent</label>
+                <select name="Continent" value={formData.Continent} onChange={handleInputChange} disabled={!formData.Source} className="input-field-style">
                   <option value="">Select Continent</option>
                   {(dropdownData.continents || []).map((c, idx) => (<option key={idx} value={c}>{c}</option>))}
                 </select>
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Country</label>
-                <select name="Country" value={formData.Country} onChange={handleInputChange} disabled={!formData.Continent} className="form-input">
+                <label className="label-color">Country</label>
+                <select name="Country" value={formData.Country} onChange={handleInputChange} disabled={!formData.Continent} className="input-field-style">
                   <option value="">Select Country</option>
                   {(dropdownData.countries || []).map((c, idx) => (<option key={idx} value={c}>{c}</option>))}
                 </select>
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">State/Province</label>
-                <select name="State_Province" value={formData.State_Province} onChange={handleInputChange} disabled={!formData.Country} className="form-input">
+                <label className="label-color">State/Province</label>
+                <select name="State_Province" value={formData.State_Province} onChange={handleInputChange} disabled={!formData.Country} className="input-field-style">
                   <option value="">Select State</option>
                   {(dropdownData.states || []).map((s, idx) => (<option key={idx} value={s}>{s}</option>))}
                 </select>
@@ -547,29 +547,29 @@ export default function CreateVendor() {
             {/* Location Section Row 2 */}
             <div className="row">
               <div className="form-group col-3">
-                <label className="form-label">City</label>
-                <select name="City" value={formData.City} onChange={handleInputChange} disabled={!formData.State_Province} className="form-input">
+                <label className="label-color">City</label>
+                <select name="City" value={formData.City} onChange={handleInputChange} disabled={!formData.State_Province} className="input-field-style">
                   <option value="">Select City</option>
                   {(dropdownData.cities || []).map((c, idx) => (<option key={idx} value={c}>{c}</option>))}
                 </select>
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Zone</label>
-                <select name="Zone" value={formData.Zone} onChange={handleInputChange} className="form-input">
+                <label className="label-color">Zone</label>
+                <select name="Zone" value={formData.Zone} onChange={handleInputChange} className="input-field-style">
                   <option value="">Select Zone</option>
                   {dropdowns.zones.map((z) => (<option key={z} value={z}>{z}</option>))}
                 </select>
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Company Name <span className="required">*</span></label>
-                <input type="text" name="Company_Name" value={formData.Company_Name} onChange={handleInputChange} className="form-input" placeholder="Company name" />
+                <label className="label-color">Company Name <span className="required">*</span></label>
+                <input type="text" name="Company_Name" value={formData.Company_Name} onChange={handleInputChange} className="input-field-style" placeholder="Company name" />
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Nature of Business</label>
-                <select name="Nature_Of_Business" value={formData.Nature_Of_Business} onChange={handleInputChange} className="form-input">
+                <label className="label-color">Nature of Business</label>
+                <select name="Nature_Of_Business" value={formData.Nature_Of_Business} onChange={handleInputChange} className="input-field-style">
                   <option value="">Select Nature</option>
                   {dropdowns.natureOfBusinessList.map((n) => (<option key={n} value={n}>{n}</option>))}
                 </select>
@@ -579,18 +579,18 @@ export default function CreateVendor() {
             {/* Address Section */}
             <div className="row">
               <div className="form-group col-3">
-                <label className="form-label">Address 1</label>
-                <input type="text" name="tempAddress1" value={formData.tempAddress1} onChange={handleInputChange} className="form-input" placeholder="Address line 1" />
+                <label className="label-color">Address 1</label>
+                <input type="text" name="tempAddress1" value={formData.tempAddress1} onChange={handleInputChange} className="input-field-style" placeholder="Address line 1" />
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">Address 2</label>
-                <input type="text" name="tempAddress2" value={formData.tempAddress2} onChange={handleInputChange} className="form-input" placeholder="Address line 2" />
+                <label className="label-color">Address 2</label>
+                <input type="text" name="tempAddress2" value={formData.tempAddress2} onChange={handleInputChange} className="input-field-style" placeholder="Address line 2" />
               </div>
 
               <div className="form-group col-3">
-                <label className="form-label">PIN</label>
-                <input type="text" name="tempPin" value={formData.tempPin} onChange={handleInputChange} className="form-input" placeholder="PIN code" />
+                <label className="label-color">PIN</label>
+                <input type="text" name="tempPin" value={formData.tempPin} onChange={handleInputChange} className="input-field-style" placeholder="PIN code" />
               </div>
 
               <div className="form-group col-3">
@@ -602,23 +602,23 @@ export default function CreateVendor() {
             <div className="section" style={{ marginBottom: "1rem" }}>
               <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "1rem" }}>
                 <div className="form-group">
-                  <label className="form-label">Contact Person</label>
-                  <input type="text" name="Contact_Person" value={formData.Contact_Person} onChange={handleInputChange} className="form-input" placeholder="Contact person name" />
+                  <label className="label-color">Contact Person</label>
+                  <input type="text" name="Contact_Person" value={formData.Contact_Person} onChange={handleInputChange} className="input-field-style" placeholder="Contact person name" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Email ID</label>
-                  <input type="email" name="Email" value={formData.Email} onChange={handleInputChange} className="form-input" placeholder="Enter email" />
+                  <label className="label-color">Email ID</label>
+                  <input type="email" name="Email" value={formData.Email} onChange={handleInputChange} className="input-field-style" placeholder="Enter email" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Contact Number <span className="required">*</span></label>
-                  <input type="text" name="Contact_Number" value={formData.Contact_Number} onChange={handleInputChange} className="form-input" placeholder="Contact number" />
+                  <label className="label-color">Contact Number <span className="required">*</span></label>
+                  <input type="text" name="Contact_Number" value={formData.Contact_Number} onChange={handleInputChange} className="input-field-style" placeholder="Contact number" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Landline</label>
-                  <input type="text" name="Landline" value={formData.Landline} onChange={handleInputChange} className="form-input" placeholder="Landline" />
+                  <label className="label-color">Landline</label>
+                  <input type="text" name="Landline" value={formData.Landline} onChange={handleInputChange} className="input-field-style" placeholder="Landline" />
                 </div>
               </div>
             </div>
@@ -629,33 +629,33 @@ export default function CreateVendor() {
             <div className="section" style={{ marginBottom: "1rem" }}>
               <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "1rem" }}>
                 <div className="form-group">
-                  <label className="form-label">PAN No</label>
-                  <input type="text" name="PAN_No" value={formData.PAN_No} onChange={handleInputChange} className="form-input" />
+                  <label className="label-color">PAN No</label>
+                  <input type="text" name="PAN_No" value={formData.PAN_No} onChange={handleInputChange} className="input-field-style" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">GST No <span className="required">*</span></label>
-                  <input type="text" name="GST_Number" value={formData.GST_Number} onChange={handleInputChange} className="form-input" />
+                  <label className="label-color">GST No <span className="required">*</span></label>
+                  <input type="text" name="GST_Number" value={formData.GST_Number} onChange={handleInputChange} className="input-field-style" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">MSME No</label>
-                  <input type="text" name="MSME_No" value={formData.MSME_No} onChange={handleInputChange} className="form-input" />
+                  <label className="label-color">MSME No</label>
+                  <input type="text" name="MSME_No" value={formData.MSME_No} onChange={handleInputChange} className="input-field-style" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">State Code</label>
-                  <input type="text" name="State_Code" value={formData.State_Code} onChange={handleInputChange} className="form-input" />
+                  <label className="label-color">State Code</label>
+                  <input type="text" name="State_Code" value={formData.State_Code} onChange={handleInputChange} className="input-field-style" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">STD Payment Days</label>
-                  <input type="number" name="Std_Payment_Days" value={formData.Std_Payment_Days} onChange={handleInputChange} className="form-input" />
+                  <label className="label-color">STD Payment Days</label>
+                  <input type="number" name="Std_Payment_Days" value={formData.Std_Payment_Days} onChange={handleInputChange} className="input-field-style" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Website</label>
-                  <input type="text" name="Website" value={formData.Website} onChange={handleInputChange} className="form-input" placeholder="Website URL" />
+                  <label className="label-color">Website</label>
+                  <input type="text" name="Website" value={formData.Website} onChange={handleInputChange} className="input-field-style" placeholder="Website URL" />
                 </div>
               </div>
             </div>
@@ -707,7 +707,7 @@ export default function CreateVendor() {
               <button type="button" onClick={handleSubmit} className="btn btn-primary save" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>
                 {loading ? (<><Loader className="btn-spinner" size={16} /> Submitting...</>) : (<>Submit</>)}
               </button>
-              <button type="button" onClick={handleCancel} className="btn btn-danger" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>
+              <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading} style={{ width: "140px", fontSize: "14px" }}>
                 Cancel
               </button>
             </div>
@@ -716,33 +716,7 @@ export default function CreateVendor() {
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} />
-      <style jsx>{`
-        body { font-size: 14px; }
-        .form-input { padding: 10px; border-radius: 8px; border: 1.5px solid #ddd; width: 100%; box-sizing: border-box; }
-        .form-label { margin-bottom: 6px; color: #428bca; font-size: 14px; display: block; font-weight: 500; }
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; transition: all 0.3s; }
-        .btn-primary { background: #428bca; color: white; }
-        .btn-primary:hover { background: #3071a9; }
-        .btn-danger { background: #d9534f; color: white; }
-        .btn-danger:hover { background: #c9302c; }
-        .btn-success { background: #5cb85c; color: white; }
-        .btn-success:hover { background: #4cae4c; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .required { color: #e11d48; }
-        .btn-spinner { animation: spin 1s linear infinite; display: inline-block; }
-       
-        .row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .col-3 { flex: 1; min-width: 200px; }
-        .form-group { display: flex; flex-direction: column; }
-        .mt-4 { margin-top: 1.5rem; }
-        .address-table th { font-weight: 600; }
-        .address-table td { font-size: 13px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
-        @keyframes spin { 
-          from { transform: rotate(0deg); } 
-          to { transform: rotate(360deg); } 
-        }
-      `}</style>
+      
     </>
   );
 }

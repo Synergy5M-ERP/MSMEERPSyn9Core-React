@@ -346,7 +346,7 @@ const OutwardQCReport = () => {
                             {index === 0 ? (
                               <button className="btn btn-sm" style={{ backgroundColor: "cornflowerblue", color: "white" }} onClick={addParamRow}>Add</button>
                             ) : (
-                              <button className="btn btn-danger btn-sm" onClick={() => removeParamRow(index)}>Remove</button>
+                              <button className="cancel-btn btn-sm" onClick={() => removeParamRow(index)}>Remove</button>
                             )}
                           </td>
                         </tr>

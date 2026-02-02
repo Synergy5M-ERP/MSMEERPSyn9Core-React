@@ -458,7 +458,7 @@ const [vendorId, setVendorId] = useState('');
                     <div style={{ background: 'white', padding: '25px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
                             <div>
-                                <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                                <label className="label-color">
                                     Vendor name <span style={{ color: 'red' }}>*</span>
                                 </label>
                             <select 
@@ -485,7 +485,7 @@ const [vendorId, setVendorId] = useState('');
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                                <label className="label-color">
                                     Bank Name <span style={{ color: 'red' }}>*</span>
                                 </label>
                                 <input
@@ -502,7 +502,7 @@ const [vendorId, setVendorId] = useState('');
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                                <label className="label-color">
                                     Account Number <span style={{ color: 'red' }}>*</span>
                                 </label>
                                 <input
@@ -521,7 +521,7 @@ const [vendorId, setVendorId] = useState('');
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                                <label className="label-color">
                                     Branch Name <span style={{ color: 'red' }}>*</span>
                                 </label>
                                 <input
@@ -538,7 +538,7 @@ const [vendorId, setVendorId] = useState('');
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                                <label className="label-color">
                                     IFSC Code <span style={{ color: 'red' }}>*</span>
                                 </label>
                                 <input
@@ -562,23 +562,10 @@ const [vendorId, setVendorId] = useState('');
                                         <button
                                             onClick={handleSaveEdited}
                                             disabled={loading}
-                                            style={{
-                                                flex: 1,
-                                                fontSize: '18px',
-                                                padding: '10px 0',
-                                                background: loading ? '#ccc' : '#0066cc',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '4px',
-                                                cursor: loading ? 'not-allowed' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '6px'
-                                            }}
+                                        //    className='save-btn'
                                         >
                                             {loading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
-                                            Save
+                                            Saved
                                         </button>
                                         <button
                                             onClick={handleClearForm}
@@ -606,16 +593,7 @@ const [vendorId, setVendorId] = useState('');
                                     <button
                                         onClick={handleAdd}
                                         disabled={loading}
-                                        style={{
-                                            width: '130px',
-                                            fontSize: '18px',
-                                            padding: '10px 0',
-                                            background: 'green',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: loading ? 'not-allowed' : 'pointer',
-                                        }}
+                                      className='add-btn'
                                     >
                                         {editingIndex !== null ? 'Update' : 'Add'}
                                     </button>

@@ -872,8 +872,8 @@ const handleSubmit = async () => {
                   <div className='row'>
 
                     <div className='col'>
-                      <label style={labelStyle}>Title</label>
-                      <select
+                      <label className="label-color">Title</label>
+                      <select className="select-field-style" 
                         style={inputStyle}
                         name="title"
                         value={employeeInfo.title}
@@ -886,8 +886,8 @@ const handleSubmit = async () => {
                       </select>
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Name</label>
-                      <input
+                      <label className="label-color">Name</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="name"
@@ -896,8 +896,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Middle Name</label>
-                      <input
+                      <label className="label-color">Middle Name</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="middleName"
@@ -906,8 +906,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Surname</label>
-                      <input
+                      <label className="label-color">Surname</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="surname"
@@ -916,8 +916,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Gender</label>
-                      <select
+                      <label className="label-color">Gender</label>
+                      <select className="select-field-style"
                         style={inputStyle}
                         name="gender"
                         value={employeeInfo.gender}
@@ -934,8 +934,8 @@ const handleSubmit = async () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>Dob</label>
-                      <input
+                      <label className="label-color">Dob</label>
+                      <input className="input-field-style"
                         type="date"
                         style={inputStyle}
                         name="dob"
@@ -944,8 +944,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                    <div className="col">
-  <label style={labelStyle}>Blood Group</label>
-  <select
+  <label className="label-color">Blood Group</label>
+  <select className="select-field-style"
     style={inputStyle}
     name="bloodGroup"
     value={employeeInfo.bloodGroup}
@@ -965,8 +965,8 @@ const handleSubmit = async () => {
 
               
                     <div className='col'>
-                      <label style={labelStyle}>Email</label>
-                      <input
+                      <label className="label-color">Email</label>
+                      <input className="input-field-style"
                         type="email"
                         style={inputStyle}
                         name="email"
@@ -975,8 +975,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Contact No</label>
-                      <input
+                      <label className="label-color">Contact No</label>
+                      <input className="input-field-style"
                         type="tel"
                         style={inputStyle}
                         name="contactNo"
@@ -985,8 +985,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Married Status</label>
-                      <select
+                      <label className="label-color">Married Status</label>
+                      <select className="select-field-style"
                         style={inputStyle}
                         name="marriedStatus"
                         value={employeeInfo.marriedStatus}
@@ -1001,7 +1001,7 @@ const handleSubmit = async () => {
 
                   <div className='row'>
                     <div className='col-5'>
-                      <label style={labelStyle}>Address</label>
+                      <label className="label-color">Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="address"
@@ -1018,7 +1018,7 @@ const handleSubmit = async () => {
                           fontSize: '12px'
                         }}
                       >
-                        <input
+                        <input 
                           type="checkbox"
                           style={{ marginRight: '6px' }}
                           name="sameAsAddress"
@@ -1029,7 +1029,7 @@ const handleSubmit = async () => {
                       </label>
                     </div >
                     <div className='col-5'>
-                      <label style={labelStyle}> Permanent Address</label>
+                      <label className="label-color"> Permanent Address</label>
                       <textarea
                         style={{ ...inputStyle, minHeight: '40px', resize: 'vertical' }}
                         name="permanentAddress"
@@ -1042,8 +1042,8 @@ const handleSubmit = async () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>Qualifiaction</label>
-                      <input
+                      <label className="label-color">Qualifiaction</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="qualification"
@@ -1052,8 +1052,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Country</label>
-                      <select
+                      <label className="label-color">Country</label>
+                      <select className="select-field-style"
                         name="country"
                         value={employeeInfo.country}
                         onChange={handleEmployeeChange}
@@ -1071,8 +1071,8 @@ const handleSubmit = async () => {
                     </div>
 
                     <div className='col'>
-                      <label style={labelStyle}>State</label>
-                      <select
+                      <label className="label-color">State</label>
+                      <select className="select-field-style"
                         style={inputStyle}
                         name="state"
                         value={employeeInfo.state}
@@ -1089,8 +1089,8 @@ const handleSubmit = async () => {
 
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>City</label>
-                      <select
+                      <label className="label-color">City</label>
+                      <select className="select-field-style"
                         style={inputStyle}
                         name="city"
                         value={employeeInfo.city}
@@ -1109,8 +1109,8 @@ const handleSubmit = async () => {
 
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Aadhar No</label>
-                      <input
+                      <label className="label-color">Aadhar No</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="aadharNo"
@@ -1123,8 +1123,8 @@ const handleSubmit = async () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>Pan No</label>
-                      <input
+                      <label className="label-color">Pan No</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="panNo"
@@ -1133,8 +1133,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Bank Account No</label>
-                      <input
+                      <label className="label-color">Bank Account No</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="bankAccountNo"
@@ -1143,8 +1143,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Bank Name</label>
-                      <input
+                      <label className="label-color">Bank Name</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="bankName"
@@ -1153,8 +1153,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>IFSC Code</label>
-                      <input
+                      <label className="label-color">IFSC Code</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="ifscCode"
@@ -1163,8 +1163,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Nominee</label>
-                      <input
+                      <label className="label-color">Nominee</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="nominee"
@@ -1177,8 +1177,8 @@ const handleSubmit = async () => {
 
                   <div className='row'>
                     <div className='col'>
-                      <label style={labelStyle}>Relation</label>
-                      <input
+                      <label className="label-color">Relation</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="relation"
@@ -1187,8 +1187,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>UAN</label>
-                      <input
+                      <label className="label-color">UAN</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="uan"
@@ -1197,8 +1197,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>EPFO A/C NO</label>
-                      <input
+                      <label className="label-color">EPFO A/C NO</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="epfoAcNo"
@@ -1207,8 +1207,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Previous Experience</label>
-                      <input
+                      <label className="label-color">Previous Experience</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="previousExperience"
@@ -1217,8 +1217,8 @@ const handleSubmit = async () => {
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>Previous Industry</label>
-                      <input
+                      <label className="label-color">Previous Industry</label>
+                      <input className="input-field-style"
                         type="text"
                         style={inputStyle}
                         name="previousIndustry"
@@ -1270,8 +1270,8 @@ const handleSubmit = async () => {
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>Category</label>
-                    <select
+                    <label className="label-color">Category</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="category"
                       value={employerInfo.category}
@@ -1283,8 +1283,8 @@ const handleSubmit = async () => {
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Date Of Joining</label>
-                    <input
+                    <label className="label-color">Date Of Joining</label>
+                    <input className="input-field-style"
                       type="date"
                       style={inputStyle}
                       name="dateOfJoining"
@@ -1293,8 +1293,8 @@ const handleSubmit = async () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Notice Period</label>
-                    <input
+                    <label className="label-color">Notice Period</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="noticesPeriod"
@@ -1303,8 +1303,8 @@ const handleSubmit = async () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Weekly Off</label>
-                    <select
+                    <label className="label-color">Weekly Off</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="weeklyOff"
                       value={employerInfo.weeklyOff}
@@ -1316,8 +1316,8 @@ const handleSubmit = async () => {
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Date Of Leaving</label>
-                    <input
+                    <label className="label-color">Date Of Leaving</label>
+                    <input className="input-field-style"
                       type="date"
                       style={inputStyle}
                       name="dateOfLeaving"
@@ -1333,8 +1333,8 @@ const handleSubmit = async () => {
 
 
                   <div className='col'>
-                    <label style={labelStyle}>Date Of Releaving</label>
-                    <input
+                    <label className="label-color">Date Of Releaving</label>
+                    <input className="input-field-style"
                       type="date"
                       style={inputStyle}
                       name="dateOfReleaving"
@@ -1343,8 +1343,8 @@ const handleSubmit = async () => {
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Shift Hours</label>
-                    <select
+                    <label className="label-color">Shift Hours</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="shiftHours"
                       value={employerInfo.shiftHours}
@@ -1356,8 +1356,8 @@ const handleSubmit = async () => {
                     </select>
                   </div>
                   <div className='col'>
-  <label style={labelStyle}>Department</label>
-  <select
+  <label className="label-color">Department</label>
+  <select className="select-field-style"
     style={inputStyle}
     name="department"
 value={employerInfo.department}
@@ -1378,8 +1378,8 @@ value={employerInfo.department}
 </div>
 
                   <div className='col'>
-                    <label style={labelStyle}>OT Calculation</label>
-                    <select
+                    <label className="label-color">OT Calculation</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="otCalculation"
                       value={employerInfo.otCalculation}
@@ -1391,8 +1391,8 @@ value={employerInfo.department}
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ESIC/PWN NO</label>
-                    <select
+                    <label className="label-color">ESIC/PWN NO</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="esicPwnNo"
                       value={employerInfo.esicPwnNo}
@@ -1410,8 +1410,8 @@ value={employerInfo.department}
                 <div className='row'>
 
                   <div className='col'>
-                    <label style={labelStyle}>PF Contribution</label>
-                    <select
+                    <label className="label-color">PF Contribution</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="pfContribution"
                       value={employerInfo.pfContribution}
@@ -1423,9 +1423,9 @@ value={employerInfo.department}
                     </select>
                   </div>
                <div className="col">
-  <label style={labelStyle}>Currency</label>
+  <label className="label-color">Currency</label>
 
-  <select
+  <select className="select-field-style"
     style={inputStyle}
     name="currency"
     value={employerInfo.currency}
@@ -1442,8 +1442,8 @@ value={employerInfo.department}
 </div>
 
                   <div className='col'>
-                    <label style={labelStyle}>PF No</label>
-                    <input
+                    <label className="label-color">PF No</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="pfNo"
@@ -1452,8 +1452,8 @@ value={employerInfo.department}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ESIC NO/PWN NO</label>
-                    <input
+                    <label className="label-color">ESIC NO/PWN NO</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="esicNoPwnNo"
@@ -1462,8 +1462,8 @@ value={employerInfo.department}
                     />
                   </div>
                  <div className="col">
-  <label style={labelStyle}>Authority Level</label>
-  <select
+  <label className="label-color">Authority Level</label>
+  <select className="select-field-style"
     style={inputStyle}
     name="authorityLevel"
     value={authorityLevel}
@@ -1476,10 +1476,10 @@ value={employerInfo.department}
 </div>
 {authorityLevel === "joining" && (
   <div className="col">
-    <label style={labelStyle}>
+    <label className="label-color">
       Joining Authority Level <span className="text-danger">*</span>
     </label>
-    <select
+    <select className="select-field-style"
       style={inputStyle}
       name="joiningAuthorityId"
       value={employerInfo.joiningAuthorityId || ""}
@@ -1496,10 +1496,10 @@ value={employerInfo.department}
 )}
 {authorityLevel === "current" && (
   <div className="col">
-    <label style={labelStyle}>
+    <label className="label-color">
       Current Authority Level <span className="text-danger">*</span>
     </label>
-    <select
+    <select className="select-field-style"
       style={inputStyle}
       name="currentAuthorityId"
       value={employerInfo.currentAuthorityId || ""}
@@ -1522,8 +1522,8 @@ value={employerInfo.department}
                   className='row'
                 >
 <div className='col'>
-  <label style={labelStyle}>Designation</label>
-  <select
+  <label className="label-color">Designation</label>
+  <select className="select-field-style"
     style={inputStyle}
    name="designation"
 value={employerInfo.designation}
@@ -1549,8 +1549,8 @@ onChange={handleEmployerChange}
 </div>
 
                   <div className='col'>
-                    <label style={labelStyle}>CTC</label>
-                    <select
+                    <label className="label-color">CTC</label>
+                    <select className="select-field-style"
                       style={inputStyle}
                       name="ctc"
                       value={employerInfo.ctc}
@@ -1562,8 +1562,8 @@ onChange={handleEmployerChange}
                     </select>
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Aadhar/Pancard</label>
-                    <input
+                    <label className="label-color">Aadhar/Pancard</label>
+                    <input className="input-field-style"
                       type="file"
                       style={inputStyle}
                       name="aadharPancard"
@@ -1613,8 +1613,8 @@ onChange={handleEmployerChange}
 
 <div className='row'>
  <div className='col'>
-                    <label style={labelStyle}>Monthly Gross Salary</label>
-                    <input
+                    <label className="label-color">Monthly Gross Salary</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="monthlyGrossSalary"
@@ -1623,8 +1623,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Monthly Basic Salary</label>
-                    <input
+                    <label className="label-color">Monthly Basic Salary</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="monthlyBasicSalary"
@@ -1633,8 +1633,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>DA</label>
-                    <input
+                    <label className="label-color">DA</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="da"
@@ -1643,8 +1643,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Daliy Salary</label>
-                    <input
+                    <label className="label-color">Daliy Salary</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="dailySalary"
@@ -1653,8 +1653,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Monthly Salary</label>
-                    <input
+                    <label className="label-color">Monthly Salary</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="monthlySalary"
@@ -1668,8 +1668,8 @@ onChange={handleEmployerChange}
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>Leave Travel Allowance</label>
-                    <input
+                    <label className="label-color">Leave Travel Allowance</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="leaveTravelAllowance"
@@ -1678,8 +1678,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Addidtion Benefits</label>
-                    <input
+                    <label className="label-color">Addidtion Benefits</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="additionalBenefits"
@@ -1688,8 +1688,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Performance Incentive</label>
-                    <input
+                    <label className="label-color">Performance Incentive</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="performanceIncentive"
@@ -1698,8 +1698,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>PF Contribution</label>
-                    <input
+                    <label className="label-color">PF Contribution</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="pfContribution"
@@ -1708,8 +1708,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>ESIC</label>
-                    <input
+                    <label className="label-color">ESIC</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="esic"
@@ -1723,8 +1723,8 @@ onChange={handleEmployerChange}
 
 <div className='row'>
      <div className='col'>
-                    <label style={labelStyle}>Stock Option</label>
-                    <input
+                    <label className="label-color">Stock Option</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="stockOption"
@@ -1733,8 +1733,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Car</label>
-                    <input
+                    <label className="label-color">Car</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="car"
@@ -1743,8 +1743,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Telephone</label>
-                    <input
+                    <label className="label-color">Telephone</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="telephone"
@@ -1753,8 +1753,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Medical Allowance</label>
-                    <input
+                    <label className="label-color">Medical Allowance</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="medicalAllowance"
@@ -1763,8 +1763,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Total Deduction</label>
-                    <input
+                    <label className="label-color">Total Deduction</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="totalDeduction"
@@ -1776,8 +1776,8 @@ onChange={handleEmployerChange}
 
 <div className='row'>
   <div className='col'>
-                    <label style={labelStyle}>House Rent Allowance</label>
-                    <input
+                    <label className="label-color">House Rent Allowance</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="houseRentAllowance"
@@ -1786,8 +1786,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Hourly Salary</label>
-                    <input
+                    <label className="label-color">Hourly Salary</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="hourlySalary"
@@ -1796,8 +1796,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Annual Increment</label>
-                    <input
+                    <label className="label-color">Annual Increment</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="annualIncrement"
@@ -1806,8 +1806,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                <div className='col'>
-  <label style={labelStyle}>Annual Inc Date</label>
-  <input
+  <label className="label-color">Annual Inc Date</label>
+  <input className="input-field-style"
     type="date"
     style={inputStyle}
     name="annualIncDate"
@@ -1818,8 +1818,8 @@ onChange={handleEmployerChange}
 
 
                   <div className='col'>
-                    <label style={labelStyle}>Total Months</label>
-                    <input
+                    <label className="label-color">Total Months</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="totalMonth"
@@ -1842,8 +1842,8 @@ onChange={handleEmployerChange}
              
                 
                   <div className='col'>
-                    <label style={labelStyle}>Professional Tax</label>
-                    <input
+                    <label className="label-color">Professional Tax</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="professionalTax"
@@ -1852,8 +1852,8 @@ onChange={handleEmployerChange}
                     />
                   </div>
                   <div className='col'>
-                    <label style={labelStyle}>Annual CTC Rs</label>
-                    <input
+                    <label className="label-color">Annual CTC Rs</label>
+                    <input className="input-field-style"
                       type="text"
                       style={inputStyle}
                       name="annualCtcRs"
@@ -1926,32 +1926,14 @@ onChange={handleEmployerChange}
 >
   <button
     onClick={handleReset}
-    style={{
-      padding: '10px 30px',
-      backgroundColor: 'white',
-      color: '#666',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500'
-    }}
+   className='cancel-btn'
   >
     Reset
   </button>
 
   <button
   onClick={handleSubmit}
-  style={{
-    padding: '10px 30px',
-    backgroundColor: isEditMode ? '#4CAF50' : '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500'
-  }}
+  className='save-btn'
 >
   {isEditMode ? "Update" : "Save"}
 </button>

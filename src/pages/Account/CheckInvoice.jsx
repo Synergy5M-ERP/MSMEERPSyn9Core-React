@@ -166,41 +166,7 @@ const fetchInvoiceTableData = async (buyerId) => {
       }));
     }
 
-    /* ===== ITEMS ===== */
-      
-    //   console.log(item)
-      
-    //   // const receivedQty = Number(item.approvedQty) || 0;
-    //   // const ratePerUnit =
-    //   //   receivedQty > 0
-    //   //     ? (Number(item.totalItemValue) || 0) / receivedQty
-    //   //     : 0;
-
-    //   // const taxAmount =
-    //   //   (item.cgst + item.sgst + item.igst) * receivedQty;
-
-    //    // console.log(taxAmount);
-        
-
-    //   return {
-    //     id: `${buyerId}-${item.itemCode}-${index}`,
-    //     itemName: item.itemName,
-    //     itemCode: item.itemCode,
-    //     grade: item.itemGrade,
-    //     approvedQty: item.approvedQty || 0,
-    //     damagedQty: item.rejectedQty || 0,
-    //     receivedUnit: "pcs",
-    //     cgst: item.cgst,
-    //     sgst: item.sgst,
-    //     igst: item.igst,
-    //     ratePerUnit,
-    //     billCheck: false,
-    //     isSelected: false,
-    //     taxAmount,
-    //     totalItemValue: item.totalItemValue,
-    //     //billItemValue: item.totalItemValue + taxAmount
-    //   };
-    // });
+   
 
     const items = result.data.items.map((item, index) => {
 
@@ -540,8 +506,8 @@ const handleSave = async () => {
         {/* FORM FIELDS */}
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Buyer Name</label>
-            <select className="form-select" value={formData.buyerId}
+            <label className="label-color"> Buyer Name</label>
+            <select className="select-field-style" value={formData.buyerId}
                     onChange={(e) => {
                       const buyerId = Number(e.target.value); // ✅ FIX
                       const buyer = suppliers.find(b => b.buyerId === buyerId);
@@ -570,8 +536,8 @@ const handleSave = async () => {
                   </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Invoice Number</label>
-            <select className="form-select" value={formData.invoiceNumber} onChange={handleChange} name="invoiceNumber">
+            <label className="label-color"> Invoice Number</label>
+            <select className="select-field-style" value={formData.invoiceNumber} onChange={handleChange} name="invoiceNumber">
           
               <option value="">Select invoice No.</option>
                   {invoiceNumbers.map(inv => (
@@ -582,31 +548,31 @@ const handleSave = async () => {
             </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Invoice Date</label>
-            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required readOnly/>
+            <label className="label-color"> Invoice Date</label>
+            <input type="date" name="invoiceDate" className="input-field-style" value={formData.invoiceDate} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> PO Number</label>
-            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required readOnly/>
+            <label className="label-color"> PO Number</label>
+            <input type="text" name="poNumber" className="input-field-style" value={formData.poNumber} onChange={handleChange} required readOnly/>
           </div>
         </div>
 
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> PO Date</label>
-            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required readOnly/>
+            <label className="label-color"> PO Date</label>
+            <input type="date" name="poDate" className="input-field-style" value={formData.poDate} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Vehicle No</label>
-            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required readOnly/>
+            <label className="label-color"> Vehicle No</label>
+            <input type="text" name="vehicleNo" className="input-field-style" value={formData.vehicleNo} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Transporter Name</label>
-            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required readOnly/>
+            <label className="label-color"> Transporter Name</label>
+            <input type="text" name="TransporterName" className="input-field-style" value={formData.TransporterName} onChange={handleChange} required readOnly/>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Payment Due Date</label>
-            <input type="date" name="paymentDueDate" className="form-control" value={formData.paymentDueDate} onChange={handleChange} required readOnly/>
+            <label className="label-color"> Payment Due Date</label>
+            <input type="date" name="paymentDueDate" className="input-field-style" value={formData.paymentDueDate} onChange={handleChange} required readOnly/>
           </div>
         </div>
 
@@ -643,7 +609,7 @@ const handleSave = async () => {
                     <td>
                       <input
                         type="number"
-                        className="form-control form-control-sm"
+                        className="input-field-style input-field-style-sm"
                         value={row.approvedQty || ""}
                         onChange={handleQuantityChange(index, 'approvedQty')}
                         min="0"
@@ -653,7 +619,7 @@ const handleSave = async () => {
                     <td>
                       <input
                         type="number"
-                        className="form-control form-control-sm"
+                        className="input-field-style input-field-style-sm"
                         value={row.damagedQty || ""}
                         onChange={handleQuantityChange(index, 'damagedQty')}
                         min="0"
@@ -694,11 +660,11 @@ const handleSave = async () => {
 
 
         {/* BUTTONS */}
-        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
+        <div className="d-flex  gap-3 mt-4 mb-2">
           <button
             onClick={handleSave}
             disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-            className="btn btn-primary btn-lg px-5 py-2 position-relative"
+            className="save-btn"
             style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
           >
             {saveLoading ? (
@@ -711,7 +677,7 @@ const handleSave = async () => {
             )}
           </button>
           <button
-            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
+            className="cancel-btn"
             style={{ borderRadius: "8px" }}
             onClick={handleCancel}
             disabled={saveLoading}

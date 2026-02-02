@@ -433,7 +433,7 @@ function CreateItem() {
           text-align: left !important;
           font-size: 16px !important;
         }
-        .form-control:focus {
+        .input-field-style:focus {
           border-color: #100670;
           box-shadow: 0 0 0 0.2rem rgba(16, 6, 112, 0.25);
         }
@@ -485,9 +485,9 @@ function CreateItem() {
         }
       `}</style>
 
-      <div className="app-container" style={{ backgroundColor: 'white', minHeight: '120vh', padding: '20px 0' }}>
-        <div className="container-fluid">
-          <div className="row justify-content-center">
+      <div className="app-container" style={{ backgroundColor: 'white', minHeight: '120vh', padding: '10px' }}>
+        <div className="container">
+          <div className="row">
             <div className="col-12 col-lg-11">
               <div className="card border-0 shadow-lg">
                 <div className="card-body p-4 p-lg-5">
@@ -495,14 +495,14 @@ function CreateItem() {
                   {/* ROW 1: Company Name, Source, Continent, Country, State */}
                   <div className="row mb-4">
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">
+                      <label className="label-color">
                         Company Name <span className="required">*</span>
                       </label>
                       <select
                         name="Company_Name"
                         value={formData.Company_Name}
                         onChange={handleCompanyChange}
-                        className="form-control form-input"
+                        className="input-field-style form-input"
                       >
                         <option value="">Select Company</option>
                         {dropdownData.companies.map((company, index) => (
@@ -511,43 +511,43 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Source</label>
+                      <label className="label-color">Source</label>
                       <input
                         type="text"
                         name="Source"
                         value={formData.Source}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Continent</label>
+                      <label className="label-color">Continent</label>
                       <input
                         type="text"
                         name="Continent"
                         value={formData.Continent}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Country</label>
+                      <label className="label-color">Country</label>
                       <input
                         type="text"
                         name="Country"
                         value={formData.Country}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">State</label>
+                      <label className="label-color">State</label>
                       <input
                         type="text"
                         name="State"
                         value={formData.State}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                   </div>
@@ -555,22 +555,22 @@ function CreateItem() {
                   {/* ROW 2: City, Industry, Category, Sub Category, Item Name */}
                   <div className="row mb-4">
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">City</label>
+                      <label className="label-color">City</label>
                       <input
                         type="text"
                         name="City"
                         value={formData.City}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Industry</label>
+                      <label className="label-color">Industry</label>
                       <select
                         name="Industry"
                         value={formData.Industry}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       >
                         <option value="">Select Industry</option>
                         {dropdownData.industries.map((industry, index) => (
@@ -579,13 +579,13 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Category</label>
+                      <label className="label-color">Category</label>
                       <select
                         name="ItemCategory"
                         value={formData.ItemCategory}
                         onChange={handleInputChange}
                         disabled={!formData.Industry}
-                        className="form-control"
+                        className="input-field-style"
                       >
                         <option value="">Select Category</option>
                         {dropdownData.categories.map((category, index) => (
@@ -594,13 +594,13 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Sub Category</label>
+                      <label className="label-color">Sub Category</label>
                       <select
                         name="Sub_Category"
                         value={formData.Sub_Category}
                         onChange={handleSubCategoryChange}
                         disabled={!formData.ItemCategory}
-                        className="form-control"
+                        className="input-field-style"
                       >
                         <option value="">Select Sub Category</option>
                         {dropdownData.subcategories.map((subCategory, index) => (
@@ -609,13 +609,13 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Item Name</label>
+                      <label className="label-color">Item Name</label>
                       <input
                         type="text"
                         name="Item_Name"
                         value={formData.Item_Name}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                   </div>
@@ -623,7 +623,7 @@ function CreateItem() {
                   {/* ROW 3: Grade, UOM, HS Code, Currency, Average Price */}
                   <div className="row mb-4">
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">
+                      <label className="label-color">
                         Grade <span className="required">*</span>
                       </label>
                       <input
@@ -631,16 +631,16 @@ function CreateItem() {
                         name="Grade"
                         value={formData.Grade}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">UOM</label>
+                      <label className="label-color">UOM</label>
                       <select
                         name="Unit_Of_Measurement"
                         value={formData.Unit_Of_Measurement}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       >
                         <option value="">Select UOM</option>
                         {dropdownData.uoms.map((uom, index) => (
@@ -649,7 +649,7 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">
+                      <label className="label-color">
                         HS Code <span className="required">*</span>
                       </label>
                       <input
@@ -657,18 +657,18 @@ function CreateItem() {
                         name="HS_Code"
                         value={formData.HS_Code}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                         min="1000"
                         step="1"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Currency</label>
+                      <label className="label-color">Currency</label>
                       <select
                         name="Currency"
                         value={formData.Currency}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                       >
                         {dropdownData.currencies.map((currency, index) => (
                           <option key={index} value={currency.value}>{currency.label}</option>
@@ -676,13 +676,13 @@ function CreateItem() {
                       </select>
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Avg Price</label>
+                      <label className="label-color">Avg Price</label>
                       <input
                         type="number"
                         name="Average_Price"
                         value={formData.Average_Price}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                         min="0.01"
                         step="0.01"
                       />
@@ -692,31 +692,31 @@ function CreateItem() {
                   {/* ROW 4: Safe Stock, MOQ, Primary/Alternate, TC/COA */}
                   <div className="row mb-4">
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">Safe Stock</label>
+                      <label className="label-color">Safe Stock</label>
                       <input
                         type="number"
                         name="Safe_Stock"
                         value={formData.Safe_Stock}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                         min="0"
                         step="1"
                       />
                     </div>
                     <div className="col">
-                      <label className="form-label text-primary fw-bold fs-6">MOQ</label>
+                      <label className="label-color">MOQ</label>
                       <input
                         type="number"
                         name="MOQ"
                         value={formData.MOQ}
                         onChange={handleInputChange}
-                        className="form-control"
+                        className="input-field-style"
                         min="1"
                         step="1"
                       />
                     </div>
                     <div className="col-xl-4 col-lg-4 col-md-6 mb-3">
-                      <label className="form-label text-primary fw-bold fs-6">
+                      <label className="label-color">
                         Primary or Alternate <span className="required">*</span>
                       </label>
                       <div className="d-flex gap-4 mt-2 pt-1">
@@ -751,7 +751,7 @@ function CreateItem() {
                       </div>
                     </div>
                     <div className="col-xl-4 col-lg-4 col-md-6 mb-3">
-                      <label className="form-label text-primary fw-bold fs-6">TC / COA</label>
+                      <label className="label-color">TC / COA</label>
                       <div className="d-flex gap-4 mt-2 pt-1">
                         <div className="form-check">
                           <input
@@ -814,7 +814,7 @@ function CreateItem() {
                             <button
                               type="button"
                               onClick={removeImage}
-                              className="btn btn-danger btn-sm px-3"
+                              className="cancel-btn btn-sm px-3"
                             >
                               <X size={16} className="me-1" /> Remove Image
                             </button>
@@ -832,14 +832,8 @@ function CreateItem() {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="btn btn-primary btn-lg px-5 py-3 save shadow-lg border-0 position-relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          // minWidth: '160px',
-          fontWeight: '600',
-          // letterSpacing: '0.5px',
-          transition: 'all 0.3s ease'
-        }}
+        className="save-btn"
+       
       >
         {loading ? (
           <>
@@ -858,14 +852,8 @@ function CreateItem() {
       <button
         onClick={handleCancel}
         disabled={loading}
-        className="btn btn-outline-secondary btn-lg px-5 py-3 shadow-lg border-2 position-relative overflow-hidden"
-        style={{
-          // minWidth: '160px',
-          fontWeight: '600',
-         
-          transition: 'all 0.3s ease',
-          borderColor: '#6c757d !important'
-        }}
+        className="cancel-btn"
+      
       >
         {/* <i className="fas fa-times me-2"></i> */}
         Clear 

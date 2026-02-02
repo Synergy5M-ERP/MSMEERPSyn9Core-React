@@ -267,19 +267,15 @@ export default function CreditNote() {
           {/* Header Form Fields - ALL ORIGINAL FIELDS */}
           <div className="row">
             <div className="col">
-                <label style={{ textAlign: "left", display: "block",  color: "#0066cc",
-                  }}>
+                <label className="label-color">
                   Category <span style={{ color: "#ef4444" }}>*</span>
                 </label>
 
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  style={{
-                    width: "100%", padding: "5px 6px", borderRadius: 10, border: "2px solid #e2e8f0",                                                         
-                    fontSize: 15, background: "white",  cursor: "pointer"                                                      
-                  }}
-                  className="form-select"
+                
+                  className="select-field-style"
                 >
                   <option value="">Select Category</option>
                   {categoryOptions.map((c) => (
@@ -291,18 +287,15 @@ export default function CreditNote() {
               </div>
 
             <div className="col">
-              <label style={{ textAlign: "left", display: "block", color: "#0066cc", fontSize: "14px",                                                                 
-                  fontWeight: "600", marginBottom: "8px",}}>             
+              <label className="label-color">             
                 {category === "buyer" ? "Customer Name" : "Vendor Name"} <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <select
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
                 disabled={!category || isLoading}
-                style={{width: "100%", padding: "5px 6px", borderRadius: 10, border: "2px solid #e2e8f0", fontSize: 15,                                                                                   
-                  background: "white", cursor: "pointer", transition: "all 0.2s", marginBottom: "9px",                                                 
-                }}
-                className="form-select"
+              
+                className="select-field-style"
                 >
               
                 <option value="">
@@ -321,14 +314,7 @@ export default function CreditNote() {
 
             <div className="col">
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 Invoice Number <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -336,17 +322,8 @@ export default function CreditNote() {
                 value={invoice}
                 onChange={(e) => setInvoice(e.target.value)}
                 disabled={isLoading}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 10,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 15,
-                  background: "white",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-                className="form-select"
+                
+                className="select-field-style"
               >
                 <option value="">Select Invoice</option>
                 {invoiceOptions.map((o) => (
@@ -359,14 +336,7 @@ export default function CreditNote() {
 
             <div className="col">
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 Credit Note No <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -375,28 +345,14 @@ export default function CreditNote() {
                 value={creditNoteNo}
                 onChange={(e) => setCreditNoteNo(e.target.value)}
                 placeholder="CN-001"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 10,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 15,
-                  transition: "all 0.2s",
-                }}
-                className="form-text"
+                
+                className="input-field-style"
               />
             </div>
 
             <div className="col">
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 Credit Note Date <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -404,28 +360,14 @@ export default function CreditNote() {
                 type="date"
                 value={creditNoteDate}
                 onChange={(e) => setCreditNoteDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 10,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 15,
-                  transition: "all 0.2s",
-                }}
-                className="form-text"
+               
+                className="input-field-style"
               />
             </div>
 
             <div className="col">
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 Payment Due Date <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -433,15 +375,8 @@ export default function CreditNote() {
                 type="date"
                 value={paymentDueDate}
                 onChange={(e) => setPaymentDueDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 10,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 15,
-                  transition: "all 0.2s",
-                }}
-                className="form-select"
+                
+                className="select-field-style"
               />
             </div>
           </div>
@@ -457,30 +392,15 @@ export default function CreditNote() {
           >
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "10px",
-                }}
+               className="label-color"
               >
                 Item Name <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <select
                 value={item.itemName}
                 onChange={(e) => setItem((it) => ({ ...it, itemName: e.target.value }))}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "white",
-                  cursor: "pointer",
-                }}
-                className="form-select"
+          
+                className="select-field-style"
               >
                 <option value="">Select Item </option>
                 {itemOptions.map((o) => (
@@ -493,14 +413,7 @@ export default function CreditNote() {
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+              className="label-color"
               >
                 Quantity <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -510,44 +423,22 @@ export default function CreditNote() {
                 value={item.qty}
                 onChange={(e) => setItem((it) => ({ ...it, qty: e.target.value }))}
                 placeholder="0"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  textAlign: "right",
-                }}
-                className="form-text"
+                
+                className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 Unit <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <select
                 value={item.unit}
                 onChange={(e) => setItem((it) => ({ ...it, unit: e.target.value }))}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "white",
-                  cursor: "pointer",
-                }}
-                className="form-select"
+               
+                className="select-field-style"
               >
                 <option value="">Select Unit</option>
                 {unitOptions.map((u) => (
@@ -560,14 +451,7 @@ export default function CreditNote() {
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 Price <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -578,28 +462,14 @@ export default function CreditNote() {
                 value={item.price}
                 onChange={(e) => setItem((it) => ({ ...it, price: e.target.value }))}
                 placeholder="0.00"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  textAlign: "right",
-                }}
-                className="form-text"
+               
+                className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 Total Amount
               </label>
@@ -607,17 +477,8 @@ export default function CreditNote() {
                 type="number"
                 value={item.qty && item.price ? (item.qty * item.price).toFixed(2) : ""}
                 readOnly
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "#f1f5f9",
-                  color: "#475569",
-                  textAlign: "right",
-                }}
-                className="form-text"
+                
+                className="input-field-style"
               />
             </div>
           </div>
@@ -633,30 +494,15 @@ export default function CreditNote() {
           >
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+              className="label-color"
               >
                 Tax Type
               </label>
               <select
                 value={item.taxType}
                 onChange={(e) => setItem((it) => ({ ...it, taxType: e.target.value }))}
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "white",
-                  cursor: "pointer",
-                }}
-                className="form-select"
+               
+                className="select-field-style"
               >
                 <option value="">Select</option>
                 {taxTypeOptions.map((o) => (
@@ -669,14 +515,7 @@ export default function CreditNote() {
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 CGST (%)
               </label>
@@ -687,27 +526,13 @@ export default function CreditNote() {
                 value={item.cgst}
                 onChange={(e) => setItem((it) => ({ ...it, cgst: e.target.value || 0 }))}
                 placeholder="0"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  textAlign: "right",
-                }}
+              className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+                className="label-color"
               >
                 SGST (%)
               </label>
@@ -718,27 +543,13 @@ export default function CreditNote() {
                 value={item.sgst}
                 onChange={(e) => setItem((it) => ({ ...it, sgst: e.target.value || 0 }))}
                 placeholder="0"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  textAlign: "right",
-                }}
+              className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 IGST (%)
               </label>
@@ -749,27 +560,13 @@ export default function CreditNote() {
                 value={item.igst}
                 onChange={(e) => setItem((it) => ({ ...it, igst: e.target.value || 0 }))}
                 placeholder="0"
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  textAlign: "right",
-                }}
+               className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 Net Amount
               </label>
@@ -785,30 +582,13 @@ export default function CreditNote() {
                     : ""
                 }
                 readOnly
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "#f1f5f9",
-                  color: "#475569",
-                  textAlign: "right",
-                  fontWeight: 600,
-                }}
+               className="input-field-style"
               />
             </div>
 
             <div>
               <label
-                style={{
-                  textAlign: "left",
-                  display: "block",
-                  color: "#0066cc",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  marginBottom: "8px",
-                }}
+               className="label-color"
               >
                 Total Tax Amount
               </label>
@@ -823,46 +603,16 @@ export default function CreditNote() {
                     : ""
                 }
                 readOnly
-                style={{
-                  width: "100%",
-                  padding: "5px 6px",
-                  borderRadius: 8,
-                  border: "2px solid #e2e8f0",
-                  fontSize: 14,
-                  background: "#f1f5f9",
-                  color: "#475569",
-                  textAlign: "right",
-                  fontWeight: 600,
-                }}
+              className="input-field-style"
               />
             </div>
           </div>
 
           {/* Add/Update Button - ORIGINAL */}
           <button
-            className="mb-2"
+            className="mb-2 add-btn"
             onClick={handleAddItem}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "12px 28px",
-              borderRadius: 10,
-              border: "none",
-              background:
-                editingIdx !== null
-                  ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                  : "linear-gradient(135deg, green 0%, green 100%)",
-              color: "white",
-              fontWeight: 600,
-              fontSize: 15,
-              cursor: "pointer",
-              boxShadow:
-                editingIdx !== null
-                  ? "0 4px 15px rgba(245, 158, 11, 0.4)"
-                  : "0 4px 15px green",
-              transition: "all 0.3s",
-            }}
+           
             onMouseOver={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow =
@@ -1300,68 +1050,16 @@ export default function CreditNote() {
             style={{
               display: "flex",
               gap: 16,
-              justifyContent: "flex-end",
+              // justifyContent: "flex-end",
               flexWrap: "wrap",
             }}
           >
-            <button
-              onClick={handleCancel}
-              disabled={isSaving}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "14px 32px",
-                borderRadius: 12,
-                border: "2px solid #e2e8f0",
-                background: "white",
-                color: "#64748b",
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: isSaving ? "not-allowed" : "pointer",
-                transition: "all 0.2s",
-                opacity: isSaving ? 0.5 : 1,
-              }}
-              onMouseOver={(e) => {
-                if (!isSaving) {
-                  e.currentTarget.style.borderColor = "#cbd5e1";
-                  e.currentTarget.style.background = "#f8fafc";
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isSaving) {
-                  e.currentTarget.style.borderColor = "#e2e8f0";
-                  e.currentTarget.style.background = "white";
-                }
-              }}
-            >
-              <X size={18} />
-              Cancel
-            </button>
+  
             <button
               onClick={handleSave}
               disabled={isSaving || items.length === 0}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "14px 32px",
-                borderRadius: 12,
-                border: "none",
-                background:
-                  isSaving || items.length === 0
-                    ? "#cbd5e1"
-                    : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                color: "white",
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: isSaving || items.length === 0 ? "not-allowed" : "pointer",
-                boxShadow:
-                  isSaving || items.length === 0
-                    ? "none"
-                    : "0 4px 15px rgba(16, 185, 129, 0.4)",
-                transition: "all 0.3s",
-              }}
+              className="save-btn"
+                
               onMouseOver={(e) => {
                 if (!isSaving && items.length > 0) {
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -1393,10 +1091,31 @@ export default function CreditNote() {
                 </>
               ) : (
                 <>
-                  <Save size={18} />
+                  
                   Save
                 </>
               )}
+            </button>
+
+                      <button
+              onClick={handleCancel}
+              disabled={isSaving}
+             className="cancel-btn"
+              onMouseOver={(e) => {
+                if (!isSaving) {
+                  e.currentTarget.style.borderColor = "#cbd5e1";
+                  e.currentTarget.style.background = "#f8fafc";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isSaving) {
+                  e.currentTarget.style.borderColor = "#e2e8f0";
+                  e.currentTarget.style.background = "white";
+                }
+              }}
+            >
+            
+              Cancel
             </button>
           </div>
         </div>

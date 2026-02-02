@@ -891,7 +891,7 @@ function View_items() {
               <div className="modal-footer">
                 <button 
                   type="button" 
-                  className="btn btn-secondary" 
+                  className="cancel-btn" 
                   onClick={() => setShowEditModal(false)}
                   disabled={isUpdating}
                 >

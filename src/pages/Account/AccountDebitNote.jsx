@@ -3,8 +3,7 @@ import { Edit, Trash2, Plus, Save, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { API_ENDPOINTS } from "../../config/apiconfig";
-import axios from "axios";
-import { Prev } from "react-bootstrap/esm/PageItem";
+import axios from "axios"
 
 const taxTypeOptions = [
   { value: "CGST_SGST", label: "CGST_SGST" },

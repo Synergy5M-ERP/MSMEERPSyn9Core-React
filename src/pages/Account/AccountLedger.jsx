@@ -154,35 +154,43 @@ export default function AccountLedger({ view }) {
     setLedgerSubGroupName("");
   };
 
-  const validateForm = () => {
-    if (formType === "ledger") {
-      if (!accountGroup) return "Please select Account Group";
-      if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
-      // const mobile = String(mobileNo || "").trim();
-      // if (mobile) {
-      // if (!/^\d{10}$/.test(mobile)) return "Mobile No must be exactly 10 digits";
-      // if (!/^[6-9]/.test(mobile)) return "Mobile No must start with 6, 7, 8, or 9";
-      // }
-      // if (!emailId.trim()) return "Please enter Email ID";
-      const validateGST = () => {
-      if (gstNo.trim() === "") return true; // Optional
+  // const validateForm = () => {
+  //   if (formType === "ledger") {
+  //     if (!accountGroup) return "Please select Account Group";
+  //     if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
 
-      if (!gstRegex.test(gstNo)) {
-      toast.error("Invalid GST Number");
-      return false;
-      }
+  //     const validateGST = () => {
+  //     if (gstNo.trim() === "") return true; // Optional
 
-      return true;
-      };
-      // if (!address.trim()) return "Please enter Address";
-      if (!description.trim()) return "Please enter Description";
-    } else {
-      if (!ledgerId) return "Please select Ledger for Sub Ledger";
-      if (!ledger.trim()) return "Please enter Sub Ledger name";
-      if (!description.trim()) return "Please enter Description";
-    }
-    return null;
-  };
+  //     if (!gstRegex.test(gstNo)) {
+  //     toast.error("Invalid GST Number");
+  //     return false;
+  //     }
+
+  //     return true;
+  //     };
+  //     // if (!address.trim()) return "Please enter Address";
+  //     if (!description.trim()) return "Please enter Description";
+  //   } else {
+  //     if (!ledgerId) return "Please select Ledger for Sub Ledger";
+  //      if (!ledgerSubGroupName.trim()) return "Please enter Sub Ledger name"; 
+  //     if (!ledger.trim()) return "Please enter Sub Ledger name";
+  //     if (!description.trim()) return "Please enter Description";
+  //   }
+  //   return null;
+  // };
+const validateForm = () => {
+  if (formType === "ledger") {
+    if (!accountGroup) return "Please select Account Group";
+    if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
+    if (!description.trim()) return "Please enter Description";
+  } else {
+    if (!ledgerId) return "Please select Ledger for Sub Ledger";
+    if (!ledgerSubGroupName.trim()) return "Please enter Sub Ledger name";  // ✅ ONLY THIS
+    if (!description.trim()) return "Please enter Description";
+  }
+  return null;
+};
 
   const handleSave = async () => {
     const validationError = validateForm();
@@ -260,6 +268,7 @@ export default function AccountLedger({ view }) {
       setClosingBal(item.ClosingBal ?? 0);
       setEditingId(item.AccountLedgerId ?? null);
     } else {
+      setLedgerSubGroupName(item.AccountLedgerSubName ?? "");  
       setLedger(item.AccountLedgerSubName ?? "");
       setDescription(item.AccountLedgerSubNarration ?? "");
       setLedgerId(item.AccountLedgerid ?? "");
@@ -466,7 +475,7 @@ export default function AccountLedger({ view }) {
               </div>
 
               <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={handleSave} className="save-btn" disabled={loading || (formType === "ledger" ? !ledgerGroupName.trim() : !ledger.trim())}>
+                <button onClick={handleSave} className="save-btn" >
                   <Save size={18} style={{ marginRight: "6px" }} /> Save
                 </button>
                 <button onClick={handleCancel} className="cancel-btn" disabled={loading}>

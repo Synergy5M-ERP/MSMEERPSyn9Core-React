@@ -2101,346 +2101,167 @@ background-color: green; /* ✅ Blue gradient */
 
 
 /* balance sheet */
-/* Balance Sheet - Professional Financial Report */
-.balance-sheet-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --bg-gray: #f8f9fa;
+    --border-color: #333;
 }
 
-.header-section {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+.app-bg {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
 }
 
-.header-section h1 {
-  margin: 0 0 25px 0;
-  color: #2c3e50;
-  font-size: 28px;
-  border-bottom: 3px solid #3498db;
-  padding-bottom: 10px;
+/* Action Bar Styling */
+.action-bar {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.filters-section {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: flex-end;
+.gradient-text {
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-width: 200px;
+/* Document Paper Styling */
+.document-paper {
+    background: #fff;
+    max-width: 1000px;
+    padding: 3rem;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
 }
 
-.filter-group label {
-  font-weight: 600;
-  color: #555;
-  font-size: 14px;
+.company-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    letter-spacing: 2px;
 }
 
-.filter-group input {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.3s;
+.header-divider {
+    height: 3px;
+    background: var(--primary-color);
+    width: 80px;
+    margin: 1.5rem auto;
 }
 
-.filter-group input:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+/* Table Side Styling */
+.border-outline {
+    border: 2px solid var(--border-color);
 }
 
-.generate-button {
-  padding: 12px 30px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  white-space: nowrap;
+.border-side {
+    border-right: 1px solid var(--border-color);
 }
 
-.generate-button:hover:not(:disabled) {
-  background: #2980b9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+.side-header {
+    background: #2c3e50;
+    color: white;
+    padding: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
-.generate-button:disabled {
-  background: #bdc3c7;
-  cursor: not-allowed;
+.group-title-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    border-bottom: 1px solid #dee2e6;
+    color: #1a1a1a;
 }
 
-.error-message {
-  margin-top: 20px;
-  padding: 15px;
-  background: #fee;
-  border-left: 4px solid #e74c3c;
-  color: #c0392b;
-  border-radius: 4px;
+.ledger-row {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 1.5rem;
+    font-style: italic;
+    color: #666;
+    font-size: 0.85rem;
 }
 
-.balance-sheet-report {
-  background: white;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.side-footer {
+    background: #f1f3f5;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    border-top: 2px solid var(--border-color);
 }
 
-.report-header {
-  text-align: center;
-  margin-bottom: 40px;
-  border-bottom: 2px solid #ecf0f1;
-  padding-bottom: 20px;
+.double-underline {
+    border-bottom: 3px double var(--border-color);
 }
 
-.report-header h2 {
-  margin: 0 0 10px 0;
-  color: #2c3e50;
-  font-size: 32px;
-  font-weight: 700;
+/* Custom Buttons */
+.btn-primary-custom {
+    background: #2c3e50;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 20px;
+    transition: 0.3s;
 }
 
-.report-period {
-  font-size: 20px;
-  color: #34495e;
-  margin: 5px 0;
-  font-weight: 600;
+.btn-primary-custom:hover {
+    background: #34495e;
+    transform: translateY(-2px);
 }
 
-.report-dates {
-  font-size: 14px;
-  color: #7f8c8d;
-  margin: 5px 0;
+.sig-line {
+    border-top: 1px solid #333;
+    padding-top: 10px;
+    margin: 0 20px;
+    font-size: 0.8rem;
+    color: #555;
 }
 
-.balance-sheet-content {
-  display: grid;
-  gap: 30px;
-}
-
-.section {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.section-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 15px 20px;
-  color: white;
-}
-
-.assets-section .section-header {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-.liabilities-section .section-header {
-  background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.account-group {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.account-group:last-child {
-  border-bottom: none;
-}
-
-.group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.group-header h3 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.group-code {
-  background: #e9ecef;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: #495057;
-  font-weight: 600;
-}
-
-.accounts-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.accounts-table thead {
-  background: #f8f9fa;
-}
-
-.accounts-table th {
-  padding: 12px 20px;
-  text-align: left;
-  font-weight: 600;
-  color: #495057;
-  font-size: 14px;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.accounts-table tbody tr {
-  border-bottom: 1px solid #f1f3f5;
-  transition: background-color 0.2s;
-}
-
-.accounts-table tbody tr:hover {
-  background: #f8f9fa;
-}
-
-.accounts-table td {
-  padding: 12px 20px;
-  color: #495057;
-}
-
-.amount-column {
-  text-align: right !important;
-  font-family: 'Courier New', monospace;
-  font-weight: 500;
-}
-
-.net-balance {
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.group-total-row {
-  background: #e9ecef !important;
-  font-weight: 600;
-}
-
-.group-total-row:hover {
-  background: #e9ecef !important;
-}
-
-.total-label {
-  color: #2c3e50 !important;
-}
-
-.section-total {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-  background: #f8f9fa;
-  font-size: 18px;
-  font-weight: 700;
-  color: #2c3e50;
-  border-top: 3px solid #dee2e6;
-}
-
-.total-amount {
-  font-family: 'Courier New', monospace;
-  color: #2c3e50;
-}
-
-.net-balance-section {
-  margin-top: 30px;
-  padding: 25px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.net-balance-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.net-amount {
-  font-family: 'Courier New', monospace;
-  font-size: 26px;
-}
-
-.net-amount.positive {
-  color: #2ecc71;
-}
-
-.net-amount.negative {
-  color: #e74c3c;
-}
-
-/* Responsive Design */
+/* Responsive Overrides */
 @media (max-width: 768px) {
-  .filters-section {
+    .document-paper {
+        padding: 1.5rem;
+    }
+    .border-side {
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+    }
+}
+
+.loader-container {
+    height: 100vh;
+    display: flex;
     flex-direction: column;
-  }
-
-  .filter-group {
-    min-width: 100%;
-  }
-
-  .balance-sheet-report {
-    padding: 20px;
-  }
-
-  .accounts-table {
-    font-size: 12px;
-  }
-
-  .accounts-table th,
-  .accounts-table td {
-    padding: 8px 10px;
-  }
-
-  .report-header h2 {
-    font-size: 24px;
-  }
-
-  .section-header h2 {
-    font-size: 18px;
-  }
+    justify-content: center;
+    align-items: center;
 }
 
-/* Print Styles */
-@media print {
-  .header-section,
-  .filters-section {
-    display: none;
-  }
 
-  .balance-sheet-report {
-    box-shadow: none;
-  }
 
-  .section {
-    page-break-inside: avoid;
-  }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* SemiFinProduct */
 .semi-fin-container {

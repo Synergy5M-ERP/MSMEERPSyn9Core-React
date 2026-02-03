@@ -44,7 +44,7 @@ const isEmployeeRoute = location.pathname.startsWith("/employee");
   <Routes>
     <Route index element={<EmployeeMaster />} />
     <Route path="employee/add" element={<AddEmployee />} />
-    <Route path="employee/edit/:empCode/*" element={<AddEmployee />} />
+    <Route path="employee/edit/:employeeId/*" element={<AddEmployee />} />
   </Routes>
 )}
    {activePage==="createMatrix" && <CreateMatrix/>}

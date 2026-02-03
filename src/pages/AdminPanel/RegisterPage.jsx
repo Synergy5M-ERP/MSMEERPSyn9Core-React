@@ -1,512 +1,3 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import { toast, ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import "./Register.css";
-// import { Eye, EyeOff } from "lucide-react";
-// //import
-// function Register() {
-//   const [formData, setFormData] = useState({
-//     company_name: "",
-//     contact_person: "",
-//     email_id: "",
-//     contact_no: "",
-//     gst_no: "",
-//     source: "",
-//     continent: "",
-//     country: "",
-//     state: "",
-//     city: "",
-//     authority: "",
-//     designation: "",
-//     password: "",
-//     confirm_password  : "",
-//   });
-
-//   const [errors, setErrors] = useState({});
-//   const [sources, setSources] = useState([]);
-//   const [continents, setContinents] = useState([]);
-//   const [countries, setCountries] = useState([]);
-//   const [states, setStates] = useState([]);
-//   const [cities, setCities] = useState([]);
-//   const [authorities, setAuthorities] = useState([]);
-//   const [designations, setDesignations] = useState([]);
-//   const [showPassword, setShowPassword] = useState(false);
-// const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-
-//   const apiBase = "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI";
-
-//   // -------------------- VALIDATION --------------------
-//   const validateForm = () => {
-//     let newErrors = {};
-//     let isValid = true;
-
-//     const password = formData.password;
-//     const confirmPassword = formData.confirm_password;
-
-//     const strongPasswordRegex =
-//       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
-
-//     if (!password) {
-//       isValid = false;
-//       newErrors.password = "Password is required";
-//     } else if (!strongPasswordRegex.test(password)) {
-//       isValid = false;
-//       newErrors.password =
-//         "Password must be at least 8 characters and include upper-case, lower-case, number and special character.";
-//     }
-
-//     if (!confirmPassword) {
-//       isValid = false;
-//       newErrors.confirm_password = "Confirm Password is required";
-//     } else if (password !== confirmPassword) {
-//       isValid = false;
-//       newErrors.confirm_password = "Passwords do not match";
-//     }
-
-//     setErrors(newErrors);
-//     return isValid;
-//   };
-
-//   // -------------------- FETCH DROPDOWNS --------------------
-//   useEffect(() => {
-//     const fetchDropdowns = async () => {
-//       try {
-//         const [sourcesRes, authoritiesRes, designationsRes] =
-//           await Promise.all([
-//             axios.get(`${apiBase}/GetSource`),
-//             axios.get("https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster/AuthorityMatrix"),
-//             axios.get("https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster/Designation"),
-//           ]);
-
-//         setSources(sourcesRes.data);
-//         setAuthorities(authoritiesRes.data);
-//         setDesignations(designationsRes.data);
-//       } catch (err) {
-//         console.error("Dropdown fetch error:", err);
-//         toast.error("Failed to load dropdowns");
-//       }
-//     };
-
-//     fetchDropdowns();
-//   }, []);
-
-//   // CONTINENT
-//   useEffect(() => {
-//     if (formData.source) {
-//       axios
-//         .get(`${apiBase}/GetContinent`, {
-//           params: { source: formData.source },
-//         })
-//         .then((res) => setContinents(res.data))
-//         .catch((err) => console.error("Continent error:", err));
-//     } else setContinents([]);
-//   }, [formData.source]);
-
-//   // COUNTRY
-//   useEffect(() => {
-//     if (formData.continent) {
-//       axios
-//         .get(`${apiBase}/GetCountry`, {
-//           params: { source: formData.source, continent: formData.continent },
-//         })
-//         .then((res) => setCountries(res.data))
-//         .catch((err) => console.error("Country error:", err));
-//     } else setCountries([]);
-//   }, [formData.continent]);
-
-//   // STATE
-//   useEffect(() => {
-//     if (formData.country) {
-//       axios
-//         .get(`${apiBase}/GetState`, {
-//           params: {
-//             source: formData.source,
-//             continent: formData.continent,
-//             country: formData.country,
-//           },
-//         })
-//         .then((res) => setStates(res.data))
-//         .catch((err) => console.error("State error:", err));
-//     } else setStates([]);
-//   }, [formData.country]);
-
-//   // CITY
-//   useEffect(() => {
-//     if (formData.state) {
-//       axios
-//         .get(`${apiBase}/GetCity`, {
-//           params: {
-//             source: formData.source,
-//             continent: formData.continent,
-//             country: formData.country,
-//             state: formData.state,
-//           },
-//         })
-//         .then((res) => setCities(res.data))
-//         .catch((err) => console.error("City error:", err));
-//     } else setCities([]);
-//   }, [formData.state]);
-
-//   // ---------------------- HANDLE CHANGE ----------------------
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: value,
-
-//       ...(name === "source"
-//         ? { continent: "", country: "", state: "", city: "" }
-//         : {}),
-//       ...(name === "continent"
-//         ? { country: "", state: "", city: "" }
-//         : {}),
-//       ...(name === "country" ? { state: "", city: "" } : {}),
-//       ...(name === "state" ? { city: "" } : {}),
-//     }));
-//   };
-
-//   // ---------------------- SUBMIT ----------------------
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     if (!validateForm()) {
-//       toast.error("Please fix validation errors!");
-//       return;
-//     }
-
-//     try {
-//       const res = await axios.post(`${apiBase}/Register`, formData, {
-//         headers: { "Content-Type": "application/json" },
-//       });
-
-//       if (res.data.success) {
-//         toast.success("Registration Successful!");
-
-//         setFormData({
-//           company_name: "",
-//           contact_person: "",
-//           email_id: "",
-//           contact_no: "",
-//           gst_no: "",
-//           source: "",
-//           continent: "",
-//           country: "",
-//           state: "",
-//           city: "",
-//           authority: "",
-//           designation: "",
-//           password: "",
-//           confirm_password: "",
-//         });
-//       } else {
-//         toast.warning(res.data.message);
-//       }
-//     } catch (err) {
-//       console.error("Registration error:", err);
-//       toast.error("Registration failed!");
-//     }
-//   };
-
-//   const handleCancel = () => {
-//     setFormData({
-//       company_name: "",
-//       contact_person: "",
-//       email_id: "",
-//       contact_no: "",
-//       gst_no: "",
-//       source: "",
-//       continent: "",
-//       country: "",
-//       state: "",
-//       city: "",
-//       authority: "",
-//       designation: "",
-//       password: "",
-//       confirm_password: "",
-//     });
-//     setErrors({});
-//   };
-
-//   // ⭐ LABEL Component for cleaner code
-//   const RequiredLabel = ({ text }) => (
-//     <label>
-//       {text}
-//       <span className="required-star">*</span>
-//     </label>
-//   );
-
-//   return (
-//     <div className="register-container">
-//       <ToastContainer position="top-right" autoClose={3000} />
-
-// <h3 className="form-title-box">Registration Form</h3>
-
-//       <form onSubmit={handleSubmit} className="row g-3">
-
-//         {/* COMPANY NAME */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Company Name" />
-//           <input
-//             type="text"
-//             name="company_name"
-//             value={formData.company_name}
-//             onChange={handleChange}
-//             className="form-control"
-//           />
-//         </div>
-
-//         {/* CONTACT PERSON */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Contact Person" />
-//           <input
-//             type="text"
-//             name="contact_person"
-//             value={formData.contact_person}
-//             onChange={handleChange}
-//             className="form-control"
-//           />
-//         </div>
-
-//         {/* EMAIL */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Email ID" />
-//           <input
-//             type="email"
-//             name="email_id"
-//             value={formData.email_id}
-//             onChange={handleChange}
-//             className="form-control"
-//           />
-//         </div>
-
-//         {/* CONTACT NUMBER */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Contact Number" />
-//           <input
-//             type="text"
-//             name="contact_no"
-//             value={formData.contact_no}
-//             onChange={handleChange}
-//             className="form-control"
-//           />
-//         </div>
-
-//         {/* GST */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="GST Number" />
-//           <input
-//             type="text"
-//             name="gst_no"
-//             value={formData.gst_no}
-//             onChange={handleChange}
-//             className="form-control"
-//           />
-//         </div>
-
-//         {/* SOURCE */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Source" />
-//           <select
-//             name="source"
-//             value={formData.source}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select Source</option>
-//             {sources.map((src) => (
-//               <option key={src} value={src}>
-//                 {src}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* CONTINENT */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Continent" />
-//           <select
-//             name="continent"
-//             value={formData.continent}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select Continent</option>
-//             {continents.map((c) => (
-//               <option key={c} value={c}>
-//                 {c}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* COUNTRY */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Country" />
-//           <select
-//             name="country"
-//             value={formData.country}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select Country</option>
-//             {countries.map((c) => (
-//               <option key={c} value={c}>
-//                 {c}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* STATE */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="State" />
-//           <select
-//             name="state"
-//             value={formData.state}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select State</option>
-//             {states.map((s) => (
-//               <option key={s} value={s}>
-//                 {s}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* CITY */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="City" />
-//           <select
-//             name="city"
-//             value={formData.city}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select City</option>
-//             {cities.map((c) => (
-//               <option key={c} value={c}>
-//                 {c}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* AUTHORITY */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Authority" />
-//           <select
-//             name="authority"
-//             value={formData.authority}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select Authority</option>
-//             {authorities.map((a) => (
-//               <option key={a.authority_code} value={a.authority_code}>
-//                 {a.authorityName}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* DESIGNATION */}
-//         <div className="col-md-4">
-//           <RequiredLabel text="Designation" />
-//           <select
-//             name="designation"
-//             value={formData.designation}
-//             onChange={handleChange}
-//             className="form-control"
-//           >
-//             <option value="">Select Designation</option>
-//             {designations.map((d) => (
-//               <option key={d.designation_code} value={d.designation_code}>
-//                 {d.designationName}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-// {/* PASSWORD */}
-// <div className="col-md-4">
-//   <RequiredLabel text="Password" />
-
-//   <div className="position-relative">
-//     <input
-//       type={showPassword ? "text" : "password"}
-//       name="password"
-//       value={formData.password}
-//       onChange={handleChange}
-//       className="form-control"
-//       style={{ paddingRight: "40px" }}
-//     />
-
-//     <span
-//       onClick={() => setShowPassword(!showPassword)}
-//       style={{
-//         position: "absolute",
-//         right: "10px",
-//         top: "50%",
-//         transform: "translateY(-50%)",
-//         cursor: "pointer"
-//       }}
-//     >
-//       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-//     </span>
-//   </div>
-// </div>
-
-// {/* CONFIRM PASSWORD */}
-// <div className="col-md-4">
-//   <RequiredLabel text="Confirm Password" />
-
-//   <div className="position-relative">
-//     <input
-//       type={showConfirmPassword ? "text" : "password"}
-//       name="confirm_password"
-//       value={formData.confirm_password}
-//       onChange={handleChange}
-//       className="form-control"
-//       style={{ paddingRight: "40px" }}
-//     />
-
-//     <span
-//       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-//       style={{
-//         position: "absolute",
-//         right: "10px",
-//         top: "50%",
-//         transform: "translateY(-50%)",
-//         cursor: "pointer"
-//       }}
-//     >
-//       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-//     </span>
-//   </div>
-// </div>
-
-// {/* BUTTONS */}
-//         <div className="btn-group mt-3">
-//  <div className="btn-group">
-//   <button type="submit" className="btn btn-primary">
-//     Register
-//   </button>
-
-//   <button type="button" className="btn btn-cancel">
-//     Cancel
-//   </button>
-// </div>
-
-// </div>
-
-//       </form>
-//     </div>
-//   );
-// }
 
 // export default Register;
 import React, { useState, useEffect } from "react";
@@ -517,22 +8,30 @@ import { Eye, EyeOff } from "lucide-react";
 import "./Register.css";
 
 function Register() {
-  const [formData, setFormData] = useState({
-    company_name: "",
-    contact_person: "",
-    email_id: "",
-    contact_no: "",
-    gst_no: "",
-    source: "",
-    continent: "",
-    country: "",
-    state: "",
-    city: "",
-    authority: "",
-    designation: "",
-    password: "",
-    confirm_password: "",
-  });
+ const [formData, setFormData] = useState({
+  company_name: "",
+  contact_person: "",
+  email_id: "",
+  contact_no: "",
+  gst_no: "",
+
+  source: "",
+  continent: "",
+
+  CountryId: "",
+  StateId: "",
+  CityId: "",
+
+  authority: "",
+  designation: "",
+
+  password: "",          // ✅ lowercase
+  confirm_password: "",
+});
+
+
+
+
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -547,8 +46,10 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const apiBase =
-    "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI";
+  const apiBase = "https://msmeerpsyn9-core.azurewebsites.net/api/HRMAdminRegAPI";
+
+ // const apiBase =
+    //"https://localhost:7145/api/HRMAdminRegAPI";
 
   // ---------- VALIDATION ----------
   const validateField = (name, value) => {
@@ -625,22 +126,23 @@ function Register() {
   };
 
   const validateForm = () => {
-    const fields = [
-      "company_name",
-      "contact_person",
-      "email_id",
-      "contact_no",
-      "gst_no",
-      "source",
-      "continent",
-      "country",
-      "state",
-      "city",
-      "authority",
-      "designation",
-      "password",
-      "confirm_password",
-    ];
+  const fields = [
+  "company_name",
+  "contact_person",
+  "email_id",
+  "contact_no",
+  "gst_no",
+  "source",
+  "continent",
+  "CountryId",
+  "StateId",
+  "CityId",
+  "authority",
+  "designation",
+  "password",
+  "confirm_password",
+];
+
 
     const newErrors = {};
     fields.forEach((f) => {
@@ -651,7 +153,9 @@ function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+
   // ---------- DROPDOWNS ----------
+  
   useEffect(() => {
     const load = async () => {
       try {
@@ -664,8 +168,13 @@ function Register() {
             "https://msmeerpsyn9-core.azurewebsites.net/api/HrmMaster/Designation"
           ),
         ]);
-        setSources(srcRes.data || []);
-        setAuthorities(authRes.data || []);
+const srcData = Array.isArray(srcRes.data)
+  ? srcRes.data
+  : Object.values(srcRes.data);
+
+setSources(srcData);
+
+     setAuthorities(authRes.data || []);
         setDesignations(desRes.data || []);
       } catch {
         toast.error("Failed to load dropdowns");
@@ -679,8 +188,10 @@ function Register() {
       setContinents([]);
       return;
     }
-    axios
-      .get(`${apiBase}/GetContinent`, { params: { source: formData.source } })
+    axios.get(`${apiBase}/GetContinent`, {
+  params: { sourceId: formData.source }
+})
+
       .then((r) => setContinents(r.data || []))
       .catch(() => setContinents([]));
   }, [formData.source]);
@@ -690,140 +201,88 @@ function Register() {
       setCountries([]);
       return;
     }
-    axios
-      .get(`${apiBase}/GetCountry`, {
-        params: {
-          source: formData.source,
-          continent: formData.continent,
-        },
-      })
+    axios.get(`${apiBase}/GetCountry`, {
+  params: { continentId: formData.continent }
+})
+
       .then((r) => setCountries(r.data || []))
       .catch(() => setCountries([]));
   }, [formData.continent, formData.source]);
+useEffect(() => {
+  if (!formData.CountryId) {
+    setStates([]);
+    return;
+  }
 
-  useEffect(() => {
-    if (!formData.country) {
-      setStates([]);
-      return;
-    }
-    axios
-      .get(`${apiBase}/GetState`, {
-        params: {
-          source: formData.source,
-          continent: formData.continent,
-          country: formData.country,
-        },
-      })
-      .then((r) => setStates(r.data || []))
-      .catch(() => setStates([]));
-  }, [formData.country, formData.continent, formData.source]);
+  axios.get(`${apiBase}/GetState`, {
+    params: { countryId: formData.CountryId }
+  })
+  .then(res => setStates(res.data || []))
+  .catch(() => setStates([]));
+}, [formData.CountryId]);
 
-  useEffect(() => {
-    if (!formData.state) {
-      setCities([]);
-      return;
+
+
+useEffect(() => {
+  if (!formData.StateId) {
+    setCities([]);
+    return;
+  }
+
+  axios.get(`${apiBase}/GetCity`, {
+    params: {
+      stateId: formData.StateId
     }
-    axios
-      .get(`${apiBase}/GetCity`, {
-        params: {
-          source: formData.source,
-          continent: formData.continent,
-          country: formData.country,
-          state: formData.state,
-        },
-      })
-      .then((r) => setCities(r.data || []))
-      .catch(() => setCities([]));
-  }, [
-    formData.state,
-    formData.country,
-    formData.continent,
-    formData.source,
-  ]);
+  })
+  .then(res => setCities(res.data || []))
+  .catch(() => setCities([]));
+}, [formData.StateId]);
+
 
   // ---------- CHANGE / SUBMIT ----------
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setTouched((t) => ({ ...t, [name]: true }));
-    setErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[name];
-      return copy;
-    });
+ const handleChange = (e) => {
+  const { name, value, selectedOptions } = e.target;
 
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-      if (name === "source") {
-        updated.continent = "";
-        updated.country = "";
-        updated.state = "";
-        updated.city = "";
-      }
-      if (name === "continent") {
-        updated.country = "";
-        updated.state = "";
-        updated.city = "";
-      }
-      if (name === "country") {
-        updated.state = "";
-        updated.city = "";
-      }
-      if (name === "state") {
-        updated.city = "";
-      }
-      return updated;
-    });
-  };
+  setFormData(prev => {
+    const updated = { ...prev, [name]: value };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      toast.error("Please fix all highlighted errors");
-      return;
+    if (name === "CountryId") {
+      updated.CountryName = selectedOptions[0].text;
+      updated.StateId = "";
+      updated.StateName = "";
+      updated.CityId = "";
+      updated.CityName = "";
     }
 
-    setIsSubmitting(true);
-    try {
-      const res = await axios.post(`${apiBase}/Register`, formData, {
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.data?.success) {
-        toast.success("Registration successful");
-        setFormData({
-          company_name: "",
-          contact_person: "",
-          email_id: "",
-          contact_no: "",
-          gst_no: "",
-          source: "",
-          continent: "",
-          country: "",
-          state: "",
-          city: "",
-          authority: "",
-          designation: "",
-          password: "",
-          confirm_password: "",
-        });
-        setErrors({});
-        setTouched({});
-        setContinents([]);
-        setCountries([]);
-        setStates([]);
-        setCities([]);
-      } else {
-        toast.warning(res.data?.message || "Registration failed");
-      }
-    } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        "Registration failed";
-      toast.error(msg);
-    } finally {
-      setIsSubmitting(false);
+    if (name === "StateId") {
+      updated.StateName = selectedOptions[0].text;
+      updated.CityId = "";
+      updated.CityName = "";
     }
-  };
+
+    if (name === "CityId") {
+      updated.CityName = selectedOptions[0].text;
+    }
+
+    return updated;
+  });
+};
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+ const payload = {
+  ...formData,
+  CountryId: parseInt(formData.CountryId),
+  StateId: parseInt(formData.StateId),
+  CityId: parseInt(formData.CityId),
+};
+
+  await axios.post(`${apiBase}/Register`, payload);
+};
+
 
   const handleCancel = () => {
     setFormData({
@@ -958,19 +417,16 @@ function Register() {
             <label>
               Source<span className="required-star">*</span>
             </label>
-            <select
-              name="source"
-              value={formData.source}
-              onChange={handleChange}
-              className={inputClass("source")}
-            >
-              <option value="">Select Source</option>
-              {sources.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+           <select name="source" value={formData.source} onChange={handleChange} className="form-control">
+  <option value="">Select Source</option>
+  {sources.map((src) => (
+    <option key={src.id} value={src.id}>
+      {src.name}
+    </option>
+  ))}
+</select>
+
+
             {touched.source && errors.source && (
               <small className="text-danger">{errors.source}</small>
             )}
@@ -981,96 +437,88 @@ function Register() {
             <label>
               Continent<span className="required-star">*</span>
             </label>
-            <select
-              name="continent"
-              value={formData.continent}
-              onChange={handleChange}
-              className={inputClass("continent")}
-              disabled={!formData.source}
-            >
-              <option value="">Select Continent</option>
-              {continents.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+           <select name="continent" value={formData.continent} onChange={handleChange} className="form-control" disabled={!formData.source}>
+  <option value="">Select Continent</option>
+  {continents.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.name}
+    </option>
+  ))}
+</select>
+
             {touched.continent && errors.continent && (
               <small className="text-danger">{errors.continent}</small>
             )}
           </div>
 
-          {/* Country */}
           <div className="col">
-            <label>
-              Country<span className="required-star">*</span>
-            </label>
-            <select
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              className={inputClass("country")}
-              disabled={!formData.continent}
-            >
-              <option value="">Select Country</option>
-              {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            {touched.country && errors.country && (
-              <small className="text-danger">{errors.country}</small>
-            )}
-          </div>
+  <label>
+    Country<span className="required-star">*</span>
+  </label>
 
-          {/* State */}
-          <div className="col">
-            <label>
-              State<span className="required-star">*</span>
-            </label>
-            <select
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              className={inputClass("state")}
-              disabled={!formData.country}
-            >
-              <option value="">Select State</option>
-              {states.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            {touched.state && errors.state && (
-              <small className="text-danger">{errors.state}</small>
-            )}
-          </div>
+<select name="CountryId" value={formData.CountryId} onChange={handleChange} className="form-control">
+  <option value="">Select Country</option>
+  {countries.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.name}
+    </option>
+  ))}
+</select>
 
-          {/* City */}
-          <div className="col">
-            <label>
-              City<span className="required-star">*</span>
-            </label>
-            <select
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              className={inputClass("city")}
-              disabled={!formData.state}
-            >
-              <option value="">Select City</option>
-              {cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            {touched.city && errors.city && (
-              <small className="text-danger">{errors.city}</small>
-            )}
-          </div>
+
+
+
+
+
+
+  {touched.CountryId && errors.CountryId && (
+    <small className="text-danger">{errors.CountryId}</small>
+  )}
+</div>
+
+<div className="col">
+  <label>
+    State<span className="required-star">*</span>
+  </label>
+
+ <select name="StateId" value={formData.StateId} onChange={handleChange} className="form-control">
+  <option value="">Select State</option>
+  {states.map((s) => (
+    <option key={s.id} value={s.id}>
+      {s.name}
+    </option>
+  ))}
+</select>
+
+
+
+  {touched.StateId && errors.StateId && (
+    <small className="text-danger">{errors.StateId}</small>
+  )}
+</div>
+
+<div className="col">
+  <label>
+    City<span className="required-star">*</span>
+  </label>
+
+ <select name="CityId" value={formData.CityId} onChange={handleChange} className="form-control">
+  <option value="">Select City</option>
+  {cities.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.name}
+    </option>
+  ))}
+</select>
+
+
+
+
+  {touched.CityId && errors.CityId && (
+    <small className="text-danger">{errors.CityId}</small>
+  )}
+</div>
+
 
         </div>
 
@@ -1081,19 +529,26 @@ function Register() {
             <label>
               Authority<span className="required-star">*</span>
             </label>
-            <select
-              name="authority"
-              value={formData.authority}
-              onChange={handleChange}
-              className={inputClass("authority")}
-            >
-              <option value="">Select Authority</option>
-              {authorities.map((a) => (
-                <option key={a.authority_code} value={a.authority_code}>
-                  {a.authorityName}
-                </option>
-              ))}
-            </select>
+           <select
+  name="authority"
+  value={formData.authority}
+  onChange={handleChange}
+  className={inputClass("authority")}
+>
+  <option value="">Select Authority</option>
+
+  {authorities
+    .filter(a => a.isActive)   // optional but recommended
+    .map(a => (
+      <option
+        key={a.authorityMatrixId}
+        value={a.authorityMatrixId}
+      >
+        {a.authorityMatrixName}
+      </option>
+    ))}
+</select>
+
             {touched.authority && errors.authority && (
               <small className="text-danger">{errors.authority}</small>
             )}
@@ -1112,12 +567,10 @@ function Register() {
             >
               <option value="">Select Designation</option>
               {designations.map((d) => (
-                <option
-                  key={d.designation_code}
-                  value={d.designation_code}
-                >
-                  {d.designationName}
-                </option>
+                <option value={d.designationId}>
+  {d.designationName}
+</option>
+
               ))}
             </select>
             {touched.designation && errors.designation && (

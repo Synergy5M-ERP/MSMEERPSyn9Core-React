@@ -717,7 +717,7 @@ const handleSave = async () => {
                     </div>
 
                     <div className="col-4">
-                        <label className="label-color">Credit Amoungt<span style={{ color: 'red' }}>*</span></label>
+                        <label className="label-color">Credit Amount<span style={{ color: 'red' }}>*</span></label>
                         <input
                             className="input-field-style"
                             type="number"

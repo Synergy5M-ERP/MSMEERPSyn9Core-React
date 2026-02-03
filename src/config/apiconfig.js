@@ -32,14 +32,16 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
-  UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
+  UpdateMatrixStatus:`${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
   GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
-GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+  GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+    UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
+
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
-  //------------------------Account APIs----------------------------------
+  //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
   VoucherType: `${BASE_URL}/AccountVoucherType/`,

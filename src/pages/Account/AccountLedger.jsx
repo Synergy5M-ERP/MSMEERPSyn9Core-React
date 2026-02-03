@@ -53,7 +53,7 @@ export default function AccountLedger({ view }) {
   // Fetch account groups
  const fetchAccountGroup = async () => {
     try {
-        const res = await fetch(API_ENDPOINTS.Group);
+        const res = await fetch(API_ENDPOINTS.AccountGroup);
         if (!res.ok) {
             throw new Error("Failed to fetch");
         }
@@ -222,9 +222,7 @@ export default function AccountLedger({ view }) {
       console.log(payload)
 
       const method = editingId ? "put" : "post";
-      const url = editingId ? `${baseUrl}${editingId}` : baseUrl;
-
-      console.log(url)
+      const url = editingId ? `${baseUrl}/${editingId}` : baseUrl;
 
       const response = await axios({ method, url, data: payload, headers: { "Content-Type": "application/json" } });
 
@@ -286,7 +284,7 @@ export default function AccountLedger({ view }) {
       const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
 
       // Soft-delete pattern: set isActive = false
-      const response = await axios.put(`${baseUrl}${id}`, { isActive: false });
+      const response = await axios.put(`${baseUrl}/${id}`, { isActive: false });
 
       if (response.status === 200) {
         toast.success("Deleted successfully!");
@@ -306,7 +304,7 @@ export default function AccountLedger({ view }) {
     setLoading(true);
     try {
       const baseUrl = formType === "ledger" ? API_ENDPOINTS.Ledger : API_ENDPOINTS.SubLedger;
-      const response = await axios.put(`${baseUrl}${id}`, { isActive: true });
+      const response = await axios.put(`${baseUrl}/${id}`, { isActive: true });
       if (response.status === 200) {
         toast.success("Activated!");
         if (formType === "ledger") await fetchLedgers(activeFilter);

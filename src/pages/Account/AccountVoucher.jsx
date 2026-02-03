@@ -162,6 +162,7 @@ function AccountVoucher() {
     if (voucherCategory === "Other Voucher") {
         setTotalAmount("");
         setVendorName("");
+        setVoucherNo("")
     }
     }, [voucherCategory]);
 
@@ -245,7 +246,7 @@ function AccountVoucher() {
             return;
         }
 
-        const prefix = vendor.companyName
+        const prefix = vendor.company_Name
             .split(" ")
             .map(w => w[0].toUpperCase())
             .join("")
@@ -524,8 +525,8 @@ const handleSave = async () => {
                                     {Array.isArray(vendorNames) &&
                                         vendorNames.map((v) => (
                                             <option key={v.vendorId} value={v.vendorId}>
-                                                {typeof v.companyName === "string"
-                                                    ? v.companyName
+                                                {typeof v.company_Name === "string"
+                                                    ? v.company_Name
                                                     : "Unknown"}
                                             </option>
                                         ))}

@@ -1,6 +1,6 @@
+ const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+  //const BASE_URL = "https://localhost:7145/api";
 
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- //const BASE_URL="https://localhost:7145/api"
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
@@ -75,8 +75,8 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   Invoices: `${BASE_URL}/Invoices/`,
   AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
-  CreditNote: `${BASE_URL}/credit-note`,
-  DebitNote: `${BASE_URL}/Debit-note`,
+  // CreditNote: `${BASE_URL}/credit-note`,
+  // DebitNote: `${BASE_URL}/Debit-note`,
 
   OutwardQc: `${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty: `${BASE_URL}/SaveRejectionQty`,
@@ -105,12 +105,12 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   Ledger: `${BASE_URL}/AccountLedger`,
   // Ledger: `${BASE_URL}/AccountLedger`,
-  AllVendor: `${BASE_URL}/GetAllVendorsApi`,
+ // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
   UpdateVendor: `${BASE_URL}/UpdateVendorApi`,
 
   AccountVoucher: `${BASE_URL}/AccountVoucher`,
-  Vendors: `${BASE_URL}/vendors`,
+  CategoryVendors: `${BASE_URL}/CategoryVendors`,
   PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
   SalesInvoices: `${BASE_URL}/SalesInvoices`,
   GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
@@ -132,15 +132,25 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
   ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
 
+  Category: `${BASE_URL}/Category`,
+  GetSellerGRNNumbers: `${BASE_URL}/GetSellerGRNNumbers`,
+  GetBuyersInvoiceNumbers: `${BASE_URL}/GetBuyersInvoiceNumbers`,
+  GetItemsByGRN: `${BASE_URL}/GetItemsByGRN`,
+  GetItemsByInvoice: `${BASE_URL}/GetItemsByInvoice`,
+  GetGRNItemsDetails: `${BASE_URL}/GetGRNItemsDetails`,
+  GetInvoiceItemsDetails: `${BASE_URL}/GetInvoiceItemsDetails`,
+  GetNextCreditNoteNo: `${BASE_URL}/GetNextCreditNoteNo`,
+  SaveCreditNote: `${BASE_URL}/SaveCreditNote`,
+  GetUnits: `${BASE_URL}/GetUnits`,
+  GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
+  SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
+//------------------------Account APIs----------------------------------
 
-  GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
+GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
   Category: `${BASE_URL}/Category`,
   //------------------------Account APIs----------------------------------
 
-
-
-  
   // Employee endpoints
   Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
@@ -180,10 +190,6 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPrn`,
   GetDepartmentNames: `${BASE_URL}/PurchaseReq/departmentnames`,
 
-
-// config/apiconfig.js
-
-  
   // Employee Endpoints
   PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
   

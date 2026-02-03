@@ -235,10 +235,6 @@ const fetchInvoiceTableData = async (buyerId) => {
   }
 };
 
-  // --- 2. Save all tableData items, checked or not ---
-
-  // ✅ COMPLETE handleSave WITH AUTO-CLEAR AFTER SUCCESS
-
 const handleSave = async () => { 
   if (!validateForm()) return;
 
@@ -250,26 +246,22 @@ const handleSave = async () => {
     draggable: false,
   });
 
-  // ✅ Payload exactly matching backend
+  // ✅ Prepare payload safely
   const payload = {
-    BuyerId: Number(formData.buyerId),
-    InvoiceNo: formData.invoiceNumber,
-    InvoiceDate: formData.invoiceDate,       // YYYY-MM-DD
-    PONumber: formData.poNumber,
-    PODate: formData.poDate || null,                 // YYYY-MM-DD
-    VehicleNo: formData.vehicleNo,
-    TranspoterName: formData.TransporterName, // ⚠️ spelling FIX
-    PaymentDueDate: formData.paymentDueDate || null, // YYYY-MM-DD
+    BuyerId: Number(formData.buyerId) || 0,
+    InvoiceNo: formData.invoiceNumber || "",
+    InvoiceDate: formData.invoiceDate || null,   // YYYY-MM-DD
+    PONumber: formData.poNumber || "",
+    PODate: formData.poDate || null,
+    VehicleNo: formData.vehicleNo || "",
+    TranspoterName: formData.TransporterName || "",
+    PaymentDueDate: formData.paymentDueDate || null,
     CreatedBy: 1,
     UpdatedBy: 1,
 
-    TotalAmount: formData.totalAmount || 0,
-    TotalTaxAmount: formData.taxAmount || 0,
-    GrandAmount: formData.grandTotal || 0,
-
     Items: tableData.map(item => ({
-      ItemCode: item.itemCode,
-      Grade: item.grade,
+      ItemCode: item.itemCode || "",
+      Grade: item.grade || "",
       ApprovedQty: Number(item.approvedQty) || 0,
       DamagedQty: Number(item.damagedQty) || 0,
       PricePerUnit: Number(item.ratePerUnit) || 0,
@@ -278,9 +270,12 @@ const handleSave = async () => {
       IGST: Number(item.igst) || 0,
       TotalTax: Number(item.taxAmount) || 0,
       TotalAmount: Number(item.totalItemValue) || 0,
-      CheckSale: item.billCheck === true
+      CheckSale: item.billCheck === true,
+      ApprovedSale: item.approvedSale || false  // ✅ send default if missing
     }))
   };
+
+  console.log("💡 Payload to send:", payload);
 
   try {
     setSaveLoading(true);
@@ -293,6 +288,7 @@ const handleSave = async () => {
       },
       body: JSON.stringify(payload),
     });    
+
     const result = await response.json();
 
     if (!response.ok) {
@@ -544,6 +540,8 @@ const handleSave = async () => {
             <select className="form-select" value={formData.buyerId}
                     onChange={(e) => {
                       const buyerId = Number(e.target.value); // ✅ FIX
+                      if (buyerId === formData.buyerId) return; // ✅ prevent re-call
+
                       const buyer = suppliers.find(b => b.buyerId === buyerId);
 
                       if (!buyer) return;

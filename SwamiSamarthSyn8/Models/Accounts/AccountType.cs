@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SwamiSamarthSyn8.Models
+namespace SwamiSamarthSyn8.Models.Accounts
 {
     [Table("AccountType")]
     public class AccountType

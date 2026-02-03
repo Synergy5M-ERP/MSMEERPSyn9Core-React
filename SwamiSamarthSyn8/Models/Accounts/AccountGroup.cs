@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace SwamiSamarthSyn8.Models
+namespace SwamiSamarthSyn8.Models.Accounts
 {
     [Table("AccountGroup")]
     public class AccountGroup

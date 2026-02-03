@@ -28,7 +28,6 @@ namespace SwamiSamarthSyn8.Models.HRM
         public string? PancardNoFile { get; set; }
         [ForeignKey("EmployeeId")]
         public HRM_Employee? Employee { get; set; }
-        public int AuthorityMatrixId { get;  set; }
-    }
+           }
 
 }

@@ -417,18 +417,9 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
-        public class GRNApprovalDto
-        {
-            public int AccountGRNId { get; set; }
-            public string BillStatus { get; set; }
-            public List<GRNItemDto> Items { get; set; }
-        }
+     
 
-        public class GRNItemDto
-        {
-            public int AccountGRNDetailsId { get; set; }
-            public bool? BillApprove { get; set; }
-        }
+       
         [HttpGet("GRNApprovedDetails")]
         public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
         {
@@ -532,22 +523,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         }
 
 
-        public class GRNApprovedDto
-        {
-            public int AccountGRNId { get; set; }
-            public string GRNNumber { get; set; }
-            public DateTime? GRNDate { get; set; }
-            public string VendorName { get; set; }
-            public string PONumber { get; set; }
-            public string InvoiceNumber { get; set; }
-            public DateTime? InvoiceDate { get; set; }
-            public decimal CGST { get; set; }
-            public decimal SGST { get; set; }
-            public decimal IGST { get; set; }
-            public decimal TotalAmount { get; set; }
-    public decimal PaidAmount { get; set; }        // ✅ ADD
-    public decimal BalanceAmount { get; set; }
-        }
+       
         [HttpPost("SavePaymentAllocation")]
         public async Task<IActionResult> SavePaymentAllocation(
       [FromBody] PaymentAllocationRequest request)

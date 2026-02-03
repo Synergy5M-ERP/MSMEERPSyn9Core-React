@@ -357,7 +357,9 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                     JoiningDate = ed != null ? ed.JoiningDate : null,
                     MonthlySalary = s != null ? s.MonthlySalary ?? 0 : 0,
 
-                    City = e.CityId != null ? c.city_name: ""
+                    City = e.CityId != null ? c.city_name: "",
+                    IsActive = e.IsActive
+
                 }
             ).ToListAsync();
 
@@ -386,7 +388,8 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                     designationCode = x.DesignationCode,
                     authority = x.Current_Authoritylevel,
                     authorityCode = x.AuthorityCode,
-                    email = x.Email
+                    email = x.Email,
+
                 })
                 .ToList();
 
@@ -710,28 +713,183 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             });
         }
 
-
-
-
-
-
-        [HttpPut("DeactivateEmployee/{*empCode}")]
-        public async Task<IActionResult> DeactivateEmployee(string empCode)
+        [HttpPut("DeactivateEmployee/{employeeId}")]
+        public async Task<IActionResult> DeactivateEmployee(int employeeId)
         {
-            empCode = Uri.UnescapeDataString(empCode).Trim();
-
-            Console.WriteLine($"EmpCode received: '{empCode}'");
-
-            var emp = await _context.HRM_EmpInfoTbl
-                .FirstOrDefaultAsync(x => x.Emp_Code.Trim() == empCode);
+            var emp = await _context.HRM_Employee
+                .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
 
             if (emp == null)
-                return NotFound($"Employee with code '{empCode}' not found");
+                return NotFound();
 
             emp.IsActive = false;
-
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Employee deactivated successfully" });
+
+            return Ok();
+        }
+
+
+        [HttpPut("UpdateEmployeeStatus/{employeeId}")]
+        public async Task<IActionResult> UpdateEmployeeStatus(int employeeId, bool isActive)
+        {
+            var emp = await _context.HRM_Employee
+                .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+
+            if (emp == null)
+                return NotFound("Employee not found");
+
+            emp.IsActive = isActive;
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = isActive ? "Employee activated" : "Employee deactivated"
+            });
+        }
+
+        [HttpPut("UpdateEmployee/{employeeId}")]
+        public async Task<IActionResult> UpdateEmployee(
+    int employeeId,
+    [FromForm] Employee dto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // ======================
+                // HRM_Employee
+                // ======================
+                var employee = await _context.HRM_Employee
+                    .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+
+                if (employee == null)
+                    return NotFound("Employee not found");
+
+                employee.Title = dto.Title;
+                employee.FullName = dto.FullName;
+                employee.Gender = dto.Gender;
+                employee.DOB = dto.DOB;
+                employee.BloodGroup = dto.BloodGroup;
+                employee.Email = dto.Email;
+                employee.ContactNo = dto.ContactNo;
+                employee.MaritualStatus = dto.MaritualStatus;
+                employee.Address = dto.Address;
+                employee.PermanentAddress = dto.PermanentAddress;
+                employee.CountryId = dto.CountryId;
+                employee.StateId = dto.StateId;
+                employee.CityId = dto.CityId;
+                employee.Qualification = dto.Qualification;
+                employee.AadharNo = dto.AadharNo;
+                employee.PanNo = dto.PanNo;
+                employee.BankName = dto.BankName;
+                employee.BankAccountNo = dto.BankAccountNo;
+                employee.IFSCCode = dto.IFSCCode;
+                employee.Nominee = dto.Nominee;
+                employee.Relation = dto.Relation;
+                employee.UANNo = dto.UANNo;
+                employee.EPFONo = dto.EPFONo;
+                employee.PreviousExperience = dto.PreviousExperience;
+                employee.PreviousIndustry = dto.PreviousIndustry;
+                employee.DeptId = dto.DeptId;
+                employee.DesignationId = dto.DesignationId;
+                employee.AuthorityMatrixId = dto.AuthorityMatrixId;
+
+                // ======================
+                // HRM_EmployerDetails
+                // ======================
+                var employer = await _context.HRM_EmployerDetails
+                    .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+
+                if (employer != null)
+                {
+                    employer.Category = dto.Category;
+                    employer.JoiningDate = dto.JoiningDate;
+                    employer.NoticePeriod = dto.NoticePeriod;
+                    employer.WeeklyOff = dto.WeeklyOff;
+                    employer.LeaveDate = dto.LeaveDate;
+                    employer.RelievingDate = dto.RelievingDate;
+                    employer.ShiftHours = dto.ShiftHours;
+                    employer.OTcalculation = dto.OTcalculation;
+                    employer.ESISNo = dto.ESISNo;
+                    employer.PFContribution = dto.PFContribution;
+                    employer.Currency = dto.Currency;
+                    employer.PFNo = dto.PFNo;
+                    employer.AuthorityLevel = dto.AuthorityLevel;
+                    employer.DeptId = dto.DeptId;
+                    employer.DesignationId = dto.DesignationId;
+                    employer.CTC = dto.CTC;
+
+                    // 🔹 FILE UPDATE
+                    if (dto.AadharCardFile != null)
+                    {
+                        var path = Path.Combine("Uploads", "Aadhar");
+                        Directory.CreateDirectory(path);
+
+                        var fileName = $"{Guid.NewGuid()}_{dto.AadharCardFile.FileName}";
+                        var fullPath = Path.Combine(path, fileName);
+
+                        using var stream = new FileStream(fullPath, FileMode.Create);
+                        await dto.AadharCardFile.CopyToAsync(stream);
+
+                        employer.AadharCardFile = fullPath;
+                    }
+
+                    if (dto.PancardNoFile != null)
+                    {
+                        var path = Path.Combine("Uploads", "PanCard");
+                        Directory.CreateDirectory(path);
+
+                        var fileName = $"{Guid.NewGuid()}_{dto.PancardNoFile.FileName}";
+                        var fullPath = Path.Combine(path, fileName);
+
+                        using var stream = new FileStream(fullPath, FileMode.Create);
+                        await dto.PancardNoFile.CopyToAsync(stream);
+
+                        employer.PancardNoFile = fullPath;
+                    }
+                }
+
+                // ======================
+                // HRM_EmployeeSalaryDetails
+                // ======================
+                var salary = await _context.HRM_EmployeeSalaryDetails
+                    .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+
+                if (salary != null)
+                {
+                    salary.MonthlyBasicSalary = dto.MonthlyBasicSalary;
+                    salary.MonthlyGrossSalary = dto.MonthlyGrossSalary;
+                    salary.DA = dto.DA;
+                    salary.DailySalary = dto.DailySalary;
+                    salary.MonthlySalary = dto.MonthlySalary;
+                    salary.LeaveTravelAllowance = dto.LeaveTravelAllowance;
+                    salary.AdditionalBenefits = dto.AdditionalBenefits;
+                    salary.PerformanceIncentive = dto.PerformanceIncentive;
+                    salary.PFContributionAmount = dto.PFContributionAmount;
+                    salary.ESIC = dto.ESIC;
+                    salary.StockOption = dto.StockOption;
+                    salary.CarAllowance = dto.CarAllowance;
+                    salary.MedicalAllowance = dto.MedicalAllowance;
+                    salary.TotalDeduction = dto.TotalDeduction;
+                    salary.HouseRentAllowance = dto.HouseRentAllowance;
+                    salary.HourlySalary = dto.HourlySalary;
+                    salary.AnnualIncrement = dto.AnnualIncrement;
+                    salary.AnnualIncrementDate = dto.AnnualIncrementDate;
+                    salary.TotalMonth = dto.TotalMonth;
+                    salary.ProfessionalTax = dto.ProfessionalTax;
+                    salary.AnnualCTC = dto.AnnualCTC;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok("Employee updated successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
         }
 
 

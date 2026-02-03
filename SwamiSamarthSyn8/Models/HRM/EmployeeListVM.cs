@@ -23,6 +23,8 @@
         public string? ContactNo { get; set; }
         public string DepartmentName { get; set; }
         public string DesignationName { get; set; }
+        public bool IsActive { get; set; }
+
         public string AuthorityName { get; set; }
 
     }

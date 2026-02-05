@@ -11,6 +11,27 @@ const CreateMatrix = () => {
   const [reportingList, setReportingList] = useState([]);
   const [matrixList, setMatrixList] = useState([]);
   const [editId, setEditId] = useState(null);
+const [departments, setDepartments] = useState([]);
+const [designations, setDesignations] = useState([]);
+const [authorities, setAuthorities] = useState([]);
+useEffect(() => {
+  Promise.all([
+    axios.get(API_ENDPOINTS.Emp_Info),
+    axios.get(API_ENDPOINTS.DEPARTMENT),
+    axios.get(API_ENDPOINTS.DESIGNATION),
+    axios.get(API_ENDPOINTS.AUTHORITY_MATRIX),
+    axios.get(API_ENDPOINTS.MatrixList),
+  ])
+    .then(([emp, dept, desig, auth, matrix]) => {
+      setEmployeeList(emp.data);
+      setReportingList(emp.data);
+      setDepartments(dept.data);
+      setDesignations(desig.data);
+      setAuthorities(auth.data);
+      setMatrixList(matrix.data);
+    })
+    .catch(() => toast.error("Failed to load data"));
+}, []);
 
   const initialForm = {
     employeeId: "",
@@ -67,64 +88,74 @@ const loadMatrixList = () => {
 
 
   // Update matrix code whenever relevant fields change
-  useEffect(() => {
-    const matrixCode =
-      (form.departmentCode || "") +
-      (form.designationCode || "") +
-      (form.authorityCode || "") +
-      (form.rpDepartmentCode || "") +
-      (form.rpDesignationCode || "") +
-      (form.rpAuthorityCode || "");
+useEffect(() => {
+  const matrixCode =
+    String(form.departmentCode ?? "") +
+    String(form.designationCode ?? "") +
+    String(form.authorityCode ?? "") +
+    String(form.rpDepartmentCode ?? "") +
+    String(form.rpDesignationCode ?? "") +
+    String(form.rpAuthorityCode ?? "");
 
-    setForm((prev) => ({ ...prev, matrixCode }));
-  }, [
-    form.departmentCode,
-    form.designationCode,
-    form.authorityCode,
-    form.rpDepartmentCode,
-    form.rpDesignationCode,
-    form.rpAuthorityCode,
-  ]);
+  setForm(prev => ({
+    ...prev,
+    matrixCode
+  }));
+}, [
+  form.departmentCode,
+  form.designationCode,
+  form.authorityCode,
+  form.rpDepartmentCode,
+  form.rpDesignationCode,
+  form.rpAuthorityCode,
+]);
 
   // Employee selection
-  const handleEmployeeSelect = (e) => {
-    const emp = employeeList.find((x) => x.id.toString() === e.target.value);
-    if (!emp) return;
+ const handleEmployeeSelect = (e) => {
+  const empId = Number(e.target.value);
+  const emp = employeeList.find(x => x.employeeId === empId);
+  if (!emp) return;
 
-    setForm((prev) => ({
-      ...prev,
-      employeeId: emp.id,
-      empCode: emp.empCode || "",
-      empName: emp.name || "",
-      department: emp.department || "",
-      departmentCode: emp.departmentCode || "",
-      designation: emp.designation || "",
-      designationCode: emp.designationCode || "",
-      authority: emp.authority || emp.authorityName || "",
-      authorityCode: emp.authorityCode || emp.authorityCd || "",
-      email: emp.email || "",
-    }));
-  };
+  setForm(prev => ({
+    ...prev,
+    employeeId: emp.employeeId,
+    empCode: emp.empCode,
+    empName: emp.fullName,
+    email: emp.email,
 
-  // Reporting employee selection
-  const handleReportingSelect = (e) => {
-    const emp = reportingList.find((x) => x.id.toString() === e.target.value);
-    if (!emp) return;
+    department: emp.department || "",
+    departmentCode: emp.departmentCode || "",
 
-    setForm((prev) => ({
-      ...prev,
-      reportingEmployeeId: emp.id,
-      reportingEmpCode: emp.empCode || "",
-      reportingEmpName: emp.name || "",
-      rpDepartment: emp.department || "",
-      rpDepartmentCode: emp.departmentCode || "",
-      rpDesignation: emp.designation || "",
-      rpDesignationCode: emp.designationCode || "",
-      rpAuthority: emp.authority || emp.authorityName || "",
-      rpAuthorityCode: emp.authorityCode || emp.authorityCd || "",
-      reportingEmail: emp.email || "",
-    }));
-  };
+    designation: emp.designation || "",
+    designationCode: emp.designationCode || "",
+
+    authority: emp.authority || "",
+    authorityCode: emp.authorityCode || "",
+  }));
+};
+
+const handleReportingSelect = (e) => {
+  const empId = Number(e.target.value);
+  const emp = reportingList.find(x => x.employeeId === empId);
+  if (!emp) return;
+
+  setForm(prev => ({
+    ...prev,
+    reportingEmployeeId: emp.employeeId,
+    reportingEmpCode: emp.empCode,
+    reportingEmpName: emp.fullName,
+    reportingEmail: emp.email,
+
+    rpDepartment: emp.department || "",
+    rpDepartmentCode: emp.departmentCode || "",
+
+    rpDesignation: emp.designation || "",
+    rpDesignationCode: emp.designationCode || "",
+
+    rpAuthority: emp.authority || "",
+    rpAuthorityCode: emp.authorityCode || "",
+  }));
+};
 
   // Submit handler (create or edit)
   const handleSubmit = (e) => {
@@ -175,40 +206,39 @@ const loadMatrixList = () => {
   };
 
 const handleEdit = (matrix) => {
-  // find employee by name
   const emp = employeeList.find(
-    (e) => e.name === matrix.employee_Name
+    (e) => e.employeeId === matrix.employeeId
   );
 
-  // find reporting employee by name
   const rep = reportingList.find(
-    (e) => e.name === matrix.reporting_EmployeeName
+    (e) => e.employeeId === matrix.reportingEmployeeId
   );
 
   setEditId(matrix.id);
 
   setForm({
-    employeeId: emp?.id || "",
-    empCode: matrix.emp_Code || "",
-    empName: matrix.employee_Name || "",
+    employeeId: emp?.employeeId || "",
+    empCode: emp?.empCode || "",
+    empName: emp?.fullName || "",
+    email: emp?.email || "",
+
     department: matrix.department || "",
     departmentCode: matrix.department_Code || "",
     designation: matrix.designation || "",
     designationCode: matrix.designation_Code || "",
-    authority: emp?.authority || "",
     authorityCode: matrix.authority_Code || "",
-    email: matrix.email_Id || "",
 
-    reportingEmployeeId: rep?.id || "",
+    reportingEmployeeId: rep?.employeeId || "",
     reportingEmpCode: rep?.empCode || "",
-    reportingEmpName: matrix.reporting_EmployeeName || "",
+    reportingEmpName: rep?.fullName || "",
+    reportingEmail: matrix.report_Email || "",
+
     rpDepartment: matrix.rP_Department || "",
     rpDepartmentCode: matrix.rP_DepartmentCode || "",
     rpDesignation: matrix.rP_Designation || "",
     rpDesignationCode: matrix.rP_DesignationCode || "",
     rpAuthority: matrix.rP_Authority || "",
     rpAuthorityCode: matrix.rP_AuthorityCode || "",
-    reportingEmail: matrix.report_Email || "",
 
     matrixCode: matrix.position_Code || "",
     isActive: matrix.isActive,
@@ -312,14 +342,20 @@ const handleEdit = (matrix) => {
           <div className="row mb-3">
             <div className="col-md-3">
               <label>Select Employee</label>
-              <select className="form-control" onChange={handleEmployeeSelect} value={form.employeeId}>
-                <option value="">Select Employee</option>
-                {employeeList.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </option>
-                ))}
-              </select>
+              <select
+  className="form-control"
+  onChange={handleEmployeeSelect}
+  value={form.employeeId}
+>
+  <option value="">Select Employee</option>
+
+  {employeeList.map((emp) => (
+    <option key={emp.employeeId} value={emp.employeeId}>
+      {emp.fullName}
+    </option>
+  ))}
+</select>
+
             </div>
             <div className="col-md-3"><label>Employee Code</label><input className="form-control" value={form.empCode} readOnly /></div>
             <div className="col-md-3"><label>Department</label><input className="form-control" value={form.department} readOnly /></div>
@@ -343,7 +379,9 @@ const handleEdit = (matrix) => {
               <select className="form-control" onChange={handleReportingSelect} value={form.reportingEmployeeId}>
                 <option value="">Select Employee</option>
                 {reportingList.map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+  <option key={emp.employeeId} value={emp.employeeId}>
+    {emp.fullName}
+  </option>
                 ))}
               </select>
             </div>

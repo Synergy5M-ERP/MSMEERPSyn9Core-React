@@ -40,7 +40,7 @@ const [moduleData, setModuleData] = useState({
   // ================= FETCH USERS =================
  const loadData = async () => {
   try {
-    const response = await axios.get(API_ENDPOINTS.ModuleUserData);
+    const response = await axios.get(API_ENDPOINTS.ModuleUserList);
     setUsers(Array.isArray(response.data) ? response.data : []);
   } catch (error) {
     console.error("Error loading users:", error);

@@ -10,9 +10,9 @@ using SwamiSamarthSyn8.Models.HRM;
 [ApiController]
 public class HRMAdminRegAPIController : ControllerBase
 {
-    private readonly SwamiSamarthDbContext _db;
+    private readonly MsmeERPDbContext _db;
 
-    public HRMAdminRegAPIController(SwamiSamarthDbContext db)
+    public HRMAdminRegAPIController(MsmeERPDbContext db)
     {
         _db = db;
     }
@@ -222,8 +222,223 @@ public class HRMAdminRegAPIController : ControllerBase
             message = "Registration successful"
         });
     }
+    [HttpGet("Login/GetModuleUserList")]
+    public async Task<IActionResult> GetModuleUserList()
+    {
+        var data = await (
+            from emp in _db.HRM_Employee
+            join usr in _db.HRM_User
+                on emp.EmpCode equals usr.Emp_Code into uj
+            from usr in uj.DefaultIfEmpty()
+            where emp.IsActive == true
+            select new
+            {
+                id = emp.EmployeeId,
+                emp_Code = emp.EmpCode,
+                name = emp.FullName,
+                gender = emp.Gender,
+                contact_NO = emp.ContactNo,
+                email = emp.Email,
+                password = usr != null ? usr.Password : "",
+                permanent_address = emp.PermanentAddress,
+                department = emp.DeptId
+            }
+        ).ToListAsync();
 
- 
+        return Ok(data);
+    }
+
+    [HttpGet("Login/ModuleUserData")]
+    public async Task<IActionResult> ModuleUserData(int Id, string empcode)
+    {
+        try
+        {
+            var data = await (
+                from emp in _db.HRM_Employee
+                join usr in _db.HRM_User
+                    on emp.EmpCode equals usr.Emp_Code into uj
+                from usr in uj.DefaultIfEmpty()   // ✅ LEFT JOIN
+                where emp.EmployeeId == Id
+                   && emp.EmpCode == empcode
+                select new
+                {
+                    username = usr != null ? usr.UserName : null,
+                    password = usr != null ? usr.Password : null,
+
+                    Name = emp.FullName,
+                    Surname = "",
+
+                    Gender = emp.Gender,
+                    Contact_NO = emp.ContactNo,
+                    Email = emp.Email,
+                    permanent_Address = emp.PermanentAddress,
+
+                    Department = emp.DeptId,
+                    Joining_Designation = emp.DesignationId,
+                    Joining_AuthorityLevel = emp.AuthorityMatrixId,
+
+                    Date_Of_Joing = emp.CreatedDate,
+                    Emp_Code = emp.EmpCode
+                }
+            ).FirstOrDefaultAsync();
+
+            if (data == null)
+                return Ok(new { success = false, message = "No data found" });
+
+            return Ok(new { success = true, data });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
+
+    // ===============================================
+    // 🔹 GET USER DETAILS (EMP INFO + LOGIN INFO)
+    // ===============================================
+    [HttpGet("GetUserDetails")]
+    public async Task<IActionResult> GetUserDetails(int id, string empcode)
+    {
+        if (string.IsNullOrWhiteSpace(empcode))
+            return BadRequest(new { success = false, message = "EmpCode is required" });
+
+        var data = await (
+            from emp in _db.HRM_Employee
+            join usr in _db.HRM_User
+                on emp.EmpCode equals usr.Emp_Code into userJoin
+            from usr in userJoin.DefaultIfEmpty()
+            where emp.EmployeeId == id
+               && emp.EmpCode == empcode
+               && emp.IsActive == true
+            select new Userdetails
+            {
+                // Login details
+                Emp_Code = usr.Emp_Code,
+                username = usr.UserName,
+                Password = usr.Password,
+
+                // Employee details
+                Name = emp.FullName,
+            
+                Contact_NO = emp.ContactNo,
+                Email = emp.Email,
+                Gender = emp.Gender,
+                Blood_Group = emp.BloodGroup,
+                permanent_Address = emp.PermanentAddress,
+                BankAccountNo = emp.BankAccountNo,
+                BankName = emp.BankName,
+
+                Department = emp.DeptId.ToString(),
+                Joining_Designation = emp.DesignationId.ToString(),
+                Joining_AuthorityLevel = emp.AuthorityMatrixId.ToString(),
+
+                DOB = emp.DOB,
+                Date_Of_Joing = emp.CreatedDate
+            }
+        ).FirstOrDefaultAsync();
+
+        if (data == null)
+            return NotFound(new { success = false, message = "No data found" });
+
+        return Ok(new { success = true, data });
+    }
+
+
+    [HttpGet("GetUserModules")]
+    public async Task<IActionResult> GetUserModules(int id, string empCode)
+    {
+        if (string.IsNullOrEmpty(empCode))
+            return BadRequest(new { success = false, message = "EmpCode is required" });
+
+        var user = await _db.HRM_User
+            .FirstOrDefaultAsync(x => x.Emp_Code == empCode && x.IsActive == true);
+
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found" });
+
+        var result = new
+        {
+            user.Emp_Code,
+            user.UserName,
+            user.Password,
+            user.MaterialManagement,
+            user.SalesAndMarketing,
+            user.HRAndAdmin,
+            user.AccountAndFinance,
+            user.Masters,
+            user.Dashboard,
+            Production = user.Production,
+            Quality = user.Quality,
+            user.NewAssignModule
+        };
+
+        return Ok(new { success = true, user = result });
+    }
+
+
+    // POST: api/ModuleDashboardAPI/UpdateUserModules
+    [HttpPost("UpdateUserModules")]
+    public async Task<IActionResult> UpdateUserModules([FromBody] AdminBorad model)
+    {
+        if (model == null || string.IsNullOrEmpty(model.Emp_Code))
+            return BadRequest(new { success = false, message = "Invalid data" });
+
+        var user = await _db.HRM_User
+            .FirstOrDefaultAsync(x => x.Emp_Code == model.Emp_Code);
+
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found" });
+
+        user.MaterialManagement = model.MaterialManagementModule;
+        user.SalesAndMarketing = model.SalesAndMarketingModule;
+        user.HRAndAdmin = model.HRAndAdminModule;
+        user.AccountAndFinance = model.AccountAndFinanceModule;
+        user.Masters = model.MastersModule;
+        user.Dashboard = model.DashboardModule;
+        user.Production = model.ProductionAndQualityModule;
+        user.Quality = model.ProductionAndQualityModule;
+        user.NewAssignModule = true;
+        user.UpdatedDate = DateTime.Now;
+
+        await _db.SaveChangesAsync();
+
+        SendApprovalEmailForModule(user);
+
+        return Ok(new { success = true, message = "Modules updated and email sent successfully!" });
+    }
+
+
+    private void SendApprovalEmailForModule(HRM_User user)
+    {
+        string subject = "Your request has been approved";
+        string body = $@"
+        <html><body>
+        <p>Dear {user.UserName},</p>
+        <p>Your registration has been accepted. Activate your account here:</p>
+        <p><a href='https://synergy5m-swamisamartherp8.azurewebsites.net/Login/Login/'>Activate Account</a></p>
+        <p>Username: {user.UserName}<br>Password: {user.Password}</p>
+        <p>Best regards,<br>Synergy5M Team</p>
+        </body></html>";
+
+        using SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
+        {
+            EnableSsl = true,
+            Credentials = new NetworkCredential("hrm@synergy5m.com", "eksv lnrw smpl dsqd")
+        };
+
+        MailMessage message = new MailMessage
+        {
+            From = new MailAddress("hrm@synergy5m.com", "Synergy5M"),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+        message.To.Add(user.UserName);
+
+        smtp.Send(message);
+    }
+
 }
 
 

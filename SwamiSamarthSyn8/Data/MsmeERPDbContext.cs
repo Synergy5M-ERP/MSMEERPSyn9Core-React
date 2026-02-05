@@ -7,13 +7,13 @@ using SwamiSamarthSyn8.Models.Masters;
 
 namespace SwamiSamarthSyn8.Data;
 
-public partial class SwamiSamarthDbContext : DbContext
+public partial class MsmeERPDbContext : DbContext
 {
-    public SwamiSamarthDbContext()
+    public MsmeERPDbContext()
     {
     }
 
-    public SwamiSamarthDbContext(DbContextOptions<SwamiSamarthDbContext> options)
+    public MsmeERPDbContext(DbContextOptions<MsmeERPDbContext> options)
         : base(options)
     {
     }
@@ -64,9 +64,9 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
     public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
-         //complete masters //
+    //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
-    public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction{ get; set; }
+    public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction { get; set; }
 
     public virtual DbSet<AlternateItemMaster> AlternateItemMaster { get; set; }
 
@@ -74,7 +74,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<ApplicationTbl> ApplicationTbl { get; set; }
 
-    public virtual DbSet<BOM_FinishProdTbl> BOM_FinishProdTbl{ get; set; }
+    public virtual DbSet<BOM_FinishProdTbl> BOM_FinishProdTbl { get; set; }
 
     public virtual DbSet<BOM_RawMatTbl> BOM_RawMatTbl { get; set; }
 
@@ -187,7 +187,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<PQM_MatIssuePassTbl> PQM_MatIssuePassTbl { get; set; }
 
-    public virtual DbSet<PQM_ProdLabelTbl> PQM_ProdLabelTbl{ get; set; }
+    public virtual DbSet<PQM_ProdLabelTbl> PQM_ProdLabelTbl { get; set; }
 
     public virtual DbSet<PQM_RMConsumptionTbl> PQM_RMConsumptionTbl { get; set; }
 
@@ -201,7 +201,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<PQM_SemiFinProdTbl> PQM_SemiFinProdTbl { get; set; }
 
-    public virtual DbSet<PQM_SemiProdInventoryTbl> PQM_SemiProdInventoryTbl{ get; set; }
+    public virtual DbSet<PQM_SemiProdInventoryTbl> PQM_SemiProdInventoryTbl { get; set; }
 
     public virtual DbSet<PQM_TodaysFinPlanTbl> PQM_TodaysFinPlanTbl { get; set; }
 
@@ -271,9 +271,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=tcp:synergy-shripad.database.windows.net,1433;Initial Catalog=synergy-shripad;User ID=shripadsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;"
-
- );
+        optionsBuilder.UseSqlServer("Server=tcp:synergy-msmecore.database.windows.net,1433;Initial Catalog=MsmeERPDb;Persist Security Info=False;User ID=synergymsmecoresyn9;Password=Synergy@786;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

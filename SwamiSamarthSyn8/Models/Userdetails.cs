@@ -13,7 +13,7 @@ namespace SwamiSamarthSyn8.Models
         public DateTime? DOB { get; set; }
         public string Blood_Group { get; set; }
         public string Email { get; set; }
-        public long? Contact_NO { get; set; }
+        public string Contact_NO { get; set; }
         public string Married_Status { get; set; }
         public string Quallification { get; set; }
         public string Address { get; set; }

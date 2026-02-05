@@ -13,10 +13,10 @@ namespace SwamiSamarthSyn8.Controllers.HRM
     [ApiController]
     public class HrmOrgInfoController : ControllerBase
     {
-        private readonly SwamiSamarthDbContext _context;
+        private readonly MsmeERPDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public HrmOrgInfoController(SwamiSamarthDbContext db, IConfiguration configuration)
+        public HrmOrgInfoController(MsmeERPDbContext db, IConfiguration configuration)
         {
             _context = db;
         }
@@ -372,75 +372,80 @@ namespace SwamiSamarthSyn8.Controllers.HRM
         [HttpGet("EmpInfo")]
         public IActionResult GetEmployees()
         {
-            var employees = _context.HRM_EmpInfoTbl
-                .Where(x =>
-                    !string.IsNullOrEmpty(x.Name) &&
-                    !string.IsNullOrEmpty(x.Surname) &&
-                    (x.Resign == null || x.Resign == 0))
-                .Select(x => new
+            var employees =
+                from e in _context.HRM_Employee
+                join d in _context.HRM_Department on e.DeptId equals d.DeptId into dj
+                from d in dj.DefaultIfEmpty()
+
+                join des in _context.HRM_Designation on e.DesignationId equals des.DesignationId into desj
+                from des in desj.DefaultIfEmpty()
+
+                join a in _context.HRM_AuthorityMatrix on e.AuthorityMatrixId equals a.AuthorityMatrixId into aj
+                from a in aj.DefaultIfEmpty()
+
+                where e.IsActive
+                select new
                 {
-                    id = x.Id,
-                    name = x.Name + " " + x.Surname,
-                    empCode = x.Emp_Code,
-                    department = x.Department,
-                    departmentCode = x.DepartmentCode,
-                    designation = x.Joining_Designation,
-                    designationCode = x.DesignationCode,
-                    authority = x.Current_Authoritylevel,
-                    authorityCode = x.AuthorityCode,
-                    email = x.Email,
+                    employeeId = e.EmployeeId,
+                    empCode = e.EmpCode,
+                    fullName = e.FullName,
+                    email = e.Email,
 
-                })
-                .ToList();
+                    deptId = e.DeptId,
+                    department = d.DeptName,
+                    departmentCode = d.DeptCode,
 
-            return Ok(employees);
+                    designationId = e.DesignationId,
+                    designation = des.DesignationName,
+                    designationCode = des.DesignationCode,
+
+                    authorityMatrixId = e.AuthorityMatrixId,
+                    authority = a.AuthorityMatrixName,
+                    authorityCode = a.AuthorityMatrixId
+                };
+
+            return Ok(employees.ToList());
         }
+
 
         // ======================================================
         // POST: api/HrmMaster/AuthorityMatrix
-        // ======================================================
         [HttpPost("SaveEmpInfo")]
-        public IActionResult CreateAuthorityMatrix([FromBody] OrgnazationRole model)
+        public IActionResult SaveEmpAuthorityMatrix([FromBody] OrgnazationRole model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var data = new HRM_OrganizationDataTbl
+            // 🔒 Validate Employee
+            if (!_context.HRM_Employee.Any(x => x.EmployeeId == model.EmployeeId))
+                return BadRequest("Selected employee does not exist");
+
+            // 🔒 Validate Reporting Employee
+            if (!_context.HRM_Employee.Any(x => x.EmployeeId == model.ReportingEmployeeId))
+                return BadRequest("Selected reporting employee does not exist");
+
+            try
             {
-                Emp_Code = model.Emp_Code,
-                Email_Id = model.Email,
-                Employee_Name = model.Employee_Name,
+                var matrix = new HRM_EmployeeAuthorityMatrix
+                {
+                    AuthorityMatrixEmployeeId = model.EmployeeId,
+                    ReportingEmpId = model.ReportingEmployeeId,
+                    MatrixCode = model.Position_Code,
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
 
-                Department = model.Department,
-                Department_Code = model.Department_Code,
+                _context.HRM_EmployeeAuthorityMatrix.Add(matrix);
+                _context.SaveChanges();
 
-                Designation = model.Designation,
-                Designation_Code = model.Designation_Code,
-
-                Authority_Code = model.Authority_Code,
-                Authority_Matrix = model.Authority_Matrix,
-
-                Reporting_EmployeeName = model.Reporting_EmployeeName,
-                Report_Email = model.Report_Email,
-
-                RP_Department = model.RP_Department,
-                RP_DepartmentCode = model.RP_DepartmentCode,
-                RP_Designation = model.RP_Designation,
-                RP_DesignationCode = model.RP_DesignationCode,
-                RP_Authority = model.RP_Authority,
-                RP_AuthorityCode = model.RP_AuthorityCode,
-
-                Filled_Or_Vacant = "Filled",
-                Position_Code = model.Position_Code,
-                IsActive = true  // ✅ Add active flag
-
-            };
-
-            _context.HRM_OrganizationDataTbl.Add(data);
-            _context.SaveChanges();
-
-            return Ok(new { message = "Authority Matrix Created Successfully" });
+                return Ok(new { message = "Authority Matrix Created Successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
+
         // GET MATRIX LIST
         [HttpGet("MatrixList")]
         public IActionResult GetMatrixList()
@@ -486,7 +491,7 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             matrix.RP_DesignationCode = model.RP_DesignationCode;
             matrix.RP_Authority = model.RP_Authority;
             matrix.RP_AuthorityCode = model.RP_AuthorityCode;
-            matrix.Position_Code = model.Position_Code;
+            //matrix.Position_Code = model.Position_Code;
 
             _context.SaveChanges();
             return Ok(new { message = "Matrix Updated Successfully" });
@@ -883,6 +888,7 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                
                 return Ok("Employee updated successfully");
             }
             catch (Exception ex)

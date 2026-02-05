@@ -9,9 +9,9 @@ using SwamiSamarthSyn8.Models.HRM;
 [ApiController]
 public class HrmMasterController : ControllerBase
 {
-    private readonly SwamiSamarthDbContext _context;
+    private readonly MsmeERPDbContext _context;
 
-    public HrmMasterController(SwamiSamarthDbContext context)
+    public HrmMasterController(MsmeERPDbContext context)
     {
         _context = context;
     }

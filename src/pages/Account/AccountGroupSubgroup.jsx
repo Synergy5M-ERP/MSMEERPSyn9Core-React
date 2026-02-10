@@ -13,6 +13,11 @@ function AccountGroupSubgroup() {
   const [accountGroups, setAccountGroups] = useState([]);
   const [subGroups, setSubGroups] = useState([]);
   const [tableData, setTableData] = useState([]);
+ // ✅ CODE STATES
+  const [accountTypeCode, setAccountTypeCode] = useState("");
+  const [accountGroupCode, setAccountGroupCode] = useState("");
+  const [accountSubGroupCode, setAccountSubGroupCode] = useState("");
+  const [accountSubSubGroupCode, setAccountSubSubGroupCode] = useState("");
 
   const [accountTypeId, setAccountTypeId] = useState("");
   const [groupId, setGroupId] = useState("");
@@ -91,7 +96,11 @@ function AccountGroupSubgroup() {
     setCurrentPage(1); // ✅ Reset to page 1 on filter change
   }, [formType, activeFilter, fetchTableData]);
 
-  useEffect(() => setSubGroupId(""), [groupId]);
+useEffect(() => {
+  if (!editingId) {
+    setSubGroupId("");
+  }
+}, [groupId, editingId]);
 
   // --------------------------------------------------------------------------------------------------
   // 📌 Reset Form
@@ -105,6 +114,10 @@ function AccountGroupSubgroup() {
     setGroupCode("");
     setIsActive(true);
     setEditingId(null);
+     setAccountTypeCode("");
+    setAccountGroupCode("");
+    setAccountSubGroupCode("");
+    setAccountSubSubGroupCode("");
   };
 
   // --------------------------------------------------------------------------------------------------
@@ -125,6 +138,7 @@ function AccountGroupSubgroup() {
         payload = {
           AccountTypeName: name,
           AccountTypeNarration: narration,
+          AccountTypeCode:accountTypeCode,
           IsActive: isActive,
           AccountGroups: [], // works but unnecessary
         };
@@ -138,11 +152,13 @@ function AccountGroupSubgroup() {
       // ACCOUNT GROUP
       // ==============================
       else if (formType === "accountGroup") {
-        if (!accountTypeId || !groupCode.trim() || !name.trim())
-          return toast.warning("Select Account Type, Code, and Name!");
+       if (!accountTypeId || !accountGroupCode.trim() || !name.trim())
+  return toast.warning("Select Account Type, Code, and Name!");
+
         payload = {
           AccountGroupName: name,
           AccountGroupNarration: narration,
+          AccountGroupCode:accountGroupCode,
           GroupCode: groupCode,
           AccountTypeid: Number(accountTypeId),
           IsActive: isActive
@@ -163,6 +179,7 @@ function AccountGroupSubgroup() {
         payload = {
           AccountSubGroupName: name,
           AccountSubGroupNarration: narration,
+          AccountSubGroupCode:accountGroupCode,
           AccountGroupid: Number(groupId),
           IsActive: isActive,
         };
@@ -175,21 +192,29 @@ function AccountGroupSubgroup() {
       // ==============================
       // SUB - SUB GROUP
       // ==============================
-      else if (formType === "subSubGroup") {
-        if (!groupId || !subGroupId || !name.trim())
-          return toast.warning("Select Group, Sub Group, and enter name!");
-        payload = {
-          AccountSubSubGroupName: name,
-          AccountSubSubGroupNarration: narration,
-          AccountGroupid: Number(groupId),
-          AccountSubGroupid: Number(subGroupId),
-          IsActive: isActive,
-        };
+    else if (formType === "subSubGroup") {
+    // ✅ Validation
+    if (!groupId || !subGroupId || !name?.trim()) {
+        return toast.warning("Select Group, Sub Group, and enter name!");
+    }
 
-        url = editingId
-          ? `${ENDPOINTS.subSubGroup}/${editingId}`
-          : ENDPOINTS.subSubGroup;
-      }
+    // ✅ Prepare payload
+   payload = {
+  AccountSubSubGroupName: name.trim(),
+  AccountSubSubGroupNarration: narration?.trim() || "",
+  AccountSubSubGroupCode: accountSubSubGroupCode?.trim() || "",
+  AccountGroupid: Number(groupId),
+  AccountSubGroupid: Number(subGroupId),
+  IsActive: Boolean(isActive),
+};
+
+url = editingId
+  ? `${ENDPOINTS.subSubGroup}/${editingId}`
+  : ENDPOINTS.subSubGroup;
+
+    // You can now use `url` and `payload` for your API call
+}
+
 
       // ==============================
       // API CALL
@@ -207,32 +232,50 @@ function AccountGroupSubgroup() {
   };
 
   // ✅ Edit (UNCHANGED)
-  const handleEdit = (item) => {
+ const handleEdit = (item) => {
+  setIsActive(item.isActive ?? true);
+
+  if (formType === "accountType") {
     resetForm();
-    setIsActive(item.isActive ?? true);
-    if (formType === "accountType") {
-      setEditingId(item.accountTypeId);
-      setName(item.accountTypeName);
-      setNarration(item.accountTypeNarration);
-    } else if (formType === "accountGroup") {
-      setEditingId(item.accountGroupid);
-      setName(item.accountGroupName);
-      setNarration(item.accountGroupNarration);
-      setGroupCode(item.groupCode);
-      setAccountTypeId(item.accountTypeid);
-    } else if (formType === "subGroup") {
-      setEditingId(item.accountSubGroupid);
-      setName(item.accountSubGroupName);
-      setNarration(item.accountSubGroupNarration);
-      setGroupId(item.accountGroupid);
-    } else if (formType === "subSubGroup") {
-      setEditingId(item.accountSubSubGroupid);
-      setName(item.accountSubSubGroupName);
-      setNarration(item.accountSubSubGroupNarration);
-      setGroupId(item.accountGroupid);
-      setSubGroupId(item.accountSubGroupid);
-    }
-  };
+    setEditingId(item.accountTypeId);
+    setName(item.accountTypeName);
+    setNarration(item.accountTypeNarration);
+    setAccountTypeCode(item.accountTypeCode || "");
+  }
+
+  else if (formType === "accountGroup") {
+    resetForm();
+    setEditingId(item.accountGroupid);
+    setName(item.accountGroupName);
+    setNarration(item.accountGroupNarration);
+    setAccountGroupCode(item.accountGroupCode || "");
+    setGroupCode(item.groupCode);
+    setAccountTypeId(String(item.accountTypeid));
+  }
+
+  else if (formType === "subGroup") {
+    resetForm();
+    setEditingId(item.accountSubGroupid);
+    setName(item.accountSubGroupName);
+    setNarration(item.accountSubGroupNarration);
+    setAccountSubGroupCode(item.accountSubGroupCode || "");
+    setGroupId(String(item.accountGroupid));
+  }
+
+  else if (formType === "subSubGroup") {
+    // ❌ NO resetForm here
+    setEditingId(item.accountSubSubGroupid);
+    setName(item.accountSubSubGroupName || "");
+    setNarration(item.accountSubSubGroupNarration || "");
+    setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
+
+    setGroupId(String(item.accountGroupid));
+    setTimeout(() => {
+      setSubGroupId(String(item.accountSubGroupid));
+    }, 0);
+  }
+};
+
 
   // ✅ Deactivate (UNCHANGED)
   const handleDelete = async (id) => {
@@ -356,52 +399,82 @@ function AccountGroupSubgroup() {
                     ))}
                   </select>
 
-                  <label>Group Code:</label>
-                  <input
-                    value={groupCode}
-                    onChange={(e) => setGroupCode(e.target.value)}
-                    className="form-control mb-2"
-                  />
+                  <label>Account Group Code:</label>
+    <input
+      value={accountGroupCode}
+      onChange={(e) => setAccountGroupCode(e.target.value)}
+      className="form-control mb-2"
+    />
                 </>
               )}
 
-              {(formType === "subGroup" || formType === "subSubGroup") && (
-                <>
-                  <label>Account Group:</label>
-                  <select
-                    value={groupId}
-                    onChange={(e) => setGroupId(e.target.value)}
-                    className="form-select mb-2"
-                  >
-                    <option value="">Select Group</option>
-                    {accountGroups.map((g) => (
-                      <option key={g.accountGroupid} value={g.accountGroupid}>
-                        {g.accountGroupName}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
+             {formType === "subGroup" && (
+  <>
+    <label>Account Group:</label>
+    <select
+      value={groupId}
+      onChange={(e) => setGroupId(e.target.value)}
+      className="form-select mb-2"
+    >
+      <option value="">Select Group</option>
+      {accountGroups.map((g) => (
+        <option key={g.accountGroupid} value={g.accountGroupid}>
+          {g.accountGroupName}
+        </option>
+      ))}
+    </select>
 
-              {formType === "subSubGroup" && (
-                <>
-                  <label>Sub Group:</label>
-                  <select
-                    value={subGroupId}
-                    onChange={(e) => setSubGroupId(e.target.value)}
-                    className="form-select mb-2"
-                  >
-                    <option value="">Select Sub Group</option>
-                    {subGroups
-                      .filter((s) => s.accountGroupid === Number(groupId))
-                      .map((s) => (
-                        <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
-                          {s.accountSubGroupName}
-                        </option>
-                      ))}
-                  </select>
-                </>
-              )}
+    <label>Sub Group Code:</label>
+    <input
+      value={accountSubGroupCode}
+      onChange={(e) => setAccountSubGroupCode(e.target.value)}
+      className="form-control mb-2"
+    />
+  </>
+)}
+
+{formType === "subSubGroup" && (
+  <>
+    <label>Account Group:</label>
+    <select
+      value={groupId}
+      onChange={(e) => setGroupId(e.target.value)}
+      className="form-select mb-2"
+    >
+      <option value="">Select Group</option>
+      {accountGroups.map((g) => (
+        <option key={g.accountGroupid} value={g.accountGroupid}>
+          {g.accountGroupName}
+        </option>
+      ))}
+    </select>
+
+    <label>Sub Group:</label>
+    <select
+      value={subGroupId}
+      onChange={(e) => setSubGroupId(e.target.value)}
+      className="form-select mb-2"
+    >
+      <option value="">Select Sub Group</option>
+      {subGroups
+  .filter((s) => Number(s.accountGroupid) === Number(groupId))
+  .map((s) => (
+    <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
+      {s.accountSubGroupName}
+    </option>
+))}
+
+    </select>
+
+    <label>Sub Sub Group Code:</label>
+    <input
+      value={accountSubSubGroupCode}
+      onChange={(e) => setAccountSubSubGroupCode(e.target.value)}
+      className="form-control mb-2"
+    />
+  </>
+)}
+
 
               <label>Name:</label>
               <input
@@ -409,6 +482,16 @@ function AccountGroupSubgroup() {
                 onChange={(e) => setName(e.target.value)}
                 className="form-control mb-2"
               />
+{formType === "accountType" && (
+  <>
+    <label>Account Type Code:</label>
+    <input
+      value={accountTypeCode}
+      onChange={(e) => setAccountTypeCode(e.target.value)}
+      className="form-control mb-2"
+    />
+  </>
+)}
 
               <label>Narration:</label>
               <textarea
@@ -548,14 +631,15 @@ function AccountGroupSubgroup() {
                       <tr>
                         <td
                           colSpan={
-                            formType === "accountGroup"
-                              ? 6
-                              : formType === "subSubGroup"
-                              ? 6
-                              : formType === "subGroup"
-                              ? 5
-                              : 4
-                          }
+  formType === "accountGroup"
+    ? 5
+    : formType === "subSubGroup"
+    ? 5
+    : formType === "subGroup"
+    ? 4
+    : 3
+}
+
                           className="text-center py-4 text-muted"
                         >
                           No records found.

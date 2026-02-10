@@ -1,5 +1,5 @@
  const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-  //const BASE_URL = "https://localhost:7145/api";
+//const BASE_URL = "https://localhost:7145/api";
 
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
@@ -43,8 +43,9 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
   GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
     UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
-
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
+    GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
+
   //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,

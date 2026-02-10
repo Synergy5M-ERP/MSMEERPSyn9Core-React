@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import AddEmployee from "./pages/HRM/EmployeeMaster/AddEmployee";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /* AUTH */
 import RegisterPage from "./pages/RegisterPage";
@@ -62,7 +64,16 @@ function App() {
   return (
     <Router>
       <Header />
-
+ {/* ✅ ADD THIS ONCE */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+      />
       <Routes>
         {/* AUTH */}
         <Route path="/register" element={<RegisterPage />} />

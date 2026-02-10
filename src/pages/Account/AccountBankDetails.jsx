@@ -4,8 +4,8 @@ import { Eye, Save, Trash2, Loader2, X } from 'lucide-react';
 import { API_ENDPOINTS } from "../../config/apiconfig";
 //const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
 //const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
-const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api '
- //const BASE_URL = "https://localhost:7145/api";
+//const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api '
+ const BASE_URL = "https://localhost:7145/api";
 
 
 

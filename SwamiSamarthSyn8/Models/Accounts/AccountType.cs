@@ -15,6 +15,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [StringLength(200)]
         public string? AccountTypeNarration { get; set; }
+        public string? AccountTypeCode { get; set; }
 
         public bool? IsActive { get; set; }
         public virtual ICollection<AccountGroup> AccountGroups { get; set; }

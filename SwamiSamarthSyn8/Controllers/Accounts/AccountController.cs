@@ -13,10 +13,10 @@ namespace SwamiSamarthSyn8.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly SwamiSamarthDbContext _context;
+        private readonly MsmeERPDbContext _context;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(SwamiSamarthDbContext context, ILogger<AccountController> logger)
+        public AccountController(MsmeERPDbContext context, ILogger<AccountController> logger)
         {
             _context = context;
             _logger = logger;
@@ -83,6 +83,8 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.AccountTypeNarration != null)
                 existing.AccountTypeNarration = dto.AccountTypeNarration;
+            if (dto.AccountTypeCode != null)
+                existing.AccountTypeCode = dto.AccountTypeCode;
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;
@@ -123,6 +125,7 @@ namespace SwamiSamarthSyn8.Controllers
                 a.GroupCode,
                 a.AccountTypeid,
                 AccountTypeName = a.AccountType.AccountTypeName, // ✅ Show name via relationship
+               // a.AccountGroupCode,
                 a.IsActive
             }).ToList();
 
@@ -159,6 +162,9 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.GroupCode != null)
                 existing.GroupCode = dto.GroupCode;
+            
+            if (dto.AccountGroupCode != null)
+                existing.AccountGroupCode = dto.AccountGroupCode;
 
             if (dto.AccountTypeid.HasValue)
                 existing.AccountTypeid = dto.AccountTypeid.Value;
@@ -191,6 +197,7 @@ namespace SwamiSamarthSyn8.Controllers
                     s.AccountSubGroupNarration,
                     s.AccountGroupid,
                     AccountGroupName = s.AccountGroup.AccountGroupName, // ✅ Include related group name
+                   // s.AccountSubGroupCode,
                     s.IsActive
                 })
                 .ToListAsync();
@@ -220,6 +227,10 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.AccountSubGroupNarration != null)
                 existing.AccountSubGroupNarration = dto.AccountSubGroupNarration;
+            
+            
+            if (dto.AccountSubGroupCode != null)
+                existing.AccountSubGroupCode = dto.AccountSubGroupCode;
 
             if (dto.AccountGroupid.HasValue)
                 existing.AccountGroupid = dto.AccountGroupid.Value;
@@ -252,6 +263,7 @@ namespace SwamiSamarthSyn8.Controllers
                     x.AccountSubSubGroupid,
                     x.AccountSubSubGroupName,
                     x.AccountSubSubGroupNarration,
+                  //  x.AccountSubSubGroupCode,
                     x.AccountSubGroupid,
                     AccountSubGroupName = x.AccountSubGroup.AccountSubGroupName,
                     AccountGroupName = x.AccountSubGroup.AccountGroup.AccountGroupName, // ✅ Include both group names
@@ -285,6 +297,8 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.AccountSubSubGroupNarration != null)
                 existing.AccountSubSubGroupNarration = dto.AccountSubSubGroupNarration;
+            if (dto.AccountSubSubGroupCode != null)
+                existing.AccountSubSubGroupCode = dto.AccountSubSubGroupCode;
 
             if (dto.AccountGroupid.HasValue)
                 existing.AccountGroupid = dto.AccountGroupid.Value;

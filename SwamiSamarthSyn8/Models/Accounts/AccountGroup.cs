@@ -21,6 +21,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [MaxLength(50)]
         public string GroupCode { get; set; }
+        public string AccountGroupCode { get; set; }
 
         // Foreign key
         [Required]

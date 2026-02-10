@@ -23,6 +23,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [StringLength(500)]
         public string AccountSubSubGroupNarration { get; set; }
+        public string AccountSubSubGroupCode { get; set; }
 
         public bool? IsActive { get; set; } = true;
 

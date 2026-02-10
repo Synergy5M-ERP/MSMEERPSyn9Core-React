@@ -5,6 +5,8 @@
         public string? AccountGroupName { get; set; }
         public string? AccountGroupNarration { get; set; }
         public string? GroupCode { get; set; }
+        public string? AccountGroupCode { get; set; }
+
         public int? AccountTypeid { get; set; }
         public bool? IsActive { get; set; }
     }

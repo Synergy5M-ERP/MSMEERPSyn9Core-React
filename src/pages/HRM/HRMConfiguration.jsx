@@ -18,6 +18,8 @@ import Report from './Report';
 import EmployeeLetter from './EmployeeLetter';
 import GrossSalary from './GrossSalary';
 import EmployeeMaster from './EmployeeMaster/EmployeeMaster';
+import EmployeeAttendanceView from './EmployeeAttendanceView';
+import EmployeeAttendence from './EmployeeAttendence';
 
 
 const HrmConfiguration = () => {
@@ -45,6 +47,8 @@ const isEmployeeRoute = location.pathname.startsWith("/employee");
     <Route index element={<EmployeeMaster />} />
     <Route path="employee/add" element={<AddEmployee />} />
     <Route path="employee/edit/:employeeId/*" element={<AddEmployee />} />
+    <Route path="/attendance/edit/:id" element={<EmployeeAttendence />} />
+
   </Routes>
 )}
    {activePage==="createMatrix" && <CreateMatrix/>}
@@ -55,6 +59,7 @@ const isEmployeeRoute = location.pathname.startsWith("/employee");
         {activePage === "attendence" && <Attendence/>}
         {activePage==="report" && <Report/>}
       {activePage==="EmployeeLetter" && <EmployeeLetter/>}
+{activePage === "employeeAttendanceView" && <EmployeeAttendanceView />}
 
           {/* Add more conditions for other pages */}
         </div>

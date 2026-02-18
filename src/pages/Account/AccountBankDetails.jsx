@@ -4,8 +4,9 @@ import { Eye, Save, Trash2, Loader2, X } from 'lucide-react';
 import { API_ENDPOINTS } from "../../config/apiconfig";
 //const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
 //const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
+//const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api '
+ const BASE_URL = "https://localhost:7145/api";
 
-const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api';
 
 
 function AccountBankDetails({ view = 'active' }) {
@@ -44,7 +45,7 @@ const [vendorId, setVendorId] = useState('');
         setAlertDialog({ show: true, title, message, onConfirm });
     };
 
-   const fetchVendorNames = async () => {
+  const fetchVendorNames = async () => {
   try {
     const res = await fetch(API_ENDPOINTS.Vendors);
     if (!res.ok) throw new Error('Failed to fetch vendors');
@@ -52,8 +53,8 @@ const [vendorId, setVendorId] = useState('');
     const json = await res.json();
 
     const normalized = (json.data || []).map(v => ({
-      id: v.vendorId,           // ✅ CORRECT
-      company_Name: v.companyName // ✅ CORRECT
+      id: v.id,                     // ✅ MATCH API
+      company_Name: v.company_Name  // ✅ MATCH API (case-sensitive)
     }));
 
     setVendorNames(normalized);
@@ -61,6 +62,7 @@ const [vendorId, setVendorId] = useState('');
     showToast(err.message, 'error');
   }
 };
+
 
 
 
@@ -472,11 +474,11 @@ const [vendorId, setVendorId] = useState('');
 >
     <option value="">--Select Vendor--</option>
 
-    {vendorNames.map(vendor => (
-        <option key={vendor.id} value={vendor.id}>
-            {vendor.company_Name}
-        </option>
-    ))}
+     {vendorNames.map(vendor => (
+    <option key={vendor.id} value={vendor.id}>
+      {vendor.company_Name}
+    </option>
+   ))}
 </select>
 
 

@@ -1,9 +1,11 @@
  const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-  //const BASE_URL = "https://localhost:7145/api";
+//const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
+    ModuleUserList: `${BASE_URL}/HRMAdminRegAPI/Login/GetModuleUserList`,
+
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
   GetUserDetails: `${BASE_URL}/HRMAdminRegAPI/GetUserDetails`,
   GetUserModules: `${BASE_URL}/HRMAdminRegAPI/GetUserModules`,
@@ -20,11 +22,13 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
   GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
+  
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
  // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
+
  // GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
   ///GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   //GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
@@ -40,8 +44,9 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
   GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
     UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
-
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
+    GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
+
   //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -70,6 +75,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   // ✅ FIXED
   Inventory: `${BASE_URL}/Inventory`,
   Vendors: `${BASE_URL}/AccountBankDetails/`,
+
   AccountBankDetails: `${BASE_URL}/AccountBankDetails`,
   AccountBankDetailsSave: `${BASE_URL}/AccountBankDetails`,
 

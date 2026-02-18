@@ -434,10 +434,10 @@ function Header() {
           <div style={{ display: "flex", alignItems: "center" }}>
             {/* ✅ AZURE READY: Logo from PUBLIC folder */}
             <img
-              src="/SwamiSamarthlogo.png"
+              src="/logo (1).png"
               alt="Logo"
               height={30}
-              style={{ marginRight: 10, marginTop: 4 }}
+              style={{ marginRight: 25, marginTop: -21 ,width:200,height:90}}
               onError={(e) => {
                 e.target.style.display = 'none';
                 console.log('Logo not found - using fallback');

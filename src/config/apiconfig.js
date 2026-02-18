@@ -1,7 +1,6 @@
+ const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+  //const BASE_URL = "https://localhost:7145/api";
 
-
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//  const BASE_URL="https://localhost:7145/api"
 
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
@@ -34,14 +33,16 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
-  UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
+  UpdateMatrixStatus:`${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
   GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
-GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+  GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+    UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
+
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
-  //------------------------Account APIs----------------------------------
+  //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
   VoucherType: `${BASE_URL}/AccountVoucherType/`,
@@ -75,8 +76,8 @@ GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   Invoices: `${BASE_URL}/Invoices/`,
   AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
-  CreditNote: `${BASE_URL}/credit-note`,
-  DebitNote: `${BASE_URL}/Debit-note`,
+  // CreditNote: `${BASE_URL}/credit-note`,
+  // DebitNote: `${BASE_URL}/Debit-note`,
 
   OutwardQc: `${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty: `${BASE_URL}/SaveRejectionQty`,
@@ -105,12 +106,12 @@ GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
 VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,
   // Ledger: `${BASE_URL}/AccountLedger`,
-  AllVendor: `${BASE_URL}/GetAllVendorsApi`,
+ // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
   UpdateVendor: `${BASE_URL}/UpdateVendorApi`,
 
   AccountVoucher: `${BASE_URL}/AccountVoucher`,
-  Vendors: `${BASE_URL}/vendors`,
+  CategoryVendors: `${BASE_URL}/CategoryVendors`,
   PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
   SalesInvoices: `${BASE_URL}/SalesInvoices`,
   GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
@@ -132,15 +133,25 @@ VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
   ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
 
+  Category: `${BASE_URL}/Category`,
+  GetSellerGRNNumbers: `${BASE_URL}/GetSellerGRNNumbers`,
+  GetBuyersInvoiceNumbers: `${BASE_URL}/GetBuyersInvoiceNumbers`,
+  GetItemsByGRN: `${BASE_URL}/GetItemsByGRN`,
+  GetItemsByInvoice: `${BASE_URL}/GetItemsByInvoice`,
+  GetGRNItemsDetails: `${BASE_URL}/GetGRNItemsDetails`,
+  GetInvoiceItemsDetails: `${BASE_URL}/GetInvoiceItemsDetails`,
+  GetNextCreditNoteNo: `${BASE_URL}/GetNextCreditNoteNo`,
+  SaveCreditNote: `${BASE_URL}/SaveCreditNote`,
+  GetUnits: `${BASE_URL}/GetUnits`,
+  GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
+  SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
+//------------------------Account APIs----------------------------------
 
-  GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
+GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
   Category: `${BASE_URL}/Category`,
   //------------------------Account APIs----------------------------------
 
-
-
-  
   // Employee endpoints
   Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
   
@@ -180,10 +191,6 @@ VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPrn`,
   GetDepartmentNames: `${BASE_URL}/PurchaseReq/departmentnames`,
 
-
-// config/apiconfig.js
-
-  
   // Employee Endpoints
   PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
   

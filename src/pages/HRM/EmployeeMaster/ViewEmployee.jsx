@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from "../../../config/apiconfig";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
-const ViewEmployee = () => {
+const ViewEmployee = ({ statusFilter } ) => {
   const [employees, setEmployees] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -17,6 +17,9 @@ const ViewEmployee = () => {
   useEffect(() => {
     fetchEmployees();
   }, []);
+useEffect(() => {
+  setPage(1);
+}, [statusFilter]);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -41,8 +44,31 @@ const ViewEmployee = () => {
   return date.toLocaleDateString("en-GB"); // dd/mm/yyyy
 };
 
+ const filteredEmployees = employees.filter(emp => {
+  if (statusFilter === "Active") return emp.isActive;
+  if (statusFilter === "Inactive") return !emp.isActive;
+  return true;
+});
 
 
+
+const handleDeactivate = async (employeeId) => {
+  if (!window.confirm("Are you sure?")) return;
+
+  try {
+    const res = await fetch(
+      `${API_ENDPOINTS.DeactivateEmployee}/${employeeId}`,
+      { method: "PUT" }
+    );
+
+    if (!res.ok) throw new Error();
+
+    alert("Employee deactivated");
+    fetchEmployees();
+  } catch {
+    alert("Failed");
+  }
+};
 
 const handleEdit = async (emp) => {
   try {
@@ -93,43 +119,30 @@ const handleEdit = async (emp) => {
 
 
 
- const handleDeactivate = async (empCode) => {
-  if (!window.confirm("Are you sure you want to deactivate this employee?"))
-    return;
+  /* ================= ACTIVATE / DEACTIVATE ================= */
+  const updateStatus = async (employeeId, isActive) => {
+    const action = isActive ? "activate" : "deactivate";
 
-  try {
-    const encodedEmpCode = encodeURIComponent(empCode);
+    if (!window.confirm(`Are you sure you want to ${action} this employee?`))
+      return;
 
-    const url = `${API_ENDPOINTS.DeactivateEmployee}/${encodedEmpCode}`;
-    console.log("Calling API:", url);
-
-    const res = await fetch(url, {
-      method: "PUT",
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
+    try {
+      const url = `${API_ENDPOINTS.UpdateEmployeeStatus}/${employeeId}?isActive=${isActive}`;
+      await fetch(url, { method: "PUT" });
+      fetchEmployees();
+    } catch {
+      alert("Failed to update status");
     }
-
-    alert("Employee deactivated successfully");
-    fetchEmployees(); // reload list
-  } catch (err) {
-    console.error(err);
-    alert("Failed to deactivate employee");
-  }
-};
+  };
 
 
-  /* ---------------- PAGINATION ---------------- */
-  const totalCount = employees.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const totalCount = filteredEmployees.length;
+const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const pagedEmployees = employees.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
-
+const pagedEmployees = filteredEmployees.slice(
+  (page - 1) * pageSize,
+  page * pageSize
+);
   const handlePageChange = (p) => {
     if (p >= 1 && p <= totalPages) setPage(p);
   };
@@ -191,7 +204,7 @@ const handleEdit = async (emp) => {
              <tbody>
   {pagedEmployees.length ? (
     pagedEmployees.map((e) => (
-      <tr key={e.empCode}>
+<tr key={e.employeeId}>
         <td>{e.empCode}</td>
         <td>{e.fullName}</td>
         <td>{e.gender}</td>
@@ -217,7 +230,9 @@ const handleEdit = async (emp) => {
 
         <td>
           <span
-            onClick={() => handleDeactivate(e.empCode)}
+               onClick={() => handleDeactivate(e.employeeId)}
+
+                            
             style={{ cursor: "pointer", color: "#dc3545" }}
           >
             <FaTrash />

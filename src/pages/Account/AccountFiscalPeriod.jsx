@@ -300,32 +300,32 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
           <div style={{ background: 'white', padding: '25px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
             <div style={{ overflowX: 'auto' }}>
               {loading && <LoadingSpinner />}
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="table table-bordered table-striped mt-3">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #0066cc' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Name</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Start Date</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>End Date</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Status</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Year</th>
+                  <tr style={{ borderBottom: '2px solid' }}>
+                    <th className="text-primary">Fiscal Period Name</th>
+                    <th className="text-primary">Start Date</th>
+                    <th className="text-primary">End Date</th>
+                    <th className="text-primary">Fiscal Period Status</th>
+                    <th className="text-primary">Fiscal Year</th>
                     {view === "active" ? (
                       <>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Edit</th>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Delete</th>
+                        <th className="text-primary">Edit</th>
+                        <th className="text-primary">Delete</th>
                       </>
                     ) : (
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Activate</th>
+                      <th className="text-primary">Activate</th>
                     )}
                   </tr>
                 </thead>
                 <tbody>
                   {currentRecords.map((fp) => (
                     <tr key={fp.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodName}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodStartDate}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodEndDate}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodStatus}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalYear}</td>
+                      <td >{fp.FiscalPeriodName}</td>
+                      <td >{fp.FiscalPeriodStartDate}</td>
+                      <td >{fp.FiscalPeriodEndDate}</td>
+                      <td >{fp.FiscalPeriodStatus}</td>
+                      <td >{fp.FiscalYear}</td>
                       {view === "active" ? (
                         <>
                           <td>

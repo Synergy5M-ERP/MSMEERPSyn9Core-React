@@ -4,7 +4,7 @@ import AddEmployee from "./AddEmployee";
 
 function EmployeeMaster() {
   const [selectedPage, setSelectedPage] = useState("ViewEmployee"); // ViewEmployee | AddEmployee
-  const [employeeStatus, setEmployeeStatus] = useState("All"); // All | Active | Inactive
+  const [employeeStatus, setEmployeeStatus] = useState("Active"); // All | Active | Inactive
 
   const renderContent = () => {
     if (selectedPage === "ViewEmployee")

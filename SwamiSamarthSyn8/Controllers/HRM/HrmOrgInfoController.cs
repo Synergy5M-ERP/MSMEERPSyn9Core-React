@@ -1142,8 +1142,10 @@ public async Task<IActionResult> GetEmployeeAttendance()
         {
             var data = (
                 from a in _context.HRM_EmployeeDailyAttendance
-                join e in _context.HRM_Employee on a.EmployeeId equals e.EmployeeId
-                join d in _context.HRM_Department on e.DeptId equals d.DeptId
+                join e in _context.HRM_Employee
+                    on a.EmployeeId equals e.EmployeeId
+                join d in _context.HRM_Department   // ✅ ADD THIS JOIN
+                    on e.DeptId equals d.DeptId
                 where a.EmpDailyAttendanceId == id
                 select new
                 {
@@ -1151,7 +1153,7 @@ public async Task<IActionResult> GetEmployeeAttendance()
                     a.EmployeeId,
                     a.EmpCode,
                     e.FullName,
-                    DeptName = d.DeptName,
+                    DeptName = d.DeptName,   // ✅ NOW WORKS
                     a.AttendanceDate,
                     a.TimeIn,
                     a.TimeOut,
@@ -1160,8 +1162,33 @@ public async Task<IActionResult> GetEmployeeAttendance()
                 }
             ).FirstOrDefault();
 
+            if (data == null)
+                return NotFound();
+
             return Ok(data);
         }
+
+        //[HttpPut("UpdateEmployeeAttendance")]
+        //public IActionResult UpdateEmployeeAttendance(List<EmployeeAttendanceDto> model)
+        //{
+        //    foreach (var item in model)
+        //    {
+        //        var existing = _context.HRM_EmployeeDailyAttendance
+        //            .FirstOrDefault(x => x.EmpDailyAttendanceId == item.EmpDailyAttendanceId);
+
+        //        if (existing != null)
+        //        {
+        //            existing.TimeIn = item.TimeIn;
+        //            existing.TimeOut = item.TimeOut;
+        //            existing.TotalWorkHours = item.TotalWorkHours;
+        //            existing.OverTimeHours = item.OverTimeHours;
+        //        }
+        //    }
+
+        //    _context.SaveChanges();
+
+        //    return Ok();
+        //}
 
         [HttpPut("DeactivateAttendance/{id}")]
         public IActionResult DeactivateAttendance(int id)

@@ -1,25 +1,55 @@
-/* ================================ */
-/*        CLEAN TABLE LOOK          */
-/*         (LIKE YOUR IMAGEs)        */
-/* ================================ */
+/* ================================= */
+/*         PAGE BACKGROUND           */
+/* ================================= */
 
-/* Header Style */
+.module-page-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4e73df 0%, #1cc88a 100%);
+  padding: 30px 15px;
+}
+
+/* ================================= */
+/*         PAGE TITLE                */
+/* ================================= */
+
+.user-management-title {
+  color: #1a3c8b;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+}
+
+/* ================================= */
+/*         CLEAN TABLE LOOK          */
+/* ================================= */
+
+/* Table container card style */
+.rdt_Table {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid #d0c4e8;
+}
+
+/* Header */
 .rdt_TableHeadRow {
-  background: white !important;
+  background: #ffffff !important;
   border-bottom: 2px solid #dcdcdc !important;
 }
 
 .rdt_TableCol {
-  font-weight: bold;
-  color: #1a3c8b; /* blue text */
+  font-weight: 700;
+  color: #1a3c8b;
   font-size: 14px;
-  padding: 10px !important;
+  padding: 12px !important;
   text-align: center;
 }
 
-/* Body Row Colors */
+/* Body Rows */
 .rdt_TableRow:nth-child(even) {
-  background-color: #f3e6ff !important; /* light purple */
+  background-color: #f3e6ff !important;
 }
 
 .rdt_TableRow:nth-child(odd) {
@@ -27,89 +57,79 @@
 }
 
 .rdt_TableRow:hover {
-  background-color: #e5d6ff !important; /* hover darker purple */
+  background-color: #e5d6ff !important;
+  transition: 0.2s ease-in-out;
 }
 
-/* Cell Style */
+/* Cells */
 .rdt_TableCell {
-  padding: 10px !important;
+  padding: 12px !important;
   font-size: 14px;
   text-align: center;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid #eeeeee;
 }
 
-/* Last column remove border */
 .rdt_TableCell:last-child,
 .rdt_TableCol:last-child {
   border-right: none !important;
 }
 
-/* Outer border */
-.rdt_Table {
-  border: 1px solid #d0c4e8;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-/* Scroll bar like screenshot */
-.data-table-container {
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-/* ================================ */
-/*       ACTION BUTTONS STYLE       */
-/* ================================ */
-.data-table table {
-  width: 100%;
-}
+/* ================================= */
+/*         ACTION BUTTONS            */
+/* ================================= */
 
 .action-column {
-  min-width: 120px; /* avoid shrinking */
+  min-width: 140px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
-
-
 
 .action-btn {
   border: none;
-  background: none;
+  background: #f4f4f4;
+  border-radius: 6px;
+  padding: 6px 8px;
   cursor: pointer;
-  font-size: 18px;        /* icon size */
-  padding: 3px;
+  font-size: 16px;
+  transition: 0.2s ease;
 }
 
-.action-btn.view i {
-  color: #0044ff;        /* blue */
+/* Button Colors */
+.action-btn.view {
+  color: #0044ff;
 }
 
-.action-btn.approve i {
-  color: #0da60d;        /* green */
+.action-btn.approve {
+  color: #0da60d;
 }
 
-.action-btn.edit i {
-  color: #ff9c07;        /* orange */
+.action-btn.edit {
+  color: #ff9c07;
 }
 
-.action-btn.delete i {
-  color: red;            /* red */
+.action-btn.delete {
+  color: red;
 }
 
+/* Hover Effect */
 .action-btn:hover {
-  transform: scale(1.2); /* small zoom effect */
-  transition: 0.2s;
+  transform: scale(1.1);
+  background: #e6dcff;
 }
 
-/* ================================ */
-/*           RESPONSIVE CSS         */
-/* ================================ */
+/* ================================= */
+/*           RESPONSIVE              */
+/* ================================= */
 
 @media (max-width: 1024px) {
   .rdt_Table {
     font-size: 13px;
   }
+
   .rdt_TableCell,
   .rdt_TableCol {
-    padding: 4px 6px !important;
+    padding: 6px !important;
   }
 }
 
@@ -117,13 +137,13 @@
   .rdt_Table {
     font-size: 12px;
   }
+
   .rdt_TableCell {
-    padding: 3px 4px !important;
+    padding: 5px !important;
   }
 
-  .action-buttons {
-    flex-direction: row;
-    gap: 4px;
+  .action-column {
+    gap: 6px;
   }
 }
 
@@ -133,45 +153,39 @@
   }
 }
 
-/* ================================ */
-/*          MODAL STYLING           */
-/* ================================ */
+/* ================================= */
+/*          MODAL STYLING            */
+/* ================================= */
 
 .module-access-modal .modal-content {
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
 .module-header-box {
   background: #f5f7fa;
-  border-left: 4px solid #0d6efd;
+  border-left: 4px solid #6f42c1;
   border-radius: 8px;
 }
 
 .module-checkbox {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   font-size: 15px;
 }
 
-/* Modal slide animation */
+/* Modal animation */
 .module-access-modal .modal-dialog {
-  transform: translateY(-20px);
-  animation: slideDown 0.25s ease-out forwards;
-}
-.user-management-title {
-  color: #007bff;
-  font-weight: 700;
-  letter-spacing: 1px;
+  animation: slideDown 0.3s ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-25px);
   }
   to {
     opacity: 1;
-    transform: translateY(0px);
+    transform: translateY(0);
   }
 }

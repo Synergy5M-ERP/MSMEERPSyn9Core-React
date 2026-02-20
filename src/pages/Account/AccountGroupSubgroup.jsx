@@ -96,11 +96,7 @@ function AccountGroupSubgroup() {
     setCurrentPage(1); // ✅ Reset to page 1 on filter change
   }, [formType, activeFilter, fetchTableData]);
 
-useEffect(() => {
-  if (!editingId) {
-    setSubGroupId("");
-  }
-}, [groupId, editingId]);
+
 
   // --------------------------------------------------------------------------------------------------
   // 📌 Reset Form
@@ -262,18 +258,23 @@ url = editingId
     setGroupId(String(item.accountGroupid));
   }
 
-  else if (formType === "subSubGroup") {
-    // ❌ NO resetForm here
-    setEditingId(item.accountSubSubGroupid);
-    setName(item.accountSubSubGroupName || "");
-    setNarration(item.accountSubSubGroupNarration || "");
-    setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
+else if (formType === "subSubGroup") {
+  resetForm(); // important
 
-    setGroupId(String(item.accountGroupid));
-    setTimeout(() => {
-      setSubGroupId(String(item.accountSubGroupid));
-    }, 0);
-  }
+  setEditingId(item.accountSubSubGroupid);
+
+  setName(item.accountSubSubGroupName || "");
+  setNarration(item.accountSubSubGroupNarration || "");
+  setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
+
+  setGroupId(item.accountGroupid);
+setSubGroupId(item.accountSubGroupid);
+
+
+
+  setIsActive(item.isActive ?? true);
+}
+
 };
 
 
@@ -456,9 +457,10 @@ url = editingId
       className="form-select mb-2"
     >
       <option value="">Select Sub Group</option>
-      {subGroups
-  .filter((s) => Number(s.accountGroupid) === Number(groupId))
+     {subGroups
+.filter((s) => Number(s.accountGroupid) === Number(groupId))
   .map((s) => (
+
     <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
       {s.accountSubGroupName}
     </option>

@@ -70,12 +70,7 @@ const [moduleData, setModuleData] = useState({
 
 
   // ======================================================
-  // ⭐⭐ OPEN MODULE DASHBOARD
-  // ======================================================
- const handleModuleDashboardOpen = async (id, empCode) => {
-  setShowModuleDashboard(true);
-  setViewData(null);
-
+const handleModuleDashboardOpen = async (id, empCode) => {
   try {
     const res = await axios.get(API_ENDPOINTS.GetUserModules, {
       params: { id, empCode }
@@ -83,21 +78,28 @@ const [moduleData, setModuleData] = useState({
 
     if (res.data.success) {
       const user = res.data.user;
-      setViewData(user);
+
+      console.log("User Module Data:", user); // 🔥 check what API returns
 
       const updatedModules = {
-        MaterialManagementModule: user.materialManagement ?? false,
-        SalesAndMarketingModule: user.salesAndMarketing ?? false,
-        HRAndAdminModule: user.hrAndAdmin ?? false,
-        AccountAndFinanceModule: user.accountAndFinance ?? false,
-        MastersModule: user.masters ?? false,
-        DashboardModule: user.dashboard ?? false,
-        ProductionAndQualityModule: user.productionAndQuality ?? false,
-        External_buyer_seller: user.external_buyer_seller ?? false,
+       
+  MaterialManagementModule: !!user.materialManagement,
+  SalesAndMarketingModule: !!user.salesAndMarketing,
+  HRAndAdminModule: !!user.hrAndAdmin,
+  AccountAndFinanceModule: !!user.accountAndFinance,
+  MastersModule: !!user.masters,
+  DashboardModule: !!user.dashboard,
+  ProductionAndQualityModule:
+    !!user.production || !!user.quality,
+  External_buyer_seller: user.newAssignModule === "1"
+
       };
 
+      setViewData(user);
       setModuleData(updatedModules);
       setIsAllSelected(Object.values(updatedModules).every(Boolean));
+      setSelectedEmpCode(empCode);
+      setShowModuleDashboard(true);
     }
   } catch (err) {
     console.error("Error loading user modules", err);
@@ -140,14 +142,26 @@ const handleSelectAll = (e) => {
 
 const handleModuleSubmit = async () => {
   try {
+    if (!selectedEmpCode) {
+      alert("Employee Code missing!");
+      return;
+    }
+
     const payload = {
       Emp_Code: selectedEmpCode,
-      username: viewData.username, // include username
-      UserRole: viewData.UserRole ?? "User", // include UserRole or default
-      ...moduleData
+      username: viewData?.UserName,
+      UserRole: viewData?.UserRole || "User",
+      ...moduleData,
     };
 
-    const res = await axios.post(API_ENDPOINTS.UpdateUserModules, payload);
+    console.log("Sending Payload:", payload);
+
+    const res = await axios.post(
+      API_ENDPOINTS.UpdateUserModules,
+      payload
+    );
+
+    console.log("API Response:", res.data);
 
     if (res.data.success) {
       alert(
@@ -155,16 +169,18 @@ const handleModuleSubmit = async () => {
           ? "Modules assigned successfully!"
           : "Modules updated successfully!"
       );
+
       setShowModuleDashboard(false);
       loadData();
     } else {
-      alert("Failed to update modules.");
+      alert(res.data.message);
     }
   } catch (error) {
-    console.error(error);
+    console.error("Submit Error:", error.response?.data || error.message);
     alert("Error while submitting modules.");
   }
 };
+
 
   // ============ REJECT USER ============
   const rejectUser = () => {
@@ -211,23 +227,30 @@ const handleModuleSubmit = async () => {
      <button
   className="action-btn approve"
   onClick={() => {
-    setModalMode("approve"); // <-- approve mode
-    setSelectedEmpCode(row.emp_Code);
+  setModalMode("approve");
+  setSelectedEmpCode(row.emp_Code);
 
-    // Open modal with all checkboxes unchecked
-    setModuleData({
-      MaterialManagementModule: false,
-      SalesAndMarketingModule: false,
-      HRAndAdminModule: false,
-      AccountAndFinanceModule: false,
-      MastersModule: false,
-      DashboardModule: false,
-      ProductionAndQualityModule: false,
-      External_buyer_seller: false,
-    });
-    setIsAllSelected(false);
-    setShowModuleDashboard(true);
-  }}
+  // 👇 ADD THIS
+  setViewData({
+  UserName: row.email,   // or correct username field
+  UserRole: row.userRole || "User",   // ✅ Default safe value
+  });
+
+  setModuleData({
+    MaterialManagementModule: false,
+    SalesAndMarketingModule: false,
+    HRAndAdminModule: false,
+    AccountAndFinanceModule: false,
+    MastersModule: false,
+    DashboardModule: false,
+    ProductionAndQualityModule: false,
+    External_buyer_seller: false,
+  });
+
+  setIsAllSelected(false);
+  setShowModuleDashboard(true);
+}}
+
 >
   <i className="fas fa-user-check"></i>
 </button>
@@ -261,6 +284,8 @@ const handleModuleSubmit = async () => {
   //                 RETURN JSXs
   // ======================================================
   return (
+      <div className="module-page-wrapper">
+
     <div className="container mt-4">
 <h2 className="text-center user-management-title">
   User Management Panel
@@ -275,7 +300,7 @@ const handleModuleSubmit = async () => {
         striped
         responsive
       />
-
+</div>
   {/* ====================== VIEW MODAL ====================== */}
       <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="lg">
         <Modal.Header closeButton>

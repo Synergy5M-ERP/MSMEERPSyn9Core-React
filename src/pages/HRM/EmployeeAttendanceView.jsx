@@ -3,14 +3,13 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-//const API_BASE = "https://localhost:7145/api/HrmOrgInfo";
- const API_BASE = "https://msmeerpsyn9-core.azurewebsites.net/api/HrmOrgInfo";
+const API_BASE = "https://msmeerpsyn9-core.azurewebsites.net/api/HrmOrgInfo";
 
 function EmployeeAttendanceView() {
   const [employees, setEmployees] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
+ useEffect(() => {
     loadAttendance();
   }, []);
 
@@ -22,24 +21,24 @@ function EmployeeAttendanceView() {
       toast.error("Failed to load attendance list");
     }
   };
+ 
 
-  // ✅ Edit handler
   const handleEdit = (attendanceId) => {
-    navigate(`/attendance/edit/${attendanceId}`);
+  navigate(`/hrm/attendance/edit/${attendanceId}`);
   };
 
-  // ✅ Deactivate handler
   const handleDeactivate = async (attendanceId) => {
     if (!window.confirm("Are you sure you want to deactivate this record?")) return;
 
     try {
       await axios.put(`${API_BASE}/DeactivateAttendance/${attendanceId}`);
       toast.success("Attendance deactivated");
-      loadAttendance(); // refresh list
+      loadAttendance();
     } catch (err) {
       toast.error("Failed to deactivate attendance");
     }
   };
+
 
   return (
     <div className="container-fluid">
@@ -56,7 +55,7 @@ function EmployeeAttendanceView() {
             <th>Time Out</th>
             <th>Total Hours</th>
             <th>Overtime</th>
-            <th>Actions</th> {/* 👈 NEW */}
+            <th>Actions</th> 
           </tr>
         </thead>
 
@@ -68,7 +67,7 @@ function EmployeeAttendanceView() {
           )}
 
           {employees.map((e) => (
-            <tr key={e.attendanceId}>
+            <tr key={e.empDailyAttendanceId}>
               <td>{e.selectedDate}</td>
               <td>{e.fullName}</td>
               <td>{e.empCode}</td>
@@ -78,22 +77,22 @@ function EmployeeAttendanceView() {
               <td>{e.totalHours}</td>
               <td>{e.overtimeHours}</td>
 
-              {/* ✅ ACTION BUTTONS */}
-              <td>
-                <button
-                  className="btn btn-sm btn-warning me-2"
-                  onClick={() => handleEdit(e.attendanceId)}
-                >
-                  Edit
-                </button>
+              
+               <td>
+      <button
+        className="btn btn-sm btn-warning me-2"
+        onClick={() => handleEdit(e.empDailyAttendanceId)}
+      >
+        Edit
+      </button>
 
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDeactivate(e.attendanceId)}
-                >
-                  Deactivate
-                </button>
-              </td>
+      <button
+        className="btn btn-sm btn-danger"
+        onClick={() => handleDeactivate(e.empDailyAttendanceId)}
+      >
+        Deactivate
+      </button>
+    </td>
             </tr>
           ))}
         </tbody>

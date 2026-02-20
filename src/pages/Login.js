@@ -1,95 +1,184 @@
-import React, { useState } from 'react';
-import './Login.css';
-import Footer from '../components/Footer'; // Make sure path is correct
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import axios from "axios";
+import { API_ENDPOINTS } from "../config/apiconfig";
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  if (!username || !password) {
+    setIsError(true);
+    setMessage("Username and Password are required");
+    return;
+  }
 
-    if (!username || !password) {
-      setError("⚠ Username and Password cannot be empty.");
-      return;
+  try {
+    setLoading(true);
+
+    const response = await axios.post(API_ENDPOINTS.LOGIN, {
+      username: username.trim(),
+      password: password.trim(),
+    });
+
+  if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      setIsError(false);
+      setMessage("Login successful 🎉");
+
+      // ✅ Navigate WITHOUT reload
+      navigate("/dashboard");
+
+    } else {
+      setIsError(true);
+      setMessage("Invalid username or password");
     }
 
-    try {
-      const response = await fetch('https://localhost:7145/api/Login/Login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      // If API does not return JSON, handle gracefully
-      if (!response.ok) {
-        setError('⚠ Invalid username or password.');
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.token) {
-        // ✅ Save token for future API calls
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('username', username);
-
-        // ✅ Redirect to AccountTypePage
-        navigate('/AccountTypePage');
-      } else {
-        setError(data.message || '⚠ Invalid username or password.');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('⚠ Server error. Please ensure the backend is running.');
-    }
-  };
-
+  } catch (error) {
+    setIsError(true);
+    setMessage(error.response?.data?.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
-    <div className="login-wrapper">
-      <form className="login-card" onSubmit={handleSubmit}>
-        {/* Logo */}
-        <img src="/SwamiSamarthlogo.png" alt="Logo" className="login-logo" />
+    <div style={styles.wrapper}>
+      <div style={styles.card}>
+        <Lock style={{ fontSize: 50, color: "#4e73df" }} />
 
-        {error && <div className="alert alert-danger text-center">{error}</div>}
+        <h2 style={styles.title}>Welcome Back</h2>
+        <p style={styles.subtitle}>Login to your account</p>
 
-        <div className="form-group mb-3">
-          <label>Username</label>
+        {message && (
+          <div
+            style={{
+              ...styles.message,
+              backgroundColor: isError ? "#ffdddd" : "#ddffdd",
+              color: isError ? "#d8000c" : "#2e7d32",
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+          {/* Username */}
           <input
             type="text"
-            className="form-control"
-            placeholder="Type your username"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            style={styles.input}
+            required
           />
-        </div>
 
-        <div className="form-group mb-3">
-          <label>Password</label>
-          <input
-            type="password"
-            className="form-control"
-            placeholder="Type your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+          {/* Password */}
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={styles.input}
+              required
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </span>
+          </div>
 
-        <button type="submit" className="btn btn-primary w-100 login-btn">
-          LOGIN
-        </button>
-      </form>
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-      {/* Footer Component */}
-      <Footer />
+        {/* Optional Forgot Password Link */}
+        <p
+          style={{ marginTop: "15px", cursor: "pointer", color: "#4e73df" }}
+          onClick={() => navigate("/forgot-password")}
+        >
+          Forgot Password?
+        </p>
+      </div>
     </div>
   );
+};
+
+const styles = {
+  wrapper: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "linear-gradient(135deg, #4e73df 0%, #1cc88a 100%)",
+    padding: "20px",
+  },
+  card: {
+    background: "rgba(255, 255, 255, 0.95)",
+    padding: "40px",
+    borderRadius: "16px",
+    width: "100%",
+    maxWidth: "420px",
+    textAlign: "center",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.2)",
+  },
+  title: {
+    marginTop: "15px",
+    marginBottom: "5px",
+    fontWeight: "700",
+  },
+  subtitle: {
+    fontSize: "14px",
+    color: "#666",
+    marginBottom: "20px",
+  },
+  input: {
+    width: "100%",
+    padding: "12px",
+    marginBottom: "15px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    fontSize: "14px",
+    outline: "none",
+  },
+  button: {
+    width: "100%",
+    padding: "12px",
+    background: "linear-gradient(135deg, #4e73df, #1cc88a)",
+    border: "none",
+    borderRadius: "8px",
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: "16px",
+    cursor: "pointer",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: "10px",
+    top: "10px",
+    cursor: "pointer",
+    color: "#777",
+  },
+  message: {
+    padding: "10px",
+    borderRadius: "6px",
+    marginBottom: "15px",
+    fontSize: "14px",
+  },
 };
 
 export default Login;

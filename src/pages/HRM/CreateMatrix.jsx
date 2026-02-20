@@ -1,12 +1,14 @@
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/apiconfig";
-import { toast } from "react-toastify";
-import { FaEdit, FaToggleOn, FaToggleOff,FaTrash} from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 const CreateMatrix = () => {
-  const [selectedPage, setSelectedPage] = useState("viewMatrix"); // main view
-  const [statusFilter, setStatusFilter] = useState("active"); // active/inactive filter
+  const [selectedPage, setSelectedPage] = useState("viewMatrix");
+  const [statusFilter, setStatusFilter] = useState("active");
   const [employeeList, setEmployeeList] = useState([]);
   const [reportingList, setReportingList] = useState([]);
   const [matrixList, setMatrixList] = useState([]);
@@ -33,482 +35,516 @@ useEffect(() => {
     .catch(() => toast.error("Failed to load data"));
 }, []);
 
- const initialForm = {
-  employeeId: "",
-  empCode: "",
-  empName: "",
-  department: "",
-  departmentCode: "",
-  designation: "",
-  designationCode: "",
-
-  reportingEmployeeId: "",
-  reportingEmpCode: "",
-  reportingEmpName: "",
-  rpDepartment: "",
-  rpDepartmentCode: "",
-  rpDesignation: "",
-  rpDesignationCode: "",
-
-  matrixCode: "",
-  isActive: true,
-};
+  const initialForm = {
+    employeeId: "",
+    empCode: "",
+    empName: "",
+    department: "",
+    departmentCode: "",
+    designation: "",
+    designationCode: "",
+    reportingEmployeeId: "",
+    reportingEmpCode: "",
+    reportingEmpName: "",
+    rpDepartment: "",
+    rpDepartmentCode: "",
+    rpDesignation: "",
+    rpDesignationCode: "",
+    matrixCode: "",
+    isActive: true,
+  };
 
   const [form, setForm] = useState(initialForm);
 
-  // Load employees and matrix list on mount
+  // Initial data load
   useEffect(() => {
-    axios
-      .get(API_ENDPOINTS.Emp_Info)
-      .then((res) => {
-        setEmployeeList(res.data);
-        setReportingList(res.data);
+    Promise.all([
+      axios.get(API_ENDPOINTS.Emp_Info),
+      axios.get(API_ENDPOINTS.MatrixList),
+    ])
+      .then(([emp, matrix]) => {
+        setEmployeeList(emp.data);
+        setReportingList(emp.data);
+        setMatrixList(matrix.data);
+        toast.success("✅ All data loaded successfully!");
       })
-      .catch(() => toast.error("Failed to load employees"));
-
-    loadMatrixList();
+      .catch(() => toast.error("❌ Failed to load data"));
   }, []);
 
-const loadMatrixList = () => {
-  axios
-    .get(API_ENDPOINTS.MatrixList)
-    .then((res) => {
-      console.log("Matrix list:", res.data); // check response in console
-      setMatrixList(res.data);
-    })
-    .catch((err) => {
-      console.error(err);
-      toast.error("Failed to load matrix list");
-    });
-};
+  // Auto-generate matrix code
+  useEffect(() => {
+    if (!form.reportingEmpCode) return;
+    const matrixCode = `MC-${form.reportingEmpCode}`;
+    setForm((prev) => ({
+      ...prev,
+      matrixCode,
+    }));
+  }, [form.reportingEmpCode]);
 
+  const loadMatrixList = () => {
+    axios
+      .get(API_ENDPOINTS.MatrixList)
+      .then((res) => {
+        setMatrixList(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("❌ Failed to load matrix list");
+      });
+  };
 
-  // Update matrix code whenever relevant fields change
-{/*useEffect(() => {
-  const matrixCode =
-    String(form.departmentCode ?? "") +
-    String(form.designationCode ?? "") +
-    String(form.authorityCode ?? "") +
-    String(form.rpDepartmentCode ?? "") +
-    String(form.rpDesignationCode ?? "") +
-    String(form.rpAuthorityCode ?? "");
+  const handleEmployeeSelect = (e) => {
+    const empId = Number(e.target.value);
+    const emp = employeeList.find((x) => x.employeeId === empId);
+    if (!emp) return;
+    setForm((prev) => ({
+      ...prev,
+      employeeId: emp.employeeId,
+      empCode: emp.empCode,
+      empName: emp.fullName,
+      department: emp.department || "",
+      departmentCode: emp.departmentCode || "",
+      designation: emp.designation || "",
+      designationCode: emp.designationCode || "",
+    }));
+  };
 
-  setForm(prev => ({
-    ...prev,
-    matrixCode
-  }));
-}, [
-  form.departmentCode,
-  form.designationCode,
-  form.authorityCode,
-  form.rpDepartmentCode,
-  form.rpDesignationCode,
-  form.rpAuthorityCode,
-]);*/}
-// ✅ MATRIX CODE GENERATION (MC-26/000015)// ✅ MATRIX CODE = MC-{ReportingEmpCode}
-useEffect(() => {
-  if (!form.reportingEmpCode) return;
+  const handleReportingSelect = (e) => {
+    const empId = Number(e.target.value);
+    const emp = reportingList.find((x) => x.employeeId === empId);
+    if (!emp) return;
+    setForm((prev) => ({
+      ...prev,
+      reportingEmployeeId: emp.employeeId,
+      reportingEmpCode: emp.empCode,
+      reportingEmpName: emp.fullName,
+      rpDepartment: emp.department || "",
+      rpDepartmentCode: emp.departmentCode || "",
+      rpDesignation: emp.designation || "",
+      rpDesignationCode: emp.designationCode || "",
+    }));
+  };
 
-  const matrixCode = `MC-${form.reportingEmpCode}`;
-
-  setForm(prev => ({
-    ...prev,
-    matrixCode,
-  }));
-}, [form.reportingEmpCode]);
-
-
-  // Employee selection
-const handleEmployeeSelect = (e) => {
-  const empId = Number(e.target.value);
-  const emp = employeeList.find(x => x.employeeId === empId);
-  if (!emp) return;
-
-  setForm(prev => ({
-    ...prev,
-    employeeId: emp.employeeId,
-    empCode: emp.empCode,
-    empName: emp.fullName,
-    department: emp.department || "",
-    departmentCode: emp.departmentCode || "",
-    designation: emp.designation || "",
-    designationCode: emp.designationCode || "",
-  }));
-};
-
-const handleReportingSelect = (e) => {
-  const empId = Number(e.target.value);
-  const emp = reportingList.find(x => x.employeeId === empId);
-  if (!emp) return;
-
-  setForm(prev => ({
-    ...prev,
-    reportingEmployeeId: emp.employeeId,
-    reportingEmpCode: emp.empCode,
-    reportingEmpName: emp.fullName,
-    rpDepartment: emp.department || "",
-    rpDepartmentCode: emp.departmentCode || "",
-    rpDesignation: emp.designation || "",
-    rpDesignationCode: emp.designationCode || "",
-  }));
-};
-
-  // Submit handler (create or edit)
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    
     if (!form.employeeId || !form.reportingEmployeeId) {
-      toast.error("Please select employee and reporting employee");
+      toast.error("⚠️ Please select employee and reporting employee");
       return;
     }
 
-   const payload = {
-  employeeId: form.employeeId,
-  reportingEmployeeId: form.reportingEmployeeId,
-
-  emp_Code: form.empCode,
-    reporting_EmpCode: form.reportingEmpCode, // ✅ ADD THIS
-
-  employee_Name: form.empName,
-  department: form.department,
-  department_Code: form.departmentCode,
-  designation: form.designation,
-  designation_Code: form.designationCode,
-
-  rp_Department: form.rpDepartment,
-  rp_DepartmentCode: form.rpDepartmentCode,
-  reporting_EmployeeName: form.reportingEmpName,
-  rp_Designation: form.rpDesignation,
-  rp_DesignationCode: form.rpDesignationCode,
-
-  MatrixCode: form.matrixCode,
-  IsActive: form.isActive,
-};
+    const payload = {
+      employeeId: form.employeeId,
+      reportingEmployeeId: form.reportingEmployeeId,
+      emp_Code: form.empCode,
+      reporting_EmpCode: form.reportingEmpCode,
+      employee_Name: form.empName,
+      department: form.department,
+      department_Code: form.departmentCode,
+      designation: form.designation,
+      designation_Code: form.designationCode,
+      rp_Department: form.rpDepartment,
+      rp_DepartmentCode: form.rpDepartmentCode,
+      reporting_EmployeeName: form.reportingEmpName,
+      rp_Designation: form.rpDesignation,
+      rp_DesignationCode: form.rpDesignationCode,
+      MatrixCode: form.matrixCode,
+      IsActive: form.isActive,
+    };
 
     const apiCall = editId
-    ? axios.put(`${API_ENDPOINTS.EditMatrix}/${editId}`, payload)
+      ? axios.put(`${API_ENDPOINTS.EditMatrix}/${editId}`, payload)
       : axios.post(API_ENDPOINTS.MatrixSave, payload);
 
     apiCall
       .then(() => {
-        toast.success(editId ? "Matrix updated successfully" : "Matrix created successfully");
+        toast.success(
+          editId ? "✅ Matrix updated successfully!" : "✅ Matrix created successfully!"
+        );
         setForm(initialForm);
         setEditId(null);
         loadMatrixList();
+        setSelectedPage("viewMatrix");
       })
-      .catch((err) =>
-        toast.error(err.response?.data?.message || "Error saving matrix")
-      );
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || "Error saving matrix";
+        toast.error(`❌ ${errorMsg}`);
+      });
   };
-const handleEdit = (m) => {
-  // 🔍 Find employee details
-  const emp = employeeList.find(e => e.employeeId === m.employeeId);
-  const rep = employeeList.find(e => e.employeeId === m.reportingEmployeeId);
 
-  setEditId(m.id);
 
-  setForm({
-    employeeId: m.employeeId,
-    empCode: m.empCode,
-    empName: m.employeeName,
+  const handleEdit = (m) => {
+    const emp = employeeList.find((e) => e.employeeId === m.employeeId);
+    const rep = employeeList.find((e) => e.employeeId === m.reportingEmployeeId);
+    
+    setEditId(m.id);
+    setForm({
+      employeeId: m.employeeId,
+      empCode: m.empCode,
+      empName: m.employeeName,
+      department: emp?.department || "",
+      departmentCode: emp?.departmentCode || "",
+      designation: emp?.designation || "",
+      designationCode: emp?.designationCode || "",
+      reportingEmployeeId: m.reportingEmployeeId,
+      reportingEmpCode: m.reportingEmpCode,
+      reportingEmpName: m.reportingEmployeeName,
+      rpDepartment: rep?.department || "",
+      rpDepartmentCode: rep?.departmentCode || "",
+      rpDesignation: rep?.designation || "",
+      rpDesignationCode: rep?.designationCode || "",
+      matrixCode: m.matrixCode,
+      isActive: m.isActive,
+    });
+    setSelectedPage("createMatrix");
+    toast.info("📝 Editing matrix record");
+  };
 
-    department: emp?.department || "",
-    departmentCode: emp?.departmentCode || "",
-    designation: emp?.designation || "",
-    designationCode: emp?.designationCode || "",
-
-    reportingEmployeeId: m.reportingEmployeeId,
-    reportingEmpCode: m.reportingEmpCode,
-    reportingEmpName: m.reportingEmployeeName,
-
-    rpDepartment: rep?.department || "",
-    rpDepartmentCode: rep?.departmentCode || "",
-    rpDesignation: rep?.designation || "",
-    rpDesignationCode: rep?.designationCode || "",
-
-    matrixCode: m.matrixCode,
-    isActive: m.isActive
-  });
-
-  setSelectedPage("createMatrix");
-};
-
-  // Cancel form
   const handleCancel = () => {
     setForm(initialForm);
     setEditId(null);
+    toast.info("🔄 Form reset");
   };
 
   const handleStatusChange = (id, status) => {
-  axios.put(
-    `${API_ENDPOINTS.UpdateMatrixStatus}/${id}`,
-    JSON.stringify(status),
-    { headers: { "Content-Type": "application/json" } }
-  )
-  .then(() => {
-    toast.success("Status updated successfully");
-    loadMatrixList();
-  })
-  .catch(() => toast.error("Failed to update status"));
-};
+    const message = status ? "🟢 Activating..." : "🔴 Deactivating...";
+    toast.info(message);
 
+    axios
+      .put(
+        `${API_ENDPOINTS.UpdateMatrixStatus}/${id}`,
+        JSON.stringify(status),
+        { headers: { "Content-Type": "application/json" } }
+      )
+      .then(() => {
+        toast.success(
+          status ? "✅ Activated successfully!" : "✅ Deactivated successfully!"
+        );
+        loadMatrixList();
+      })
+      .catch(() => toast.error("❌ Failed to update status"));
+  };
 
-  // Filtered matrix list based on status
   const filteredMatrixList = matrixList.filter((m) =>
     statusFilter === "active" ? m.isActive : !m.isActive
   );
 
   return (
-    <div className="container mt-4 p-4 bg-light rounded shadow">
-      <h3 className="text-center text-primary mb-4">Organization Matrix Management</h3>
+    <>
+      <div className="container mt-4 p-4 bg-light rounded shadow">
+        <h2 className="text-primary mb-4">Organization Matrix Management</h2>
 
-      {/* Top controls */}
-{/* Top controls */}
-<div className="mb-3 bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+        {/* Top controls */}
+        <div className="mb-3 bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+          <div className="d-flex gap-3">
+            <label className="label-color">
+              <input
+                type="radio"
+                name="mainView"
+                checked={selectedPage === "viewMatrix"}
+                onChange={() => setSelectedPage("viewMatrix")}
+              />{" "}
+              View Matrix
+            </label>
 
-  <div className="d-flex gap-3">
-    <label>
-      <input
-        type="radio"
-        name="mainView"
-        checked={selectedPage === "viewMatrix"}
-        onChange={() => setSelectedPage("viewMatrix")}
-      />{" "}
-      View Matrix
-    </label>
+            <label className="label-color">
+              <input
+                type="radio"
+                name="mainView"
+                checked={selectedPage === "createMatrix"}
+                onChange={() => setSelectedPage("createMatrix")}
+              />{" "}
+              Create Matrix
+            </label>
+          </div>
 
-    <label>
-      <input
-        type="radio"
-        name="mainView"
-        checked={selectedPage === "createMatrix"}
-        onChange={() => setSelectedPage("createMatrix")}
-      />{" "}
-      Create Matrix
-    </label>
-  </div>
+          <div className="d-flex gap-3">
+            <label className="label-color">
+              <input
+                type="radio"
+                name="statusFilter"
+                checked={statusFilter === "active"}
+                onChange={() => setStatusFilter("active")}
+              />{" "}
+              Active
+            </label>
 
-  <div className="d-flex gap-3">
-    <label>
-      <input
-        type="radio"
-        name="statusFilter"
-        checked={statusFilter === "active"}
-        onChange={() => setStatusFilter("active")}
-      />{" "}
-      Active
-    </label>
+            <label className="label-color">
+              <input
+                type="radio"
+                name="statusFilter"
+                checked={statusFilter === "inactive"}
+                onChange={() => setStatusFilter("inactive")}
+              />{" "}
+              Inactive
+            </label>
+          </div>
+        </div>
 
-    <label>
-      <input
-        type="radio"
-        name="statusFilter"
-        checked={statusFilter === "inactive"}
-        onChange={() => setStatusFilter("inactive")}
-      />{" "}
-      Inactive
-    </label>
-  </div>
-
-</div>
-
-
-      {/* ================= CREATE MATRIX FORM ================= */}
-      {selectedPage === "createMatrix" && (
-        <form onSubmit={handleSubmit}>
-          {/* Authority Matrix Of */}
-          <h6 className="bg-warning p-2 mb-3">Authority Matrix Of</h6>
-          <div className="row mb-3">
-            <div className="col-md-3">
-              <label>Select Employee</label>
-              <select
-  className="form-control"
-  onChange={handleEmployeeSelect}
-  value={form.employeeId}
->
-  <option value="">Select Employee</option>
-
-  {employeeList.map((emp) => (
-    <option key={emp.employeeId} value={emp.employeeId}>
-      {emp.fullName}
-    </option>
-  ))}
-</select>
-
+        {/* CREATE MATRIX FORM */}
+        {selectedPage === "createMatrix" && (
+          <form onSubmit={handleSubmit}>
+            <h5 className="bg-warning p-2 mb-3">Authority Matrix Of</h5>
+            <div className="row mb-3">
+              <div className="col-md-3">
+                <label className="label-color">Select Employee</label>
+                <select
+                  className="input-field-style"
+                  onChange={handleEmployeeSelect}
+                  value={form.employeeId}
+                  required
+                >
+                  <option value="">Select Employee</option>
+                  {employeeList.map((emp) => (
+                    <option key={emp.employeeId} value={emp.employeeId}>
+                      {emp.fullName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Employee Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.empCode}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Department</label>
+                <input
+                  className="input-field-style"
+                  value={form.department}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Department Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.departmentCode}
+                  readOnly
+                  disabled
+                />
+              </div>
             </div>
-            <div className="col-md-3"><label>Employee Code</label><input className="form-control" value={form.empCode} readOnly /></div>
-            <div className="col-md-3"><label>Department</label><input className="form-control" value={form.department} readOnly /></div>
-            <div className="col-md-3"><label>Department Code</label><input className="form-control" value={form.departmentCode} readOnly /></div>
-          </div>
 
-          <div className="row mb-3">
-            <div className="col-md-3"><label>Designation</label><input className="form-control" value={form.designation} readOnly /></div>
-            <div className="col-md-3"><label>Designation Code</label><input className="form-control" value={form.designationCode} readOnly /></div>
-          {/*<div className="col-md-3"><label>Authority</label><input className="form-control" value={form.authority} readOnly /></div>
-            <div className="col-md-3"><label>Authority Code</label><input className="form-control" value={form.authorityCode} readOnly /></div>
-          </div>
-
-          <div className="row mb-3"><div className="col-md-3"><label>Email</label><input className="form-control" value={form.email} readOnly /></div>*/}</div>
-
-          {/* Reporting To */}
-          <h6 className="bg-warning p-2 mt-4 mb-3">Reporting To</h6>
-          <div className="row mb-3">
-            <div className="col-md-3">
-              <label>Reporting Employee</label>
-              <select className="form-control" onChange={handleReportingSelect} value={form.reportingEmployeeId}>
-                <option value="">Select Employee</option>
-                {reportingList.map((emp) => (
-  <option key={emp.employeeId} value={emp.employeeId}>
-    {emp.fullName}
-  </option>
-                ))}
-              </select>
+            <div className="row mb-3">
+              <div className="col-md-3">
+                <label className="label-color">Designation</label>
+                <input
+                  className="input-field-style"
+                  value={form.designation}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Designation Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.designationCode}
+                  readOnly
+                  disabled
+                />
+              </div>
             </div>
-            <div className="col-md-3"><label>Employee Code</label><input className="form-control" value={form.reportingEmpCode} readOnly /></div>
-            <div className="col-md-3"><label>Rp Department</label><input className="form-control" value={form.rpDepartment} readOnly /></div>
-            <div className="col-md-3"><label>Rp Department Code</label><input className="form-control" value={form.rpDepartmentCode} readOnly /></div>
-          </div>
 
-          <div className="row mb-3">
-            <div className="col-md-3"><label>Rp Designation</label><input className="form-control" value={form.rpDesignation} readOnly /></div>
-            <div className="col-md-3"><label>Rp Designation Code</label><input className="form-control" value={form.rpDesignationCode} readOnly /></div>
-           {/* <div className="col-md-3"><label>Rp Authority</label><input className="form-control" value={form.rpAuthority} readOnly /></div>
-            <div className="col-md-3"><label>Rp Authority Code</label><input className="form-control" value={form.rpAuthorityCode} readOnly /></div>
-          </div>
+            <h5 className="bg-warning p-2 mt-4 mb-3">Reporting To</h5>
+            <div className="row mb-3">
+              <div className="col-md-3">
+                <label className="label-color">Reporting Employee</label>
+                <select
+                  className="input-field-style"
+                  onChange={handleReportingSelect}
+                  value={form.reportingEmployeeId}
+                  required
+                >
+                  <option value="">Select Employee</option>
+                  {reportingList.map((emp) => (
+                    <option key={emp.employeeId} value={emp.employeeId}>
+                      {emp.fullName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Employee Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.reportingEmpCode}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Rp Department</label>
+                <input
+                  className="input-field-style"
+                  value={form.rpDepartment}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Rp Department Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.rpDepartmentCode}
+                  readOnly
+                  disabled
+                />
+              </div>
+            </div>
 
-          <div className="row mb-4">
-            <div className="col-md-3"><label>Email</label><input className="form-control" value={form.reportingEmail} readOnly /></div>*/}
-            <div className="col-md-3"><label>Matrix Code</label><input className="form-control" value={form.matrixCode} readOnly /></div>
-          </div>
+            <div className="row mb-3">
+              <div className="col-md-3">
+                <label className="label-color">Rp Designation</label>
+                <input
+                  className="input-field-style"
+                  value={form.rpDesignation}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Rp Designation Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.rpDesignationCode}
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="label-color">Matrix Code</label>
+                <input
+                  className="input-field-style"
+                  value={form.matrixCode}
+                  readOnly
+                  disabled
+                />
+              </div>
+            </div>
 
-          <div className="text-center mb-4">
-            <button type="submit" className="btn btn-success px-5 mr-2">{editId ? "Update" : "Create"}</button>
-            <button type="button" className="btn btn-secondary" onClick={handleCancel}>Cancel</button>
-          </div>
-        </form>
-      )}
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button type="submit" className="save-btn">
+                {editId ? "Update" : "Create"}
+              </button>
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
 
-      {/* ================= VIEW MATRIX LIST ================= */}
-    {selectedPage === "viewMatrix" && (
-  <>
-    <div className="table-responsive">
-      <table className="table table-bordered table-sm">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Emp Code</th>
-            <th>Reporting Employee</th>
-            <th>Reporting Emp code</th>
+        {/* VIEW MATRIX LIST */}
+        {selectedPage === "viewMatrix" && (
+          <>
+            <div className="table-responsive">
+              <table className="table table-bordered table-sm">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Emp Code</th>
+                    <th>Reporting Employee</th>
+                    <th>Reporting Emp code</th>
+                    <th>Matrix Code</th>
+                    <th style={{ width: "120px", textAlign: "center" }}>
+                      Edit
+                    </th>
+                    <th style={{ width: "120px", textAlign: "center" }}>
+                      {statusFilter === "active" ? "Deactivate" : "Activate"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMatrixList.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center">
+                        No records found for status "{statusFilter}"
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredMatrixList.map((m) => (
+                      <tr key={m.id}>
+                        <td>{m.employeeName}</td>
+                        <td>{m.empCode}</td>
+                        <td>{m.reportingEmployeeName}</td>
+                        <td>{m.reportingEmpCode}</td>
+                        <td>{m.matrixCode}</td>
+                        <td className="text-center">
+                          <span
+                            title="Edit"
+                            onClick={() => handleEdit(m)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#0d6efd",
+                              fontSize: "18px",
+                              marginRight: "15px",
+                            }}
+                          >
+                            <FaEdit />
+                          </span>
+                        </td>
+                        <td className="text-center">
+                          {m.isActive ? (
+                            <FaTrash
+                              title="Deactivate"
+                              className="text-danger"
+                              style={{ cursor: "pointer", fontSize: "18px" }}
+                              onClick={() => handleStatusChange(m.id, false)}
+                            />
+                          ) : (
+                            <button
+                              title="Activate"
+                              onClick={() => handleStatusChange(m.id, true)}
+                              style={{
+                                cursor: "pointer",
+                                backgroundColor: "#28a745",
+                                color: "#fff",
+                                border: "none",
+                                padding: "6px 14px",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              Activate
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
 
-            <th>Matrix Code</th>
-            <th style={{ width: "120px", textAlign: "center" }}>Edit</th>
-         <th style={{ width: "120px", textAlign: "center" }}>
-      {statusFilter === "active" ? "Deactivate" : "Activate"}
-    </th>
-
-          </tr>
-        </thead>
-        <tbody>
-          {filteredMatrixList.length === 0 ? (
-            <tr>
-              <td colSpan={19} className="text-center">
-                No records found for status "{statusFilter}"
-              </td>
-            </tr>
-          ) : (
-            filteredMatrixList.map((m) => (
-             <tr key={m.id}>
-         <td>{m.employeeName}</td>
-        <td>{m.empCode}</td>
-
-        <td>{m.reportingEmployeeName}</td>
-        <td>{m.reportingEmpCode}</td>
-
-        <td>{m.matrixCode}</td>
-
-<td className="text-center">
-  {/* EDIT */}
-  <span
-    title="Edit"
-onClick={() => handleEdit(m)}    style={{
-      cursor: "pointer",
-      color: "#0d6efd", // bootstrap primary blue
-      fontSize: "18px",
-      marginRight: "15px"
-    }}
-  >
-    <FaEdit />
-  </span>
-</td>
-<td className="text-center">
-  {/* ACTIVE → Deactivate | INACTIVE → Activate */}
-  {m.isActive ? (
-    <FaTrash
-      title="Deactivate"
-      className="text-danger"
-      style={{ cursor: "pointer" }}
-      onClick={() => handleStatusChange(m.id, false)}
-    />
-  ) : (
-    // 🟢 ACTIVATE (BUTTON)
-    <button
-      title="Activate"
-      onClick={() => handleStatusChange(m.id, true)}
-      style={{
-        cursor: "pointer",
-        backgroundColor: "#28a745", // Bootstrap green
-        color: "#fff",
-        border: "none",
-        padding: "6px 14px",
-        borderRadius: "4px",
-        fontSize: "14px",
-        fontWeight: "600"
-      }}
-    >
-      Activate
-    </button>
-      )}
-</td>
-</tr>
-
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  </>
-)}
-
-
-      {/* --- Styles for custom radio --- */}
-      <style>{`
-        .custom-radio-label {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          gap: 6px;
-          position: relative;
-        }
-        .custom-radio-label input[type="radio"] {
-          opacity: 0;
-          position: absolute;
-        }
-        .custom-radio {
-          width: 18px; height: 18px;
-          border: 2.5px solid #1a5dd9;
-          border-radius: 50%;
-          position: relative;
-        }
-        .custom-radio-label input[type="radio"]:checked + .custom-radio::after {
-          content: '';
-          position: absolute;
-          top: 4px; left: 4px;
-          width: 8px; height: 8px;
-          background-color: #1a5dd9;
-          border-radius: 50%;
-        }
-      `}</style>
-    </div>
+      {/* <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable={true}
+        pauseOnHover={true}
+        theme="light"
+        closeButton={true}
+        limit={5}
+      /> */}
+    </>
   );
 };
 

@@ -27,19 +27,7 @@ function EmployeeMaster() {
 
       {/* Selector Row */}
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "30px",
-          marginTop: "15px",
-          marginBottom: "15px",
-          padding: "14px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.07)",
-          background: "#fff",
-          flexWrap: "wrap",
-        }}
+       className="radio-btn-header"
       >
         {/* Left side: View/Add Tabs */}
         <div style={{ display: "flex", gap: "20px" }}>

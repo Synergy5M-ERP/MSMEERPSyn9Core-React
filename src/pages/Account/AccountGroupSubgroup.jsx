@@ -330,16 +330,16 @@ setSubGroupId(item.accountSubGroupid);
   const currentTableData = tableData.slice(indexOfFirstRecord, indexOfLastRecord);
 
   return (
-    <div style={{ background: "#f5f5f5", minHeight: "85vh", padding: "20px" }}>
+    <div style={{  minHeight: "85vh" }}>
       <ToastContainer position="top-right" autoClose={2000} />
       <div className="container-fluid">
-        <h4 style={{ color: "#0066cc", fontWeight: "600", marginBottom: "20px" }}>
+        <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
           Account Group
-        </h4>
+        </h2>
 
         {/* Toggle Buttons */}
-        <div className="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 rounded mb-3 shadow-sm">
-          <div>
+        <div  className="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 rounded mb-3 shadow-sm bg-secondary">
+          <div className="radio-btn-header">
             {["accountType", "accountGroup", "subGroup", "subSubGroup"].map((type) => (
               <label key={type} style={{ marginRight: "20px" }}>
                 <input
@@ -386,11 +386,11 @@ setSubGroupId(item.accountSubGroupid);
             <div className="p-3 bg-white rounded shadow-sm">
               {formType === "accountGroup" && (
                 <>
-                  <label>Account Type:</label>
+                  <label className="label-color">Account Type:</label>
                   <select
                     value={accountTypeId}
                     onChange={(e) => setAccountTypeId(e.target.value)}
-                    className="form-select mb-2"
+                    className="select-field-style mb-2"
                   >
                     <option value="">Select Type</option>
                     {accountTypes.map((t) => (
@@ -400,39 +400,32 @@ setSubGroupId(item.accountSubGroupid);
                     ))}
                   </select>
 
-                  <label>Account Group Code:</label>
-    <input
-      value={accountGroupCode}
-      onChange={(e) => setAccountGroupCode(e.target.value)}
-      className="form-control mb-2"
-    />
+                  <label className="label-color">Group Code:</label>
+                  <input
+                    value={groupCode}
+                    onChange={(e) => setGroupCode(e.target.value)}
+                    className="input-field-style mb-2"
+                  />
                 </>
               )}
 
-             {formType === "subGroup" && (
-  <>
-    <label>Account Group:</label>
-    <select
-      value={groupId}
-      onChange={(e) => setGroupId(e.target.value)}
-      className="form-select mb-2"
-    >
-      <option value="">Select Group</option>
-      {accountGroups.map((g) => (
-        <option key={g.accountGroupid} value={g.accountGroupid}>
-          {g.accountGroupName}
-        </option>
-      ))}
-    </select>
-
-    <label>Sub Group Code:</label>
-    <input
-      value={accountSubGroupCode}
-      onChange={(e) => setAccountSubGroupCode(e.target.value)}
-      className="form-control mb-2"
-    />
-  </>
-)}
+              {(formType === "subGroup" || formType === "subSubGroup") && (
+                <>
+                  <label className="label-color">Account Group:</label>
+                  <select
+                    value={groupId}
+                    onChange={(e) => setGroupId(e.target.value)}
+                    className="select-field-style mb-2"
+                  >
+                    <option value="">Select Group</option>
+                    {accountGroups.map((g) => (
+                      <option key={g.accountGroupid} value={g.accountGroupid}>
+                        {g.accountGroupName}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
 
 {formType === "subSubGroup" && (
   <>
@@ -477,12 +470,11 @@ setSubGroupId(item.accountSubGroupid);
   </>
 )}
 
-
-              <label>Name:</label>
+              <label className="label-color">Name:</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="form-control mb-2"
+                className="input-field-style mb-2"
               />
 {formType === "accountType" && (
   <>
@@ -495,19 +487,19 @@ setSubGroupId(item.accountSubGroupid);
   </>
 )}
 
-              <label>Narration:</label>
+              <label className="label-color">Narration:</label>
               <textarea
                 rows={3}
                 value={narration}
                 onChange={(e) => setNarration(e.target.value)}
-                className="form-control mb-2"
+                className="input-field-style mb-2"
               />
 
               <div className="d-flex gap-2">
-                <button className="btn btn-success" onClick={handleSave}>
+                <button className="save-btn" onClick={handleSave}>
                   <Save size={16} /> {editingId ? "Update" : "Save"}
                 </button>
-                <button className="btn btn-secondary" onClick={resetForm}>
+                <button className="cancel-btn" onClick={resetForm}>
                   Cancel
                 </button>
               </div>

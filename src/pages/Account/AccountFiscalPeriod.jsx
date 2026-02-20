@@ -230,7 +230,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
         <div className="col-lg-5 mb-4">
           <div className="p-4 bg-white rounded shadow-sm">
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 Fiscal Period Name  <span style={{ color: 'red' }}>*</span>
               </label>
               <input
@@ -244,13 +244,13 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
 
             <div className="row mb-3">
               <div className="col-6">
-                <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <label className="label-color">
                   Start Date  <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input type="date" className="form-control" value={FiscalPeriodStartDate} onChange={(e) => setFiscalPeriodStartDate(e.target.value)} disabled={loading} />
               </div>
               <div className="col-6">
-                <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                <label className="label-color">
                   EndDate  <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input type="date" className="form-control" value={FiscalPeriodEndDate} onChange={(e) => setFiscalPeriodEndDate(e.target.value)} disabled={loading} />
@@ -258,7 +258,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
             </div>
 
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 Fiscal Period Status  <span style={{ color: 'red' }}>*</span>
               </label>
               <select className="form-select" value={FiscalPeriodStatus} onChange={(e) => setFiscalPeriodStatus(e.target.value)} disabled={loading}>
@@ -270,7 +270,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
             </div>
 
             <div className="mb-3">
-              <label style={{ textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <label className="label-color">
                 FiscalYear  <span style={{ color: 'red' }}>*</span>
               </label>
               <input
@@ -286,12 +286,11 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               <button
                 onClick={handleSave}
                 disabled={loading || !FiscalPeriodName || !FiscalPeriodStartDate || !FiscalPeriodEndDate || !FiscalPeriodStatus || !FiscalYear}
-                className={`btn ${loading || !FiscalPeriodName || !FiscalPeriodStartDate || !FiscalPeriodEndDate || !FiscalPeriodStatus || !FiscalYear ? 'btn-secondary' : 'btn-primary'} d-flex align-items-center gap-2`}
-              >
+                className="save-btn"  >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 {editingId ? 'Update' : 'Save'}
               </button>
-              <button onClick={handleCancel} disabled={loading} className="btn btn-danger">Cancel</button>
+              <button onClick={handleCancel} disabled={loading} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>
@@ -301,32 +300,32 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
           <div style={{ background: 'white', padding: '25px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
             <div style={{ overflowX: 'auto' }}>
               {loading && <LoadingSpinner />}
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="table table-bordered table-striped mt-3">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #0066cc' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Name</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Start Date</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>End Date</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Status</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Fiscal Year</th>
+                  <tr style={{ borderBottom: '2px solid' }}>
+                    <th className="text-primary">Fiscal Period Name</th>
+                    <th className="text-primary">Start Date</th>
+                    <th className="text-primary">End Date</th>
+                    <th className="text-primary">Fiscal Period Status</th>
+                    <th className="text-primary">Fiscal Year</th>
                     {view === "active" ? (
                       <>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Edit</th>
-                        <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Delete</th>
+                        <th className="text-primary">Edit</th>
+                        <th className="text-primary">Delete</th>
                       </>
                     ) : (
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#0066cc', fontSize: '18px', fontWeight: '600' }}>Activate</th>
+                      <th className="text-primary">Activate</th>
                     )}
                   </tr>
                 </thead>
                 <tbody>
                   {currentRecords.map((fp) => (
                     <tr key={fp.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodName}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodStartDate}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodEndDate}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalPeriodStatus}</td>
-                      <td style={{ fontSize: '16px', color: 'black', padding: '12px' }}>{fp.FiscalYear}</td>
+                      <td >{fp.FiscalPeriodName}</td>
+                      <td >{fp.FiscalPeriodStartDate}</td>
+                      <td >{fp.FiscalPeriodEndDate}</td>
+                      <td >{fp.FiscalPeriodStatus}</td>
+                      <td >{fp.FiscalYear}</td>
                       {view === "active" ? (
                         <>
                           <td>

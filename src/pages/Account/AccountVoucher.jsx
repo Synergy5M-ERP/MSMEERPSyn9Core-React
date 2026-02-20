@@ -472,8 +472,7 @@ const handleSave = async () => {
 
     function LoadingSpinner() {
         return (
-            <div
-                style={{
+            <div   style={{
                     position: "fixed",
                     top: 0,
                     left: 0,
@@ -482,11 +481,14 @@ const handleSave = async () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    background: "rgba(255,255,255,0.7)",
+                    background: "rgba(228, 19, 19, 0.7)",
                     zIndex: 2000,
-                }}
+                }} className="m-3 p-4">
+                <div
+              
             >
                 <Loader2 className="animate-spin" size={48} />
+            </div>
             </div>
         );
     }
@@ -506,8 +508,8 @@ const handleSave = async () => {
                 {/* ---------------------- */}
                 <div className="row mb-2">
                     <div className="col-3">
-                        <label className="form-label text-primary">Vendor Category*</label>
-                        <select className="form-select" value={voucherCategory}
+                        <label className="label-color">Vendor Category*</label>
+                        <select className="select-field-style" value={voucherCategory}
                             onChange={(e) => setVoucherCategory(e.target.value)}>
                             <option value="">--Select Voucher Category--</option>
                             <option value="Other Voucher">Other Voucher</option>
@@ -516,9 +518,9 @@ const handleSave = async () => {
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Vendor*</label>
+                        <label className="label-color">Vendor*</label>
                         {voucherCategory === "Vendor Voucher" && (
-                                <select className="form-select" value={vendorName}                       
+                                <select className="select-field-style" value={vendorName}                       
                                     onChange={(e) => handleVendorChange(e.target.value)}>
                                
                                     <option value="">--Select Vendor--</option>
@@ -534,20 +536,20 @@ const handleSave = async () => {
                             )}
 
                             {voucherCategory === "Other Voucher" && (
-                                <input type="text" className="form-control" value={otherVendor} readOnly/>                                                                    
+                                <input type="text" className="input-field-style" value={otherVendor} readOnly/>                                                                    
                             )}
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Voucher Number*</label>
+                        <label className="label-color">Voucher Number*</label>
                         <input type="text" value={vendorNumber}
-                        className="form-control" disabled={loading} readOnly />
+                        className="input-field-style" disabled={loading} readOnly />
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Voucher Type*</label>
+                        <label className="label-color">Voucher Type*</label>
                         <select
-                            className="form-select"
+                            className="select-field-style"
                             value={voucherType}
                             onChange={(e) => setVoucherType(e.target.value)}
                         >
@@ -562,17 +564,17 @@ const handleSave = async () => {
                 </div>
                 <div className="row mb-2">
                     <div className="col-3">
-                        <label className="form-label text-primary">Voucher Date*</label>
+                        <label className="label-color">Voucher Date*</label>
                         <input
                             type="date"
-                            className="form-control"
+                            className="input-field-style"
                             value={voucherDate}
                             onChange={(e) => setVoucherDate(e.target.value)}
                         />
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Reference No*</label>
+                        <label className="label-color">Reference No*</label>
                          {voucherCategory === "Vendor Voucher" ? (
                             (() => {
                                 const voucherTypeObj = voucherTypes.find(
@@ -581,7 +583,7 @@ const handleSave = async () => {
 
                                 if (voucherTypeObj?.voucherType === "Payment") {
                                     return (
-                                        <select className="form-select" value={referenceNo}                                                                              
+                                        <select className="select-field-style" value={referenceNo}                                                                              
                                             onChange={(e) => {
                                                 setReferenceNo(e.target.value);
                                                 handleReferenceNo();
@@ -601,7 +603,7 @@ const handleSave = async () => {
                                     );
                                 } else if (voucherTypeObj?.voucherType === "Receipt") {
                                     return (
-                                        <select className="form-select" value={referenceNo}                                                                           
+                                        <select className="select-field-style" value={referenceNo}                                                                           
                                             onChange={(e) => {
                                                 setReferenceNo(e.target.value);
                                                 handleReferenceNo();
@@ -621,7 +623,7 @@ const handleSave = async () => {
                                     );
                                 } else {
                                     return (
-                                        <input className="form-control" value={referenceNo}                                                                                     
+                                        <input className="input-field-style" value={referenceNo}                                                                                     
                                             onChange={(e) => {
                                                 setReferenceNo(e.target.value);
                                                 handleReferenceNo();
@@ -631,14 +633,14 @@ const handleSave = async () => {
                             })()
                         ) : (
                             // For Other Voucher, just show a read-only input or nothing
-                            <input type="text" className="form-control" value={referenceNo}     
+                            <input type="text" className="input-field-style" value={referenceNo}     
                                     onChange={(e) => setReferenceNo(e.target.value)} placeholder="Enter Reference No"/>                                                                       
                         )}
                     </div>
 
                      <div className="col-3">
-                        <label className="form-label text-primary">Total Amount*</label>
-                        <input className="form-control" value={totalAmount}
+                        <label className="label-color">Total Amount*</label>
+                        <input className="input-field-style" value={totalAmount}
                                 type ="number" onChange={(e) => setTotalAmount(e.target.value)}
                                 readOnly={voucherCategory !== "Other Voucher"}
                                 placeholder={
@@ -649,10 +651,10 @@ const handleSave = async () => {
                     </div>
 
                      <div className="col-3">
-                        <label className="form-label text-primary">Payment Due Date*</label>
+                        <label className="label-color">Payment Due Date*</label>
                         <input
                             type="date"
-                            className="form-control"
+                            className="input-field-style"
                             value={paymentDueDate}
                             onChange={(e) => setPaymentDueDate(e.target.value)}
                         />
@@ -661,9 +663,9 @@ const handleSave = async () => {
 
                 <div className="row">                  
                     <div className="col-3">
-                        <label className="form-label text-primary">Payment Mode*</label>
+                        <label className="label-color">Payment Mode*</label>
                         <select
-                            className="form-select"
+                            className="select-field-style"
                             value={paymentMode}
                             onChange={(e) => setPaymentMode(e.target.value)}
                         >
@@ -675,8 +677,8 @@ const handleSave = async () => {
                     </div>
 
                      <div className="col-3">
-                        <label className="form-label text-primary">Status*</label>
-                        <select value={status} onChange={e => setStatus(e.target.value)} className="form-control" disabled={loading}>
+                        <label className="label-color">Status*</label>
+                        <select value={status} onChange={e => setStatus(e.target.value)} className="input-field-style" disabled={loading}>
                             <option value="">--Select Status--</option>
                             {Array.isArray(statusList) ? statusList.map((t) => (
                                <option key={t.accountStatusId} value={t.accountStatusId}>{typeof t.status === 'string' ? t.status : 'Unknown'}</option>
@@ -687,8 +689,8 @@ const handleSave = async () => {
 
                 <div className="row">                    */}
                     <div className="col-6">
-                        <label className="form-label text-primary">Description*</label>
-                        <textarea value={description} onChange={e => setDescription(e.target.value)} className="form-control" rows={2} />
+                        <label className="label-color">Description*</label>
+                        <textarea value={description} onChange={e => setDescription(e.target.value)} className="input-field-style" rows={2} />
                     </div>
                 </div>
 
@@ -698,11 +700,11 @@ const handleSave = async () => {
 
                 <div className="row">
                     <div className="col-4">
-                        <label className="form-label text-primary fw-semibold">Ledger Account
+                        <label className="label-color">Ledger Account
                         <span style={{ color: 'red' }}>*</span>
                         </label>
                         <select
-                            className="form-select"
+                            className="select-field-style"
                             value={ledgerAccount}
                             onChange={(e) => setLedgerAccount(e.target.value)}
                         >
@@ -716,9 +718,9 @@ const handleSave = async () => {
                     </div>
 
                     <div className="col-4">
-                        <label className="form-label text-primary fw-semibold">Credit Amoungt<span style={{ color: 'red' }}>*</span></label>
+                        <label className="label-color">Credit Amount<span style={{ color: 'red' }}>*</span></label>
                         <input
-                            className="form-control"
+                            className="input-field-style"
                             type="number"
                             value={creditAmount}
                             onChange={(e) => setCreditAmount(e.target.value)}
@@ -726,9 +728,9 @@ const handleSave = async () => {
                     </div>
 
                     <div className="col-4">
-                        <label className="form-label text-primary fw-semibold">Debit Amount<span style={{ color: 'red' }}>*</span></label>
+                        <label className="label-color">Debit Amount<span style={{ color: 'red' }}>*</span></label>
                         <input
-                            className="form-control"
+                            className="input-field-style"
                             type="number"
                             value={debitAmount}
                             onChange={(e) => setDebitAmount(e.target.value)}
@@ -738,9 +740,9 @@ const handleSave = async () => {
 
                 <div className="row mb-2">
                     <div className="col-12">
-                        <label className="form-label text-primary fw-semibold">Narration <span style={{ color: 'red' }}>*</span></label>
+                        <label className="label-color">Narration <span style={{ color: 'red' }}>*</span></label>
                         <textarea
-                            className="form-control"
+                            className="input-field-style"
                             value={narration}
                             onChange={(e) => setNarration(e.target.value)}
                         />
@@ -750,7 +752,7 @@ const handleSave = async () => {
                 {/* Add Button */}
                 <div className="mt-2 mb-4">
                     <button
-                        className="btn btn-primary save"
+                        className="add-btn"
                         onClick={handleAddToGrid}
                         disabled={!ledgerAccount || (!creditAmount && !debitAmount) || !narration.trim()}
                         style={{ fontWeight: 600, borderRadius: '6px', minWidth: 120 }}
@@ -819,7 +821,7 @@ const handleSave = async () => {
                     </div>
                         <div className="mt-3 d-flex gap-2">
                             <button
-                                className="btn btn-success"
+                                className="save-btn"
                                 disabled={loading}
                                 onClick={handleSave}
                             >
@@ -827,10 +829,10 @@ const handleSave = async () => {
                             </button>
 
                             <button
-                                className="btn btn-secondary"
+                                className="cancel-btn"
                                 onClick={() => window.location.reload()}
                             >
-                                Reset
+                                Cancel
                             </button>
                         </div>
                     </>

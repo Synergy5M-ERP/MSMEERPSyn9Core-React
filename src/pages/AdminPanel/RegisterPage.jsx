@@ -655,7 +655,7 @@ const handleSubmit = async (e) => {
         <div >
           <button
             type="button"
-            className="btn btn-danger m-2 p-2 "
+            className="cancel-btn m-2 p-2 "
             onClick={handleCancel}
             disabled={isSubmitting}
           >

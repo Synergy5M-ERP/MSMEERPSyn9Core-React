@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 
 import NotCreated from "../../components/NotCreated";
+import CustomActualPlan from "./CustomActualPlan";
 
 function ActualFinish() {
   const [selectedPage, setSelectedPage] = useState("Customised");
@@ -62,7 +63,7 @@ function ActualFinish() {
 
       {/* Render selected page with view prop */}
       <div>
-        {selectedPage==='Customised'?(<NotCreated/>):<NotCreated/>
+        {selectedPage==='Customised'?(<CustomActualPlan/>):<NotCreated/>
         
          
         }

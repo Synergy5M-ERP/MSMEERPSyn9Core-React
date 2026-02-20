@@ -769,7 +769,7 @@ function ViewVendor() {
                             </div>
 
                             <div className="modal-footer bg-light">
-                                <button type="button" className="btn btn-secondary shadow-sm" onClick={() => {setShowEditModal(false); setEditingVendor(null);}}>
+                                <button type="button" className="cancel-btn shadow-sm" onClick={() => {setShowEditModal(false); setEditingVendor(null);}}>
                                     Cancel
                                 </button>
                                 <button type="button" className="btn btn-success shadow-sm px-4" onClick={handleEditSubmit(onEditSubmit)} disabled={isUpdating}>

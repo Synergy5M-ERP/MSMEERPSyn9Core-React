@@ -20,18 +20,9 @@ function CommodityMaster() {
 
             {/* Page Selector */}
             <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between', // space between two groups
-                    alignItems: 'center',
-                    gap: '30px',
-                    marginTop: '22px',
-                    marginBottom: '12px',
-                    padding: '14px 0 14px 5px',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.07)',
-                    background: '#fff',
-                }}
+               className="radio-btn-header"
+
+
             >
                 <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
 

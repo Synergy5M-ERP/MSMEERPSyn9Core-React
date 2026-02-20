@@ -5,6 +5,7 @@ import { Form, Row, Col, Button, Table, Alert, Spinner, Badge } from "react-boot
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { API_ENDPOINTS } from "../../config/apiconfig";
+import { Edit, Save, X, Trash2 } from "lucide-react";
 
 // ---------- API Helper Functions ----------
 async function fetchDepartments() {
@@ -126,6 +127,68 @@ export default function CreateManualPR({ editData, onClearEdit }) {
   const [masterItems, setMasterItems] = useState([]);
   const [grades, setGrades] = useState([]);
   const [requisitionTypes, setRequisitionTypes] = useState([]);
+const [editingItemId, setEditingItemId] = useState(null);
+
+// Update single field in editing item
+const updateEditingItem = (itemId, field, value) => {
+  setItems(prev => prev.map(item => 
+    item.id === itemId 
+      ? { ...item, [field]: value }
+      : item
+  ));
+  
+  // Auto-recalculate value if qty changed
+  if (field === 'qty') {
+    const item = items.find(i => i.id === itemId);
+    if (item) {
+      const qty = parseFloat(value) || 0;
+      const price = parseFloat(item.avgPrice) || 0;
+      const totalValue = (qty * price).toFixed(2);
+      setItems(prev => prev.map(i => 
+        i.id === itemId 
+          ? { ...i, value: totalValue }
+          : i
+      ));
+      // Update header budgetBalance
+      setHeader(prev => ({
+        ...prev,
+        budgetBalance: (parseFloat(prev.budgetBalance) + parseFloat(item.value || 0) - parseFloat(totalValue)).toFixed(2)
+      }));
+    }
+  }
+};
+
+// Start editing row
+const startItemEdit = (itemId) => {
+  setEditingItemId(itemId);
+  setItems(prevItems => prevItems.map(item => 
+    item.id === itemId 
+      ? { ...item, isEditing: true }
+      : { ...item, isEditing: false }
+  ));
+};
+
+// Save edited row
+const saveItemEdit = (itemId) => {
+  setItems(prevItems => prevItems.map(item => 
+    item.id === itemId 
+      ? { ...item, isEditing: false }
+      : item
+  ));
+  setEditingItemId(null);
+  toast.success("Item updated!");
+};
+
+// Cancel editing
+const cancelItemEdit = (itemId) => {
+  setItems(prevItems => prevItems.map(item => 
+    item.id === itemId 
+      ? { ...item, isEditing: false }
+      : item
+  ));
+  setEditingItemId(null);
+  toast.info("Edit cancelled");
+};
 
   // Load master data
   useEffect(() => {
@@ -486,63 +549,63 @@ export default function CreateManualPR({ editData, onClearEdit }) {
       <Form onSubmit={onSubmit}>
         {/* Header Section - Plant & Department */}
         <div className="form-section">
-          <h5 className="section-title">Plant & Department Information</h5>
+          {/* <h5 className="section-title">Plant & Department Information</h5> */}
           <Row className="mb-3">
             <Col >
-              <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Plant Name/No *</p>
-                <Form.Control 
+             
+                <label className="label-color">Plant Name/No *</label>
+                <input 
                   name="plantName" 
                   value={header.plantName} 
                   onChange={onHeaderChange} 
                   required 
-                  className="input-text"
+                  className="input-field-style border"
                 />
-              </Form.Group>
+              
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Plant Location</p>
-                <Form.Control 
+                <label className="label-color">Plant Location</label>
+                <input 
                   name="plantLocation" 
                   value={header.plantLocation} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Department Name *</p>
-                <Form.Select 
+                <label className="label-color">Department Name *</label>
+                <select 
                   name="departmentId" 
                   value={header.departmentId} 
                   onChange={onHeaderChange} 
                   required
-                  className="input-text"
+                 className="input-field-style border"
                 >
                   <option value="">SELECT DEPARTMENT</option>
                   {departments.map((d) => <option key={d.id} value={d.departmentName}>{d.departmentName}</option>)}
-                </Form.Select>
+                </select>
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Department Code</p>
-                <Form.Control 
+                <label className="label-color">Department Code</label>
+                <input 
                   value={header.department_code} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style   input-disabled"
                 />
               </Form.Group>
             </Col>
              <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Budget Allocated</p>
-                <Form.Control 
+                <label className="label-color">Budget Allocated</label>
+                <input 
                   value={header.budgetAllocated} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
@@ -552,50 +615,50 @@ export default function CreateManualPR({ editData, onClearEdit }) {
            
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Budget Balance</p>
-                <Form.Control 
+                <label className="label-color">Budget Balance</label>
+                <input 
                   value={header.budgetBalance} 
                   disabled 
-                  className="input-text input-disabled fw-bold text-success"
+                  className="input-field-style input-disabled "
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Employee Name</p>
-                <Form.Select 
+                <label className="label-color">Employee Name</label>
+                <select 
                   name="employeeId" 
                   value={header.employeeId} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 >
                   <option value="">SELECT EMPLOYEE</option>
                   {employees.map((e) => <option key={e.id} value={e.name}>{e.name}</option>)}
-                </Form.Select>
+                </select>
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Employee Code</p>
-                <Form.Control 
+                <label className="label-color">Employee Code</label>
+                <input 
                   value={header.employeeCode} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
              <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Type Of Requisition</p>
-                <Form.Select 
+                <label className="label-color">Type Of Requisition</label>
+                <select 
                   name="typeOfRequisition" 
                   value={header.typeOfRequisition} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 >
                   <option value="">SELECT TYPE</option>
                   {requisitionTypes.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </Form.Select>
+                </select>
               </Form.Group>
             </Col>
       
@@ -604,34 +667,34 @@ export default function CreateManualPR({ editData, onClearEdit }) {
           <Row className="mb-4">
                  <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Created By</p>
-                <Form.Control 
+                <label className="label-color">Created By</label>
+                <input 
                   name="createdBy" 
                   value={header.createdBy} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Checked By</p>
-                <Form.Control 
+                <label className="label-color">Checked By</label>
+                <input 
                   name="checkedBy" 
                   value={header.checkedBy} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Approved By</p>
-                <Form.Control 
+                <label className="label-color">Approved By</label>
+                <input 
                   name="approvedBy" 
                   value={header.approvedBy} 
                   onChange={onHeaderChange}
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
@@ -644,73 +707,73 @@ export default function CreateManualPR({ editData, onClearEdit }) {
           <Row className="mb-3">
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Item Name *</p>
-                <Form.Select 
+                <label className="label-color">Item Name *</label>
+                <select 
                   name="itemId" 
                   value={currentItem.itemId} 
                   onChange={onItemChange}
-                  className="input-text"
+                 className="input-field-style border"
                 >
                   <option value="">SELECT ITEM</option>
                   {masterItems.map((i) => <option key={i.id} value={i.name}>{i.name}</option>)}
-                </Form.Select>
+                </select>
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>
+                <label className="label-color">
                   Grade * {gradeLoading && <Spinner animation="border" size="sm" className="ms-1" />}
-                </p>
-                <Form.Select 
+                </label>
+                <select 
                   name="specificationId" 
                   value={currentItem.specificationId} 
                   onChange={onItemChange} 
                   disabled={!currentItem.itemId || grades.length === 0}
-                  className="input-text"
+                 className="input-field-style border"
                 >
                   <option value="">{grades.length === 0 ? "No Grades" : "SELECT GRADE"}</option>
                   {grades.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
-                </Form.Select>
+                </select>
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Item Code</p>
-                <Form.Control 
+                <label className="label-color">Item Code</label>
+                <input 
                   value={currentItem.itemCode} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
                 <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>UOM</p>
-                <Form.Control 
+                <label className="label-color">UOM</label>
+                <input 
                   value={currentItem.uom} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Currency</p>
-                <Form.Control 
+                <label className="label-color">Currency</label>
+                <input 
                   value={currentItem.currency} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
             
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Avg Price</p>
-                <Form.Control 
+                <label className="label-color">Avg Price</label>
+                <input 
                   value={currentItem.avgPrice} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
@@ -720,58 +783,58 @@ export default function CreateManualPR({ editData, onClearEdit }) {
         
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>HSN Code</p>
-                <Form.Control 
+                <label className="label-color">HSN Code</label>
+                <input 
                   value={currentItem.hsnCode} 
                   disabled 
-                  className="input-text input-disabled"
+                  className="input-field-style input-disabled"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Required By</p>
-                <Form.Control 
+                <label className="label-color">Required By</label>
+                <input 
                   type="date" 
                   name="requiredBy" 
                   value={currentItem.requiredBy} 
                   onChange={onItemChange}
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
             <Col >
               <Form.Group>
-                <Form.Label className="form-label "style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Required Qty *</Form.Label>
-                <Form.Control 
+                <label className="label-color">Required Qty *</label>
+                <input 
                   type="number" 
                   name="qty" 
                   value={currentItem.qty} 
                   onChange={onItemChange} 
                   placeholder="0.00" 
                   step="0.01"
-                  className="input-text"
+                 className="input-field-style border"
                 />
               </Form.Group>
             </Col>
               <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Budget Available</p>
-                <Form.Control 
+                <label className="label-color">Budget Available</label>
+                <input 
                   value={currentItem.budgetAvailable} 
                   disabled 
-                  className="input-text input-disabled fw-bold"
+                  className="input-field-style input-disabled fw-bold"
                   style={{ color: '#0ea5e9' }}
                 />
               </Form.Group>
             </Col>
                <Col >
               <Form.Group>
-                <p style={{ color: "#0066cc", fontWeight: "600", marginBottom: "11px" }}>Total Value</p>
-                <Form.Control 
+                <label className="label-color">Total Value</label>
+                <input 
                   value={currentItem.value} 
                   disabled 
-                  className="input-text input-disabled fw-bold text-success"
+                  className="input-field-style input-disabled fw-bold text-success"
                 />
               </Form.Group>
             </Col>
@@ -779,10 +842,10 @@ export default function CreateManualPR({ editData, onClearEdit }) {
               <Button 
                 variant="success" 
                 onClick={addItem} 
-                className="px-4 btn-add-item" 
+                className="add-btn" 
                 disabled={itemDetailsLoading}
               >
-                Add 
+                Add
               </Button>
               <small className="text-muted ms-3 mb-2">*Add multiple </small>
             </Col>
@@ -792,7 +855,140 @@ export default function CreateManualPR({ editData, onClearEdit }) {
           
          
           </Row>
-            {items.length > 0 && (
+          {items.length > 0 && (
+  <div className="form-section">
+    <h5 className="section-title">Added Items</h5>
+    <Table striped bordered hover size="sm" className="items-table">
+      <thead className="table-dark">
+        <tr>
+          <th>Item Name</th>
+          <th>Grade</th>
+          <th>Code</th>
+          <th>UOM</th>
+          <th>Price</th>
+          <th>Qty</th>
+          <th>Value</th>
+          <th className="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((item) => (
+          <tr key={item.id}>
+            {item.isEditing ? (
+              <>
+                {/* EDITABLE FIELDS */}
+                <td>
+                  <select 
+                    size="sm"
+                    value={item.itemId} 
+                    onChange={(e) => updateEditingItem(item.id, 'itemId', e.target.value)}
+                    className="item-edit-select"
+                  >
+                    <option>SELECT ITEM</option>
+                    {masterItems.map((i) => (
+                      <option key={i.id} value={i.name}>{i.name}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select 
+                    size="sm"
+                    value={item.specificationId} 
+                    onChange={(e) => updateEditingItem(item.id, 'specificationId', e.target.value)}
+                    className="item-edit-select"
+                  >
+                    <option>SELECT GRADE</option>
+                    {grades.map((g) => (
+                      <option key={g.id} value={g.name}>{g.name}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>{item.itemCode}</td>
+                <td>{item.uom}</td>
+                <td>{item.avgPrice}</td>
+                <td>
+                  <input 
+                    type="number" 
+                    size="sm"
+                    value={item.qty} 
+                    onChange={(e) => updateEditingItem(item.id, 'qty', e.target.value)}
+                    className="item-qty-input"
+                  />
+                </td>
+                <td className="fw-bold text-success">{item.value}</td>
+              </>
+            ) : (
+              <>
+                {/* VIEW MODE */}
+                <td>{item.itemName}</td>
+                <td>{item.specificationName}</td>
+                <td>{item.itemCode}</td>
+                <td>{item.uom}</td>
+                <td>{item.avgPrice}</td>
+                <td>{item.qty}</td>
+                <td className="fw-bold text-success">{item.value}</td>
+              </>
+            )}
+            <td className="text-center">
+              {item.isEditing ? (
+                <>
+                  <Button 
+                    size="sm" 
+                    variant="success" 
+                    className="me-1"
+                    onClick={() => saveItemEdit(item.id)}
+                  >
+                    <Save size={14} />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={() => cancelItemEdit(item.id)}
+                  >
+                    <X size={14} />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {isEditMode && (
+                    <Button 
+                      size="sm" 
+                      variant="outline-primary" 
+                      className="me-1"
+                      onClick={() => startItemEdit(item.id)}
+                      title="Edit Item"
+                    >
+                      <Edit size={14} />
+                    </Button>
+                  )}
+                  <Button 
+                    size="sm" 
+                    variant="outline-danger"
+                    onClick={() => removeItem(item)}
+                    title="Remove Item"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr className="table-secondary fw-bold">
+          <td colSpan="6" className="text-end">Total:</td>
+          <td className="text-success">
+            {items.reduce((sum, i) => sum + parseFloat(i.value || 0), 0).toFixed(2)}
+          </td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </Table>
+  </div>
+)}
+
+            {/* {items.length > 0 && (
           <div className="form-section">
             <h5 className="section-title">Added Items</h5>
             <Table striped bordered hover size="sm" className="items-table">
@@ -837,19 +1033,18 @@ export default function CreateManualPR({ editData, onClearEdit }) {
               </tfoot>
             </Table>
           </div>
-        )}
+        )} */}
         </div>
 
         {/* Items List */}
       
 
         {/* Action Buttons */}
-        <div className="text-center mt-5 mb-5">
+        <div className="text-center mt-5 mb-5 d-flex gap-2">
           <Button 
             type="submit" 
-            variant={isEditMode ? "warning" : "primary"} 
-            // size="lg" 
-            className=" me-3 btn-submit" 
+        
+            className="save-btn" 
             disabled={submitLoading}
           >
             {submitLoading ? (
@@ -863,9 +1058,8 @@ export default function CreateManualPR({ editData, onClearEdit }) {
             )}
           </Button>
           <Button 
-            variant="outline-secondary" 
-            // size="lg" 
-            // className="px-5" 
+         
+            className="cancel-btn" 
             onClick={onCancel}
           >
             Cancel
@@ -875,63 +1069,7 @@ export default function CreateManualPR({ editData, onClearEdit }) {
 
       <ToastContainer theme="colored" position="top-right" />
 
-      <style>{`
-        .form-section {
-          background: white;
-          border-radius: 12px;
-          padding: 10px;
-          margin-bottom: 24px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .section-title {
-          color: #0066cc;
-          font-size: 18px;
-          font-weight: 700;
-          margin-bottom: 10px;
-          padding-bottom: 10px;
-          border-bottom: 2px solid #e2e8f0;
-        }
-        .form-label {
-          font-size: 12px;
-          font-weight: 700;
-          color: #64748b;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: 6px;
-        }
-        .input-text {
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          padding: 5px 6px;
-          font-size: 14px;
-          transition: border-color 0.2s;
-        }
-        .input-text:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .input-disabled {
-          background: #f1f5f9;
-          color: #475569;
-        }
-        .btn-add-item {
-          font-weight: 600;
-          border-radius: 8px;
-          padding: 10px 24px;
-        }
-        .btn-submit {
-          font-weight: 700;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .items-table {
-          font-size: 13px;
-        }
-        .items-table thead {
-          font-size: 12px;
-          text-transform: uppercase;
-        }
-      `}</style>
+   
     </div>
   );
 }

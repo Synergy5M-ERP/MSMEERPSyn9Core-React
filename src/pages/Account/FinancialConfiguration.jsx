@@ -6,7 +6,7 @@ function FinancialConfiguration() {
     const [selectedPage, setSelectedPage] = useState("paymentAllocation");
  return (
         <div style={{ minHeight: "80vh" }}>
-            <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
+            <h2 style={{ textAlign: "left", color: "#0066cc", margin: "12px" }}>
                 FinancialConfiguration
             </h2>
 
@@ -17,7 +17,7 @@ function FinancialConfiguration() {
                     justifyContent: 'space-between', // space between two groups
                     alignItems: 'center',
                     gap: '30px',
-                    marginTop: '22px',
+                    // marginTop: '22px',
                     marginBottom: '12px',
                     padding: '14px 0 14px 5px',
                     borderRadius: '8px',

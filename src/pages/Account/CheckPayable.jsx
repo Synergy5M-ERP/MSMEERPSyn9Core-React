@@ -612,8 +612,8 @@ const payload = {
         {/* FORM FIELDS */}
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Seller Name</label>
-            <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
+            <label className="label-color"> Seller Name</label>
+            <select className="select-field-style" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
               <option value="">Select Seller</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
@@ -621,8 +621,8 @@ const payload = {
             </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> GRN Number</label>
-            <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
+            <label className="label-color"> GRN Number</label>
+            <select className="select-field-style" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
               <option value="">Select GRN No.</option>
               {grnNumbers.map((g) => (
                 <option key={g.id} value={String(g.id)} disabled={String(g.id) === enteredGrnNumber}>
@@ -632,39 +632,39 @@ const payload = {
             </select>
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> GRN Date</label>
-            <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
+            <label className="label-color"> GRN Date</label>
+            <input type="date" name="grnDate" className="input-field-style" value={formData.grnDate} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Invoice No</label>
-            <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
+            <label className="label-color"> Invoice No</label>
+            <input type="text" name="invoiceNumber" className="input-field-style" value={formData.invoiceNumber} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold">Invoice Date</label>
-            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
+            <label className="label-color">Invoice Date</label>
+            <input type="date" name="invoiceDate" className="input-field-style" value={formData.invoiceDate} onChange={handleChange} required />
           </div>
         </div>
 
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> PO Number</label>
-            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required />
+            <label className="label-color"> PO Number</label>
+            <input type="text" name="poNumber" className="input-field-style" value={formData.poNumber} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> PO Date</label>
-            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required />
+            <label className="label-color"> PO Date</label>
+            <input type="date" name="poDate" className="input-field-style" value={formData.poDate} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Vehicle No</label>
-            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required />
+            <label className="label-color"> Vehicle No</label>
+            <input type="text" name="vehicleNo" className="input-field-style" value={formData.vehicleNo} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Transporter Name</label>
-            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required />
+            <label className="label-color"> Transporter Name</label>
+            <input type="text" name="TransporterName" className="input-field-style" value={formData.TransporterName} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Payment Due</label>
-            <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
+            <label className="label-color"> Payment Due</label>
+            <input type="date" name="paymentDue" className="input-field-style" value={formData.paymentDue} onChange={handleChange} required />
           </div>
         </div>
 
@@ -699,40 +699,40 @@ const payload = {
       ) : (
         tableData.map((row, index) => (
           <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
-            <td><strong>{row.itemName}</strong></td>
-            <td>{row.grade || '-'}</td>
-            <td>{row.itemCode || '-'}</td>
-            <td>
+            <td className="text-secondary">{row.itemName}</td>
+            <td className="text-secondary">{row.grade || '-'}</td>
+            <td className="text-secondary">{row.itemCode || '-'}</td>
+            <td className="text-secondary">
               <input
                 type="number"
-                className="form-control form-control-sm"
+                className="input-field-style input-field-style-sm"
                 value={row.receivedQty || ""}
                 onChange={handleQuantityChange(index, 'receivedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td>
+            <td className="text-secondary">
               <input
                 type="number"
-                className="form-control form-control-sm"
+                className="input-field-style input-field-style-sm"
                 value={row.approvedQty || ""}
                 onChange={handleQuantityChange(index, 'approvedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td>
+            <td className="text-secondary">
               <input
                 type="number"
-                className="form-control form-control-sm"
+                className="input-field-style input-field-style-sm"
                 value={row.damagedQty || ""}
                 onChange={handleQuantityChange(index, 'damagedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
-            <td>{(row.cgst || 0).toFixed(2)}%</td>
-            <td>{(row.sgst || 0).toFixed(2)}%</td>
-            <td>{(row.igst || 0).toFixed(2)}%</td>
+            <td className="text-secondary">₹{(row.rate || 0).toFixed(2)}</td>
+            <td className="text-secondary">{(row.cgst || 0).toFixed(2)}%</td>
+            <td className="text-secondary">{(row.sgst || 0).toFixed(2)}%</td>
+            <td className="text-secondary">{(row.igst || 0).toFixed(2)}%</td>
             <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
             <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
             {/* <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td> */}
@@ -747,7 +747,7 @@ const payload = {
                 />
                 <label
                   htmlFor={`billCheck-${row.id}`}
-                  className="form-check-label ms-1"
+                  className="form-check-label text-secondary ms-1"
                   style={{ cursor: "pointer", fontSize: "14px" }}
                 >
                   Bill
@@ -763,11 +763,11 @@ const payload = {
 
 
         {/* BUTTONS */}
-        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
+        <div className="d-flex gap-3 mt-4 mb-2">
           <button
             onClick={handleSave}
             disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-            className="btn btn-primary btn-lg px-5 py-2 position-relative"
+            className="save-btn"
             style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
           >
             {saveLoading ? (
@@ -780,12 +780,12 @@ const payload = {
             )}
           </button>
           <button
-            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
+            className="cancel-btn"
             style={{ borderRadius: "8px" }}
             onClick={handleCancel}
             disabled={saveLoading}
           >
-            Reset
+            cancel
           </button>
         </div>
       </div>

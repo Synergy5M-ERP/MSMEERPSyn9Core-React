@@ -319,7 +319,7 @@ function AccountVoucherType({ view }) {
           className="d-flex justify-content-between align-items-center flex-wrap"
         >
           <div>
-            <label style={{ marginRight: "20px" }}>
+            <label style={{ marginRight: "20px" ,fontSize:'18px' }}>
               <input
                 type="radio"
                 name="formType"
@@ -329,12 +329,12 @@ function AccountVoucherType({ view }) {
                   setFormType("vouchertype");
                   handleCancel();
                 }}
-                style={{ marginRight: "8px" }}
+                style={{ marginRight: "8px"}}
               />
               Account Voucher Type
             </label>
 
-            <label>
+            <label style={{fontSize:'18px'}}>
               <input
                 type="radio"
                 name="formType"
@@ -403,7 +403,7 @@ function AccountVoucherType({ view }) {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   onClick={handleSave}
-                  className="btn btn-primary save"
+                  className="save-btn"
                   disabled={
                     loading ||
                     !vouchertype.trim() ||
@@ -413,7 +413,7 @@ function AccountVoucherType({ view }) {
                   <Save size={18} style={{ marginRight: "6px" }} />
                   Save
                 </button>
-                <button onClick={handleCancel} className="btn btn-secondary" disabled={loading}>
+                <button onClick={handleCancel} className="cancel-btn" disabled={loading}>
                   Cancel
                 </button>
               </div>

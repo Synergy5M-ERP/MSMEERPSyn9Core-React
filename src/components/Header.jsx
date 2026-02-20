@@ -10,13 +10,20 @@ const Header = () => {
   const accountDropdownRef = useRef(null);
   const navigate = useNavigate();
 const role = (user?.UserRole || user?.userRole || "").trim().toLowerCase();
-  useEffect(() => {
+ useEffect(() => {
+  const handleStorageChange = () => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-  // =========================
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  };
+
+  // Trigger on mount
+  handleStorageChange();
+
+  // Listen for localStorage changes
+  window.addEventListener("storage", handleStorageChange);
+
+  return () => window.removeEventListener("storage", handleStorageChange);
+}, []);
   // Load user from localStorage
   // =========================
   useEffect(() => {
@@ -172,7 +179,7 @@ const role = (user?.UserRole || user?.userRole || "").trim().toLowerCase();
                 }}
               >
                 {/* ================= NOT LOGGED IN ================= */}
-{user && (
+{!user && (
                   <>
                   <NavLink
   to="/admin/RegisterPage"

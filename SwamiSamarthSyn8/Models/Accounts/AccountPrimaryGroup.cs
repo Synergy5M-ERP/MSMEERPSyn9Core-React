@@ -3,21 +3,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SwamiSamarthSyn8.Models.Accounts
 {
-    [Table("AccountType")]
-    public class AccountType
+    [Table("AccountPrimaryGroup")]
+    public class AccountPrimaryGroup
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int AccountTypeId { get; set; }
+        public int PrimaryGroupId { get; set; }
 
         [StringLength(200)]
-        public string? AccountTypeName { get; set; }
+        public string? AccountPrimaryGroupName { get; set; }
 
         [StringLength(200)]
-        public string? AccountTypeNarration { get; set; }
-
+        public string? Description { get; set; }
+        public string? Type { get; set; }
+        public int PrimaryGroupCode { get; set; }
         public bool? IsActive { get; set; }
         public virtual ICollection<AccountGroup> AccountGroups { get; set; }
-
     }
 }

@@ -9,8 +9,8 @@ namespace SwamiSamarthSyn8.Models
         [Key]
         public int AccountSubVoucherTypeId { get; set; }
 
-            [Required]
-            [ForeignKey("AccountVoucherType")]
+            //[Required]
+            //[ForeignKey("AccountVoucherType")]
         public int AccountVoucherTypeId { get; set; }
 
         [Required]
@@ -23,6 +23,6 @@ namespace SwamiSamarthSyn8.Models
         public bool IsActive { get; set; }
 
         // ✅ Optional: Navigation Property (if AccountVoucherType table exists)
-        public virtual AccountVoucherType AccountVoucherType { get; set; }
+        //public virtual AccountVoucherType AccountVoucherType { get; set; }
     }
 }

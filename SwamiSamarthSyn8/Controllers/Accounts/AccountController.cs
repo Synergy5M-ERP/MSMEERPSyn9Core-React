@@ -22,19 +22,15 @@ namespace SwamiSamarthSyn8.Controllers
             _logger = logger;
 
         }
-        //[HttpGet("AccountType")]
-        //public IActionResult GetAccountType()
-        //{
-        //    return Ok(new { message = "Account type API is working ✅" });
-        //}
-        [HttpGet("AccountType")]
-        public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
+
+        [HttpGet("AccountPrimaryGroup")]
+        public async Task<IActionResult> GetAllAccountPrimaryGroups([FromQuery] bool? isActive)
         {
             try
             {
-                _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
+                _logger.LogInformation("GetAllAccountPrimaryGroups called. isActive={isActive}", isActive);
 
-                var query = _context.AccountType.AsQueryable();
+                var query = _context.AccountPrimaryGroup.AsQueryable();
 
                 if (isActive.HasValue)
                     query = query.Where(x => x.IsActive == isActive.Value);
@@ -43,46 +39,47 @@ namespace SwamiSamarthSyn8.Controllers
 
                 if (list == null || list.Count == 0)
                 {
-                    _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
+                    _logger.LogWarning("GetAllAccountPrimaryGroups returned no data. isActive={isActive}", isActive);
                     // return 204 No Content OR 200 with empty array depending on your API contract
                     return NoContent(); // -> HTTP 204
                                         // OR: return Ok(new object[0]); -> HTTP 200 with []
                 }
 
-                _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
+                _logger.LogInformation("GetAllAccountPrimaryGroups returning {count} items.", list.Count);
                 return Ok(list); // 200 + JSON
             }
             catch (Exception ex)
             {
                 // Important: log the exception with context
-                _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
+                _logger.LogError(ex, "Error in GetAllAccountPrimaryGroups. isActive={isActive}", isActive);
 
                 // Return a safe error message and 500
                 return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
             }
         }
-        [HttpPost("AccountType")]
-        public IActionResult CreateAccountType([FromBody] AccountType accountType)
+
+        [HttpPost("AccountPrimaryGroup")]
+        public IActionResult CreateAccountPrimaryGroup([FromBody] AccountPrimaryGroup primaryGroup)
         {
-            if (accountType == null) return BadRequest();
-            accountType.IsActive = true;
-            _context.AccountType.Add(accountType);
+            if (primaryGroup == null) return BadRequest();
+            primaryGroup.IsActive = true;
+            _context.AccountPrimaryGroup.Add(primaryGroup);
             _context.SaveChanges();
-            return Ok(accountType);
+            return Ok(primaryGroup);
         }
 
-        [HttpPut("AccountType/{id}")]
-        public IActionResult UpdateAccountType(int id, [FromBody] AccountTypeUpdateDto dto)
+        [HttpPut("AccountPrimaryGroup/{id}")]
+        public IActionResult UpdateAccountPrimaryGroup(int id, [FromBody] AccountTypeUpdateDto dto)
         {
-            var existing = _context.AccountType.Find(id);
+            var existing = _context.AccountPrimaryGroup.Find(id);
             if (existing == null)
                 return NotFound();
 
-            if (dto.AccountTypeName != null)
-                existing.AccountTypeName = dto.AccountTypeName;
+            if (dto.AccountPrimaryGroupName != null)
+                existing.AccountPrimaryGroupName = dto.AccountPrimaryGroupName;
 
-            if (dto.AccountTypeNarration != null)
-                existing.AccountTypeNarration = dto.AccountTypeNarration;
+            if (dto.Description != null)
+                existing.Description = dto.Description;
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;
@@ -91,15 +88,13 @@ namespace SwamiSamarthSyn8.Controllers
             return Ok(existing);
         }
 
-
-
-        [HttpDelete("AccountType/{id}")]
-        public IActionResult DeleteAccountType(int id)
+        [HttpDelete("AccountPrimaryGroup/{id}")]
+        public IActionResult DeleteAccountPrimaryGroup(int id)
         {
-            var existing = _context.AccountType.Find(id);
+            var existing = _context.AccountPrimaryGroup.Find(id);
             if (existing == null) return NotFound();
 
-            _context.AccountType.Remove(existing);
+            _context.AccountPrimaryGroup.Remove(existing);
             _context.SaveChanges();
             return Ok();
         }
@@ -121,8 +116,8 @@ namespace SwamiSamarthSyn8.Controllers
                 a.AccountGroupName,
                 a.AccountGroupNarration,
                 a.GroupCode,
-                a.AccountTypeid,
-                AccountTypeName = a.AccountType.AccountTypeName, // ✅ Show name via relationship
+                a.PrimaryGroupId,
+               // PrimaryGroupName = a.AccountType.AccountGroupName, // ✅ Show name via relationship
                 a.IsActive
             }).ToList();
 

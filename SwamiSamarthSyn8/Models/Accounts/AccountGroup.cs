@@ -16,6 +16,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [MaxLength(500)]
         public string AccountGroupNarration { get; set; }
+        public int PrimaryGroupId { get; set; }
 
         public bool IsActive { get; set; } = true;
 
@@ -28,7 +29,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         // Navigation properties
         [JsonIgnore]
-        public virtual AccountType? AccountType { get; set; }  // nullable
+        public virtual AccountPrimaryGroup? AccountType { get; set; }  // nullable
 
         [JsonIgnore]
         public virtual ICollection<AccountSubGroup>? AccountSubGroups { get; set; } // nullable

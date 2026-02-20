@@ -76,16 +76,29 @@ namespace SwamiSamarthSyn8.Accounts.Controller
             return Ok(existing);
         }
 
-        //[HttpDelete("AccountSubLedger/{id}")]
-        //public IActionResult DeleteAccountSubLedger(int id)
-        //{
-        //    var existing = _context.AccountSubLedger.Find(id);
-        //    if (existing == null) return NotFound();
-        //    existing.IsActive = false;
-           
-        //    _context.SaveChanges();
-        //    return Ok();
-        //}
+        [HttpDelete("AccountSubLedger/{id}")]
+        public IActionResult DeleteAccountSubLedger(int id)
+        {
+            var ledger = _context.AccountSubLedger.Find(id);
+            if (ledger == null) return NotFound();
+
+            ledger.IsActive = false;
+            _context.SaveChanges();
+
+            return Ok(new { success = true, message = "Ledger deactivated successfully" });
+        }
+
+        [HttpPatch("AccountSubLedger/{id}/activate")]
+        public IActionResult ActivateAccountSubLedger(int id)
+        {
+            var ledger = _context.AccountSubLedger.Find(id);
+            if (ledger == null) return NotFound();
+
+            ledger.IsActive = true;
+            _context.SaveChanges();
+
+            return Ok(new { success = true });
+        }
 
     }
 }

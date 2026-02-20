@@ -20,6 +20,6 @@ namespace SwamiSamarthSyn8.Models
         public bool IsActive { get; set; }
 
         // ✅ Navigation property for related SubVoucherTypes (if applicable)
-        public virtual ICollection<AccountSubVoucherType> AccountSubVoucherTypes { get; set; }
+        //public virtual ICollection<AccountSubVoucherType> AccountSubVoucherTypes { get; set; }
     }
 }

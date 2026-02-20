@@ -112,6 +112,7 @@ public partial class MsmeERPDbContext : DbContext
     public DbSet<HRM_EmployeeAuthorityMatrix> HRM_EmployeeAuthorityMatrix { get; set; }
     public DbSet<HRM_EmployeeSalaryDetails> HRM_EmployeeSalaryDetails { get; set; }
     public DbSet<HRM_AuthorityMatrix> HRM_AuthorityMatrix { get; set; }
+    public virtual DbSet<HRM_EmployeeDailyAttendance> HRM_EmployeeDailyAttendance { get; set; }
 
     public virtual DbSet<HRM_DesignationTbl> HRM_DesignationTbl { get; set; }
 

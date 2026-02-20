@@ -4,6 +4,7 @@ using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 

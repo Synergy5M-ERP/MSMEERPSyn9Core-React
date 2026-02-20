@@ -416,11 +416,9 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // 🔒 Validate Employee
             if (!_context.HRM_Employee.Any(x => x.EmployeeId == model.EmployeeId))
                 return BadRequest("Selected employee does not exist");
 
-            // 🔒 Validate Reporting Employee
             if (!_context.HRM_Employee.Any(x => x.EmployeeId == model.ReportingEmployeeId))
                 return BadRequest("Selected reporting employee does not exist");
 
@@ -430,7 +428,18 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                 {
                     AuthorityMatrixEmployeeId = model.EmployeeId,
                     ReportingEmpId = model.ReportingEmployeeId,
-                    MatrixCode = model.Position_Code,
+                    Emp_Code=model.Emp_Code,
+                    Department = model.Department,
+                    Department_Code = model.Department_Code,
+                    Designation = model.Designation,
+                    Designation_Code = model.Designation_Code,
+
+                    RP_Department = model.RP_Department,
+                    RP_DepartmentCode = model.RP_DepartmentCode,
+                    RP_Designation = model.RP_Designation,
+                    RP_DesignationCode = model.RP_DesignationCode,
+                    Reporting_EmpCode=model.Reporting_EmpCode,
+                    MatrixCode = model.MatrixCode,
                     IsActive = true,
                     CreatedDate = DateTime.Now
                 };
@@ -450,9 +459,30 @@ namespace SwamiSamarthSyn8.Controllers.HRM
         [HttpGet("MatrixList")]
         public IActionResult GetMatrixList()
         {
-            var list = _context.HRM_OrganizationDataTbl
-                .OrderByDescending(x => x.Id)
-                .ToList();
+            var list =
+                (from m in _context.HRM_EmployeeAuthorityMatrix
+                 join e in _context.HRM_Employee
+                     on m.AuthorityMatrixEmployeeId equals e.EmployeeId
+                 join r in _context.HRM_Employee
+                     on m.ReportingEmpId equals r.EmployeeId
+                 orderby m.EmpAuthorityMatrixId descending
+                 select new
+                 {
+                     id = m.EmpAuthorityMatrixId,
+
+                     employeeId = e.EmployeeId,
+                     employeeName = e.FullName,
+                     empCode = m.Emp_Code,
+
+                     reportingEmployeeId = r.EmployeeId,
+                     reportingEmployeeName = r.FullName,
+                     reportingEmpCode = m.Reporting_EmpCode,
+
+                     matrixCode = m.MatrixCode,
+                     isActive = m.IsActive,
+                     createdDate = m.CreatedDate
+                 }).ToList();
+
             return Ok(list);
         }
 
@@ -460,7 +490,7 @@ namespace SwamiSamarthSyn8.Controllers.HRM
         [HttpPut("UpdateStatus/{id}")]
         public IActionResult UpdateStatus(int id, [FromBody] bool status)
         {
-            var matrix = _context.HRM_OrganizationDataTbl.FirstOrDefault(x => x.Id == id);
+            var matrix = _context.HRM_EmployeeAuthorityMatrix.FirstOrDefault(x => x.EmpAuthorityMatrixId == id);
             if (matrix == null) return NotFound();
 
             matrix.IsActive = status;
@@ -482,15 +512,15 @@ namespace SwamiSamarthSyn8.Controllers.HRM
             matrix.Department_Code = model.Department_Code;
             matrix.Designation = model.Designation;
             matrix.Designation_Code = model.Designation_Code;
-            matrix.Authority_Code = model.Authority_Code;
+            //matrix.Authority_Code = model.Authority_Code;
             matrix.Reporting_EmployeeName = model.Reporting_EmployeeName;
-            matrix.Report_Email = model.Report_Email;
+          //  matrix.Report_Email = model.Report_Email;
             matrix.RP_Department = model.RP_Department;
             matrix.RP_DepartmentCode = model.RP_DepartmentCode;
             matrix.RP_Designation = model.RP_Designation;
             matrix.RP_DesignationCode = model.RP_DesignationCode;
-            matrix.RP_Authority = model.RP_Authority;
-            matrix.RP_AuthorityCode = model.RP_AuthorityCode;
+          //  matrix.RP_Authority = model.RP_Authority;
+           // matrix.RP_AuthorityCode = model.RP_AuthorityCode;
             //matrix.Position_Code = model.Position_Code;
 
             _context.SaveChanges();
@@ -897,6 +927,281 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("GetEmployeesByDateRange")]
+        public async Task<IActionResult> GetEmployeesByDateRange(
+    [FromBody] DateRangeRequest model)
+        {
+            if (model.FromDate > model.ToDate)
+                return BadRequest("FromDate cannot be greater than ToDate");
+
+            var employees = await (
+                from e in _context.HRM_Employee
+                join d in _context.HRM_Department
+                    on e.DeptId equals d.DeptId
+                select new
+                {
+                    e.EmployeeId,   // ✅ ADD THIS
+
+                    e.EmpCode,
+                    e.FullName,
+e.DeptId,
+                   DeptName = d.DeptName
+                }
+            ).ToListAsync();
+
+            var allEntries = new List<AttendanceEntryViewModel>();
+
+            for (var date = model.FromDate.Date; date <= model.ToDate.Date; date = date.AddDays(1))
+            {
+                foreach (var emp in employees)
+                {
+                    allEntries.Add(new AttendanceEntryViewModel
+                    {
+                        SelectedDate = date.ToString("dd-MM-yyyy"), // ✅ fixed
+                        EmployeeId = emp.EmployeeId,   // ✅ IMPORTANT
+
+                        Emp_Code = emp.EmpCode,
+                        FullName = emp.FullName,
+                        DeptId = emp.DeptId,
+                        DeptName = emp.DeptName   // ✅ THIS WAS MISSING// ✅ CORRECT
+                    });
+                }
+            }
+
+            return Ok(allEntries);
+        }
+        // ============================================
+        [HttpPost("SaveEmployeeAttendance")]
+        public async Task<IActionResult> SaveEmployeeAttendance(
+      [FromBody] List<HRM_EmployeeDailyAttendance> data)
+        {
+            if (data == null || !data.Any())
+                return BadRequest(new { success = false, message = "No attendance data received" });
+
+            var allNewRecords = new List<HRM_EmployeeDailyAttendance>();
+
+            try 
+            {
+                foreach (var item in data)
+                {
+                    var record = new HRM_EmployeeDailyAttendance
+                    {
+                        EmployeeId = item.EmployeeId,
+                        EmpCode = item.EmpCode,
+                        AttendanceDate = item.AttendanceDate,
+                        TimeIn = item.TimeIn,
+                        TimeOut = item.TimeOut,
+                        TotalWorkHours = item.TotalWorkHours,
+                        OverTimeHours = item.OverTimeHours,
+                        CreatedBy = 0,
+                        CreatedDate = DateTime.Now,
+                        IsActive = true
+                    };
+
+                    _context.HRM_EmployeeDailyAttendance.Add(record);
+                    allNewRecords.Add(record);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // ✅ SEND EMAIL ONLY IF SAVED
+                if (allNewRecords.Any())
+                {
+                    string htmlBody =
+                        "<h3>Daily Attendance Submission</h3>" +
+                        "<table border='1' cellpadding='5' cellspacing='0' style='border-collapse:collapse;'>" +
+                        "<tr style='background-color:#f2f2f2;'>" +
+                        "<th>Emp Code</th>" +
+                        "<th>Date</th>" +
+                        "<th>Time In</th>" +
+                        "<th>Time Out</th>" +
+                        "<th>Total Hours</th>" +
+                        "<th>Overtime Hours</th>" +
+                        "</tr>";
+
+                    foreach (var emp in allNewRecords)
+                    {
+                        htmlBody +=
+                            "<tr>" +
+                            $"<td>{emp.EmpCode}</td>" +
+                            $"<td>{emp.AttendanceDate:yyyy-MM-dd}</td>" +
+                            $"<td>{emp.TimeIn}</td>" +
+                            $"<td>{emp.TimeOut}</td>" +
+                            $"<td>{emp.TotalWorkHours}</td>" +
+                            $"<td>{emp.OverTimeHours}</td>" +
+                            "</tr>";
+                    }
+
+                    htmlBody += "</table>";
+
+                    try
+                    {
+                        SendAttendanceEmail(htmlBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Email error: " + ex.Message);
+                    }
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Attendance saved and email sent successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Server error",
+                    error = ex.Message
+                });
+            }
+        }
+        private void SendAttendanceEmail(string htmlBody)
+        {
+            var message = new MailMessage
+            {
+                From = new MailAddress("hrm@synergy5m.com"),
+                Subject = "Daily Employee Attendance Report",
+                Body = htmlBody,
+                IsBodyHtml = true
+            };
+
+            message.To.Add("hrm@synergy5m.com");
+            message.CC.Add("ab@synergy5m.com");
+
+            using (var smtp = new SmtpClient("smtp.gmail.com", 587))
+            {
+                smtp.EnableSsl = true;
+                smtp.Credentials = new NetworkCredential(
+                    "hrm@synergy5m.com",
+                    "eksv lnrw smpl dsqd" // ⚠ move to appsettings.json
+                );
+
+                smtp.Send(message);
+            }
+        }
+       [HttpGet("GetEmployeeAttendance")]
+public async Task<IActionResult> GetEmployeeAttendance()
+{
+    try
+    {
+        var data = await (
+            from a in _context.HRM_EmployeeDailyAttendance
+            join e in _context.HRM_Employee
+                on a.EmployeeId equals e.EmployeeId
+            join d in _context.HRM_Department
+                on e.DeptId equals d.DeptId
+            where a.IsActive == true
+            orderby a.AttendanceDate descending
+            select new
+            {
+                a.EmpDailyAttendanceId,
+                a.EmployeeId,
+
+                empCode = a.EmpCode,
+                fullName = e.FullName,
+                department = d.DeptName,
+
+                selectedDate = a.AttendanceDate
+                    .ToString("dd-MM-yyyy"),
+
+                timeIn = a.TimeIn.ToString(),
+                timeOut = a.TimeOut.ToString(),
+
+                totalHours = a.TotalWorkHours.ToString(),
+                overtimeHours = a.OverTimeHours.ToString()
+            }
+        )
+        .Take(200000)
+        .ToListAsync();
+
+        return Ok(new
+        {
+            success = true,
+            count = data.Count,
+            data
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = "Server error",
+            error = ex.Message
+        });
+    }
+}
+        [HttpGet("GetAttendanceById/{id}")]
+        public IActionResult GetAttendanceById(int id)
+        {
+            var data = (
+                from a in _context.HRM_EmployeeDailyAttendance
+                join e in _context.HRM_Employee
+                    on a.EmployeeId equals e.EmployeeId
+                join d in _context.HRM_Department   // ✅ ADD THIS JOIN
+                    on e.DeptId equals d.DeptId
+                where a.EmpDailyAttendanceId == id
+                select new
+                {
+                    a.EmpDailyAttendanceId,
+                    a.EmployeeId,
+                    a.EmpCode,
+                    e.FullName,
+                    DeptName = d.DeptName,   // ✅ NOW WORKS
+                    a.AttendanceDate,
+                    a.TimeIn,
+                    a.TimeOut,
+                    a.TotalWorkHours,
+                    a.OverTimeHours
+                }
+            ).FirstOrDefault();
+
+            if (data == null)
+                return NotFound();
+
+            return Ok(data);
+        }
+
+        //[HttpPut("UpdateEmployeeAttendance")]
+        //public IActionResult UpdateEmployeeAttendance(List<EmployeeAttendanceDto> model)
+        //{
+        //    foreach (var item in model)
+        //    {
+        //        var existing = _context.HRM_EmployeeDailyAttendance
+        //            .FirstOrDefault(x => x.EmpDailyAttendanceId == item.EmpDailyAttendanceId);
+
+        //        if (existing != null)
+        //        {
+        //            existing.TimeIn = item.TimeIn;
+        //            existing.TimeOut = item.TimeOut;
+        //            existing.TotalWorkHours = item.TotalWorkHours;
+        //            existing.OverTimeHours = item.OverTimeHours;
+        //        }
+        //    }
+
+        //    _context.SaveChanges();
+
+        //    return Ok();
+        //}
+
+        [HttpPut("DeactivateAttendance/{id}")]
+        public IActionResult DeactivateAttendance(int id)
+        {
+            var record = _context.HRM_EmployeeDailyAttendance.FirstOrDefault(x => x.EmpDailyAttendanceId == id);
+            if (record == null) return NotFound();
+
+            record.IsActive = false;
+            _context.SaveChanges();
+
+            return Ok(new { success = true });
+        }
+
 
 
     }

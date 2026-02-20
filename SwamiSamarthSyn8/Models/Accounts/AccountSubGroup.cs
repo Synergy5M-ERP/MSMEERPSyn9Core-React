@@ -23,6 +23,7 @@ public class AccountSubGroup
 
     [StringLength(500)]
     public string AccountSubGroupNarration { get; set; }
+    public string AccountSubGroupCode { get; set; }
 
     public bool? IsActive { get; set; } = true;
 

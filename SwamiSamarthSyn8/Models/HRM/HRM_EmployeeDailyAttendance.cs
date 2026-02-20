@@ -9,10 +9,10 @@ namespace SwamiSamarthSyn8.Models.HRM
         public int EmployeeId { get; set; }
         public string EmpCode { get; set; }
         public DateTime AttendanceDate { get; set; }
-        public TimeSpan? TimeIn { get; set; }
-        public TimeSpan? TimeOut { get; set; }
-        public decimal? TotalWorkHours { get; set; }
-        public decimal? OverTimeHours { get; set; }
+        public string TimeIn { get; set; }
+        public string TimeOut { get; set; }
+        public string? TotalWorkHours { get; set; }
+        public string? OverTimeHours { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public int? UpdatedBy { get; set; }

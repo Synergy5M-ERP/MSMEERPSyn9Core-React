@@ -11,8 +11,8 @@ const Login = () => {
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
- 
+const navigate = useNavigate();
+
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -30,15 +30,40 @@ const handleSubmit = async (e) => {
       password: password.trim(),
     });
 
-  if (response.data && response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+    if (response.data && response.data.token) {
+
+      const userData = response.data.user;   // ✅ MOVE HERE
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      window.dispatchEvent(new Event("storage"));
 
       setIsError(false);
       setMessage("Login successful 🎉");
 
-      // ✅ Navigate WITHOUT reload
-      navigate("/dashboard");
+      console.log("Login user data:", userData);
+
+      // ✅ Navigate to first assigned module
+      if (userData.dashboard) {
+        navigate("/dashboard");
+      } else if (userData.hrAndAdmin) {
+        navigate("/hrm");
+      } else if (userData.masters) {
+        navigate("/masters");
+      } else if (userData.materialManagement) {
+        navigate("/mm");
+      } else if (userData.production) {
+        navigate("/production");
+      } else if (userData.quality) {
+        navigate("/quality");
+      } else if (userData.salesAndMarketing) {
+        navigate("/salesanddistribution");
+      } else if (userData.accountAndFinance) {
+        navigate("/accfinancedashboard");
+      } else {
+        navigate("/");
+      }
 
     } else {
       setIsError(true);

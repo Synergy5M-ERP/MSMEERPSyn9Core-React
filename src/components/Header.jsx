@@ -47,20 +47,20 @@ const role = (user?.UserRole || user?.userRole || "").trim().toLowerCase();
 
   // =========================
   // Close dropdown on outside click
-  // =========================
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        accountDropdownRef.current &&
-        !accountDropdownRef.current.contains(event.target)
-      ) {
-        setOpenDropdown(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // // =========================
+  // useEffect(() => {
+  //   function handleClickOutside(event) {
+  //     if (
+  //       accountDropdownRef.current &&
+  //       !accountDropdownRef.current.contains(event.target)
+  //     ) {
+  //       setOpenDropdown(false);
+  //     }
+  //   }
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () =>
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   // =========================
   // LOGOUT FUNCTION

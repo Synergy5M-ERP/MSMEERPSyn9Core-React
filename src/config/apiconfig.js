@@ -5,6 +5,11 @@ const BASE_URL = "https://localhost:7145/api";
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
     ModuleUserList: `${BASE_URL}/HRMAdminRegAPI/Login/GetModuleUserList`,
+      LOGIN: `${BASE_URL}/HRMAdminRegAPI/Login`,
+GetUserByEmpCode: `${BASE_URL}/HRMAdminRegAPI/GetUserByEmpCode`,
+Logout: `${BASE_URL}/HRMAdminRegAPI/Logout`,
+ForgotPassword: `${BASE_URL}/HRMAdminRegAPI/ForgotPassword`,
+ResetPassword: `${BASE_URL}/HRMAdminRegAPI/ResetPassword`,
 
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
   GetUserDetails: `${BASE_URL}/HRMAdminRegAPI/GetUserDetails`,
@@ -15,6 +20,8 @@ export const API_ENDPOINTS = {
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
 GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
     GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+        CreatePassword: `${BASE_URL}/HRMAdminRegAPI/CreatePassword`,
+
 GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,

@@ -29,6 +29,9 @@ import {
     AccountBalanceWallet ,
     VerticalAlignCenter,
     VolunteerActivismSharp,
+     Lock,
+  LockReset,
+  HelpOutline
 } from '@mui/icons-material';
 import { CreditCardIcon, LetterTextIcon, MessageSquareTextIcon, SheetIcon, StoreIcon } from 'lucide-react';
 import { RiHrmcardFill, RiMastercardFill, RiProductHuntFill } from 'react-icons/ri';
@@ -49,6 +52,7 @@ const HrmSidebar = ({ selected, onSelect }) => {
 
 {label:'Salary MIS',icon:<CurrencyRupeeOutlined/>,key:'salaryMIS'},
 {label:'Employee letters',icon:<PostAddOutlined/>,key:'EmployeeLetter'},
+
 
 {
       label: 'Attendence Management',

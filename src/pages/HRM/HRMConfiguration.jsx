@@ -20,6 +20,9 @@ import GrossSalary from './GrossSalary';
 import EmployeeMaster from './EmployeeMaster/EmployeeMaster';
 import EmployeeAttendanceView from './EmployeeAttendanceView';
 import EmployeeAttendence from './EmployeeAttendence';
+import EmployeeCreatePassword from "./EmployeeCreatePassword";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 
 
 const HrmConfiguration = () => {
@@ -27,7 +30,7 @@ const [activePage, setActivePage] = useState('Dashboard');
 const location = useLocation();
 
 const isEmployeeRoute = location.pathname.startsWith("/employee");
-
+const path = location.pathname.toLowerCase();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       
@@ -47,10 +50,19 @@ const isEmployeeRoute = location.pathname.startsWith("/employee");
     <Route index element={<EmployeeMaster />} />
     <Route path="employee/add" element={<AddEmployee />} />
     <Route path="employee/edit/:employeeId/*" element={<AddEmployee />} />
-    <Route path="/attendance/edit/:id" element={<EmployeeAttendence />} />
+        
+  <Route path="attendance" element={<EmployeeAttendanceView />} />
+  <Route path="attendance/add" element={<EmployeeAttendence />} />
+  <Route path="attendance/edit/:id" element={<EmployeeAttendence />} />
+<Route path="ForgotPassword" element={<ForgotPassword />} />
+<Route path="ResetPassword" element={<ResetPassword />} />
+<Route path="EmployeeCreatePassword" element={<EmployeeCreatePassword />} />
 
   </Routes>
 )}
+{path.includes("forgotpassword") && <ForgotPassword />}
+{path.includes("resetpassword") && <ResetPassword />}
+{path.includes("employeecreatepassword") && <EmployeeCreatePassword />}
    {activePage==="createMatrix" && <CreateMatrix/>}
         {activePage === "vacantposition" && <VacantPosition/>}
               {activePage==="GrossSalary" && <GrossSalary/>}
@@ -60,6 +72,9 @@ const isEmployeeRoute = location.pathname.startsWith("/employee");
         {activePage==="report" && <Report/>}
       {activePage==="EmployeeLetter" && <EmployeeLetter/>}
 {activePage === "employeeAttendanceView" && <EmployeeAttendanceView />}
+{activePage === 'EmployeeCreatePassword' && <EmployeeCreatePassword />}
+{activePage === 'ForgotPassword' && <ForgotPassword />}
+{activePage === 'ResetPassword' && <ResetPassword />}
 
           {/* Add more conditions for other pages */}
         </div>

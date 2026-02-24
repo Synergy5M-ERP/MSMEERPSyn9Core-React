@@ -96,11 +96,7 @@ function AccountGroupSubgroup() {
     setCurrentPage(1); // ✅ Reset to page 1 on filter change
   }, [formType, activeFilter, fetchTableData]);
 
-useEffect(() => {
-  if (!editingId) {
-    setSubGroupId("");
-  }
-}, [groupId, editingId]);
+
 
   // --------------------------------------------------------------------------------------------------
   // 📌 Reset Form
@@ -262,18 +258,23 @@ url = editingId
     setGroupId(String(item.accountGroupid));
   }
 
-  else if (formType === "subSubGroup") {
-    // ❌ NO resetForm here
-    setEditingId(item.accountSubSubGroupid);
-    setName(item.accountSubSubGroupName || "");
-    setNarration(item.accountSubSubGroupNarration || "");
-    setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
+else if (formType === "subSubGroup") {
+  resetForm(); // important
 
-    setGroupId(String(item.accountGroupid));
-    setTimeout(() => {
-      setSubGroupId(String(item.accountSubGroupid));
-    }, 0);
-  }
+  setEditingId(item.accountSubSubGroupid);
+
+  setName(item.accountSubSubGroupName || "");
+  setNarration(item.accountSubSubGroupNarration || "");
+  setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
+
+  setGroupId(item.accountGroupid);
+setSubGroupId(item.accountSubGroupid);
+
+
+
+  setIsActive(item.isActive ?? true);
+}
+
 };
 
 
@@ -426,25 +427,48 @@ url = editingId
                 </>
               )}
 
-              {formType === "subSubGroup" && (
-                <>
-                  <label className="label-color">Sub Group:</label>
-                  <select
-                    value={subGroupId}
-                    onChange={(e) => setSubGroupId(e.target.value)}
-                    className="select-field-style mb-2"
-                  >
-                    <option value="">Select Sub Group</option>
-                    {subGroups
-                      .filter((s) => s.accountGroupid === Number(groupId))
-                      .map((s) => (
-                        <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
-                          {s.accountSubGroupName}
-                        </option>
-                      ))}
-                  </select>
-                </>
-              )}
+{formType === "subSubGroup" && (
+  <>
+    <label>Account Group:</label>
+    <select
+      value={groupId}
+      onChange={(e) => setGroupId(e.target.value)}
+      className="form-select mb-2"
+    >
+      <option value="">Select Group</option>
+      {accountGroups.map((g) => (
+        <option key={g.accountGroupid} value={g.accountGroupid}>
+          {g.accountGroupName}
+        </option>
+      ))}
+    </select>
+
+    <label>Sub Group:</label>
+    <select
+      value={subGroupId}
+      onChange={(e) => setSubGroupId(e.target.value)}
+      className="form-select mb-2"
+    >
+      <option value="">Select Sub Group</option>
+     {subGroups
+.filter((s) => Number(s.accountGroupid) === Number(groupId))
+  .map((s) => (
+
+    <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
+      {s.accountSubGroupName}
+    </option>
+))}
+
+    </select>
+
+    <label>Sub Sub Group Code:</label>
+    <input
+      value={accountSubSubGroupCode}
+      onChange={(e) => setAccountSubSubGroupCode(e.target.value)}
+      className="form-control mb-2"
+    />
+  </>
+)}
 
               <label className="label-color">Name:</label>
               <input

@@ -8,6 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 /* AUTH */
 import RegisterPage from "./pages/RegisterPage";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/HRM/ForgotPassword";
+import ResetPassword from "./pages/HRM/ResetPassword";
 
 /* ACCOUNT */
 import AccountTypePage from "./pages/Account/AccountTypePage";
@@ -105,8 +107,9 @@ function App() {
         <Route path="/commodity" element={<CreateCommodity />} />
         <Route path="/viewcommodity" element={<ViewCommodity />} />
         <Route path="/viewbom" element={<ViewBOM />} />
-
-        {/* HRM / SALES */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password" element={<ResetPassword />} />
+{/* HRM / SALES */}
 <Route path="/hrm/*" element={<HrmConfiguration />} />
         
         <Route path="/salesanddistribution" element={<SalesDistribution />} />
@@ -121,8 +124,7 @@ function App() {
         <Route path="/quality" element={<QualityModule />} />
 
         {/* ADMIN */}
-        <Route path="/admin/*" element={<AdminConfiguration />} />
-
+<Route path="/admin/*" element={<AdminConfiguration />} />
         {/* OTHER */}
         <Route path="/creditdebitnote" element={<CreditDebitNote />} />
       </Routes>

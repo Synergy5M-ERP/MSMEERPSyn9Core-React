@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route } from "react-router-dom";
 
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
@@ -24,11 +25,11 @@ const AdminConfiguration = () => {
 
         {/* Main Content area */}
         <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
-          {activePage === 'adminDashboard' && <AdminDashboard />}
-
-          {activePage === 'RegisterPage' && <RegisterPage />}
-          {activePage === 'userApproval' && <UserApproval />}
-
+           <Routes>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="RegisterPage" element={<RegisterPage />} />
+            <Route path="userApproval" element={<UserApproval />} />
+          </Routes>
           {/* Add more conditions if you add more pages */}
         </div>
       </div>

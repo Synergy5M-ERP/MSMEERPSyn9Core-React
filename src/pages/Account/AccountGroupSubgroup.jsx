@@ -454,11 +454,11 @@ url = editingId
               />
 {formType === "accountType" && (
   <>
-    <label>Account Type Code:</label>
+    <label className="label-color">Account Type Code:</label>
     <input
       value={accountTypeCode}
       onChange={(e) => setAccountTypeCode(e.target.value)}
-      className="form-control mb-2"
+      className="input-field-style mb-2"
     />
   </>
 )}

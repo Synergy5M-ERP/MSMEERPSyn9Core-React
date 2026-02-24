@@ -154,31 +154,7 @@ export default function AccountLedger({ view }) {
     setLedgerSubGroupName("");
   };
 
-  // const validateForm = () => {
-  //   if (formType === "ledger") {
-  //     if (!accountGroup) return "Please select Account Group";
-  //     if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
-
-  //     const validateGST = () => {
-  //     if (gstNo.trim() === "") return true; // Optional
-
-  //     if (!gstRegex.test(gstNo)) {
-  //     toast.error("Invalid GST Number");
-  //     return false;
-  //     }
-
-  //     return true;
-  //     };
-  //     // if (!address.trim()) return "Please enter Address";
-  //     if (!description.trim()) return "Please enter Description";
-  //   } else {
-  //     if (!ledgerId) return "Please select Ledger for Sub Ledger";
-  //      if (!ledgerSubGroupName.trim()) return "Please enter Sub Ledger name"; 
-  //     if (!ledger.trim()) return "Please enter Sub Ledger name";
-  //     if (!description.trim()) return "Please enter Description";
-  //   }
-  //   return null;
-  // };
+ 
 const validateForm = () => {
   if (formType === "ledger") {
     if (!accountGroup) return "Please select Account Group";
@@ -373,7 +349,7 @@ const validateForm = () => {
                 {formType === "subledger" && (
                   <div className="col-6 mb-3">
                     <label className="label-color">Ledger Name</label>
-                    <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="form-control">
+                    <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="input-field-style">
                       <option value="">-- Ledger Name --</option>
                       {ledgers.map((l) => (
                         <option key={l.AccountLedgerId} value={l.AccountLedgerId}>{l.AccountLedgerName}</option>
@@ -385,7 +361,7 @@ const validateForm = () => {
                 {formType === "subledger" && (
                   <div className="col-6 mb-3">
                     <label className="label-color">Ledger Sub-Group Name</label>
-                    <input type="text" value={ledgerSubGroupName} onChange={(e) => setLedgerSubGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Sub Group Name" disabled={loading} />
+                    <input type="text" value={ledgerSubGroupName} onChange={(e) => setLedgerSubGroupName(e.target.value)} className="input-field-style" placeholder="Enter Ledger Sub Group Name" disabled={loading} />
                   </div>
                 )}
               </div>
@@ -395,7 +371,7 @@ const validateForm = () => {
                   <div className="row">
                     <div className="col-6 mb-3">
                       <label className="label-color">Account Group</label>
-                      <select value={accountGroup} onChange={(e) => setAccountGroup(Number(e.target.value))} disabled={loading} className="form-control">
+                      <select value={accountGroup} onChange={(e) => setAccountGroup(Number(e.target.value))} disabled={loading} className="select-field-style">
                         <option value="">--Select Group--</option>
                         {accountGroupOptions.map((grp) => (
                           <option key={grp.id} value={grp.id}>{grp.name}</option>
@@ -405,7 +381,7 @@ const validateForm = () => {
 
                     <div className="col-6 mb-3">
                       <label className="label-color">Ledger Name</label>
-                      <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Name" disabled={loading} />
+                      <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="input-field-style" placeholder="Enter Ledger Name" disabled={loading} />
                     </div>
                   </div>
 
@@ -422,14 +398,14 @@ const validateForm = () => {
                       // Limit to 10 digits
                       if (val.length <= 10) {
                       setMobileNo(val);}}} 
-                      className=" form-control" 
+                      className=" input-field-style" 
                       placeholder="Enter Mobile No"
                       disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
                       <label className="label-color">Email ID</label>
-                      <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="form-control" placeholder="Enter Email ID" disabled={loading} />
+                      <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="input-field-style" placeholder="Enter Email ID" disabled={loading} />
                     </div>
                   </div>
 
@@ -440,26 +416,26 @@ const validateForm = () => {
                       value={gstNo} 
                       maxLength={15}
                       onChange={(e) => setGstNo(e.target.value.toUpperCase())} 
-                      className="form-control" 
+                      className="input-field-style" 
                       placeholder="Enter GST No" 
                       disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
                       <label className="label-color">Address</label>
-                      <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
+                      <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="input-field-style" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
                     </div>
                   </div>
 
                   <div className="row">
                     <div className="col-6 mb-3">
                       <label className="label-color">Opening Balance</label>
-                      <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="form-control" placeholder="Opening Balance" disabled={loading} />
+                      <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="input-field-style" placeholder="Opening Balance" disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
                       <label className="label-color">Closing Balance</label>
-                      <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="form-control" placeholder="Closing Balance" disabled={loading} />
+                      <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="input-field-style" placeholder="Closing Balance" disabled={loading} />
                     </div>
                   </div>
                 </>
@@ -468,7 +444,7 @@ const validateForm = () => {
               <div className="row">
                 <div className="col-12 mb-3">
                   <label className="label-color">Description</label>
-                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="form-control" placeholder="Enter description" rows={2} disabled={loading}></textarea>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input-field-style" placeholder="Enter description" rows={2} disabled={loading}></textarea>
                 </div>
               </div>
 

@@ -235,7 +235,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               </label>
               <input
                 type="text"
-                className="form-control"
+                className="input-field-style"
                 value={FiscalPeriodName}
                 onChange={(e) => setFiscalPeriodName(e.target.value)}
                 disabled={loading}
@@ -247,13 +247,13 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
                 <label className="label-color">
                   Start Date  <span style={{ color: 'red' }}>*</span>
                 </label>
-                <input type="date" className="form-control" value={FiscalPeriodStartDate} onChange={(e) => setFiscalPeriodStartDate(e.target.value)} disabled={loading} />
+                <input type="date" className="input-field-style" value={FiscalPeriodStartDate} onChange={(e) => setFiscalPeriodStartDate(e.target.value)} disabled={loading} />
               </div>
               <div className="col-6">
                 <label className="label-color">
                   EndDate  <span style={{ color: 'red' }}>*</span>
                 </label>
-                <input type="date" className="form-control" value={FiscalPeriodEndDate} onChange={(e) => setFiscalPeriodEndDate(e.target.value)} disabled={loading} />
+                <input type="date" className="input-field-style" value={FiscalPeriodEndDate} onChange={(e) => setFiscalPeriodEndDate(e.target.value)} disabled={loading} />
               </div>
             </div>
 
@@ -261,7 +261,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               <label className="label-color">
                 Fiscal Period Status  <span style={{ color: 'red' }}>*</span>
               </label>
-              <select className="form-select" value={FiscalPeriodStatus} onChange={(e) => setFiscalPeriodStatus(e.target.value)} disabled={loading}>
+              <select className="select-field-style" value={FiscalPeriodStatus} onChange={(e) => setFiscalPeriodStatus(e.target.value)} disabled={loading}>
                 <option value="">-- Select Status --</option>
                 <option value="Active">Active</option>
                 <option value="Closed">Closed</option>
@@ -275,7 +275,7 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               </label>
               <input
                 type="text"
-                className="form-control"
+                className="input-field-style"
                 value={FiscalYear}
                 onChange={(e) => setFiscalYear(e.target.value)}
                 disabled={loading}

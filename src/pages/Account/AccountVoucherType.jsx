@@ -357,12 +357,12 @@ function AccountVoucherType({ view }) {
             <div style={{ background: "white", padding: "25px", borderRadius: "8px" }}>
               {formType === "subvouchertype" && (
                 <div className="mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>Select Voucher Type</label>
+                  <label className="label-color">Select Voucher Type</label>
                   <select
                     value={vouchertypeId}
                     onChange={(e) => setVoucherTypeId(Number(e.target.value))}
                     disabled={loading}
-                    className="form-control"
+                    className="select-field-style"
                   >
                     <option value="">-- Select Voucher Type --</option>
                     {vouchertypes.map((l) => (
@@ -375,25 +375,25 @@ function AccountVoucherType({ view }) {
               )}
 
               <div className="mb-3">
-                <label style={{ color: "#0066cc", fontWeight: "600" }}>
+                <label className="label-color">
                   {formType === "vouchertype" ? "Voucher Type" : "Sub Voucher Type"}
                 </label>
                 <input
                   type="text"
                   value={vouchertype}
                   onChange={(e) => setVoucherType(e.target.value)}
-                  className="form-control"
+                  className="input-field-style"
                   placeholder={`Enter ${formType === "vouchertype" ? "Voucher Type" : "Sub Voucher Type"}`}
                   disabled={loading}
                 />
               </div>
 
               <div className="mb-3">
-                <label style={{ color: "#0066cc", fontWeight: "600" }}>Description</label>
+                <label className="label-color">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="form-control"
+                  className="input-field-style"
                   placeholder="Enter description"
                   rows={3}
                   disabled={loading}

@@ -53,7 +53,7 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
     UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
     GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
-
+HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,

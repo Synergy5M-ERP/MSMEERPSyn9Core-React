@@ -743,6 +743,21 @@ public class HRMAdminRegAPIController : ControllerBase
         return Ok(new { success = true, message = "Logged out successfully" });
     }
 
+    //check Super Admin
+    [HttpGet("HasChiefAdmin")]
+    public async Task<IActionResult> HasChiefAdmin()
+    {
+        var hasChiefAdmin = await _db.HRM_User
+            .AnyAsync(u => u.UserRole.ToLower() == "Chief Admin" && u.IsActive == true);
+
+        return Ok(new
+        {
+            success = true,
+            hasChiefAdmin = hasChiefAdmin
+        });
+    }
+
+
 }
 
 

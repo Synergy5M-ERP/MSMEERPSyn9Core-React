@@ -20,7 +20,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         public int buyerIdd;
 
         // Get All vendors lists
-        [HttpGet("Buyers")]
+        [HttpGet("Getbuyers")]
         public async Task<IActionResult> GetBuyers()
         {
             try

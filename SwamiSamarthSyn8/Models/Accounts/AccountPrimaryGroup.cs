@@ -2,19 +2,22 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-[Table("AccountPrimaryGroup")]
-public class AccountPrimaryGroup
+namespace SwamiSamarthSyn8.Models.Accounts
 {
-    [Key]
+    [Table("AccountPrimaryGroup")]
+    public class AccountPrimaryGroup
+    {
+        [Key]
     public int PrimaryGroupId { get; set; }   // ✅ NOT NULLABLE
 
-    public string? AccountPrimaryGroupName { get; set; }
+        [StringLength(200)]
+        public string? AccountPrimaryGroupName { get; set; }
 
     public string? Type { get; set; }
 
     public int? PrimaryGroupCode { get; set; }
 
-    public string? Description { get; set; }
+        public string? Description { get; set; }
 
     public bool IsActive { get; set; }
 

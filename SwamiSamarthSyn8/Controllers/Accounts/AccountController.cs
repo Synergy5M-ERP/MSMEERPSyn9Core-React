@@ -26,83 +26,102 @@ namespace SwamiSamarthSyn8.Controllers
         //public IActionResult GetAccountType()
         //{
         //    return Ok(new { message = "Account type API is working ✅" });
-        //}
-        [HttpGet("AccountType")]
+        [HttpGet("PrimaryGroup")]
         public async Task<IActionResult> GetAllAccountTypes([FromQuery] bool? isActive)
         {
             try
             {
-                _logger.LogInformation("GetAllAccountTypes called. isActive={isActive}", isActive);
-
-                var query = _context.AccountType.AsQueryable();
+                var query = _context.AccountPrimaryGroup.AsQueryable();
 
                 if (isActive.HasValue)
-                    query = query.Where(x => x.IsActive == isActive.Value);
-
-                var list = await query.ToListAsync();
-
-                if (list == null || list.Count == 0)
                 {
-                    _logger.LogWarning("GetAllAccountTypes returned no data. isActive={isActive}", isActive);
-                    // return 204 No Content OR 200 with empty array depending on your API contract
-                    return NoContent(); // -> HTTP 204
-                                        // OR: return Ok(new object[0]); -> HTTP 200 with []
+                    query = query.Where(x => x.IsActive == isActive.Value);
                 }
 
-                _logger.LogInformation("GetAllAccountTypes returning {count} items.", list.Count);
-                return Ok(list); // 200 + JSON
+                var list = await query
+                    .Select(x => new
+                    {
+                        x.PrimaryGroupId,
+                        x.AccountPrimaryGroupName,
+                        x.Type,
+                        x.PrimaryGroupCode,
+                        x.Description,
+                        x.IsActive
+                    })
+                    .ToListAsync();
+
+                return Ok(list); // Always return 200 with list (even empty)
             }
             catch (Exception ex)
             {
-                // Important: log the exception with context
-                _logger.LogError(ex, "Error in GetAllAccountTypes. isActive={isActive}", isActive);
-
-                // Return a safe error message and 500
-                return StatusCode(500, new { success = false, message = "Internal server error. Check logs for details." });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message,
+                    inner = ex.InnerException?.Message
+                });
             }
         }
-        [HttpPost("AccountType")]
-        public IActionResult CreateAccountType([FromBody] AccountType accountType)
+        [HttpPost("PrimaryGroup")]
+        public IActionResult CreateAccountPrimaryGroup([FromBody] AccountPrimaryGroup model)
         {
-            if (accountType == null) return BadRequest();
-            accountType.IsActive = true;
-            _context.AccountType.Add(accountType);
-            _context.SaveChanges();
-            return Ok(accountType);
-        }
+            if (model == null)
+                return BadRequest();
 
-        [HttpPut("AccountType/{id}")]
-        public IActionResult UpdateAccountType(int id, [FromBody] AccountTypeUpdateDto dto)
+            int nextCode = 1;
+
+            if (_context.AccountPrimaryGroup.Any())
+            {
+                nextCode = _context.AccountPrimaryGroup
+                    .Max(x => x.PrimaryGroupCode ?? 0) + 1;
+            }
+
+            model.PrimaryGroupCode = nextCode;
+            model.IsActive = true;
+
+            _context.AccountPrimaryGroup.Add(model);
+            _context.SaveChanges();
+
+            return Ok(model);
+        }
+        [HttpPut("PrimaryGroup/{id}")]
+        public IActionResult UpdateAccountPrimaryGroup(int id, [FromBody] AccountPrimaryGroupUpdateDto dto)
         {
-            var existing = _context.AccountType.Find(id);
+            var existing = _context.AccountPrimaryGroup.Find(id);
             if (existing == null)
                 return NotFound();
 
-            if (dto.AccountTypeName != null)
-                existing.AccountTypeName = dto.AccountTypeName;
+            if (dto.AccountPrimaryGroupName != null)
+                existing.AccountPrimaryGroupName = dto.AccountPrimaryGroupName;
 
-            if (dto.AccountTypeNarration != null)
-                existing.AccountTypeNarration = dto.AccountTypeNarration;
-            if (dto.AccountTypeCode != null)
-                existing.AccountTypeCode = dto.AccountTypeCode;
+            if (dto.Type != null)
+                existing.Type = dto.Type;
+
+            if (dto.PrimaryGroupCode != null)
+                existing.PrimaryGroupCode = dto.PrimaryGroupCode;
+
+            if (dto.Description != null)
+                existing.Description = dto.Description;
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;
 
             _context.SaveChanges();
+
             return Ok(existing);
         }
 
 
-
-        [HttpDelete("AccountType/{id}")]
-        public IActionResult DeleteAccountType(int id)
+        [HttpDelete("PrimaryGroup/{id}")]
+        public IActionResult DeleteAccountPrimaryGroup(int id)
         {
-            var existing = _context.AccountType.Find(id);
-            if (existing == null) return NotFound();
+            var existing = _context.AccountPrimaryGroup.Find(id);
+            if (existing == null)
+                return NotFound();
 
-            _context.AccountType.Remove(existing);
+            _context.AccountPrimaryGroup.Remove(existing);
             _context.SaveChanges();
+
             return Ok();
         }
 
@@ -111,7 +130,7 @@ namespace SwamiSamarthSyn8.Controllers
         public IActionResult GetAllAccountGroups([FromQuery] bool? isActive)
         {
             var query = _context.AccountGroup
-                .Include(a => a.AccountType)
+                .Include(a => a.AccountPrimaryGroup)
                 .AsQueryable();
 
             if (isActive.HasValue)
@@ -122,9 +141,8 @@ namespace SwamiSamarthSyn8.Controllers
                 a.AccountGroupid,
                 a.AccountGroupName,
                 a.AccountGroupNarration,
-                a.GroupCode,
-                a.AccountTypeid,
-                AccountTypeName = a.AccountType.AccountTypeName, // ✅ Show name via relationship
+                a.PrimaryGroupId,
+                AccountPrimaryGroup = a.AccountPrimaryGroup.AccountPrimaryGroupName, // ✅ Show name via relationship
                // a.AccountGroupCode,
                 a.IsActive
             }).ToList();
@@ -132,42 +150,59 @@ namespace SwamiSamarthSyn8.Controllers
             return Ok(data);
         }
 
-
         [HttpPost("AccountGroups")]
         public IActionResult CreateAccountGroup([FromBody] AccountGroup model)
         {
-            if (model == null) return BadRequest("Invalid data");
+            if (model == null)
+                return BadRequest("Invalid data");
 
+            // Get last numeric code for same PrimaryGroupId
+            var lastCode = _context.AccountGroup
+                .Where(x => x.PrimaryGroupId == model.PrimaryGroupId
+                            && x.AccountGroupCode != null)
+                .Select(x => Convert.ToInt32(x.AccountGroupCode))
+                .DefaultIfEmpty(0)
+                .Max();
+
+            int nextCode = lastCode + 1;
+
+            model.AccountGroupCode = nextCode.ToString("D2"); // 01,02,03
             model.IsActive = true;
+
             _context.AccountGroup.Add(model);
             _context.SaveChanges();
+
             return Ok(model);
         }
         [HttpPut("AccountGroups/{id}")]
         public IActionResult UpdateAccountGroup(int id, [FromBody] AccountGroupUpdateDto dto)
         {
             if (dto == null)
-                return BadRequest("Invalid or empty JSON body");
+                return BadRequest("Invalid body");
 
             var existing = _context.AccountGroup.Find(id);
             if (existing == null)
                 return NotFound();
 
-            // Update only if property is provided
             if (dto.AccountGroupName != null)
                 existing.AccountGroupName = dto.AccountGroupName;
 
             if (dto.AccountGroupNarration != null)
                 existing.AccountGroupNarration = dto.AccountGroupNarration;
 
-            if (dto.GroupCode != null)
-                existing.GroupCode = dto.GroupCode;
-            
             if (dto.AccountGroupCode != null)
-                existing.AccountGroupCode = dto.AccountGroupCode;
+                existing.AccountGroupCode = dto.AccountGroupCode.ToString();
 
-            if (dto.AccountTypeid.HasValue)
-                existing.AccountTypeid = dto.AccountTypeid.Value;
+            if (dto.PrimaryGroupId.HasValue)
+            {
+                var primaryExists = _context.AccountPrimaryGroup
+                    .Any(x => x.PrimaryGroupId == dto.PrimaryGroupId.Value);
+
+                if (!primaryExists)
+                    return BadRequest("Invalid PrimaryGroupId");
+
+                existing.PrimaryGroupId = dto.PrimaryGroupId.Value;
+            }
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;
@@ -178,12 +213,12 @@ namespace SwamiSamarthSyn8.Controllers
 
 
 
-
-        [HttpGet("SubGroups")]
+        [HttpGet("Subgroups")]
         public async Task<IActionResult> GetSubGroups([FromQuery] bool? isActive)
         {
-            var query = _context.AccountSubGroup
+          var query = _context.AccountSubGroup
                 .Include(s => s.AccountGroup)
+                .ThenInclude(g => g.AccountPrimaryGroup)
                 .AsQueryable();
 
             if (isActive.HasValue)
@@ -196,23 +231,36 @@ namespace SwamiSamarthSyn8.Controllers
                     s.AccountSubGroupName,
                     s.AccountSubGroupNarration,
                     s.AccountGroupid,
-                    AccountGroupName = s.AccountGroup.AccountGroupName, // ✅ Include related group name
-                   // s.AccountSubGroupCode,
+                    PrimaryGroupId = s.AccountGroup.PrimaryGroupId,   // ✅ ADD THIS
+                    AccountGroupName = s.AccountGroup.AccountGroupName,
+                    AccountPrimaryGroupName = s.AccountGroup.AccountPrimaryGroup.AccountPrimaryGroupName, // ✅ ADD THIS
                     s.IsActive
                 })
                 .ToListAsync();
 
             return Ok(data);
         }
-
         [HttpPost("Subgroups")]
         public IActionResult CreateSubGroup([FromBody] AccountSubGroup model)
         {
-            if (model == null) return BadRequest("Invalid data");
+            if (model == null)
+                return BadRequest("Invalid data");
 
+            var lastCode = _context.AccountSubGroup
+                .Where(x => x.AccountGroupid == model.AccountGroupid
+                            && x.SubGroupCode != null)
+                .Select(x => Convert.ToInt32(x.SubGroupCode))
+                .DefaultIfEmpty(0)
+                .Max();
+
+            int nextCode = lastCode + 1;
+
+            model.SubGroupCode = nextCode.ToString("D2");
             model.IsActive = true;
+
             _context.AccountSubGroup.Add(model);
             _context.SaveChanges();
+
             return Ok(model);
         }
         [HttpPut("Subgroups/{id}")]
@@ -227,13 +275,20 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.AccountSubGroupNarration != null)
                 existing.AccountSubGroupNarration = dto.AccountSubGroupNarration;
-            
-            
-            if (dto.AccountSubGroupCode != null)
-                existing.AccountSubGroupCode = dto.AccountSubGroupCode;
+
+            if (dto.SubGroupCode != null)
+                existing.SubGroupCode = dto.SubGroupCode;
 
             if (dto.AccountGroupid.HasValue)
+            {
+                var groupExists = _context.AccountGroup
+                    .Any(x => x.AccountGroupid == dto.AccountGroupid.Value);
+
+                if (!groupExists)
+                    return BadRequest("Invalid AccountGroupid");
+
                 existing.AccountGroupid = dto.AccountGroupid.Value;
+            }
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;
@@ -247,44 +302,71 @@ namespace SwamiSamarthSyn8.Controllers
         // ---------------- SUB-SUBGROUP ----------------
         // ✅ Get all Sub-Sub Groups
         [HttpGet("SubSubGroups")]
-        public async Task<IActionResult> GetAllSubSubGroups([FromQuery] bool? isActive)
+public async Task<IActionResult> GetAllSubSubGroups([FromQuery] bool? isActive)
+{
+    var query = _context.AccountSubSubGroup
+        .Include(s => s.AccountSubGroup)
+        .ThenInclude(sg => sg.AccountGroup)
+        .ThenInclude(g => g.AccountPrimaryGroup)
+        .AsQueryable();
+
+    if (isActive.HasValue)
+        query = query.Where(x => x.IsActive == isActive.Value);
+
+    var data = await query
+        .Select(x => new
         {
-            var query = _context.AccountSubSubGroup
-                .Include(s => s.AccountSubGroup)
-                .ThenInclude(sg => sg.AccountGroup)
-                .AsQueryable();
+            x.AccountSubSubGroupid,
+            x.AccountSubSubGroupName,
+            x.AccountSubSubGroupNarration,
+            x.SubSubGroupCode,
+            x.AccountSubGroupid,
+            AccountGroupid = x.AccountSubGroup.AccountGroupid,   // ✅ ADD THIS
+            PrimaryGroupId = x.AccountSubGroup.AccountGroup.PrimaryGroupId, // ✅ ADD THIS
 
-            if (isActive.HasValue)
-                query = query.Where(x => x.IsActive == isActive.Value);
+            AccountSubGroupName = x.AccountSubGroup.AccountSubGroupName,
+            AccountGroupName = x.AccountSubGroup.AccountGroup.AccountGroupName,
+            AccountPrimaryGroupName = x.AccountSubGroup.AccountGroup.AccountPrimaryGroup.AccountPrimaryGroupName,
 
-            var data = await query
-                .Select(x => new
-                {
-                    x.AccountSubSubGroupid,
-                    x.AccountSubSubGroupName,
-                    x.AccountSubSubGroupNarration,
-                  //  x.AccountSubSubGroupCode,
-                    x.AccountSubGroupid,
-                    AccountSubGroupName = x.AccountSubGroup.AccountSubGroupName,
-                    AccountGroupName = x.AccountSubGroup.AccountGroup.AccountGroupName, // ✅ Include both group names
-                    x.IsActive
-                })
-                .ToListAsync();
+            x.IsActive
+        })
+        .ToListAsync();
 
-            return Ok(data);
-        }
-
+    return Ok(data);
+}
         [HttpPost("SubSubgroups")]
         public IActionResult CreateSubSubGroup([FromBody] AccountSubSubGroup model)
         {
-            if (model == null) return BadRequest("Invalid data");
+            if (model == null)
+                return BadRequest("Invalid data");
 
+            // Step 1: Fetch existing codes as list (SQL executed here)
+            var codes = _context.AccountSubSubGroup
+                .Where(x => x.AccountSubGroupid == model.AccountSubGroupid
+                            && x.SubSubGroupCode != null)
+                .Select(x => x.SubSubGroupCode)
+                .ToList();   // ✅ Important
+
+            // Step 2: Convert in memory
+            int lastCode = 0;
+
+            if (codes.Any())
+            {
+                lastCode = codes
+                    .Select(x => int.TryParse(x, out int num) ? num : 0)
+                    .Max();
+            }
+
+            int nextCode = lastCode + 1;
+
+            model.SubSubGroupCode = nextCode.ToString("D2");
             model.IsActive = true;
+
             _context.AccountSubSubGroup.Add(model);
             _context.SaveChanges();
+
             return Ok(model);
         }
-
         [HttpPut("SubSubgroups/{id}")]
         public IActionResult UpdateSubSubGroup(int id, [FromBody] AccountSubSubGroupUpdateDto dto)
         {
@@ -297,14 +379,20 @@ namespace SwamiSamarthSyn8.Controllers
 
             if (dto.AccountSubSubGroupNarration != null)
                 existing.AccountSubSubGroupNarration = dto.AccountSubSubGroupNarration;
-            if (dto.AccountSubSubGroupCode != null)
-                existing.AccountSubSubGroupCode = dto.AccountSubSubGroupCode;
 
-            if (dto.AccountGroupid.HasValue)
-                existing.AccountGroupid = dto.AccountGroupid.Value;
+            if (dto.SubSubGroupCode != null)
+                existing.SubSubGroupCode = dto.SubSubGroupCode;
 
             if (dto.AccountSubGroupid.HasValue)
+            {
+                var subGroupExists = _context.AccountSubGroup
+                    .Any(x => x.AccountSubGroupid == dto.AccountSubGroupid.Value);
+
+                if (!subGroupExists)
+                    return BadRequest("Invalid AccountSubGroupid");
+
                 existing.AccountSubGroupid = dto.AccountSubGroupid.Value;
+            }
 
             if (dto.IsActive.HasValue)
                 existing.IsActive = dto.IsActive.Value;

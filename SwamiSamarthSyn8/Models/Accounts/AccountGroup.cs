@@ -10,28 +10,21 @@ namespace SwamiSamarthSyn8.Models.Accounts
         [Key]
         public int AccountGroupid { get; set; }
 
-        [Required]
-        [MaxLength(100)]
         public string AccountGroupName { get; set; }
 
-        [MaxLength(500)]
-        public string AccountGroupNarration { get; set; }
+        // ✅ Tell EF this is FK
+        [ForeignKey("AccountPrimaryGroup")]
+        public int PrimaryGroupId { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public string? AccountGroupCode { get; set; }
 
-        [MaxLength(50)]
-        public string GroupCode { get; set; }
-        public string AccountGroupCode { get; set; }
+        public string? AccountGroupNarration { get; set; }
 
-        // Foreign key
-        [Required]
-        public int AccountTypeid { get; set; }
+        public bool IsActive { get; set; }
 
-        // Navigation properties
-        [JsonIgnore]
-        public virtual AccountType? AccountType { get; set; }  // nullable
+        // ✅ Navigation
+        public virtual AccountPrimaryGroup? AccountPrimaryGroup { get; set; }
 
-        [JsonIgnore]
-        public virtual ICollection<AccountSubGroup>? AccountSubGroups { get; set; } // nullable
+        public virtual ICollection<AccountSubGroup>? AccountSubGroups { get; set; }
     }
 }

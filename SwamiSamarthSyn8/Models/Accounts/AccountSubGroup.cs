@@ -18,11 +18,11 @@ public class AccountSubGroup
 
     [Required]
     [StringLength(100)]
-    public string AccountSubGroupName { get; set; }
+    public string? AccountSubGroupName { get; set; }
 
     [StringLength(500)]
-    public string AccountSubGroupNarration { get; set; }
-    public string AccountSubGroupCode { get; set; }
+    public string? AccountSubGroupNarration { get; set; }
+    public string? SubGroupCode { get; set; }
 
     public bool? IsActive { get; set; } = true;
 

@@ -19,11 +19,11 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [StringLength(100)]
         [Required]
-        public string AccountSubSubGroupName { get; set; }
+        public string? AccountSubSubGroupName { get; set; }
 
         [StringLength(500)]
-        public string AccountSubSubGroupNarration { get; set; }
-        public string AccountSubSubGroupCode { get; set; }
+        public string? AccountSubSubGroupNarration { get; set; }
+        public string? SubSubGroupCode { get; set; }
 
         public bool? IsActive { get; set; } = true;
 

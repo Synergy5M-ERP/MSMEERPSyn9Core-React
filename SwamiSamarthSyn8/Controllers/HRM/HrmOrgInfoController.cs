@@ -295,7 +295,7 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                 mail.To.Add(email);
                 mail.CC.Add("ab@synergy5m.com");
 
-                string link = $"https://synergy5m-swamisamartherp8.azurewebsites.net/OrgnizationMatrix/EmployeeRegistrationForm?Emp_Code={empCode}";
+                string link = $"https://msmeerp-syn9reactapp.azurewebsites.net/hrm/employeecreatepassword?Emp_Code={empCode}";
                 mail.Body = $"<p>Mr/Mrs: <strong>{fullName}</strong></p>" +
                             $"<p>Your Employee Code is: <strong>{empCode}</strong></p>" +
                             $"<p>Click here to create password: <a href='{link}'>Create Your Password</a></p>";

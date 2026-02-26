@@ -8,18 +8,15 @@ import { API_ENDPOINTS } from "../../config/apiconfig";
 import Pagination from "../../components/Pagination"; // ✅ Your custom Pagination
 
 function AccountGroupSubgroup() {
-  const [formType, setFormType] = useState("accountType");
+  const [formType, setFormType] = useState("primaryGroup");
   const [accountTypes, setAccountTypes] = useState([]);
   const [accountGroups, setAccountGroups] = useState([]);
   const [subGroups, setSubGroups] = useState([]);
   const [tableData, setTableData] = useState([]);
  // ✅ CODE STATES
-  const [accountTypeCode, setAccountTypeCode] = useState("");
-  const [accountGroupCode, setAccountGroupCode] = useState("");
-  const [accountSubGroupCode, setAccountSubGroupCode] = useState("");
-  const [accountSubSubGroupCode, setAccountSubSubGroupCode] = useState("");
-
-  const [accountTypeId, setAccountTypeId] = useState("");
+  
+const [primaryGroupType, setPrimaryGroupType] = useState("");
+  const [PrimaryGroupId, setPrimaryGroupId] = useState("");
   const [groupId, setGroupId] = useState("");
   const [subGroupId, setSubGroupId] = useState("");
   const [name, setName] = useState("");
@@ -37,7 +34,7 @@ function AccountGroupSubgroup() {
   // 🔗 API Endpoints (declared once)
   // --------------------------------------------------------------------------------------------------
   const ENDPOINTS = {
-    accountType: `${API_ENDPOINTS.Account}AccountType`,
+  primaryGroup: `${API_ENDPOINTS.Account}PrimaryGroup`,
     accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
     subGroup: `${API_ENDPOINTS.Account}Subgroups`,
     subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
@@ -67,22 +64,27 @@ function AccountGroupSubgroup() {
 
   // --------------------------------------------------------------------------------------------------
   // 📌 Load Dropdown Data
-  // --------------------------------------------------------------------------------------------------
   const loadDropdowns = useCallback(async () => {
-    try {
-      const [typesRes, groupsRes, subsRes] = await Promise.allSettled([
-        axios.get(ENDPOINTS.accountType),
-        axios.get(ENDPOINTS.accountGroup),
-        axios.get(ENDPOINTS.subGroup),
-      ]);
+  try {
+    const [primaryRes, groupsRes, subsRes] = await Promise.allSettled([
+      axios.get(ENDPOINTS.primaryGroup),
+      axios.get(ENDPOINTS.accountGroup),
+      axios.get(ENDPOINTS.subGroup),
+    ]);
 
-      if (typesRes.status === "fulfilled") setAccountTypes(typesRes.value.data);
-      if (groupsRes.status === "fulfilled") setAccountGroups(groupsRes.value.data);
-      if (subsRes.status === "fulfilled") setSubGroups(subsRes.value.data);
-    } catch {
-      toast.error("Failed to load dropdown data");
-    }
-  }, []);
+    if (primaryRes.status === "fulfilled")
+      setAccountTypes(primaryRes.value.data);
+
+    if (groupsRes.status === "fulfilled")
+      setAccountGroups(groupsRes.value.data);
+
+    if (subsRes.status === "fulfilled")
+      setSubGroups(subsRes.value.data);
+
+  } catch {
+    toast.error("Failed to load dropdown data");
+  }
+}, []);
 
   // --------------------------------------------------------------------------------------------------
   // 📌 Effects
@@ -102,7 +104,7 @@ function AccountGroupSubgroup() {
   // 📌 Reset Form
   // --------------------------------------------------------------------------------------------------
   const resetForm = () => {
-    setAccountTypeId("");
+    setPrimaryGroupId("");
     setGroupId("");
     setSubGroupId("");
     setName("");
@@ -110,10 +112,7 @@ function AccountGroupSubgroup() {
     setGroupCode("");
     setIsActive(true);
     setEditingId(null);
-     setAccountTypeCode("");
-    setAccountGroupCode("");
-    setAccountSubGroupCode("");
-    setAccountSubSubGroupCode("");
+   
   };
 
   // --------------------------------------------------------------------------------------------------
@@ -128,37 +127,34 @@ function AccountGroupSubgroup() {
       // ==============================
       // ACCOUNT TYPE
       // ==============================
-      if (formType === "accountType") {
-        if (!name.trim()) return toast.warning("Enter Account Type Name!");
+  if (formType === "primaryGroup") {
+  if (!name.trim()) return toast.warning("Enter Primary Group Name!");
+  if (!primaryGroupType) return toast.warning("Select Type (BL / PL)!");
 
-        payload = {
-          AccountTypeName: name,
-          AccountTypeNarration: narration,
-          AccountTypeCode:accountTypeCode,
-          IsActive: isActive,
-          AccountGroups: [], // works but unnecessary
-        };
+ payload = {
+  AccountPrimaryGroupName: name,
+  Type: primaryGroupType,
+  Description: narration,
+  IsActive: isActive
+};
 
-        url = editingId
-          ? `${ENDPOINTS.accountType}/${editingId}`
-          : ENDPOINTS.accountType;
-      }
-
+  url = editingId
+    ? `${API_ENDPOINTS.Account}PrimaryGroup/${editingId}`
+    : `${API_ENDPOINTS.Account}PrimaryGroup`;
+}
       // ==============================
       // ACCOUNT GROUP
       // ==============================
       else if (formType === "accountGroup") {
-       if (!accountTypeId || !accountGroupCode.trim() || !name.trim())
-  return toast.warning("Select Account Type, Code, and Name!");
+       if (!PrimaryGroupId ||  !name.trim())
+  return toast.warning("Select Account PrimaryGroup, Code, and Name!");
 
-        payload = {
-          AccountGroupName: name,
-          AccountGroupNarration: narration,
-          AccountGroupCode:accountGroupCode,
-          GroupCode: groupCode,
-          AccountTypeid: Number(accountTypeId),
-          IsActive: isActive
-        };
+      payload = {
+  AccountGroupName: name,
+  AccountGroupNarration: narration,
+  PrimaryGroupId: Number(PrimaryGroupId),
+  IsActive: isActive
+};
 
         url = editingId
           ? `${ENDPOINTS.accountGroup}/${editingId}`
@@ -173,13 +169,11 @@ function AccountGroupSubgroup() {
           return toast.warning("Select Group and enter Sub Group name!");
 
         payload = {
-          AccountSubGroupName: name,
-          AccountSubGroupNarration: narration,
-          AccountSubGroupCode:accountGroupCode,
-          AccountGroupid: Number(groupId),
-          IsActive: isActive,
-        };
-
+  AccountSubGroupName: name,
+  AccountSubGroupNarration: narration,
+  AccountGroupid: Number(groupId),
+  IsActive: isActive,
+};
         url = editingId
           ? `${ENDPOINTS.subGroup}/${editingId}`
           : ENDPOINTS.subGroup;
@@ -194,11 +188,9 @@ function AccountGroupSubgroup() {
         return toast.warning("Select Group, Sub Group, and enter name!");
     }
 
-    // ✅ Prepare payload
-   payload = {
+  payload = {
   AccountSubSubGroupName: name.trim(),
   AccountSubSubGroupNarration: narration?.trim() || "",
-  AccountSubSubGroupCode: accountSubSubGroupCode?.trim() || "",
   AccountGroupid: Number(groupId),
   AccountSubGroupid: Number(subGroupId),
   IsActive: Boolean(isActive),
@@ -227,93 +219,94 @@ url = editingId
     }
   };
 
-  // ✅ Edit (UNCHANGED)
- const handleEdit = (item) => {
+const handleEdit = (item) => {
+  resetForm();
   setIsActive(item.isActive ?? true);
 
-  if (formType === "accountType") {
-    resetForm();
-    setEditingId(item.accountTypeId);
-    setName(item.accountTypeName);
-    setNarration(item.accountTypeNarration);
-    setAccountTypeCode(item.accountTypeCode || "");
+  // ================= PRIMARY GROUP =================
+  if (formType === "primaryGroup") {
+    setEditingId(item.primaryGroupId);
+    setName(item.accountPrimaryGroupName || "");
+    setNarration(item.description || "");
+    setPrimaryGroupType(item.type || "");
   }
 
+  // ================= ACCOUNT GROUP =================
   else if (formType === "accountGroup") {
-    resetForm();
     setEditingId(item.accountGroupid);
-    setName(item.accountGroupName);
-    setNarration(item.accountGroupNarration);
-    setAccountGroupCode(item.accountGroupCode || "");
-    setGroupCode(item.groupCode);
-    setAccountTypeId(String(item.accountTypeid));
+    setPrimaryGroupId(String(item.primaryGroupId || ""));
+    setName(item.accountGroupName || "");
+    setNarration(item.accountGroupNarration || "");
   }
 
+  // ================= SUB GROUP =================
   else if (formType === "subGroup") {
-    resetForm();
     setEditingId(item.accountSubGroupid);
-    setName(item.accountSubGroupName);
-    setNarration(item.accountSubGroupNarration);
-    setAccountSubGroupCode(item.accountSubGroupCode || "");
-    setGroupId(String(item.accountGroupid));
+
+    setPrimaryGroupId(String(item.primaryGroupId || ""));
+    setGroupId(String(item.accountGroupid || ""));
+
+    setName(item.accountSubGroupName || "");
+    setNarration(item.accountSubGroupNarration || "");
   }
 
-else if (formType === "subSubGroup") {
-  resetForm(); // important
+  // ================= SUB SUB GROUP =================
+  else if (formType === "subSubGroup") {
+    setEditingId(item.accountSubSubGroupid);
 
-  setEditingId(item.accountSubSubGroupid);
+    setPrimaryGroupId(String(item.primaryGroupId || ""));
+    setGroupId(String(item.accountGroupid || ""));
+    setSubGroupId(String(item.accountSubGroupid || ""));
 
-  setName(item.accountSubSubGroupName || "");
-  setNarration(item.accountSubSubGroupNarration || "");
-  setAccountSubSubGroupCode(item.accountSubSubGroupCode || "");
-
-  setGroupId(item.accountGroupid);
-setSubGroupId(item.accountSubGroupid);
-
-
-
-  setIsActive(item.isActive ?? true);
-}
-
+    setName(item.accountSubSubGroupName || "");
+    setNarration(item.accountSubSubGroupNarration || "");
+  }
 };
+ const handleDelete = async (id) => {
+  const confirm = await Swal.fire({
+    title: "Mark as Inactive?",
+    text: "This record will be set inactive.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, deactivate",
+  });
 
+  if (!confirm.isConfirmed) return;
 
-  // ✅ Deactivate (UNCHANGED)
-  const handleDelete = async (id) => {
-    const confirm = await Swal.fire({
-      title: "Mark as Inactive?",
-      text: "This record will be set inactive.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, deactivate",
+  try {
+    const endpoints = {
+      primaryGroup: `${API_ENDPOINTS.Account}PrimaryGroup`,
+      accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
+      subGroup: `${API_ENDPOINTS.Account}Subgroups`,
+      subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
+    };
+
+    const url = endpoints[formType];
+
+    console.log("Calling:", `${url}/${id}`); // 👈 VERY IMPORTANT DEBUG
+
+    await axios.put(`${url}/${id}`, {
+      isActive: false
     });
-    if (!confirm.isConfirmed) return;
 
-    try {
-      const endpoints = {
-        accountType: `${API_ENDPOINTS.Account}AccountType`,
-        accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
-        subGroup: `${API_ENDPOINTS.Account}Subgroups`,
-        subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
-      };
+    toast.success("Marked inactive!");
+    fetchTableData(formType, "active");
 
-      await axios.put(`${endpoints[formType]}/${id}`, { isActive: false });
-      toast.success("Marked inactive!");
-      fetchTableData(formType, activeFilter);
-    } catch {
-      toast.error("Failed to deactivate record");
-    }
-  };
+  } catch (error) {
+    console.log(error.response?.data);
+    toast.error("Failed to deactivate record");
+  }
+};
 
   // ✅ Activate (UNCHANGED)
   const handleActivate = async (id) => {
     try {
-      const endpoints = {
-        accountType: `${API_ENDPOINTS.Account}AccountType`,
-        accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
-        subGroup: `${API_ENDPOINTS.Account}Subgroups`,
-        subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
-      };
+     const endpoints = {
+  primaryGroup: `${API_ENDPOINTS.Account}PrimaryGroup`,
+  accountGroup: `${API_ENDPOINTS.Account}AccountGroups`,
+  subGroup: `${API_ENDPOINTS.Account}Subgroups`,
+  subSubGroup: `${API_ENDPOINTS.Account}SubSubgroups`,
+};
       await axios.put(`${endpoints[formType]}/${id}`, { isActive: true });
       toast.success("Activated!");
       fetchTableData(formType, activeFilter);
@@ -328,335 +321,319 @@ setSubGroupId(item.accountSubGroupid);
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentTableData = tableData.slice(indexOfFirstRecord, indexOfLastRecord);
+return (
+  <div style={{ minHeight: "85vh" }}>
+    <ToastContainer position="top-right" autoClose={2000} />
 
-  return (
-    <div style={{  minHeight: "85vh" }}>
-      <ToastContainer position="top-right" autoClose={2000} />
-      <div className="container-fluid">
-        <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-          Account Group
-        </h2>
+    <div className="container-fluid">
+      <h2 style={{ textAlign: "left", color: "#0066cc" }}>
+        Account Group Master
+      </h2>
 
-        {/* Toggle Buttons */}
-        <div  className="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 rounded mb-3 shadow-sm bg-secondary">
-          <div className="radio-btn-header">
-            {["accountType", "accountGroup", "subGroup", "subSubGroup"].map((type) => (
-              <label key={type} style={{ marginRight: "20px" }}>
-                <input
-                  type="radio"
-                  name="formType"
-                  value={type}
-                  checked={formType === type}
-                  onChange={() => {
-                    setFormType(type);
-                    resetForm();
-                  }}
-                  style={{ marginRight: "8px" }}
-                />
-                {type === "accountType"
-                  ? "Account Type"
-                  : type === "accountGroup"
-                  ? "Account Group"
-                  : type === "subGroup"
-                  ? "Sub Group"
-                  : "Sub-Sub Group"}
-              </label>
-            ))}
-          </div>
-
-          <div>
-            {["active", "inactive"].map((status) => (
-              <label key={status} style={{ marginRight: "15px" }}>
-                <input
-                  type="radio"
-                  value={status}
-                  checked={activeFilter === status}
-                  onChange={(e) => setActiveFilter(e.target.value)}
-                  style={{ marginRight: "5px" }}
-                />
-                {status === "active" ? "Active" : "Inactive"}
-              </label>
-            ))}
-          </div>
+      {/* ================= TOGGLE ================= */}
+      <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded mb-3 shadow-sm">
+        <div>
+          {["primaryGroup", "accountGroup", "subGroup", "subSubGroup"].map((type) => (
+            <label key={type} style={{ marginRight: 20 }}>
+              <input
+                type="radio"
+                checked={formType === type}
+                onChange={() => {
+                  setFormType(type);
+                  resetForm();
+                }}
+                style={{ marginRight: 5 }}
+              />
+              {type === "primaryGroup"
+                ? "Primary Group"
+                : type === "accountGroup"
+                ? "Account Group"
+                : type === "subGroup"
+                ? "Sub Group"
+                : "Sub-Sub Group"}
+            </label>
+          ))}
         </div>
 
-        <div className="row">
-          {/* LEFT FORM (UNCHANGED) */}
-          <div className="col-lg-5">
-            <div className="p-3 bg-white rounded shadow-sm">
-              {formType === "accountGroup" && (
-                <>
-                  <label className="label-color">Account Type:</label>
-                  <select
-                    value={accountTypeId}
-                    onChange={(e) => setAccountTypeId(e.target.value)}
-                    className="select-field-style mb-2"
-                  >
-                    <option value="">Select Type</option>
-                    {accountTypes.map((t) => (
-                      <option key={t.accountTypeId} value={t.accountTypeId}>
-                        {t.accountTypeName}
-                      </option>
-                    ))}
-                  </select>
-
-                  <label className="label-color">Group Code:</label>
-                  <input
-                    value={groupCode}
-                    onChange={(e) => setGroupCode(e.target.value)}
-                    className="input-field-style mb-2"
-                  />
-                </>
-              )}
-
-              {(formType === "subGroup" || formType === "subSubGroup") && (
-                <>
-                  <label className="label-color">Account Group:</label>
-                  <select
-                    value={groupId}
-                    onChange={(e) => setGroupId(e.target.value)}
-                    className="select-field-style mb-2"
-                  >
-                    <option value="">Select Group</option>
-                    {accountGroups.map((g) => (
-                      <option key={g.accountGroupid} value={g.accountGroupid}>
-                        {g.accountGroupName}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-{formType === "subSubGroup" && (
-  <>
-    <label>Account Group:</label>
-    <select
-      value={groupId}
-      onChange={(e) => setGroupId(e.target.value)}
-      className="form-select mb-2"
-    >
-      <option value="">Select Group</option>
-      {accountGroups.map((g) => (
-        <option key={g.accountGroupid} value={g.accountGroupid}>
-          {g.accountGroupName}
-        </option>
-      ))}
-    </select>
-
-    <label>Sub Group:</label>
-    <select
-      value={subGroupId}
-      onChange={(e) => setSubGroupId(e.target.value)}
-      className="form-select mb-2"
-    >
-      <option value="">Select Sub Group</option>
-     {subGroups
-.filter((s) => Number(s.accountGroupid) === Number(groupId))
-  .map((s) => (
-
-    <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
-      {s.accountSubGroupName}
-    </option>
-))}
-
-    </select>
-
-    <label>Sub Sub Group Code:</label>
-    <input
-      value={accountSubSubGroupCode}
-      onChange={(e) => setAccountSubSubGroupCode(e.target.value)}
-      className="form-control mb-2"
-    />
-  </>
-)}
-
-              <label className="label-color">Name:</label>
+        <div>
+          {["active", "inactive"].map((status) => (
+            <label key={status} style={{ marginRight: 15 }}>
               <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input-field-style mb-2"
+                type="radio"
+                value={status}
+                checked={activeFilter === status}
+                onChange={(e) => setActiveFilter(e.target.value)}
+                style={{ marginRight: 5 }}
               />
-{formType === "accountType" && (
-  <>
-    <label>Account Type Code:</label>
-    <input
-      value={accountTypeCode}
-      onChange={(e) => setAccountTypeCode(e.target.value)}
-      className="form-control mb-2"
-    />
-  </>
-)}
-
-              <label className="label-color">Narration:</label>
-              <textarea
-                rows={3}
-                value={narration}
-                onChange={(e) => setNarration(e.target.value)}
-                className="input-field-style mb-2"
-              />
-
-              <div className="d-flex gap-2">
-                <button className="save-btn" onClick={handleSave}>
-                  <Save size={16} /> {editingId ? "Update" : "Save"}
-                </button>
-                <button className="cancel-btn" onClick={resetForm}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT TABLE WITH YOUR CUSTOM PAGINATION */}
-          <div className="col-lg-7">
-            <div className="p-3 bg-white rounded shadow-sm">
-              <div className="table-responsive" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                <table className="table table-bordered align-middle text-center mb-3">
-                  <thead className="table-light sticky-top">
-                    <tr>
-                      {/* Dynamic header based on form type */}
-                      {formType === "accountType" && <th className="text-primary">Account Name</th>}
-
-                      {formType === "accountGroup" && (
-                        <>
-                          <th className="text-primary">Account Name</th>
-                          <th className="text-primary">Group Name</th>
-                          <th className="text-primary">Group Code</th>
-                        </>
-                      )}
-
-                      {formType === "subGroup" && (
-                        <>
-                          <th className="text-primary">Group Name</th>
-                          <th className="text-primary">Sub Group Name</th>
-                        </>
-                      )}
-
-                      {formType === "subSubGroup" && (
-                        <>
-                          <th className="text-primary">Group Name</th>
-                          <th className="text-primary">Sub Group Name</th>
-                          <th className="text-primary">Sub Sub Group Name</th>
-                        </>
-                      )}
-
-                      {/* Action columns */}
-                      <th className="text-primary">Edit</th>
-                      <th className="text-primary">{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {currentTableData.length > 0 ? (
-                      currentTableData.map((item) => {
-                        const id =
-                          formType === "accountType"
-                            ? item.accountTypeId
-                            : formType === "accountGroup"
-                            ? item.accountGroupid
-                            : formType === "subGroup"
-                            ? item.accountSubGroupid
-                            : item.accountSubSubGroupid;
-
-                        return (
-                          <tr key={id}>
-                            {/* ACCOUNT TYPE ROW */}
-                            {formType === "accountType" && (
-                              <td>{item.accountTypeName || "-"}</td>
-                            )}
-
-                            {/* ACCOUNT GROUP ROW */}
-                            {formType === "accountGroup" && (
-                              <>
-                                <td>{item.accountTypeName || "-"}</td>
-                                <td>{item.accountGroupName || "-"}</td>
-                                <td>{item.groupCode || "-"}</td>
-                              </>
-                            )}
-
-                            {/* SUB GROUP ROW */}
-                            {formType === "subGroup" && (
-                              <>
-                                <td>{item.accountGroupName || "-"}</td>
-                                <td>{item.accountSubGroupName || "-"}</td>
-                              </>
-                            )}
-
-                            {/* SUB SUB GROUP ROW */}
-                            {formType === "subSubGroup" && (
-                              <>
-                                <td>{item.accountGroupName || "-"}</td>
-                                <td>{item.accountSubGroupName || "-"}</td>
-                                <td>{item.accountSubSubGroupName || "-"}</td>
-                              </>
-                            )}
-
-                            {/* Action columns */}
-                            <td>
-                              <Edit
-                                className="text-primary"
-                                role="button"
-                                style={{ cursor: 'pointer' }}
-                                onClick={() => handleEdit(item)}
-                                size={18}
-                              />
-                            </td>
-                            <td>
-                              {activeFilter === "active" ? (
-                                <Trash2
-                                  className="text-danger"
-                                  role="button"
-                                  style={{ cursor: 'pointer' }}
-                                  onClick={() => handleDelete(id)}
-                                  size={18}
-                                />
-                              ) : (
-                                <button
-                                  className="btn btn-sm btn-success"
-                                  onClick={() => handleActivate(id)}
-                                >
-                                  Activate
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={
-  formType === "accountGroup"
-    ? 5
-    : formType === "subSubGroup"
-    ? 5
-    : formType === "subGroup"
-    ? 4
-    : 3
-}
-
-                          className="text-center py-4 text-muted"
-                        >
-                          No records found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* ✅ YOUR CUSTOM PAGINATION COMPONENT */}
-              <Pagination
-                totalRecords={tableData.length}
-                recordsPerPage={recordsPerPage}
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          </div>
+              {status === "active" ? "Active" : "Inactive"}
+            </label>
+          ))}
         </div>
       </div>
+
+      <div className="row">
+
+        {/* ================= LEFT FORM ================= */}
+        <div className="col-lg-5">
+          <div className="p-3 bg-white rounded shadow-sm">
+
+            {/* PRIMARY DROPDOWN (For Account/Sub/SubSub) */}
+            {(formType === "accountGroup" ||
+              formType === "subGroup" ||
+              formType === "subSubGroup") && (
+              <>
+                <label>Account Primary Name</label>
+                <select
+                  value={PrimaryGroupId}
+                  onChange={(e) => setPrimaryGroupId(e.target.value)}
+                  className="form-select mb-2"
+                >
+                  <option value="">Select Primary Group</option>
+                  {accountTypes.map((t) => (
+                    <option key={t.primaryGroupId} value={t.primaryGroupId}>
+                      {t.accountPrimaryGroupName}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {/* GROUP DROPDOWN */}
+            {(formType === "subGroup" || formType === "subSubGroup") && (
+              <>
+                <label>Account Group Name</label>
+                <select
+                  value={groupId}
+                  onChange={(e) => setGroupId(e.target.value)}
+                  className="form-select mb-2"
+                >
+                  <option value="">Select Group</option>
+                  {accountGroups.map((g) => (
+                    <option key={g.accountGroupid} value={g.accountGroupid}>
+                      {g.accountGroupName}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {/* SUB GROUP DROPDOWN */}
+            {formType === "subSubGroup" && (
+              <>
+                <label>Sub Group Name</label>
+                <select
+                  value={subGroupId}
+                  onChange={(e) => setSubGroupId(e.target.value)}
+                  className="form-select mb-2"
+                >
+                  <option value="">Select Sub Group</option>
+                  {subGroups
+                    .filter((s) => Number(s.accountGroupid) === Number(groupId))
+                    .map((s) => (
+                      <option key={s.accountSubGroupid} value={s.accountSubGroupid}>
+                        {s.accountSubGroupName}
+                      </option>
+                    ))}
+                </select>
+              </>
+            )}
+
+            {/* NAME */}
+            <label>Name</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="form-control mb-2"
+            />
+
+            {/* TYPE ONLY FOR PRIMARY */}
+            {formType === "primaryGroup" && (
+              <>
+                <label>Type</label>
+                <select
+                  value={primaryGroupType}
+                  onChange={(e) => setPrimaryGroupType(e.target.value)}
+                  className="form-select mb-2"
+                >
+                  <option value="">Select Type</option>
+                  <option value="BS">BS</option>
+                  <option value="P&L">P&L</option>
+                </select>
+              </>
+            )}
+
+            {/* NARRATION */}
+            <label>Narration</label>
+            <textarea
+              rows={3}
+              value={narration}
+              onChange={(e) => setNarration(e.target.value)}
+              className="form-control mb-3"
+            />
+
+            <div className="d-flex gap-2">
+              <button className="btn btn-primary" onClick={handleSave}>
+                <Save size={16} /> {editingId ? "Update" : "Save"}
+              </button>
+              <button className="btn btn-secondary" onClick={resetForm}>
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ================= RIGHT TABLE ================= */}
+        <div className="col-lg-7">
+          <div className="p-3 bg-white rounded shadow-sm">
+            <div className="table-responsive">
+              <table className="table table-bordered text-center">
+                <thead className="table-light">
+                  <tr>
+                    {formType === "primaryGroup" && (
+                      <>
+                                              <th>Name</th>
+
+                        <th>Type</th>
+                        <th>Narration</th>
+                      </>
+                    )}
+
+                    {formType === "accountGroup" && (
+                      <>
+                        <th>Primary Group</th>
+                        <th>Group Name</th>
+                        <th>Narration</th>
+                      </>
+                    )}
+
+                    {formType === "subGroup" && (
+                      <>
+                        <th>Group Name</th>
+                        <th>Sub Group Name</th>
+                        <th>Narration</th>
+                      </>
+                    )}
+
+                    {formType === "subSubGroup" && (
+                      <>
+                        <th>Primary Group</th>
+                        <th>Group Name</th>
+                        <th>Sub Group Name</th>
+                        <th>Sub Sub Group Name</th>
+                        <th>Narration</th>
+                      </>
+                    )}
+
+                    <th>Edit</th>
+                    <th>{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {currentTableData.length > 0 ? (
+                    currentTableData.map((item) => {
+                           let id;
+
+      if (formType === "primaryGroup") {
+        id = item.primaryGroupId;
+      } 
+      else if (formType === "accountGroup") {
+        id = item.accountGroupid;
+      } 
+      else if (formType === "subGroup") {
+        id = item.accountSubGroupid;
+      } 
+      else if (formType === "subSubGroup") {
+        id = item.accountSubSubGroupid;
+      }
+                      return (
+                        <tr key={id}>
+                          {formType === "primaryGroup" && (
+                            <>                              <td>{item.accountPrimaryGroupName}</td>
+
+                              <td>{item.type}</td>
+                              <td>{item.description}</td>
+                            </>
+                          )}
+
+                          {formType === "accountGroup" && (
+                            <>
+                              <td>{item.accountPrimaryGroupName}</td>
+                              <td>{item.accountGroupName}</td>
+                              <td>{item.accountGroupNarration}</td>
+                            </>
+                          )}
+
+                          {formType === "subGroup" && (
+                            <>
+                              <td>{item.accountGroupName}</td>
+                              <td>{item.accountSubGroupName}</td>
+                              <td>{item.accountSubGroupNarration}</td>
+                            </>
+                          )}
+
+                          {formType === "subSubGroup" && (
+                            <>
+                              <td>{item.accountPrimaryGroupName}</td>
+                              <td>{item.accountGroupName}</td>
+                              <td>{item.accountSubGroupName}</td>
+                              <td>{item.accountSubSubGroupName}</td>
+                              <td>{item.accountSubSubGroupNarration}</td>
+                            </>
+                          )}
+
+                          <td>
+                            <Edit
+                              className="text-primary"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => handleEdit(item)}
+                              size={18}
+                            />
+                          </td>
+
+                          <td>
+                            {activeFilter === "active" ? (
+                              <Trash2
+                                className="text-danger"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => handleDelete(id)}
+                                size={18}
+                              />
+                            ) : (
+                              <button
+                                className="btn btn-success btn-sm"
+                                onClick={() => handleActivate(id)}
+                              >
+                                Activate
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="7">No records found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination
+              totalRecords={tableData.length}
+              recordsPerPage={recordsPerPage}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </div>
+
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default AccountGroupSubgroup;

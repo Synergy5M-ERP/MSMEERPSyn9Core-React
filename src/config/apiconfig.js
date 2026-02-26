@@ -1,5 +1,5 @@
- const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-//const BASE_URL = "https://localhost:7145/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -73,9 +73,9 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   PONumber: `${BASE_URL}/po-numbers`,
   ItemNames: `${BASE_URL}/Item/GetAllItemsApi`,
   Journal: `${BASE_URL}/journals`,
-  AccountType: `${BASE_URL}/Account/AccountType`,
+  AccountType: `${BASE_URL}/Account/PrimaryGroup`,
   Voucher: `${BASE_URL}/vouchers`,
-  Group: `${BASE_URL}/AccountGroups`,
+  AccountGroups: `${BASE_URL}/AccountGroups`,
   AccountSubGroup: `${BASE_URL}/Subgroups`,
   AccountSubSubGroup: `${BASE_URL}/SubSubgroups`,
 

@@ -13,7 +13,7 @@ const CheckPayable = () => {
   const [grnNumbers, setGrnNumbers] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [enteredGrnNumber, setEnteredGrnNumber] = useState("");
-
+  const [masterBillCheck, setMasterBillCheck] = useState(false);
   const [formData, setFormData] = useState({
     vendorId: "",
     sellerName: "",
@@ -271,18 +271,18 @@ const CheckPayable = () => {
         paymentDue: "",
         status: "",
         ...(
-         header ? {
-         grnNumber: header.grnNumber || "",
-  grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
-  poNumber: header.poNumber || "",
-  poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
-  invoiceNumber: header.invoiceNumber || "",
-  invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
-  vehicleNo: header.vehicleNo || "",
-  TransporterName: header.transporterName || "",
-    paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
+          header ? {
+            grnNumber: header.grnNumber || "",
+            grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
+            poNumber: header.poNumber || "",
+            poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
+            invoiceNumber: header.invoiceNumber || "",
+            invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
+            vehicleNo: header.vehicleNo || "",
+            TransporterName: header.transporterName || "",
+            paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
 
-  status: "Received"
+            status: "Received"
           } : {}
         )
       }));
@@ -295,6 +295,19 @@ const CheckPayable = () => {
       setLoading(false);
     }
   };
+
+
+
+const handleMasterBillCheck = useCallback((checked) => {
+  setTableData(prevTableData => 
+    prevTableData.map(row => ({
+      ...row,
+      billCheck: checked,
+      isSelected: checked
+    }))
+  );
+  setMasterBillCheck(checked);
+}, []);
 
   // --- 2. Save all tableData items, checked or not ---
 
@@ -311,49 +324,49 @@ const CheckPayable = () => {
       draggable: false,
     });
 
-   // ✅ FIXED PAYLOAD - Matches backend model exactly
-const payload = {
-  VendorId: Number(formData.vendorId) || 0,
-  SellerName: formData.sellerName,
-  grnNumber: formData.grnNumber,
-  grnDate: formData.grnDate,
-  poNumber: formData.poNumber,
-  poDate: formData.poDate,
-  invoiceNumber: formData.invoiceNumber,
-  invoiceDate: formData.invoiceDate,
-  vehicleNo: formData.vehicleNo,
-  TransporterName: formData.TransporterName,
-  paymentDue: formData.paymentDue,
-  status: formData.status || "Received",
-  totalAmount: formData.totalAmount,
-  taxAmount: formData.taxAmount,
-  grandAmount: formData.grandTotal,
-    BillStatus: "Pending", // <-- Add this field as required by backend
+    // ✅ FIXED PAYLOAD - Matches backend model exactly
+    const payload = {
+      VendorId: Number(formData.vendorId) || 0,
+      SellerName: formData.sellerName,
+      grnNumber: formData.grnNumber,
+      grnDate: formData.grnDate,
+      poNumber: formData.poNumber,
+      poDate: formData.poDate,
+      invoiceNumber: formData.invoiceNumber,
+      invoiceDate: formData.invoiceDate,
+      vehicleNo: formData.vehicleNo,
+      TransporterName: formData.TransporterName,
+      paymentDue: formData.paymentDue,
+      status: formData.status || "Received",
+      totalAmount: formData.totalAmount,
+      taxAmount: formData.taxAmount,
+      grandAmount: formData.grandTotal,
+      BillStatus: "Pending", // <-- Add this field as required by backend
 
-  Description: formData.sellerName || "Payable GRN",
-  Items: tableData.map(item => ({
-    Description: `${item.itemName} `,
-    itemName: item.itemName,
-    grade: item.grade,
-    itemCode: item.itemCode,
-    receivedQty: parseFloat(item.receivedQty) || 0,
-    approvedQty: parseFloat(item.approvedQty) || 0,
-    damagedQty: parseFloat(item.damagedQty) || 0,
-    unit: item.receivedUnit || "pcs",
-    TaxType: item.taxType || "",
-    cgst: parseFloat(item.cgst) || 0,
-    sgst: parseFloat(item.sgst) || 0,
-    igst: parseFloat(item.igst) || 0,
-    rate: parseFloat(item.rate) || 0,
-     // ✅ USE UI VALUES
-    TotalAmount: Number(item.backendNetAmount) || 0,
-    TotalTaxAmount: Number(item.backendTaxAmount) || 0,
+      Description: formData.sellerName || "Payable GRN",
+      Items: tableData.map(item => ({
+        Description: `${item.itemName} `,
+        itemName: item.itemName,
+        grade: item.grade,
+        itemCode: item.itemCode,
+        receivedQty: parseFloat(item.receivedQty) || 0,
+        approvedQty: parseFloat(item.approvedQty) || 0,
+        damagedQty: parseFloat(item.damagedQty) || 0,
+        unit: item.receivedUnit || "pcs",
+        TaxType: item.taxType || "",
+        cgst: parseFloat(item.cgst) || 0,
+        sgst: parseFloat(item.sgst) || 0,
+        igst: parseFloat(item.igst) || 0,
+        rate: parseFloat(item.rate) || 0,
+        // ✅ USE UI VALUES
+        TotalAmount: Number(item.backendNetAmount) || 0,
+        TotalTaxAmount: Number(item.backendTaxAmount) || 0,
 
-    billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
-    billCheck: item.billCheck === true,
-    TransporterName: formData.TransporterName || ""
-  }))
-};
+        billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
+        billCheck: item.billCheck === true,
+        TransporterName: formData.TransporterName || ""
+      }))
+    };
 
     console.log("💾 Sending payload to backend:", payload);
 
@@ -485,9 +498,30 @@ const payload = {
   };
 
   // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
+  // const handleBillCheckChange = useCallback(() => {
+  //   // console.log("🔄 Toggling billCheck at index:", index);
+
+  //   setTableData(prevTableData => {
+  //     const newTableData = prevTableData.map((row, i) => {
+  //       if (i === index) {
+  //         const newBillCheck = !row.billCheck;
+  //         console.log(`✅ Row ${index} billCheck changed to:`, newBillCheck);
+  //         return {
+  //           ...row,
+  //           billCheck: newBillCheck,
+  //           isSelected: newBillCheck
+  //         };
+  //       }
+  //       return row;
+  //     });
+
+  //     updateGrandTotals(newTableData);
+  //     return newTableData;
+  //   });
+  // }, []);
+
   const handleBillCheckChange = useCallback((index) => {
     console.log("🔄 Toggling billCheck at index:", index);
-
     setTableData(prevTableData => {
       const newTableData = prevTableData.map((row, i) => {
         if (i === index) {
@@ -502,10 +536,19 @@ const payload = {
         return row;
       });
 
+      const allChecked = newTableData.every(row => row.billCheck === true);
+      const someChecked = newTableData.some(row => row.billCheck === true);
+      setMasterBillCheck(allChecked ? true : someChecked ? 'indeterminate' : false);
+
       updateGrandTotals(newTableData);
       return newTableData;
     });
   }, []);
+
+
+
+
+
 
   // ✅ QUANTITY CHANGE HANDLER
   const handleQuantityChange = useCallback((index, field) => (e) => {
@@ -535,6 +578,19 @@ const payload = {
   }, []);
 
   // ✅ UPDATE GRAND TOTALS
+  // const updateGrandTotals = (data) => {
+  //   const selectedItems = data.filter(row => row.billCheck === true);
+  //   const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
+  //   const taxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.taxAmount) || 0), 0);
+  //   const grandTotal = totalAmount + taxAmount;
+
+  //   setFormData(fd => ({
+  //     ...fd,
+  //     totalAmount,
+  //     taxAmount,
+  //     grandTotal,
+  //   }));
+  // };
   const updateGrandTotals = (data) => {
     const selectedItems = data.filter(row => row.billCheck === true);
     const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
@@ -548,7 +604,6 @@ const payload = {
       grandTotal,
     }));
   };
-
   // ✅ AUTO UPDATE TOTALS WHEN TABLE CHANGES
   useEffect(() => {
     if (tableData.length > 0) {
@@ -612,8 +667,8 @@ const payload = {
         {/* FORM FIELDS */}
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="label-color"> Seller Name</label>
-            <select className="select-field-style" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
+            <label className="form-label text-primary fw-semibold"> Seller Name</label>
+            <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
               <option value="">Select Seller</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
@@ -621,8 +676,8 @@ const payload = {
             </select>
           </div>
           <div className="col mb-3">
-            <label className="label-color"> GRN Number</label>
-            <select className="select-field-style" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
+            <label className="form-label text-primary fw-semibold"> GRN Number</label>
+            <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
               <option value="">Select GRN No.</option>
               {grnNumbers.map((g) => (
                 <option key={g.id} value={String(g.id)} disabled={String(g.id) === enteredGrnNumber}>
@@ -632,49 +687,62 @@ const payload = {
             </select>
           </div>
           <div className="col mb-3">
-            <label className="label-color"> GRN Date</label>
-            <input type="date" name="grnDate" className="input-field-style" value={formData.grnDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> GRN Date</label>
+            <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color"> Invoice No</label>
-            <input type="text" name="invoiceNumber" className="input-field-style" value={formData.invoiceNumber} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Invoice No</label>
+            <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color">Invoice Date</label>
-            <input type="date" name="invoiceDate" className="input-field-style" value={formData.invoiceDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold">Invoice Date</label>
+            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
           </div>
         </div>
 
         <div className="row mb-3">
           <div className="col mb-3">
-            <label className="label-color"> PO Number</label>
-            <input type="text" name="poNumber" className="input-field-style" value={formData.poNumber} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> PO Number</label>
+            <input type="text" name="poNumber" className="form-control" value={formData.poNumber} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color"> PO Date</label>
-            <input type="date" name="poDate" className="input-field-style" value={formData.poDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> PO Date</label>
+            <input type="date" name="poDate" className="form-control" value={formData.poDate} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color"> Vehicle No</label>
-            <input type="text" name="vehicleNo" className="input-field-style" value={formData.vehicleNo} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Vehicle No</label>
+            <input type="text" name="vehicleNo" className="form-control" value={formData.vehicleNo} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color"> Transporter Name</label>
-            <input type="text" name="TransporterName" className="input-field-style" value={formData.TransporterName} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Transporter Name</label>
+            <input type="text" name="TransporterName" className="form-control" value={formData.TransporterName} onChange={handleChange} required />
           </div>
           <div className="col mb-3">
-            <label className="label-color"> Payment Due</label>
-            <input type="date" name="paymentDue" className="input-field-style" value={formData.paymentDue} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Payment Due</label>
+            <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
           </div>
         </div>
 
 
 
         {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
-       <div className="table-responsive">
+<div className="table-responsive">
   <table className="table table-bordered align-middle mt-3">
     <thead>
       <tr style={{ backgroundColor: "#f0f6ff" }}>
+        {/* ✅ MASTER CHECKBOX - ONE BUTTON SELECTS ALL */}
+        {/* <th className="text-primary" style={{ width: "60px" }}>
+          <div className="form-check">
+            <input
+              type="checkbox"
+              id="masterBillCheck"
+              checked={masterBillCheck}
+              onChange={(e) => handleMasterBillCheck(e.target.checked)}
+              className="form-check-input"
+              title="Select All Items"
+            />
+          </div>
+        </th> */}
         <th className="text-primary">Item Name</th>
         <th className="text-primary">Grade</th>
         <th className="text-primary">Item Code</th>
@@ -687,87 +755,91 @@ const payload = {
         <th className="text-primary">IGST (%)</th>
         <th className="text-primary">Total Tax (₹)</th>
         <th className="text-primary">Total Amount (₹)</th>
-        {/* <th className="text-primary">Calculated Total (₹)</th> */}
-        <th className="text-primary">Bill Check</th>
       </tr>
     </thead>
     <tbody>
       {loading ? (
-        <tr><td colSpan={14} className="text-center p-5"><LoadingSpinner /></td></tr>
+        <tr><td colSpan={13} className="text-center p-5"><LoadingSpinner /></td></tr>
       ) : tableData.length === 0 ? (
-        <tr><td colSpan={14} className="text-center text-muted py-5">Select GRN to load items</td></tr>
+        <tr><td colSpan={13} className="text-center text-muted py-5">Select GRN to load items</td></tr>
       ) : (
         tableData.map((row, index) => (
           <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
-            <td className="text-secondary">{row.itemName}</td>
-            <td className="text-secondary">{row.grade || '-'}</td>
-            <td className="text-secondary">{row.itemCode || '-'}</td>
-            <td className="text-secondary">
+            {/* ✅ NO INDIVIDUAL CHECKBOX - Just visual feedback */}
+            {/* <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+              {row.billCheck ? '✓' : ''}
+            </td> */}
+            <td><strong>{row.itemName}</strong></td>
+            <td>{row.grade || '-'}</td>
+            <td>{row.itemCode || '-'}</td>
+            <td>
               <input
                 type="number"
-                className="input-field-style input-field-style-sm"
+                className="form-control form-control-sm"
                 value={row.receivedQty || ""}
                 onChange={handleQuantityChange(index, 'receivedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td className="text-secondary">
+            <td>
               <input
                 type="number"
-                className="input-field-style input-field-style-sm"
+                className="form-control form-control-sm"
                 value={row.approvedQty || ""}
                 onChange={handleQuantityChange(index, 'approvedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td className="text-secondary">
+            <td>
               <input
                 type="number"
-                className="input-field-style input-field-style-sm"
+                className="form-control form-control-sm"
                 value={row.damagedQty || ""}
                 onChange={handleQuantityChange(index, 'damagedQty')}
                 min="0" step="0.01"
               />
             </td>
-            <td className="text-secondary">₹{(row.rate || 0).toFixed(2)}</td>
-            <td className="text-secondary">{(row.cgst || 0).toFixed(2)}%</td>
-            <td className="text-secondary">{(row.sgst || 0).toFixed(2)}%</td>
-            <td className="text-secondary">{(row.igst || 0).toFixed(2)}%</td>
+            <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
+            <td>{(row.cgst || 0).toFixed(2)}%</td>
+            <td>{(row.sgst || 0).toFixed(2)}%</td>
+            <td>{(row.igst || 0).toFixed(2)}%</td>
             <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
             <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
-            {/* <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td> */}
-            <td style={{ textAlign: "center", width: "100px" }}>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  id={`billCheck-${row.id}`}
-                  checked={row.billCheck === true}
-                  onChange={() => handleBillCheckChange(index)}
-                  className="form-check-input"
-                />
-                <label
-                  htmlFor={`billCheck-${row.id}`}
-                  className="form-check-label text-secondary ms-1"
-                  style={{ cursor: "pointer", fontSize: "14px" }}
-                >
-                  Bill
-                </label>
-              </div>
-            </td>
           </tr>
         ))
       )}
     </tbody>
+   <tfoot>
+  <tr>
+    <td colSpan={14} style={{ textAlign: "center" }}>
+      <div className="form-check d-inline-flex align-items-center m-2" style={{ gap: "8px" }}>
+        <input
+          type="checkbox"
+          id="masterBillCheck"
+          checked={masterBillCheck}
+          onChange={(e) => handleMasterBillCheck(e.target.checked)}
+          className="form-check-input border "
+          title="Select All Items"
+        />
+        <label htmlFor="masterBillCheck" className="form-check-label">
+          Select All
+        </label>
+      </div>
+    </td>
+  </tr>
+</tfoot>
   </table>
 </div>
 
 
+
+
         {/* BUTTONS */}
-        <div className="d-flex gap-3 mt-4 mb-2">
+        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
           <button
             onClick={handleSave}
             disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-            className="save-btn"
+            className="btn btn-primary btn-lg px-5 py-2 position-relative"
             style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
           >
             {saveLoading ? (
@@ -780,12 +852,12 @@ const payload = {
             )}
           </button>
           <button
-            className="cancel-btn"
+            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
             style={{ borderRadius: "8px" }}
             onClick={handleCancel}
             disabled={saveLoading}
           >
-            cancel
+            Reset
           </button>
         </div>
       </div>

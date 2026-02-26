@@ -275,9 +275,9 @@ const handleSaveApproved = async () => {
     
     {/* Left Side: Select Dropdown */}
     <div className="col-md-6">
-      <label className="form-label fw-semibold mb-2">Select Buyer</label>
+      <label className="label-color">Select Buyer</label>
       <select 
-        className="form-select form-select-lg"
+        className="select-field-style"
         value={selectedBuyer}
         onChange={handleBuyerChange}
       >

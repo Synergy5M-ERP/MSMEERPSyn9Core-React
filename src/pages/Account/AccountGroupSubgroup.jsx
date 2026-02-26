@@ -487,138 +487,131 @@ return (
         <div className="col-lg-7">
           <div className="p-3 bg-white rounded shadow-sm">
             <div className="table-responsive">
-              <table className="table table-bordered text-center">
-                <thead className="table-light">
-                  <tr>
-                    {formType === "primaryGroup" && (
-                      <>
-                                              <th>Name</th>
+         <table className="table table-bordered text-center">
+  <thead className="table-light">
+    <tr>
+      {formType === "primaryGroup" && (
+        <>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th> {/* ✅ added */}
+        </>
+      )}
 
-                        <th>Type</th>
-                        <th>Narration</th>
-                      </>
-                    )}
+      {formType === "accountGroup" && (
+        <>
+          <th>Primary Group</th>
+          <th>Group Name</th>
+        </>
+      )}
 
-                    {formType === "accountGroup" && (
-                      <>
-                        <th>Primary Group</th>
-                        <th>Group Name</th>
-                        <th>Narration</th>
-                      </>
-                    )}
+      {formType === "subGroup" && (
+        <>
+          <th>Group Name</th>
+          <th>Sub Group Name</th>
+        </>
+      )}
 
-                    {formType === "subGroup" && (
-                      <>
-                        <th>Group Name</th>
-                        <th>Sub Group Name</th>
-                        <th>Narration</th>
-                      </>
-                    )}
+      {formType === "subSubGroup" && (
+        <>
+          <th>Primary Group</th>
+          <th>Group Name</th>
+          <th>Sub Group Name</th>
+          <th>Sub Sub Group Name</th>
+        </>
+      )}
 
-                    {formType === "subSubGroup" && (
-                      <>
-                        <th>Primary Group</th>
-                        <th>Group Name</th>
-                        <th>Sub Group Name</th>
-                        <th>Sub Sub Group Name</th>
-                        <th>Narration</th>
-                      </>
-                    )}
+      <th>Edit</th>
+      <th>{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
+    </tr>
+  </thead>
 
-                    <th>Edit</th>
-                    <th>{activeFilter === "active" ? "Deactivate" : "Activate"}</th>
-                  </tr>
-                </thead>
+  <tbody>
+    {currentTableData && currentTableData.length > 0 ? (
+      currentTableData.map((item) => {
 
-                <tbody>
-                  {currentTableData.length > 0 ? (
-                    currentTableData.map((item) => {
-                           let id;
+        const id =
+          formType === "primaryGroup"
+            ? item.primaryGroupId
+            : formType === "accountGroup"
+            ? item.accountGroupid
+            : formType === "subGroup"
+            ? item.accountSubGroupid
+            : item.accountSubSubGroupid;
 
-      if (formType === "primaryGroup") {
-        id = item.primaryGroupId;
-      } 
-      else if (formType === "accountGroup") {
-        id = item.accountGroupid;
-      } 
-      else if (formType === "subGroup") {
-        id = item.accountSubGroupid;
-      } 
-      else if (formType === "subSubGroup") {
-        id = item.accountSubSubGroupid;
-      }
-                      return (
-                        <tr key={id}>
-                          {formType === "primaryGroup" && (
-                            <>                              <td>{item.accountPrimaryGroupName}</td>
+        return (
+          <tr key={id}>
 
-                              <td>{item.type}</td>
-                              <td>{item.description}</td>
-                            </>
-                          )}
+            {formType === "primaryGroup" && (
+              <>
+                <td>{item.accountPrimaryGroupName}</td>
+                <td>{item.type}</td>
+                <td>{item.description}</td>
+              </>
+            )}
 
-                          {formType === "accountGroup" && (
-                            <>
-                              <td>{item.accountPrimaryGroupName}</td>
-                              <td>{item.accountGroupName}</td>
-                              <td>{item.accountGroupNarration}</td>
-                            </>
-                          )}
+            {formType === "accountGroup" && (
+              <>
+                <td>{item.accountPrimaryGroupName}</td>
+                <td>{item.accountGroupName}</td>
+              </>
+            )}
 
-                          {formType === "subGroup" && (
-                            <>
-                              <td>{item.accountGroupName}</td>
-                              <td>{item.accountSubGroupName}</td>
-                              <td>{item.accountSubGroupNarration}</td>
-                            </>
-                          )}
+            {formType === "subGroup" && (
+              <>
+                <td>{item.accountGroupName}</td>
+                <td>{item.accountSubGroupName}</td>
+              </>
+            )}
 
-                          {formType === "subSubGroup" && (
-                            <>
-                              <td>{item.accountPrimaryGroupName}</td>
-                              <td>{item.accountGroupName}</td>
-                              <td>{item.accountSubGroupName}</td>
-                              <td>{item.accountSubSubGroupName}</td>
-                              <td>{item.accountSubSubGroupNarration}</td>
-                            </>
-                          )}
+            {formType === "subSubGroup" && (
+              <>
+                <td>{item.accountPrimaryGroupName}</td>
+                <td>{item.accountGroupName}</td>
+                <td>{item.accountSubGroupName}</td>
+                <td>{item.accountSubSubGroupName}</td>
+              </>
+            )}
 
-                          <td>
-                            <Edit
-                              className="text-primary"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => handleEdit(item)}
-                              size={18}
-                            />
-                          </td>
+            <td>
+              <Edit
+                className="text-primary"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleEdit(item)}
+                size={18}
+              />
+            </td>
 
-                          <td>
-                            {activeFilter === "active" ? (
-                              <Trash2
-                                className="text-danger"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => handleDelete(id)}
-                                size={18}
-                              />
-                            ) : (
-                              <button
-                                className="btn btn-success btn-sm"
-                                onClick={() => handleActivate(id)}
-                              >
-                                Activate
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="7">No records found</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <td>
+              {activeFilter === "active" ? (
+                <Trash2
+                  className="text-danger"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDelete(id)}
+                  size={18}
+                />
+              ) : (
+                <button
+                  className="btn btn-success btn-sm"
+                  onClick={() => handleActivate(id)}
+                >
+                  Activate
+                </button>
+              )}
+            </td>
+
+          </tr>
+        );
+      })
+    ) : (
+      <tr>
+        <td colSpan="100%" className="text-center">
+          No records found
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
             </div>
 
             <Pagination

@@ -21,7 +21,6 @@ namespace SwamiSamarthSyn8.Models.Accounts
         [Required]
         public string? AccountSubSubGroupName { get; set; }
 
-        public string SubSubGroupCode { get; set; }
 
         [StringLength(500)]
         public string? AccountSubSubGroupNarration { get; set; }

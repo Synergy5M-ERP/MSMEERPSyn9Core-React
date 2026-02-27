@@ -13,6 +13,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 import Swal from "sweetalert2";
+import "./ApprovedPayable.css";   // ✅ ADD THIS LINE
 
 const ApprovedPayable = () => {
   const [loading, setLoading] = useState(false);
@@ -69,74 +70,46 @@ const ApprovedPayable = () => {
 
         console.log(`🔍 PROCESSING GRN ${header.grnNumber || header.GRNNumber}: ${items.length} items`);
 
-        // ✅ COMPLETE MAPPING with ALL field variations
-        const mappedItems = items.map((it, idx) => {
-          // 🔍 DEBUG: Log ALL possible BillApprove fields
-          console.log("🔍 RAW ITEM DEBUG:", {
-            itemName: it.itemName,
-            accountGRNDetailsId: it.accountGRNDetailsId || it.AccountGRNDetailsId,
-            allKeys: Object.keys(it),
-            billApprove: it.billApprove,
-            BillApprove: it.BillApprove,
-            bill_approve: it.bill_approve
-          });
+const mappedItems = items.map((it) => {
+  const tax = parseFloat(it.totalTaxValue ?? 0);
+  const totalValue = parseFloat(it.totalItemValue ?? 0);
+  const netAmount = parseFloat(it.netamount ?? 0);
 
-          // ✅ TRY ALL POSSIBLE FIELD NAMES
-          const rawBillApprove =
-            it.billApprove ??      // lowercase (JSON you showed)
-            it.BillApprove ??      // PascalCase
-            it.bill_approve ??     // snake_case  
-            it.RawBillApprove_DB ?? // debug field
-            0;                     // default fallback
+  const grandTotal = tax + totalValue;
 
-          console.log(`🔍 MAPPING "${it.itemName}": rawBillApprove=${rawBillApprove} (type: ${typeof rawBillApprove})`);
+  return {
+    id: it.accountGRNDetailsId || it.AccountGRNDetailsId || Math.random(),
 
-          // ✅ Convert ANY format → boolean
-          const billApproveBool =
-            rawBillApprove === true ||
-            rawBillApprove === 1 ||
-            rawBillApprove === "1";
+    itemName: it.itemName ?? "",
+    grade: it.grade ?? it.Item_Descrpition ?? "",
+    itemCode: it.item_Code ?? it.Item_Code ?? "",
 
-          console.log(`🔍 RESULT "${it.itemName}": toggle=${billApproveBool}`);
+    receivedQty: Number(it.receivedQty ?? 0),
+    approvedQty: Number(it.approvedQty ?? 0),
+    damagedQty: Number(it.damagedQty ?? 0),
 
-          return {
-            // ✅ IDs (handle both cases)
-            id: it.accountGRNDetailsId || it.AccountGRNDetailsId || `${header.accountGRNId || header.AccountGRNId}-${idx}`,
+    cgst: Number(it.cgst ?? 0),
+    sgst: Number(it.sgst ?? 0),
+    igst: Number(it.igst ?? 0),
 
-            // ✅ Header fields
-            itemId: it.itemId || it.ItemId,
-            itemName: it.itemName || "",
-            itemCode: it.item_Code || it.Item_Code || "",
-            grade: it.item_Grade || it.Item_Grade || "",
+    totalTaxValue: tax,
+    totalItemValue: totalValue,
+    netAmount: netAmount,   // ✅ ADD THIS LINE
 
-            // ✅ Quantities
-            receivedQty: Number(it.receivedQty || it.ReceivedQty || 0),
-            approvedQty: Number(it.approvedQty || it.ApprovedQty || 0),
-            damagedQty: Number(it.damagedQty || it.DamagedQty || 0),
-            unit: it.unit || it.Unit || "",
+    billItemValue: grandTotal,   // ✅ THIS IS GRAND TOTAL
 
-            // ✅ Taxes
-            taxType: it.taxType || it.TaxType || "",
-            cgst: Number(it.cgst || it.CGST || 0),
-            sgst: Number(it.sgst || it.SGST || 0),
-            igst: Number(it.igst || it.IGST || 0),
-
-            // ✅ Amounts
-            totalTaxValue: Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
-            totalItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0),
-            billItemValue: Number(it.totalItemValue || it.totalAmount || it.TotalAmount || 0) +
-              Number(it.totalTaxValue || it.totalTaxAmount || it.TotalTaxAmount || 0),
-
-            // ✅ TOGGLE STATE - SINGLE SOURCE OF TRUTH
-            billApprove: billApproveBool
-          };
-        });
-
+    billApprove:
+      it.billApprove === true ||
+      it.billApprove === 1 ||
+      it.billApprove === "1",
+  };
+});
         // ✅ Calculate approved total
-        const approvedGrandTotal = mappedItems
-          .filter((i) => i.billApprove)
-          .reduce((sum, i) => sum + (parseFloat(i.billItemValue) || 0), 0);
-
+      // ✅ EXACT MVC LOGIC — sum of ALL items
+const approvedGrandTotal = mappedItems.reduce(
+  (sum, item) => sum + (parseFloat(item.billItemValue) || 0),
+  0
+);
         console.log(`🔍 GRN ${header.grnNumber}: ${mappedItems.filter(i => i.billApprove).length} approved items, total=₹${approvedGrandTotal}`);
 
         return {
@@ -273,21 +246,16 @@ const ApprovedPayable = () => {
 
     try {
 
-      const payload = grnsData
-        .filter((grn) => grn.items.some((item) => item.billApprove))
-        .map((grn) => ({
-          AccountGRNId: grn.grnId,
-          BillStatus: "Approved",
-          Items: grn.items
-            .filter((item) => item.billApprove)
-            .map((item) => ({
-              AccountGRNDetailsId: item.id,
-              BillApprove: 1  // ✅ Sends INT 1
-            })),
-        }));
+    const payload = grnsData
+  .filter((grn) => grn.items?.some((item) => item.billApprove))
+  .map((grn) => ({
+    GRNNumber: grn.grnNumber,   // ✅ SEND GRN NUMBER
+    TotalAmount: Number(grn.approvedGrandTotal || 0),
+  }));
 
+console.log("Payload:", payload);
+  
 
-      console.log("Payload:", payload);
 
       const res = await fetch(API_ENDPOINTS.SaveMultipleGRN, {
         method: "POST",
@@ -398,147 +366,118 @@ const ApprovedPayable = () => {
           ) : (
             <>
               {/* 2-COLUMN GRN GRID */}
-              <div className="row g-3 mb-4">
-                {pagedGrns.map((grn, index) => (
-                  <div key={grn.grnNumber || index} className="col-md-6">
-                    <div className="grn-card h-100 border rounded shadow-sm">
-                      {/* GRN Header */}
-                      <div className="grn-header p-4 bg-primary text-white rounded-top">
-                        <div className="row small">
-                          <strong className="col-6">
-                            GRN: {grn.grnNumber}
-                          </strong>
-                          <div className="col-6">
-                            <Calendar size={14} className="me-1" />
-                            <strong>GRN Date:</strong> {grn.grnDate}
-                          </div>
-                          <div className="col-6">
-                            <FileText size={14} className="me-1" />
-                            <strong>Invoice No:</strong> {grn.invoiceNumber}
-                          </div>
-                          <div className="col-6">
-                            <strong>Invoice Date:</strong> {grn.invoiceDate}
-                          </div>
-                          <div className="col-6">
-                            <strong>PO No:</strong> {grn.poNumber}
-                          </div>
-                          <div className="col-6">
-                            <strong>PO Date:</strong> {grn.poDate}
-                          </div>
-                        </div>
-                      </div>
+             <div className="row g-3 mb-4">
+  {pagedGrns.map((grn, index) => (
+    <div key={grn.grnNumber || index} className="col-md-6">
+      <div className="grn-card">
 
-                      {/* Items Table */}
-                      <div
-                        className="p-3"
-                        style={{ maxHeight: "400px", overflowY: "auto" }}
+        {/* ================= HEADER ================= */}
+        <div className="grn-header">
+          <div className="grn-header-row">
+
+            <div className="grn-header-left">
+              <div><strong>GRN:</strong> {grn.grnNumber}</div>
+              <div><strong>Invoice No:</strong> {grn.invoiceNumber}</div>
+              <div><strong>PO No:</strong> {grn.poNumber}</div>
+            </div>
+
+            <div className="grn-header-right">
+              <div><strong>GRN Date:</strong> {grn.grnDate}</div>
+              <div><strong>Invoice Date:</strong> {grn.invoiceDate}</div>
+              <div><strong>PO Date:</strong> {grn.poDate}</div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ================= BODY ================= */}
+        <div className="grn-body">
+          <table className="table table-bordered text-center mb-0">
+            <thead className="table-light sticky-top">
+              <tr>
+                <th>Item Name</th>
+                <th>Total Tax</th>
+                <th>Total Amount</th>
+                <th>Grand Total</th>
+                <th>View</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {(grn.items || []).length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-muted">
+                    No items found
+                  </td>
+                </tr>
+              ) : (
+                grn.items.map((item, itemIndex) => (
+                  <tr key={itemIndex}>
+                    <td className="fw-semibold">{item.itemName}</td>
+
+                    <td>
+                      ₹{(item.totalTaxValue || 0).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2
+                      })}
+                    </td>
+
+                    <td>
+                      ₹{(item.totalItemValue || 0).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2
+                      })}
+                    </td>
+
+                    <td className="fw-bold text-success">
+                      ₹{(item.billItemValue || 0).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2
+                      })}
+                    </td>
+
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => handleViewDetails(item)}
                       >
-                        <div className="table-responsive">
-                          <table className="table table-sm table-hover mb-0">
-                            <thead className="table-light sticky-top">
-                              <tr>
-                                <th style={{ width: "30%" }}>Item Name</th>
-                                <th style={{ width: "15%" }}>
-                                  Total Tax Value
-                                </th>
-                                <th style={{ width: "15%" }}>Total Amount</th>
-                                <th style={{ width: "15%" }}>Grand Total</th>
-                                <th style={{ width: "12%" }}>Bill Approve</th>
-                                <th style={{ width: "8%" }}>View</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(grn.items || []).length === 0 ? (
-                                <tr>
-                                  <td
-                                    colSpan="6"
-                                    className="text-center text-muted py-3"
-                                  >
-                                    No items found
-                                  </td>
-                                </tr>
-                              ) : (
-                                (grn.items || []).map((item, itemIndex) => (
-                                  <tr
-                                    key={`${grn.grnNumber}-${item.id || itemIndex
-                                      }`}
-                                    className={
-                                      item.billApprove ? "table-success" : ""
-                                    }
-                                  >
-                                    <td className="fw-semibold">
-                                      {item.itemName}
-                                    </td>
-                                    <td>
-                                      ₹
-                                      {(item.totalTaxValue || 0).toLocaleString(
-                                        "en-IN"
-                                      )}
-                                    </td>
-                                    <td>
-                                      ₹
-                                      {(item.totalItemValue || 0).toLocaleString(
-                                        "en-IN"
-                                      )}
-                                    </td>
-                                    <td className="fw-bold">
-                                      ₹
-                                      {(item.billItemValue || 0).toLocaleString(
-                                        "en-IN"
-                                      )}
-                                    </td>
-                                    <td>
-                                      <div className="form-check form-switch">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          checked={item.billApprove}  // ✅ true = ON, false = OFF
-                                          onChange={() => handleBillApproveToggle(grn.grnNumber, itemIndex)}
-                                          id={`approve-${grn.grnNumber}-${item.id}`}
-                                        />
-                                      </div>
-                                    </td>
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-                                    <td>
-                                      <button
-                                        className="btn btn-sm btn-outline-primary p-1"
-                                        onClick={() =>
-                                          handleViewDetails(item)
-                                        }
-                                        title="View Details"
-                                      >
-                                        <Eye size={14} />
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+        {/* ================= FOOTER ================= */}
+        <div className="grn-footer">
+          <div>
+            <strong>Total Amount</strong>
+            <div className="total-amount">
+              ₹{(grn.approvedGrandTotal || 0).toLocaleString("en-IN", {
+                minimumFractionDigits: 2
+              })}
+            </div>
+          </div>
 
-                      {/* Approved Total Footer */}
-                      {grn.approvedGrandTotal > 0 && (
-                        <div className="grn-footer p-3 bg-light border-top">
-                          <div className="text-center">
-                            <small className="text-muted">
-                              Approved Total
-                            </small>
-                            <div className="fw-bold text-success fs-5">
-                              ₹
-                              {(grn.approvedGrandTotal || 0).toLocaleString(
-                                "en-IN"
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="approve-section">
+            <label>Bill Approve</label>
+            <input
+              type="checkbox"
+              className="form-check-input ms-2"
+              checked={grn.items?.some(i => i.billApprove)}
+              onChange={() => {
+                grn.items.forEach((_, idx) =>
+                  handleBillApproveToggle(grn.grnNumber, idx)
+                );
+              }}
+            />
+          </div>
+        </div>
 
+      </div>
+    </div>
+  ))}
+</div>
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="pagination-controls d-flex justify-content-center align-items-center gap-3 my-4 p-3 bg-light rounded border">
@@ -643,10 +582,8 @@ const ApprovedPayable = () => {
                               Total Net Value{" "}
                             </span>
                             <span className="fw-bold text-info">
-                              ₹
-                              {(
-                                selectedItem.totalItemValue || 0
-                              ).toLocaleString("en-IN")}
+                                    ₹{(selectedItem.netAmount || 0).toLocaleString("en-IN")}
+
                             </span>
                           </div>
                         </div>
@@ -775,6 +712,7 @@ const ApprovedPayable = () => {
       </div>
     </>
   );
+  
 };
 
 export default ApprovedPayable;

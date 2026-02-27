@@ -115,8 +115,7 @@ const CheckPayable = () => {
   useEffect(() => {
     fetchAllDropdowns();
   }, []);
-
-  const fetchAllDropdowns = async () => {
+const fetchAllDropdowns = async () => {
     try {
       setLoading(true);
       const res = await fetch(API_ENDPOINTS.GetSellers);
@@ -132,6 +131,7 @@ const CheckPayable = () => {
       setLoading(false);
     }
   };
+
 
   // ✅ LOAD GRN NUMBERS
   const loadGrnNumbers = async (sellerName) => {
@@ -472,19 +472,23 @@ const handleMasterBillCheck = useCallback((checked) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "sellerName") {
-      const selectedSupplier = suppliers.find(s => s.id === Number(value));
-      setFormData(fd => ({
-        ...fd,
-        sellerName: selectedSupplier?.name || "",
-        vendorId: Number(value) || 0
-      }));
-      loadGrnNumbers(selectedSupplier?.name || "");
-      setTableData([]);
-      setSelectedGrn("");
-      setEnteredGrnNumber("");
-      return;
-    }
+   if (name === "sellerName") {
+  const selectedSupplier = suppliers.find(
+    s => s.id === Number(value)
+  );
+
+  setFormData(fd => ({
+    ...fd,
+    vendorId: Number(value),
+    sellerName: selectedSupplier?.name || ""
+  }));
+
+  loadGrnNumbers(selectedSupplier?.name || "");
+  setTableData([]);
+  setSelectedGrn("");
+  setEnteredGrnNumber("");
+  return;
+}
 
     if (name === "grnNumber") {
       const grnId = value;
@@ -668,7 +672,7 @@ const handleMasterBillCheck = useCallback((checked) => {
         <div className="row mb-3">
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> Seller Name</label>
-            <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
+           <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
               <option value="">Select Seller</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>

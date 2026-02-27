@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { Save, Edit, Trash2 } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 import Pagination from "../../components/Pagination"; // ✅ Your custom Pagination
-
+//S
 function AccountGroupSubgroup() {
   const [formType, setFormType] = useState("primaryGroup");
   const [accountTypes, setAccountTypes] = useState([]);
@@ -456,8 +456,8 @@ return (
                   className="form-select mb-2"
                 >
                   <option value="">Select Type</option>
-                  <option value="BS">BS</option>
-                  <option value="P&L">P&L</option>
+                  <option value="BS">Balance Sheet</option>
+                  <option value="P&L">Profit & Lose</option>
                 </select>
               </>
             )}

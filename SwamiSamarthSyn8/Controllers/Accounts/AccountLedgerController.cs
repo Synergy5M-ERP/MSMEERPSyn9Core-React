@@ -69,7 +69,7 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                 {
                     accountGroupId = x.AccountGroupid,
                     accountGroupName = x.AccountGroupName,
-                    accountGroupCode = x.GroupCode
+                    accountGroupCode = x.AccountGroupCode
                 })
                 .ToList();
 

@@ -15,7 +15,6 @@ public class AccountSubGroup
 
     [ForeignKey("AccountGroupid")]
     public virtual AccountGroup? AccountGroup { get; set; }
-    public string SubGroupCode { get; set; }
 
     [Required]
     [StringLength(100)]

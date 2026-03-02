@@ -64,11 +64,8 @@ public partial class HRM_EmpInfoTbl
     public string? Joining_CTC_Breakup { get; set; }
 
     [StringLength(50)]
-    public string? Password { get; set; }
+   
 
-    public string? Position_Code { get; set; }
-
-    [StringLength(50)]
     public string? DepartmentCode { get; set; }
 
     [StringLength(50)]
@@ -144,8 +141,7 @@ public partial class HRM_EmpInfoTbl
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Total_Month { get; set; }
 
-    [Column("Annual_CTC(Rs)", TypeName = "decimal(18, 2)")]
-    public decimal? Annual_CTC_Rs_ { get; set; }
+    
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Current_CTC { get; set; }
@@ -267,4 +263,11 @@ public partial class HRM_EmpInfoTbl
 
     [Column(TypeName = "decimal(18, 2)")]
     public decimal? Monthly_Salary { get; set; }
+    public bool? IsActive { get; set; }
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal? Annual_CTC_Rs { get; set; }
+
+
+
+
 }

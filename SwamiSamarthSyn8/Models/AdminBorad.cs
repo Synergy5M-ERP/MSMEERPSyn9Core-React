@@ -35,7 +35,7 @@
 
         public bool ProductionAndQualityModule { get; set; }
         public bool External_buyer_seller { get; set; }
-        public string username { get; set; }
+        //public string username { get; set; }
         public string Emp_Code { get; set; }
 
     }

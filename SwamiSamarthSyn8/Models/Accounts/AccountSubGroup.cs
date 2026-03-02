@@ -1,4 +1,4 @@
-﻿using SwamiSamarthSyn8.Models;
+﻿namespace SwamiSamarthSyn8.Models.Accounts;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -18,12 +18,13 @@ public class AccountSubGroup
 
     [Required]
     [StringLength(100)]
-    public string AccountSubGroupName { get; set; }
+    public string? AccountSubGroupName { get; set; }
 
     [StringLength(500)]
-    public string AccountSubGroupNarration { get; set; }
+    public string? AccountSubGroupNarration { get; set; }
+    public string? SubGroupCode { get; set; }
 
-    public bool IsActive { get; set; } = true;
+    public bool? IsActive { get; set; } = true;
 
     [JsonIgnore]   // 🔥 IMPORTANT
     public virtual ICollection<AccountSubSubGroup>? AccountSubSubGroups { get; set; }

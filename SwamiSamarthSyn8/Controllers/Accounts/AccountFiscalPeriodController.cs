@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Data;
+using SwamiSamarthSyn8.Helper;
+using SwamiSamarthSyn8.Models;
 
 namespace SwamiSamarthSyn8.Accounts.Controller
 {
@@ -31,8 +32,10 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                 .Select(x => new
                 {
                     x.AccountFiscalPeriodId,
-                    x.FiscalPeriodEndDate,
-                    x.FiscalPeriodStartDate,
+                    //x.FiscalPeriodEndDate,
+                    //x.FiscalPeriodStartDate,
+                    FiscalPeriodStartDate = ReformatDate.FormatDateDDMMYYYY(x.FiscalPeriodStartDate),
+                    FiscalPeriodEndDate = ReformatDate.FormatDateDDMMYYYY(x.FiscalPeriodEndDate),
                     x.FiscalPeriodName,
                     x.FiscalYear,
                     //x.FiscalPeriodStatus,
@@ -81,6 +84,18 @@ namespace SwamiSamarthSyn8.Accounts.Controller
 
             _context.SaveChanges();
             return Ok(existing);
+        }
+
+        [HttpDelete("AccountFiscalPeriod/{id}")]
+        public IActionResult DeleteAccountFiscalPeriod(int id)
+        {
+            var ledger = _context.AccountFiscalPeriod.Find(id);
+            if (ledger == null) return NotFound();
+
+            ledger.IsActive = false;
+            _context.SaveChanges();
+
+            return Ok(new { success = true, message = "Fiscal Period deactivated successfully" });
         }
 
     }

@@ -1,18 +1,1 @@
-﻿@model SwamiSamarthSyn8.Models.DeptDesigAuthortiy
-@{
-    ViewBag.Title = "HR";
-}
-
-<div>
-    @using (Html.BeginForm("EditDesignation", "OrgnizationMatrix", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        @Html.HiddenFor(model => model.DesId) <!-- Add this line to include UomId -->
-        <div class="form-group">
-            @Html.LabelFor(model => model.Designations_Name)
-            @Html.TextBoxFor(model => model.Designations_Name, new { @class = "form-control", oninput = "this.value = this.value.toUpperCase()" })
-            @Html.ValidationMessageFor(model => model.Designations_Name)
-        </div>
-
-        <button type="submit" style="height: 40px; width: 80px; border-radius: 15px; margin-top: 5px; background-color: #5cb85c;color:white;">Save</button>}
-</div>
+﻿

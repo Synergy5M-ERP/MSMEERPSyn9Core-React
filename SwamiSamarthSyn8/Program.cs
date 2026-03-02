@@ -4,6 +4,7 @@ using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +30,18 @@ builder.Services.AddControllersWithViews()
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
     });
 
-// ✅ Register DbContext
+//// ✅ Register DbContext
+//builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+builder.Services.AddDbContext<MsmeERPDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("MsmeDb")));
+
+// 🔹 DB 2 : Swami Samarth
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("SwamiSamarthDb")));
+
 
 Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection"));
 

@@ -142,6 +142,44 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
+        //Check Voucher Number is Exists or not
+        [HttpGet("GetNextVoucherNumber")]
+        public async Task<IActionResult> GetNextVoucherNumber(string prefix, int? vendorId = null)
+        {
+            var query = _context.AccountVoucher
+                .Where(x => x.VoucherNo.StartsWith(prefix + "-"));
+
+            // Apply vendor filter only for Vendor Voucher
+            if (vendorId.HasValue)
+            {
+                query = query.Where(x => x.VendorId == vendorId.Value);
+            }
+
+            var voucherNumbers = await query
+                .Select(x => x.VoucherNo)
+                .ToListAsync();
+
+            int maxNumber = 0;
+
+            foreach (var voucher in voucherNumbers)
+            {
+                var parts = voucher.Split('-');
+                if (parts.Length > 1 && int.TryParse(parts[^1], out int num))
+                {
+                    if (num > maxNumber)
+                        maxNumber = num;
+                }
+            }
+
+            int nextNumber = maxNumber + 1;
+
+            return Ok(new
+            {
+                success = true,
+                voucherNo = $"{prefix}-{nextNumber.ToString("D3")}"
+            });
+        }
+
         // Get All vendors lists
         [HttpGet("Vendors")]
         public async Task<IActionResult> GetVendors()
@@ -343,11 +381,14 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 // Step 1: Create main voucher
                 var voucher = new AccountVoucher
                 {
+                    VoucherCategory = model.VoucherCategory,
                     VoucherNo = model.VoucherNo,
                     VendorId = model.VendorId,
+                    OtherVendor =model.OtherVendor,
                     AccountVoucherTypeId = model.AccountVoucherTypeId,
                     VoucherDate = model.VoucherDate,                   // DateOnly from JSON
                     ReferenceNo = model.ReferenceNo,
+                    OtherReferenceNo = model.OtherReferenceNo,
                     TotalAmount = model.TotalAmount,
                     PaymentDueDate = model.PaymentDueDate,             // DateOnly from JSON
                     PaymentModeId = model.PaymentModeId,
@@ -405,9 +446,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         }
 
   
- //---------------------------------------------------VOUCHER LISTS-----------------------------------------------------------//
-
-
 
     }
 }

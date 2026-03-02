@@ -11,8 +11,10 @@ public partial class SDM_InvItemTbl
 {
     [Key]
     public int product_id { get; set; }
-
     public int? supplied_id_id { get; set; }
+    
+    [ForeignKey("supplied_id_id")]
+    public virtual SDM_Inv_VendTbl? supplied_id { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]
@@ -87,6 +89,6 @@ public partial class SDM_InvItemTbl
 
     [ForeignKey("supplied_id_id")]
     [InverseProperty("SDM_InvItemTbls")]
-    public virtual SDM_Inv_VendTbl? supplied_id { get; set; }
+    //public virtual SDM_Inv_VendTbl? supplied_id { get; set; }
     public decimal? RejectedQty { get; set; }
 }

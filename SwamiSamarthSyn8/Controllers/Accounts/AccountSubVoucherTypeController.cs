@@ -45,8 +45,16 @@ namespace SwamiSamarthSyn8.Accounts.Controller
         [HttpPost("AccountSubVoucherType")]
         public IActionResult CreateAccountSubVoucherType([FromBody] AccountSubVoucherType model)
         {
-            if (model == null)
+            if (model == null || string.IsNullOrWhiteSpace(model.SubVoucherType))
                 return BadRequest("Invalid data.");
+
+            bool exists = _context.AccountSubVoucherType.Any(x =>
+                        x.SubVoucherType.ToLower() == model.SubVoucherType.ToLower() &&
+                        x.AccountVoucherTypeId == model.AccountVoucherTypeId &&
+                        x.IsActive);
+
+            if (exists)
+                return Conflict(new { message = "Sub Voucher Type already exists for this Voucher Type." });
 
             var subvouchertype = new AccountSubVoucherType
             {
@@ -68,6 +76,15 @@ namespace SwamiSamarthSyn8.Accounts.Controller
             var existing = _context.AccountSubVoucherType.Find(id);
             if (existing == null) return NotFound();
 
+            bool exists = _context.AccountSubVoucherType.Any(x =>
+                            x.AccountSubVoucherTypeId != id &&
+                            x.SubVoucherType.ToLower() == accountSubVoucherType.SubVoucherType.ToLower() &&
+                            x.AccountVoucherTypeId == accountSubVoucherType.AccountVoucherTypeId &&
+                            x.IsActive);
+
+            if (exists)
+                return Conflict(new { message = "Sub Voucher Type already exists for this Voucher Type." });
+
             existing.SubVoucherType = accountSubVoucherType.SubVoucherType;
             existing.SubVoucherNarration = accountSubVoucherType.SubVoucherNarration;
             existing.AccountVoucherTypeId = accountSubVoucherType.AccountVoucherTypeId;
@@ -75,6 +92,30 @@ namespace SwamiSamarthSyn8.Accounts.Controller
 
             _context.SaveChanges();
             return Ok(existing);
+        }
+
+        [HttpDelete("AccountSubVoucherType/{id}")]
+        public IActionResult DeleteAccountVoucherType(int id)
+        {
+            var ledger = _context.AccountVoucherType.Find(id);
+            if (ledger == null) return NotFound();
+
+            ledger.IsActive = false;
+            _context.SaveChanges();
+
+            return Ok(new { success = true, message = "Sub Voucher Type deactivated successfully" });
+        }
+
+        [HttpPatch("AccountSubVoucherType/{id}/activate")]
+        public IActionResult ActivateAccountVoucherType(int id)
+        {
+            var ledger = _context.AccountVoucherType.Find(id);
+            if (ledger == null) return NotFound();
+
+            ledger.IsActive = true;
+            _context.SaveChanges();
+
+            return Ok(new { success = true, message = "Sub Voucher Type activated successfully" });
         }
 
     }

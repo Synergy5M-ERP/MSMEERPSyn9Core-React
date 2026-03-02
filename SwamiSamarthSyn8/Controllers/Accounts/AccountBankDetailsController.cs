@@ -31,21 +31,21 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                         v.Id,
                         VendorCode = v.Vendor_Code,
                         v.Company_Name,
-                        v.Contact_Person,
-                        v.Email,
-                        v.Contact_Number,
-                        v.Bank_Name,
-                        v.CurrentAcNo,
-                        v.Branch,
-                        v.IFSC_No,
-                        v.GST_Number,
-                        v.Country,
-                        v.State_Province,
-                        v.City,
-                        v.Address,
-                        v.industry,
-                        v.Category,
-                        v.Sub_Category
+                        //v.Contact_Person,
+                        //v.Email,
+                        //v.Contact_Number,
+                        //v.Bank_Name,
+                        //v.CurrentAcNo,
+                        //v.Branch,
+                        //v.IFSC_No,
+                        //v.GST_Number,
+                        //v.Country,
+                        //v.State_Province,
+                        //v.City,
+                        //v.Address,
+                        //v.industry,
+                        //v.Category,
+                        //v.Sub_Category
                     })
                     .ToListAsync();
 
@@ -67,26 +67,24 @@ namespace SwamiSamarthSyn8.Accounts.Controller
         {
             try
             {
-                var bankDetails = await (from bank in _context.AccountBankDetails
-                                         join vendor in _context.Potential_Vendor
-                                         on bank.VendorId equals vendor.Id
-                                         orderby bank.AccountBankDetailId
-                                         select new
-                                         {
-                                             bank.AccountBankDetailId,
-                                             bank.VendorId,
-                                             VendorName = vendor.Company_Name, // get company name
-                                             bank.BankName,
-                                             bank.AccountNo,
-                                             bank.BranchName,
-                                             bank.IFSCCode,
-                                             bank.IsActive
-                                         })
-                     .ToListAsync();
-
-                if (!bankDetails.Any())
-                    return NotFound(new { success = false, message = "No bank details found" });
-
+                var bankDetails = await (
+     from bank in _context.AccountBankDetails
+     join vendor in _context.Potential_Vendor
+         on bank.VendorId equals vendor.Id into vendorJoin
+     from vendor in vendorJoin.DefaultIfEmpty()   // 👈 LEFT JOIN
+     orderby bank.AccountBankDetailId
+     select new
+     {
+         bank.AccountBankDetailId,
+         bank.VendorId,
+         VendorName = vendor != null ? vendor.Company_Name : "", // safe
+         bank.BankName,
+         bank.AccountNo,
+         bank.BranchName,
+         bank.IFSCCode,
+         bank.IsActive
+     }
+ ).ToListAsync();
                 return Ok(new { success = true, data = bankDetails });
             }
             catch (Exception ex)

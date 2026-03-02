@@ -233,7 +233,7 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
     public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
     public virtual DbSet<PQM_FinishProdCOATbl> PQM_FinishProdCOATbl { get; set; }
-
+    public DbSet<Master_Parameter> Master_Parameter { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer("Server=synergy-swamisamarth.database.windows.net;Database=SwamiSamarthDb;User ID=swamisamarthsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;");

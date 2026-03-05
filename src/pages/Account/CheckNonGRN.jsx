@@ -23,34 +23,36 @@ const [ledgers, setLedgers] = useState([]);
 
   contactPerson: "",
   contactNo: "",
-  accountNo: "",
   bankName: "",
-  gstNo: "",
   branchName: "",
-  ifscCode: "",
 
+  accountNo: "",
+  ifscCode: "",
+  gstNo: "",
   invoiceNo: "",
+
   invoiceDate: "",
   basicAmount: "",
   taxType: "",
-  description: "",
+  qtyLot: "",
+
   igstAmount: "",
   sgstAmount: "",
   cgstAmount: "",
-  totalTaxValue: "",
-  totalItemValue: "",
-  qtyLot: "",
-  ledgerName: "",
+
   ledgerCode: "",
+
+  description: "",     // invoice description
+  glDescription: ""    // GL description
 });
 useEffect(() => {
   fetchVendors();
   fetchLedgers();
 }, []);
   // ================= FETCH VENDORS =================
-  useEffect(() => {
-    fetchVendors();
-  }, []);
+  // useEffect(() => {
+  //   fetchVendors();
+  // }, []);
 const fetchLedgers = async () => {
   try {
 const res = await axios.get(
@@ -77,60 +79,75 @@ const res = await axios.get(
     }));
   }
 };
+const fetchVendors = async () => {
+  try {
+    const res = await axios.get(API_ENDPOINTS.Vendors);
 
-  const fetchVendors = async () => {
-    try {
-      const res = await axios.get(API_ENDPOINTS.Vendors);
-      if (res.data.success) {
-        setVendors(res.data.data);
-      }
-    } catch (error) {
-      Swal.fire("Error fetching vendors");
+    if (res.data.success) {
+      setVendors(res.data.data);
+      return res.data.data;
     }
-  };
+
+  } catch (error) {
+    console.log("Vendor API error", error); // ❌ No popup
+    return [];
+  }
+};
 
   // ================= DROPDOWN =================
   const handleVendorChange = (e) => {
     setSelectedVendorId(e.target.value);
   };
 
-  const handleSearch = () => {
-  if (!selectedVendorId) {
-    Swal.fire("Please select Vendor first");
-    return;
+ const handleSearch = async () => {
+
+  let vendorList = vendors;
+
+  // If vendor selected then load vendor details
+  if (selectedVendorId) {
+
+    if (vendorList.length === 0) {
+      vendorList = await fetchVendors();
+      setVendors(vendorList);
+    }
+
+    const vendor = vendorList.find(
+      (v) => v.id === Number(selectedVendorId)
+    );
+
+    if (vendor) {
+      setFormData({
+        partyName: vendor.company_Name || "",
+        vendorCode: vendor.vendorCode || "",
+        address: vendor.address || "",
+        city: vendor.city || "",
+
+        contactPerson: "",
+        contactNo: "",
+        accountNo: "",
+        bankName: "",
+        gstNo: "",
+        branchName: "",
+        ifscCode: "",
+
+        invoiceNo: "",
+        invoiceDate: "",
+        basicAmount: "",
+        taxType: "",
+        description: "",
+        igstAmount: "",
+        sgstAmount: "",
+        cgstAmount: "",
+        totalTaxValue: "",
+        totalItemValue: "",
+        qtyLot: "",
+        ledgerName: "",
+        ledgerCode: "",
+      });
+    }
   }
 
-  const vendor = vendors.find(
-    (v) => v.id === Number(selectedVendorId)
-  );
-
-  console.log("Selected Vendor:", vendor);
-
-  if (!vendor) {
-    Swal.fire("Vendor not found");
-    return;
-  }
-
-  setFormData({
-    partyName: vendor.company_Name || vendor.Company_Name || "",
-    vendorCode: vendor.vendorCode || vendor.VendorCode || "",
-    address: vendor.address || vendor.Address || "",
-    city: vendor.city || vendor.City || "",
-    invoiceNo: "",
-    invoiceDate: "",
-    basicAmount: "",
-    taxType: "",
-    description: "",
-    igstAmount: "",
-    sgstAmount: "",
-    cgstAmount: "",
-    totalTaxValue: "",
-    totalItemValue: "",
-    qtyLot: "",
-    ledgerName: "",
-    ledgerCode: "",
-  });
-
+  // ✅ Always open popup
   setShowPopup(true);
 };
 const handleRegularParty = (checked) => {
@@ -439,67 +456,212 @@ return (
 
           </div>
 
-          {/* Invoice Date + Ledger */}
-          <div className="row g-4 mb-4">
+        {/* Invoice Details */}
+<div className="row g-4 mb-4">
 
-            <div className="col-md-3">
-              <label className="form-label fw-bold text-primary">
-                Invoice Date
-              </label>
-              <input
-                type="date"
-                name="invoiceDate"
-                className="form-control"
-                onChange={handleChange}
-              />
-            </div>
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Invoice Date
+    </label>
+    <input
+      type="date"
+      name="invoiceDate"
+      className="form-control"
+      value={formData.invoiceDate}
+      onChange={handleChange}
+    />
+  </div>
 
-            <div className="col-md-3">
-              <label className="form-label fw-bold text-primary">
-                Select Ledger
-              </label>
-              <select
-                className="form-select"
-                value={formData.ledgerCode}
-                onChange={handleLedgerChange}
-              >
-                <option value="">-- Select Ledger --</option>
-                {ledgers.map((ledger) => (
-                  <option
-                    key={ledger.accountLedgerId}
-                    value={ledger.accountLedgerId}
-                  >
-                    {ledger.accountLedgerName}
-                  </option>
-                ))}
-              </select>
-            </div>
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Basic Amount
+    </label>
+    <input
+      type="number"
+      name="basicAmount"
+      className="form-control"
+      value={formData.basicAmount}
+      onChange={handleChange}
+    />
+  </div>
 
-            <div className="col-md-3">
-              <label className="form-label fw-bold text-primary">
-                Ledger Code
-              </label>
-              <input
-                className="form-control"
-                value={formData.ledgerCode}
-                readOnly
-              />
-            </div>
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Tax Type
+    </label>
+    <select
+      name="taxType"
+      className="form-select"
+      value={formData.taxType}
+      onChange={handleChange}
+    >
+      <option value="">Select</option>
+      <option value="IGST">IGST</option>
+      <option value="SGST_CGST">SGST + CGST</option>
+    </select>
+  </div>
+ <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Descritpion
+    </label>
+    <input
+      type="number"
+      name="basicAmount"
+      className="form-control"
+      value={formData.description}
+      onChange={handleChange}
+    />
+  </div>
+  </div>
+  <div className="row g-4 mb-4">
 
-          </div>
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Qty / Lot
+    </label>
+    <input
+      type="number"
+      name="qtyLot"
+      className="form-control"
+      value={formData.qtyLot}
+      onChange={handleChange}
+    />
+  </div>
+ <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      IGST Amount
+    </label>
+    <input
+      type="number"
+      name="igstAmount"
+      className="form-control"
+      value={formData.igstAmount}
+      onChange={handleChange}
+    />
+  </div>
 
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      SGST Amount
+    </label>
+    <input
+      type="number"
+      name="sgstAmount"
+      className="form-control"
+      value={formData.sgstAmount}
+      onChange={handleChange}
+    />
+  </div>
+
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      CGST Amount
+    </label>
+    <input
+      type="number"
+      name="cgstAmount"
+      className="form-control"
+      value={formData.cgstAmount}
+      onChange={handleChange}
+    />
+  </div>
+</div>
+
+{/* GST Calculation */}
+<div className="row g-4 mb-4">
+
+ 
+
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Total Tax Value
+    </label>
+    <input
+      className="form-control"
+      value={
+        Number(formData.igstAmount || 0) +
+        Number(formData.sgstAmount || 0) +
+        Number(formData.cgstAmount || 0)
+      }
+      readOnly
+    />
+  </div>
+<div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Total Item Value
+    </label>
+    <input
+      className="form-control"
+      value={
+        Number(formData.basicAmount || 0) +
+        Number(formData.igstAmount || 0) +
+        Number(formData.sgstAmount || 0) +
+        Number(formData.cgstAmount || 0)
+      }
+      readOnly
+    />
+  </div>
+  
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Select Ledger
+    </label>
+    <select
+      className="form-select"
+      value={formData.ledgerCode}
+      onChange={handleLedgerChange}
+    >
+      <option value="">-- Select Ledger --</option>
+      {ledgers.map((ledger) => (
+        <option
+          key={ledger.accountLedgerId}
+          value={ledger.accountLedgerId}
+        >
+          {ledger.accountLedgerName}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      Ledger Code
+    </label>
+    <input
+      className="form-control"
+      value={formData.ledgerCode}
+      readOnly
+    />
+  </div>
+  
           {/* Description */}
           <div className="mb-4">
             <label className="form-label fw-bold text-primary">
-              Description
+             
+             GL Description
             </label>
             <textarea
               className="form-control"
               rows="3"
-              value={formData.description}
+              value={formData.gldescription}
               readOnly
             />
           </div>
+</div>
+
+{/* Total Item Value */}
+<div className="row g-4 mb-4">
+
+  
+
+</div>
+
+{/* Ledger Section */}
+<div className="row g-4 mb-4">
+
+
+</div>
+
 
           {/* Submit */}
           <div className="text-center">

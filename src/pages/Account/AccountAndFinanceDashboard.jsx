@@ -19,6 +19,7 @@ import AccountSale from './AccountSale';
 import BalanceSheet from './BalanceSheet';
 import FinancialConfiguration from './FinancialConfiguration';
 import ProfitLoss from './ProfitLoss';
+
 const AccountAndFinanceDashboard = () => {
 const [activePage, setActivePage] = useState('Dashboard');
 
@@ -50,7 +51,7 @@ const [activePage, setActivePage] = useState('Dashboard');
             {activePage ==='BalanceSheet' && <BalanceSheet/>}
             {activePage==='FinancialConfiguration' && <FinancialConfiguration/>}
             {activePage==='ProfitLoss' && <ProfitLoss/>}
-        
+
 
           {/* Add more conditions for other pages */}
         </div>

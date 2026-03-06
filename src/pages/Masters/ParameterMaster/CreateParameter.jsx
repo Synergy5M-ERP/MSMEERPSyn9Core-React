@@ -473,7 +473,7 @@ activateBtn: {
         cursor: "pointer"
     },
 
-    table: {
+    table: {//
         width: "100%",
         borderCollapse: "collapse"
     },

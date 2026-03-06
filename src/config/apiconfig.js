@@ -1,8 +1,8 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-//const BASE_URL = "https://localhost:7145/api";
+const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -254,4 +254,9 @@ UniqueItem:`${BASE_URL}/Product/GetUniqueItemNames`,
 Grade:`${BASE_URL}/Product/GetGradesByItem`,
 GetSONumber:`${BASE_URL}/Product/GetSONumbers`,
 GetSpecificOrderDetails:`${BASE_URL}/Product/GetSpecificOrderDetails`,
+//Parameter Master
+GET_UOM: `${BASE_URL}/Parameter/GetUOMList`,
+CREATE_PARAMETER: `${BASE_URL}/Parameter/CreateParameter`,
+GET_PARAMETERS: `${BASE_URL}/Parameter/GetParameters`,
+UPDATE_PARAMETER_STATUS:`${BASE_URL}/Parameter/UpdateParameterStatus`,
 };

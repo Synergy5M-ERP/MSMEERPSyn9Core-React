@@ -15,3 +15,4 @@ namespace SwamiSamarthSyn8.Models
         public bool IsActive { get; set; }
     }
 }
+//

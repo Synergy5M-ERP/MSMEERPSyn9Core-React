@@ -61,6 +61,7 @@ public partial class MsmeERPDbContext : DbContext
 
     public virtual DbSet<Master_Currency> Master_Currency { get; set; }
     public virtual DbSet<Master_UOM> Master_UOM { get; set; }
+    public virtual DbSet<Master_Parameter> Master_Parameter { get; set; }
 
     public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
     public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }

@@ -1,79 +1,74 @@
-
 import React, { useState } from "react";
-import NotCreated from "../../../components/NotCreated";
+import Create from "./Create";
 
-
-
-
-
-function  LocationMaster() {
-    const [selectedPage, setSelectedPage] = useState("create");
-
-
-    return (
-        <div style={{ minHeight: "80vh" }}>
-            <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-                  Location Master
-            </h2>
-
-            {/* Page Selector */}
-            <div
-               className="radio-btn-header"
-            >
-                <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
-
-                    <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-                        <input
-                            type="radio"
-                            name="configTab"
-                            value="create"
-                            checked={selectedPage === 'create'}
-                            onChange={() => setSelectedPage('create')}
-                            style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-                        />
-                        Create  
-                    </label>
-
-                    <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-                        <input
-                            type="radio"
-                            name="configTab"
-                            value="view"
-                            checked={selectedPage === 'view'}
-                            onChange={() => setSelectedPage('view')}
-                            style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-                        />
-                        View  
-                    </label>
- <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-                        <input
-                            type="radio"
-                            name="configTab"
-                            value="pieChart"
-                            checked={selectedPage === 'pieChart'}
-                            onChange={() => setSelectedPage('pieChart')}
-                            style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-                        />
-                      Pie Chart
-                    </label>
-
-
-             
-                </div>
-
-
-            </div>
- <div>
-                {
-                
-                selectedPage === 'create' ? (<NotCreated />) : selectedPage === 'view'? (
-                    <NotCreated />
-                )
-                : selectedPage === 'pieChart'? (<NotCreated/>):(<NotCreated/>)
-                }
-            </div>
-        </div>
-    );
+function ViewPage() {
+  return <div style={{ padding: "20px" }}>View Page Content</div>;
 }
 
-export default  LocationMaster;
+function PieChartPage() {
+  return <div style={{ padding: "20px" }}>Pie Chart Page Content</div>;
+}
+
+function LocationMaster() {
+
+  const [selectedPage, setSelectedPage] = useState("create");
+
+  return (
+    <div style={{ minHeight: "80vh", padding: "20px" }}>
+
+      <h2 style={{ color: "#0066cc" }}>Location Master</h2>
+
+      <div style={{ display: "flex", gap: "30px", marginTop: "10px" }}>
+
+        {/* Create */}
+        <label className="radio-label">
+          <input
+            type="radio"
+            name="tab"
+            value="create"
+            checked={selectedPage === "create"}
+            onChange={() => setSelectedPage("create")}
+          />
+          Create
+        </label>
+
+        {/* View */}
+        <label className="radio-label">
+          <input
+            type="radio"
+            name="tab"
+            value="view"
+            checked={selectedPage === "view"}
+            onChange={() => setSelectedPage("view")}
+          />
+          View
+        </label>
+
+        {/* Pie Chart */}
+        <label className="radio-label">
+          <input
+            type="radio"
+            name="tab"
+            value="pieChart"
+            checked={selectedPage === "pieChart"}
+            onChange={() => setSelectedPage("pieChart")}
+          />
+          Pie Chart
+        </label>
+
+      </div>
+
+      {/* Page Load Area */}
+      <div style={{ marginTop: "20px" }}>
+
+        {selectedPage === "create" && <Create />}
+        {selectedPage === "view" && <ViewPage />}
+        {selectedPage === "pieChart" && <PieChartPage />}
+
+      </div>
+
+    </div>
+  );
+}
+
+export default LocationMaster;

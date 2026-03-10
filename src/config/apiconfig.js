@@ -1,8 +1,8 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-//  const BASE_URL = "https://localhost:7145/api";
+ const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -270,4 +270,6 @@ GET_COUNTRIES:`${BASE_URL}/Location/GetCountries`,
 ADD_STATE:`${BASE_URL}/Location/AddState`,
 GET_STATES:`${BASE_URL}/Location/GetStates`,
 ADD_CITY:`${BASE_URL}/Location/AddCity`,
+GET_LOCATION_DATA:`${BASE_URL}/Location/GetLocationData`,
+UPDATE_LOCATION:`${BASE_URL}/Location/UpdateLocation`,
 };

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models.Masters;
+using System.Data;
 
 namespace SwamiSamarthSyn8.Controllers.Masters
 {
@@ -343,6 +345,95 @@ namespace SwamiSamarthSyn8.Controllers.Masters
                     message = "City added successfully",
                     data = newCity
                 });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("GetLocationData")]
+        public IActionResult GetLocationData()
+        {
+            try
+            {
+                var locations = _msmeContext.LocationDto
+                    .FromSqlRaw("EXEC sp_GetLocationList")
+                    .ToList();
+
+                return Ok(locations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("UpdateLocation")]
+        public IActionResult UpdateLocation([FromBody] UpdateLocationDto model)
+        {
+            try
+            {
+                string message = "";
+
+                if (model.FieldName == "source")
+                {
+                    var src = _msmeContext.Master_Source
+                        .FirstOrDefault(x => x.src_id == model.RecordId);
+
+                    if (src == null) return NotFound("Source not found");
+
+                    src.src_name = model.FieldValue;
+                    message = "Source updated successfully";
+                }
+
+                else if (model.FieldName == "continent")
+                {
+                    var cont = _msmeContext.Master_Continent
+                        .FirstOrDefault(x => x.conti_id == model.RecordId);
+
+                    if (cont == null) return NotFound("Continent not found");
+
+                    cont.conti_name = model.FieldValue;
+                    message = "Continent updated successfully";
+                }
+
+                else if (model.FieldName == "country")
+                {
+                    var country = _msmeContext.Master_Country
+                        .FirstOrDefault(x => x.country_id == model.RecordId);
+
+                    if (country == null) return NotFound("Country not found");
+
+                    country.country_name = model.FieldValue;
+                    message = "Country updated successfully";
+                }
+
+                else if (model.FieldName == "state")
+                {
+                    var state = _msmeContext.Master_State
+                        .FirstOrDefault(x => x.state_id == model.RecordId);
+
+                    if (state == null) return NotFound("State not found");
+
+                    state.state_name = model.FieldValue;
+                    message = "State updated successfully";
+                }
+
+                else if (model.FieldName == "city")
+                {
+                    var city = _msmeContext.Master_City
+                        .FirstOrDefault(x => x.city_id == model.RecordId);
+
+                    if (city == null) return NotFound("City not found");
+
+                    city.city_name = model.FieldValue;
+                    message = "City updated successfully";
+                }
+
+                _msmeContext.SaveChanges();
+
+                return Ok(new { message = message });
             }
             catch (Exception ex)
             {

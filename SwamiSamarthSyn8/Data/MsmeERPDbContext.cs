@@ -270,6 +270,8 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
     public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
     public virtual DbSet<PQM_FinishProdCOATbl> PQM_FinishProdCOATbl { get; set; }
+
+    public virtual DbSet<LocationDto> LocationDto { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer("Server=tcp:synergy-msmecore.database.windows.net,1433;Initial Catalog=MsmeERPDb;Persist Security Info=False;User ID=synergymsmecoresyn9;Password=Synergy@786;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;");

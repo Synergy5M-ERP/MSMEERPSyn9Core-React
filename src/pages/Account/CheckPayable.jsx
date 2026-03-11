@@ -12,6 +12,8 @@ const CheckPayable = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [grnNumbers, setGrnNumbers] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [invoiceNumbers, setInvoiceNumbers] = useState([]);
+const [selectedInvoice, setSelectedInvoice] = useState("");
   const [enteredGrnNumber, setEnteredGrnNumber] = useState("");
   const [masterBillCheck, setMasterBillCheck] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,7 +33,29 @@ const CheckPayable = () => {
     taxAmount: 0,
     grandTotal: 0,
   });
+const loadInvoiceNumbers = async (sellerName) => {
 
+  if (!sellerName) {
+    setInvoiceNumbers([]);
+    return;
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API_ENDPOINTS.GetInvoicesBySeller}?sellerName=${sellerName}`
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setInvoiceNumbers(data.data);
+    }
+
+  } catch {
+    toast.error("Unable to load invoices");
+  }
+};
   // ✅ SAFE JSON PARSER
   const safeJson = async (res) => {
     try {
@@ -469,61 +493,72 @@ const handleMasterBillCheck = useCallback((checked) => {
 
 
   // ✅ HANDLE FORM CHANGES
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
-   if (name === "sellerName") {
-  const selectedSupplier = suppliers.find(
-    s => s.id === Number(value)
-  );
+  // 🔹 Seller Change
+  if (name === "sellerName") {
 
+    const selectedSupplier = suppliers.find(
+      s => s.id === Number(value)
+    );
+
+    setFormData(fd => ({
+      ...fd,
+      vendorId: Number(value),
+      sellerName: selectedSupplier?.name || ""
+    }));
+
+    // Load invoices for this seller
+    loadInvoiceNumbers(selectedSupplier?.name || "");
+
+    return;
+  }
+
+  // 🔹 Invoice Change (LOAD GRN DATA)
+  if (name === "invoiceNumber") {
+
+    setSelectedInvoice(value);
+
+    const selectedInvoiceObj = invoiceNumbers.find(
+      inv => inv.id === Number(value)
+    );
+
+    setFormData(fd => ({
+      ...fd,
+      invoiceNumber: selectedInvoiceObj?.invoiceNumber || ""
+
+    }));
+
+    // 🔹 Load GRN Details + Items
+    fetchGRNTableData(value);
+
+    return;
+  }
+
+  // 🔹 GRN Change (if you still use GRN dropdown)
+  if (name === "grnNumber") {
+
+    const grnId = value;
+
+    setSelectedGrn(grnId);
+
+    setFormData(fd => ({
+      ...fd,
+      grnNumber: grnId
+    }));
+
+    fetchGRNTableData(grnId);
+
+    return;
+  }
+
+  // 🔹 Default Field Change
   setFormData(fd => ({
     ...fd,
-    vendorId: Number(value),
-    sellerName: selectedSupplier?.name || ""
+    [name]: value
   }));
-
-  loadGrnNumbers(selectedSupplier?.name || "");
-  setTableData([]);
-  setSelectedGrn("");
-  setEnteredGrnNumber("");
-  return;
-}
-
-    if (name === "grnNumber") {
-      const grnId = value;
-      setSelectedGrn(grnId);
-      setFormData(fd => ({ ...fd, grnNumber: grnId }));
-      fetchGRNTableData(grnId);
-      return;
-    }
-
-    setFormData(fd => ({ ...fd, [name]: value }));
-  };
-
-  // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
-  // const handleBillCheckChange = useCallback(() => {
-  //   // console.log("🔄 Toggling billCheck at index:", index);
-
-  //   setTableData(prevTableData => {
-  //     const newTableData = prevTableData.map((row, i) => {
-  //       if (i === index) {
-  //         const newBillCheck = !row.billCheck;
-  //         console.log(`✅ Row ${index} billCheck changed to:`, newBillCheck);
-  //         return {
-  //           ...row,
-  //           billCheck: newBillCheck,
-  //           isSelected: newBillCheck
-  //         };
-  //       }
-  //       return row;
-  //     });
-
-  //     updateGrandTotals(newTableData);
-  //     return newTableData;
-  //   });
-  // }, []);
-
+};
   const handleBillCheckChange = useCallback((index) => {
     console.log("🔄 Toggling billCheck at index:", index);
     setTableData(prevTableData => {
@@ -679,7 +714,7 @@ const handleMasterBillCheck = useCallback((checked) => {
               ))}
             </select>
           </div>
-          <div className="col mb-3">
+          {/*<div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> GRN Number</label>
             <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
               <option value="">Select GRN No.</option>
@@ -689,21 +724,51 @@ const handleMasterBillCheck = useCallback((checked) => {
                 </option>
               ))}
             </select>
-          </div>
+          </div>*/}
+          <div className="col mb-3">
+<label className="form-label text-primary fw-semibold">
+Invoice Number
+</label>
+
+<select
+  className="form-select"
+  name="invoiceNumber"
+  value={selectedInvoice}
+  onChange={handleChange}
+>
+
+<option value="">Select Invoice</option>
+
+{invoiceNumbers.map(inv => (
+<option key={inv.id} value={inv.id}>
+{inv.invoiceNumber}
+</option>
+))}
+
+</select>
+</div>
+
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> GRN Date</label>
             <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
           </div>
+         
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Invoice No</label>
-            <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
-          </div>
+            <label className="form-label text-primary fw-semibold"> GRN Number</label>
+<input
+  type="text"
+  name="grnNumber"
+  className="form-control"
+  value={formData.grnNumber}   // ✅ correct
+  onChange={handleChange}
+  required
+/>          </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold">Invoice Date</label>
-            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Invoice Date</label>
+            <input type="text" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
           </div>
         </div>
-
+ 
         <div className="row mb-3">
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> PO Number</label>

@@ -108,6 +108,7 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,
   GetSellers: `${BASE_URL}/GRN/suppliers`,
+  GetInvoicesBySeller: `${BASE_URL}/GRN/GetInvoicesBySeller`,
 
   GetGRNNumbersBySeller: `${BASE_URL}/GRN/GetGRNNumbersBySeller`,
   GetGRNsBySeller: `${BASE_URL}/GRN/GetGRNsBySeller`, // ✅ add this
@@ -117,6 +118,12 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
+    Vendorcategories: `${BASE_URL}/GRN/Vendorcategories`,
+        SalesBuyers: `${BASE_URL}/GRN/SalesBuyers`,
+
+
+    SaveNonGRN: `${BASE_URL}/GRN/SaveNonGRN`,
+
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
 
 VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,

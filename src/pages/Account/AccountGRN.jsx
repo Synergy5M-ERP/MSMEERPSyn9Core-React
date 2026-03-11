@@ -11,15 +11,15 @@ function AccountGRN() {
   return (
     <div style={{ minHeight: "80vh" }}>
       
-      <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 15 }}>
+    {/*  <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 15 }}>
         Bill Passing
-      </h2>
+      </h2>*/}
 
       {/* All Radio Buttons */}
       <div style={{ display: "flex", gap: "30px", flexWrap: "wrap", marginBottom: "20px" }}>
 
         {/* GRN Check */}
-        <label style={{ fontWeight: 600, fontSize: "17px", cursor: "pointer" }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
           <input
             type="radio"
             name="billType"
@@ -32,7 +32,7 @@ function AccountGRN() {
         </label>
 
         {/* GRN Approve */}
-        <label style={{ fontWeight: 600, fontSize: "17px", cursor: "pointer" }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
           <input
             type="radio"
             name="billType"
@@ -45,7 +45,7 @@ function AccountGRN() {
         </label>
 
         {/* NON GRN Check */}
-        <label style={{ fontWeight: 600, fontSize: "17px", cursor: "pointer" }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
           <input
             type="radio"
             name="billType"
@@ -58,7 +58,7 @@ function AccountGRN() {
         </label>
 
         {/* NON GRN Approve */}
-        <label style={{ fontWeight: 600, fontSize: "17px", cursor: "pointer" }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
           <input
             type="radio"
             name="billType"

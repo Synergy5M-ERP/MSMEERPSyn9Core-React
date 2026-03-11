@@ -22,19 +22,25 @@ namespace SwamiSamarthSyn8.Accounts.Controller
         // -----------------------------------------------------
         [HttpGet("Vendors")]
         public async Task<IActionResult> GetVendors()
-        {
+        { 
+            
             try
             {
                 var vendors = await _context.Potential_Vendor
                     .Select(v => new
                     {
-                        v.Id,
-                        VendorCode = v.Vendor_Code,
-                        v.Company_Name,
-                      
-                        v.City,
-                        v.Address,
-                       
+                        id = v.Id,
+                        vendorCode = v.Vendor_Code,
+                        company_Name = v.Company_Name,
+                        city = v.City,
+                        address = v.Address,
+                        gst_Number = v.GST_Number,
+                        contact_Person = v.Contact_Person,
+                        contact_Number = v.Contact_Number,
+                        bank_Name = v.Bank_Name,
+                        branch = v.Branch,
+                     email=v.Email
+
                     })
                     .ToListAsync();
 
@@ -184,6 +190,6 @@ namespace SwamiSamarthSyn8.Accounts.Controller
 
             return Ok(new { success = true, message = "Updated successfully", data = existing });
         }
-
+        
     }
 }

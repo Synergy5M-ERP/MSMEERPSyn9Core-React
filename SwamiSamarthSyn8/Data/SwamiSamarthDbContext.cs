@@ -64,6 +64,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
     public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
+    public virtual DbSet<Master_VendorCategory> Master_VendorCategory { get; set; }
          //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
     public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction{ get; set; }

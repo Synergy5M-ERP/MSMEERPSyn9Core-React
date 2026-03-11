@@ -37,25 +37,42 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         }
 
         // ✔ GET GRN NUMBERS BY SELLER
-        [HttpGet("GetGRNNumbersBySeller")]
-        public async Task<IActionResult> GetGRNNumbersBySeller([FromQuery] string sellerName)
+        //[HttpGet("GetGRNNumbersBySeller")]
+        //public async Task<IActionResult> GetGRNNumbersBySeller([FromQuery] string sellerName)
+        //{
+        //    if (string.IsNullOrEmpty(sellerName))
+        //        return BadRequest(new { success = false, message = "Seller name is required" });
+
+        //    var grnNumbers = await _swamiContext.MMM_GRNTbl
+        //        .Where(g => g.Supplier_Name == sellerName)
+        //        .Select(g => new
+        //        {
+        //            g.Id,
+        //            grnNumber = g.GRN_NO
+        //        })
+        //        .OrderBy(g => g.grnNumber)
+        //        .ToListAsync();
+
+        //    return Ok(new { success = true, data = grnNumbers });
+        //}
+        [HttpGet("GetInvoicesBySeller")]
+        public async Task<IActionResult> GetInvoicesBySeller([FromQuery] string sellerName)
         {
             if (string.IsNullOrEmpty(sellerName))
                 return BadRequest(new { success = false, message = "Seller name is required" });
 
-            var grnNumbers = await _swamiContext.MMM_GRNTbl
+            var invoices = await _swamiContext.MMM_GRNTbl
                 .Where(g => g.Supplier_Name == sellerName)
                 .Select(g => new
                 {
                     g.Id,
-                    grnNumber = g.GRN_NO
+                    invoiceNumber = g.Invoice_NO
                 })
-                .OrderBy(g => g.grnNumber)
+                .OrderBy(g => g.invoiceNumber)
                 .ToListAsync();
 
-            return Ok(new { success = true, data = grnNumbers });
+            return Ok(new { success = true, data = invoices });
         }
-
         // ✔ GET PO NUMBERS BY GRN NUMBER
         //[HttpGet("GetPONumbersByGRN")]
         //public async Task<IActionResult> GetPONumbersByGRN([FromQuery] string grnNumber)
@@ -530,6 +547,201 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             {
                 await transaction.RollbackAsync();
                 return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("Vendorcategories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var categories = await _swamiContext.Master_VendorCategory
+                    .Where(x => x.IsActive == true)
+                    .Select(x => new
+                    {
+                        id = x.VendorCategoryId,
+                        name = x.VendorCategory
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = categories
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching vendor categories");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error fetching categories"
+                });
+            }
+        }
+        [HttpGet("salesbuyers")]
+        public async Task<IActionResult> GetSalesBuyers()
+        {
+            try
+            {
+                var buyers = await _swamiContext.MASTER_SalesBuyerTbl
+                    .Select(x => new
+                    {
+                        id = x.Id,
+                        company_Name = x.Company_Name,
+                        vendorCode = x.Vendor_Code,
+                        address = x.Address,
+                        city = x.City,
+                        contact_Person = x.Contact_Person,
+                        contact_Number = x.Contact_Number,
+                        gst_Number = x.GST_Number
+                        
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = buyers
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching buyers");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error fetching buyers"
+                });
+            }
+        }
+
+        [HttpPost("SaveNonGRN")]
+        public async Task<IActionResult> SaveNonGRN([FromBody] NonGRNSaveRequest model)
+        {
+            try
+            {
+                if (model == null)
+                    return BadRequest("Invalid data");
+
+                long vendorId = model.Vendor.AccountVendorId;
+                string tempVendorCode = "";
+
+                // STEP 1: Create Vendor if not exists
+                if (vendorId == 0)
+                {
+                    string today = DateTime.Now.ToString("ddMMyyyy");
+                    string prefix = "T/" + today + "/";
+
+                    var lastCode = _msmeContext.AccountVendor
+                        .Where(x => x.VendorCode.StartsWith(prefix))
+                        .OrderByDescending(x => x.VendorCode)
+                        .Select(x => x.VendorCode)
+                        .FirstOrDefault();
+
+                    int nextNumber = 1;
+
+                    if (!string.IsNullOrEmpty(lastCode))
+                    {
+                        string lastDigits = lastCode.Split('/').Last();
+                        nextNumber = Convert.ToInt32(lastDigits) + 1;
+                    }
+
+                    tempVendorCode = prefix + nextNumber.ToString("D4");
+
+                    var newVendor = new AccountVendor
+                    {
+                        VendorName = model.Vendor.VendorName,
+                        VendorCode = tempVendorCode,
+                        Address = model.Vendor.Address,
+                        City = model.Vendor.City,
+                        GSTNo = model.Vendor.GSTNo,
+                        EmailID = model.Vendor.EmailID,
+                        ContactPerson = model.Vendor.ContactPerson,
+                        ContactNo = model.Vendor.ContactNo,
+                        BanckName = model.Vendor.BanckName,
+                        BranchName = model.Vendor.BranchName,
+                        AccountNo = model.Vendor.AccountNo,
+                        IFSCCode = model.Vendor.IFSCCode,
+                        CreatedBy = 1,
+                        CreatedDate = DateTime.Now,
+                        IsActive = true
+                    };
+
+                    _msmeContext.AccountVendor.Add(newVendor);
+                    await _msmeContext.SaveChangesAsync();
+
+                    vendorId = newVendor.AccountVendorId;
+                }
+
+                // STEP 2: Insert Invoice
+                var invoice = new AccountNonGRNInvoice
+                {
+                    InvoiceNo = model.Invoice.InvoiceNo,
+                    InvoiceDate = model.Invoice.InvoiceDate,
+                    NonGrnInvoice = model.Invoice.NonGrnInvoice,
+                    PayDueDate = model.Invoice.PayDueDate,
+                    VendorId = (int)vendorId,
+                    EmployeeId = model.Invoice.EmployeeId,
+                    VendorCode = string.IsNullOrEmpty(model.Vendor.VendorCode)
+                                    ? tempVendorCode
+                                    : model.Vendor.VendorCode,
+
+                    TotalAmount = model.Details.Sum(i => i.TotalValue),
+                    TotalTaxAmount = model.Details.Sum(i => i.TaxAmount),
+                    SGSTAmount = model.Details.Sum(i => i.SGST),
+                    CGSTAmount = model.Details.Sum(i => i.CGST),
+                    IGSTAmount = model.Details.Sum(i => i.IGST),
+
+                    CreatedBy = 1,
+                    CreatedDate = DateTime.Now,
+                    IsActive = true
+                };
+
+                _msmeContext.AccountNonGRNInvoice.Add(invoice);
+                await _msmeContext.SaveChangesAsync();
+
+                long invoiceId = invoice.NonGrnInvoiceId;
+
+                // STEP 3: Insert Item Details
+                foreach (var item in model.Details)
+                {
+                    var detail = new AccountNonGRNInvoiceDetails
+                    {
+                        NonGrnId = invoiceId,
+                        Description = item.Itemname,
+                        //Itemname = item.Itemname,
+                        Qty = item.Qty,
+                        BasicAmount = item.BasicAmount,
+                        TaxType = item.TaxType,
+                        TaxAmount = item.TaxAmount,
+                        TotalValue = item.TotalValue,
+                        LedgerId = item.LedgerId,
+                        IGST = item.IGST,
+                        CGST = item.CGST,
+                        SGST = item.SGST,
+                        TaxRate = item.TaxRate
+                    };
+
+                    _msmeContext.AccountNonGRNInvoiceDetails.Add(detail);
+                }
+
+                await _msmeContext.SaveChangesAsync();
+
+                return Ok(new { success = true, invoiceId = invoiceId });
+            }
+            catch (Exception ex)
+            {
+                // return full error message
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error while saving Non-GRN Invoice",
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message
+                });
             }
         }
     }

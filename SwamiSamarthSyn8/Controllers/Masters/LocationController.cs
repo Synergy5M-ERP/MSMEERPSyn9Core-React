@@ -353,20 +353,13 @@ namespace SwamiSamarthSyn8.Controllers.Masters
         }
 
         [HttpGet("GetLocationData")]
-        public IActionResult GetLocationData()
+        public IActionResult GetLocationData(string status)
         {
-            try
-            {
-                var locations = _msmeContext.LocationDto
-                    .FromSqlRaw("EXEC sp_GetLocationList")
-                    .ToList();
+            var data = _msmeContext.Set<LocationDto>()
+                .FromSqlRaw("EXEC sp_GetLocationList @Status = {0}", status)
+                .ToList();
 
-                return Ok(locations);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(data);
         }
 
         [HttpPost("UpdateLocation")]
@@ -439,6 +432,56 @@ namespace SwamiSamarthSyn8.Controllers.Masters
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost("DeleteLocation")]
+        public IActionResult DeleteLocation([FromBody] LocationDeleteModel model)
+        {
+            if (model.deleteType == "city" && model.cityId != null)
+            {
+                var city = _msmeContext.Master_City.Find(model.cityId);
+                if (city != null) city.IsActive = false;
+            }
+            else if (model.deleteType == "state" && model.stateId != null)
+            {
+                var state = _msmeContext.Master_State.Find(model.stateId);
+                if (state != null) state.IsActive = false;
+            }
+            else if (model.deleteType == "country" && model.countryId != null)
+            {
+                var country = _msmeContext.Master_Country.Find(model.countryId);
+                if (country != null) country.IsActive = false;
+            }
+            else if (model.deleteType == "continent" && model.continentId != null)
+            {
+                var continent = _msmeContext.Master_Continent.Find(model.continentId);
+                if (continent != null) continent.IsActive = false;
+            }
+            else if (model.deleteType == "source" && model.sourceId != null)
+            {
+                var source = _msmeContext.Master_Source.Find(model.sourceId);
+                if (source != null) source.IsActive = false;
+            }
+
+            _msmeContext.SaveChanges();
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost("ActivateLocation")]
+        public IActionResult ActivateLocation([FromBody] ActivateLocationDto model)
+        {
+            _msmeContext.Database.ExecuteSqlRaw(
+                "EXEC sp_ActivateLocation @Type={0}, @SourceId={1}, @ContinentId={2}, @CountryId={3}, @StateId={4}, @CityId={5}",
+                model.Type,
+                model.SourceId,
+                model.ContinentId,
+                model.CountryId,
+                model.StateId,
+                model.CityId
+            );
+
+            return Ok(new { success = true });
         }
     }
 }

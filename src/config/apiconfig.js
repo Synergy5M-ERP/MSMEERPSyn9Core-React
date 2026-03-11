@@ -272,4 +272,6 @@ GET_STATES:`${BASE_URL}/Location/GetStates`,
 ADD_CITY:`${BASE_URL}/Location/AddCity`,
 GET_LOCATION_DATA:`${BASE_URL}/Location/GetLocationData`,
 UPDATE_LOCATION:`${BASE_URL}/Location/UpdateLocation`,
+DELETE_LOCATION:`${BASE_URL}/Location/DeleteLocation`,
+ACTIVATE_LOCATION:`${BASE_URL}/Location/ActivateLocation`,
 };

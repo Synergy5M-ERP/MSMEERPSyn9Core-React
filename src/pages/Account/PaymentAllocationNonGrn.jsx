@@ -12,34 +12,91 @@ const PaymentAllocationNonGrn = () => {
   const [ledger, setLedger] = useState("");
   const [subLedger, setSubLedger] = useState("");
   const [pageSize, setPageSize] = useState(10);
-
+const [ledgers, setLedgers] = useState([]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // 🔹 LOAD DATA FROM API
+  const [subLedgers, setSubLedgers] = useState([]);
+  const [banks, setBanks] = useState([]);
   useEffect(() => {
+  fetchLedger();
+}, []);
+const fetchLedger = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.GetLedger);
+    const data = await res.json();
 
-    const fetchData = async () => {
+    if (data.success) {
+      setLedgers(data.data);
+    }
+  } catch (err) {
+    console.error("Ledger load error", err);
+  }
+};
+const fetchSubLedger = async (ledgerId) => {
+  try {
+    const res = await fetch(
+      `${API_ENDPOINTS.GetSubLedger}?ledgerId=${ledgerId}`
+    );
 
-      try {
+    const data = await res.json();
 
-        setLoading(true);
+    if (data.success) {
+      setSubLedgers(data.data);
+    }
 
-        const res = await fetch(API_ENDPOINTS.GetPaymentAllocationNonGrn);
+  } catch (err) {
+    console.error("SubLedger load error", err);
+  }
+};
+const fetchBank = async (supplier) => {
 
-        const data = await res.json();
+  try {
 
-        const mapped = data.map((item) => ({
+    const res = await fetch(
+      `${API_ENDPOINTS.GetNonGrnBank}?supplier=${supplier}`
+    );
+
+    const data = await res.json();
+
+    setBanks(data.data || []);
+
+  } catch (err) {
+    console.error("Bank load error", err);
+  }
+
+};
+  // 🔹 LOAD DATA FROM API
+ useEffect(() => {
+
+  const fetchData = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const res = await fetch(API_ENDPOINTS.GetPaymentAllocNonGrn);
+
+      const result = await res.json();
+
+      if (result.success) {
+
+        const mapped = result.data.map((item) => ({
 
           vendorName: item.supplier_Name,
           invoiceNo: item.invoice_NO,
-          invoiceDate: item.invoice_Date?.split("T")[0],
+          invoiceDate: item.invoice_Date
+            ? item.invoice_Date.split("T")[0]
+            : "",
+
           totalAmount: Number(item.total_Amount || 0),
 
-          dueDate: item.due_Date?.split("T")[0],
+          dueDate: item.due_Date
+            ? item.due_Date.split("T")[0]
+            : "",
 
           paidAmount: 0,
-          balanceAmount: Number(item.total_Amount || 0),
+
+          balanceAmount: Number(item.balanceAmount || item.total_Amount || 0),
 
           bankName: "",
           rtgsNo: "",
@@ -49,21 +106,27 @@ const PaymentAllocationNonGrn = () => {
 
         setRows(mapped);
 
-      } catch (err) {
+      } else {
 
-        console.error("Error loading data", err);
-
-      } finally {
-
-        setLoading(false);
+        setRows([]);
 
       }
 
-    };
+    } catch (err) {
 
-    fetchData();
+      console.error("Error loading data", err);
 
-  }, []);
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  fetchData();
+
+}, []);
 
   // 🔹 PAID AMOUNT CHANGE
   const handlePaidChange = (index, value) => {
@@ -108,22 +171,41 @@ const PaymentAllocationNonGrn = () => {
 
               <div className="col-md-2">
                 <label className="form-label fw-bold">Ledger Account</label>
-                <select
-                  className="form-select"
-                  value={ledger}
-                  onChange={(e) => setLedger(e.target.value)}
-                >
-                  <option>Select Ledger</option>
-                </select>
+               <select
+  className="form-select"
+  value={ledger}
+onChange={(e) => {
+  setLedger(e.target.value);
+  fetchSubLedger(e.target.value);
+}}  
+>
+  <option value="">Select Ledger</option>
+
+  {ledgers.map((l) => (
+    <option key={l.accountLedgerId} value={l.accountLedgerId}>
+      {l.accountLedgerName}
+    </option>
+  ))}
+
+</select>
               </div>
 
               <div className="col-md-2">
                 <label className="form-label fw-bold">Sub Ledger</label>
-                <input
-                  className="form-control"
-                  value={subLedger}
-                  onChange={(e) => setSubLedger(e.target.value)}
-                />
+               <select
+  className="form-select"
+  value={subLedger}
+  onChange={(e) => setSubLedger(e.target.value)}
+>
+  <option value="">Select Sub Ledger</option>
+
+  {subLedgers.map((s) => (
+    <option key={s.accountLedgerSubid} value={s.accountLedgerSubid}>
+      {s.accountLedgerSubName}
+    </option>
+  ))}
+
+</select>
               </div>
 
               <div className="col-md-3">

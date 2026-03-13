@@ -2,7 +2,7 @@
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-//  const BASE_URL = "https://localhost:7145/api";
+  //const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -123,8 +123,15 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
 
 
     SaveNonGRN: `${BASE_URL}/GRN/SaveNonGRN`,
+    GetApproveSellerNonGrnSo: `${BASE_URL}/GRN/GetApproveSellerNonGrnSo`,
+    GetGrnInvoiceDetails: `${BASE_URL}/GRN/GetGrnInvoiceDetails`,
+    ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
 
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
+  GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
+  GetLedger: `${BASE_URL}/GRN/GetLedger`,
+  GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
+  GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
 
 VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,

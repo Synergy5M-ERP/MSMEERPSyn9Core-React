@@ -71,7 +71,10 @@ const vendorOptions = vendors.map((v) => ({
   value: v.id,
   label: v.company_Name || v.companyName
 }));
-
+const employeeOptions = employees.map((emp) => ({
+  value: emp.employeeId,
+  label: emp.fullName?.trim()
+}));
 useEffect(() => {
   const qty = Number(formData.qtyLot || 0);
   const basic = Number(formData.basicAmount || 0);
@@ -340,24 +343,24 @@ const handleAddProduct = () => {
     Number(formData.cgstAmount || 0);
 
   const totalItemValue = totalBasic + totalTax;
+const newItem = {
+  description: formData.description,
+  qty: Number(formData.qtyLot || 0),
+  basicAmount: Number(formData.basicAmount || 0),
+  taxType: formData.taxType,
 
-  const newItem = {
-    description: formData.description,
-    qty: formData.qtyLot,
-    basicAmount: formData.basicAmount,
-    taxType: formData.taxType,
+  igst: Number(formData.igstAmount || 0),
+  sgst: Number(formData.sgstAmount || 0),
+  cgst: Number(formData.cgstAmount || 0),
 
-    igst: formData.igstAmount,
-    sgst: formData.sgstAmount,
-    cgst: formData.cgstAmount,
+  taxRate: Number(formData.taxrate || 0),
 
-    totalTax: totalTax,
-    totalItemValue: totalItemValue,
+  totalTax: totalTax,
+  totalItemValue: totalItemValue,
 
-    ledgerName: formData.glDescription,
-    ledgerId: formData.ledgerId
-  };
-
+  ledgerName: formData.glDescription,
+  ledgerId: Number(formData.ledgerId || 0)
+};
   setItems([...items, newItem]);
 
   setFormData(prev => ({
@@ -388,10 +391,10 @@ const grandTotal = items.reduce(
   0
 );
 const handleSubmit = async () => {
-  if (!selectedVendorId && !formData.partyName) {
-    Swal.fire("Error", "Please select or enter a vendor", "error");
-    return;
-  }
+  if (!selectedVendorId && !selectedEmployeeId && !formData.partyName) {
+  Swal.fire("Error", "Please select Vendor or Employee", "error");
+  return;
+}
 
   if (!items || items.length === 0) {
     Swal.fire("Error", "Please add at least one item", "error");
@@ -406,32 +409,37 @@ const handleSubmit = async () => {
   const igstAmount = items.reduce((sum, i) => sum + Number(i.igst || 0), 0);
 
   // Prepare payload matching NonGRNSaveRequest
-  const payload = {
-    Vendor: {
-    AccountVendorId: selectedVendorId ? selectedVendorId : 0,   // ⭐ IMPORTANT
-      VendorName: formData.partyName || "",
-      VendorCode: formData.vendorCode || "",
-      Address: formData.address || "",
-      City: formData.city || "",
-      GSTNo: formData.gstNo || "",
-  EmailID: (formData.EmailID || "").substring(0,50), // FIX
-      ContactPerson: formData.contactPerson || "",
-      ContactNo: String(formData.contactNo || ""),
-      BanckName: formData.bankName || "",
-      BranchName: formData.branchName || "",
-      AccountNo: formData.accountNo || "",
-IFSCCode: (formData.ifscCode || "").substring(0,10)   
- },
+   const payload = {
+  Vendor: {
+  AccountVendorId: selectedVendorId || 0,
+  VendorName: formData.partyName || "",
+  VendorCode: formData.vendorCode || "",
+  Address: formData.address || "",
+  City: formData.city || "",
+  GSTNo: formData.gstNo || "",
+  EmailID: (formData.EmailID || "").substring(0, 50),
+  ContactPerson: formData.contactPerson || "",
+  ContactNo: String(formData.contactNo || ""),
+  BanckName: formData.bankName || "",
+  BranchName: formData.branchName || "",
+  AccountNo: formData.accountNo || "",
+  IFSCCode: (formData.ifscCode || "").substring(0, 10)
+},
    Invoice: {
+  EmployeeId: selectedEmployeeId || 0,
+  VendorId: selectedVendorId || 0,
+  VendorCode: selectedVendorId
+    ? formData.vendorCode
+    : formData.employeeCode,
+
   InvoiceNo: formData.invoiceNo || "",
   InvoiceDate: formData.invoiceDate || null,
-    PayDueDate: formData.PayDueDate || null,  // ✅ ADD THIS
+  PayDueDate: formData.PayDueDate || null,
 
-NonGrnInvoice: billType === "NonGRN" ? "NonGRN" : "NonInvoice",
-  CheckNonGRNInvoice: "Pending",   // ADD THIS
-  VendorId: selectedVendorId || 0,
-  EmployeeId: selectedEmployeeId || 0,
-  VendorCode: formData.vendorCode || "",
+  NonGrnInvoice: billType === "NonGRN" ? "NonGRN" : "NonSO",
+
+  CheckNonGRNInvoice: "Pending",
+
   TotalAmount: totalAmount,
   TotalTaxAmount: totalTaxAmount,
   SGSTAmount: sgstAmount,
@@ -575,7 +583,7 @@ return (
   options={vendorOptions}
   value={vendorOptions.find(v => v.value === selectedVendorId) || null}
   isDisabled={!billType}
-  placeholder="Select a seller"
+  placeholder="Search a seller"
   isSearchable={true}
 
   noOptionsMessage={({ inputValue }) => {
@@ -681,23 +689,51 @@ return (
     <label className="form-label fw-bold text-primary">
       Select Employee
     </label>
-  <select
-  className="form-select"
-  value={selectedEmployeeId}
-  onChange={(e) => {
-    setSelectedEmployeeId(e.target.value);
-    setSelectedVendorId("");   // clear vendor
-    handleEmployeeChange(e);
-  }}
->
-  <option value="">-- Select Employee --</option>
+  <Select
+  options={employeeOptions}
+  value={employeeOptions.find(e => e.value === selectedEmployeeId) || null}
+  placeholder="Search Employee"
+  isSearchable={true}
 
-  {employees.map((emp) => (
-    <option key={emp.employeeId} value={emp.employeeId}>
-      {emp.fullName?.trim()}
-    </option>
-  ))}
-</select>
+  styles={{
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      maxHeight: "200px"
+    })
+  }}
+
+  onChange={(selected) => {
+
+    if (!selected) {
+      setSelectedEmployeeId("");
+      return;
+    }
+
+    const empId = selected.value;
+
+    setSelectedEmployeeId(empId);
+    setSelectedVendorId(""); // clear vendor
+
+    const emp = employees.find(x => x.employeeId === empId);
+
+    if (emp) {
+      setFormData(prev => ({
+        ...prev,
+       employeeName: emp.fullName || "",
+  employeeCode: emp.empCode || "",
+  employeeEmail: emp.email || "",      // ✅ correct
+  employeeMobile: emp.contactNo || "",
+  employeeAddress: emp.address || "",  // ✅ correct
+  employeeCity: emp.city || ""
+      }));
+    }
+
+  }}
+/>
   </div>
 
 </div>
@@ -708,8 +744,7 @@ return (
       {/* ================= MAIN FORM ================= */}
 
 {/* ================= VENDOR CUSTOM CARD ================= */}
-{(selectedVendorId || showForm) && (
-  <div
+{(selectedVendorId || showForm) && ( <div
   className="custm-card"
   style={{
     background: "#fff",
@@ -928,7 +963,7 @@ Email    </label>
 </div>
 
 )}
-{selectedEmployeeId && (
+{(selectedEmployeeId || showForm) && (
 <div
   className="custm-card"
   style={{
@@ -940,7 +975,6 @@ Email    </label>
   }}
 >
 
-<h5 className="mb-4 text-primary fw-bold">Employee Details</h5>
 
 {/* ROW 1 */}
 <div className="row g-4 mb-4">
@@ -1057,7 +1091,18 @@ Email    </label>
       onChange={handleChange}
     />
   </div>
-
+<div className="col-md-3">
+    <label className="form-label fw-bold text-primary">
+      PayDueDate
+    </label>
+    <input
+      type="date"
+      name="PayDueDate"
+      className="form-control"
+      value={formData.PayDueDate}
+      onChange={handleChange}
+    />
+  </div>
 </div>
 
 </div>

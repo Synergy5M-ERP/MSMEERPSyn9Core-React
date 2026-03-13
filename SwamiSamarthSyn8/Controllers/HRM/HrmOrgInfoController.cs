@@ -349,7 +349,8 @@ namespace SwamiSamarthSyn8.Controllers.HRM
                     Gender = e.Gender ?? "",
                     ContactNo = e.ContactNo ?? "",
                     DOB = e.DOB,
-
+                    Email=e.Email,
+                    Address=e.Address,
                     DepartmentName = d != null ? d.DeptName : "",
                     DesignationName = des != null ? des.DesignationName : "",
                     AuthorityName = a != null ? a.AuthorityMatrixName : "",

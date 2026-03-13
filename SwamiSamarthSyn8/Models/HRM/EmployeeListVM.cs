@@ -26,6 +26,8 @@
         public bool IsActive { get; set; }
 
         public string AuthorityName { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; }
 
     }
 

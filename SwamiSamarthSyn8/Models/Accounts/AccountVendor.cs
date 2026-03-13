@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 public class AccountVendor
 {
     [Key]
-    public long AccountVendorId { get; set; }
+    public int AccountVendorId { get; set; }
 
     public int? VendorCategoryId { get; set; }
 

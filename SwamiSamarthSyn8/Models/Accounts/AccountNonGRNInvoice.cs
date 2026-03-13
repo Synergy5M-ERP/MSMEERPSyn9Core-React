@@ -10,7 +10,7 @@ public class AccountNonGRNInvoice
     public string NonGrnInvoice { get; set; }
 
     public long? EmployeeId { get; set; }
-    public long? VendorId { get; set; }
+    public int? VendorId { get; set; }
 
     public string VendorCode { get; set; }
     public string InvoiceNo { get; set; }
@@ -24,7 +24,7 @@ public class AccountNonGRNInvoice
     public decimal? CGSTAmount { get; set; }
     public decimal? IGSTAmount { get; set; }
 
-    public string CheckNonGRNInvoice { get; set; }
+    public string? CheckNonGRNInvoice { get; set; }
 
     public bool? ApproveNonGRNInvoice { get; set; }
 

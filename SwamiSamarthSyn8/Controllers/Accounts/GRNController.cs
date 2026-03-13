@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models;
@@ -595,7 +596,9 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         city = x.City,
                         contact_Person = x.Contact_Person,
                         contact_Number = x.Contact_Number,
-                        gst_Number = x.GST_Number
+                        gst_Number = x.GST_Number,
+                        email=x.Email,
+                        
                         
                     })
                     .ToListAsync();
@@ -618,36 +621,169 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
+        //[HttpPost("SaveNonGRN")]
+        //public async Task<IActionResult> SaveNonGRN([FromBody] NonGRNSaveRequest model)
+        //{
+        //    try
+        //    {
+        //        if (model == null)
+        //            return BadRequest("Invalid data");
+
+
+        //        long vendorId = model.Vendor.AccountVendorId;
+        //        long employeeId = model.Invoice.EmployeeId ?? 0;
+
+        //        string tempVendorCode = "";
+
+        //        /*------------------------------------
+        //          STEP 1 : Create Vendor if not exists
+        //        ------------------------------------*/
+
+        //        if (vendorId == 0 && employeeId == 0)
+        //        {
+
+        //            string today = DateTime.Now.ToString("ddMMyyyy");
+        //            string prefix = "T/" + today + "/";
+
+        //            var lastCode = _msmeContext.AccountVendor
+        //                .Where(x => x.VendorCode.StartsWith(prefix))
+        //                .OrderByDescending(x => x.VendorCode)
+        //                .Select(x => x.VendorCode)
+        //                .FirstOrDefault();
+
+        //            int nextNumber = 1;
+
+        //            if (!string.IsNullOrEmpty(lastCode))
+        //            {
+        //                string lastDigits = lastCode.Split('/').Last();
+        //                nextNumber = Convert.ToInt32(lastDigits) + 1;
+        //            }
+
+        //            tempVendorCode = prefix + nextNumber.ToString("D4");
+
+        //            var newVendor = new AccountVendor
+        //            {
+        //                VendorName = model.Vendor.VendorName,
+        //                VendorCode = tempVendorCode,
+        //                Address = model.Vendor.Address,
+        //                City = model.Vendor.City,
+        //                GSTNo = model.Vendor.GSTNo,
+        //                EmailID = model.Vendor.EmailID,
+        //                ContactPerson = model.Vendor.ContactPerson,
+        //                ContactNo = model.Vendor.ContactNo,
+        //                BanckName = model.Vendor.BanckName,
+        //                BranchName = model.Vendor.BranchName,
+        //                AccountNo = model.Vendor.AccountNo,
+        //                IFSCCode = model.Vendor.IFSCCode,
+        //                CreatedBy = 1,
+        //                CreatedDate = DateTime.Now,
+        //                IsActive = true,
+
+
+
+        //            };
+
+        //            _msmeContext.AccountVendor.Add(newVendor);
+        //            await _msmeContext.SaveChangesAsync();
+
+        //            vendorId = newVendor.AccountVendorId;
+        //        }
+
+        //        STEP 2: Insert Invoice
+        //        var invoice = new AccountNonGRNInvoice
+        //        {
+        //            InvoiceNo = model.Invoice.InvoiceNo,
+        //            InvoiceDate = model.Invoice.InvoiceDate,
+        //            NonGrnInvoice = model.Invoice.NonGrnInvoice,
+        //            PayDueDate = model.Invoice.PayDueDate,
+        //            VendorId = (int)vendorId,
+        //             ✅ SAVE EMPLOYEE ID
+        //            EmployeeId = model.Invoice.EmployeeId == 0
+        //            ? null
+        //            : model.Invoice.EmployeeId,
+        //            VendorCode = string.IsNullOrEmpty(model.Vendor.VendorCode)
+        //                            ? tempVendorCode
+        //                            : model.Vendor.VendorCode,
+
+        //            TotalAmount = model.Details.Sum(i => i.TotalValue),
+        //            TotalTaxAmount = model.Details.Sum(i => i.TaxAmount),
+        //            SGSTAmount = model.Details.Sum(i => i.SGST),
+        //            CGSTAmount = model.Details.Sum(i => i.CGST),
+        //            IGSTAmount = model.Details.Sum(i => i.IGST),
+        //            CreatedBy = 1,
+        //            CreatedDate = DateTime.Now,
+        //            IsActive = true
+        //        };
+
+        //        _msmeContext.AccountNonGRNInvoice.Add(invoice);
+        //        await _msmeContext.SaveChangesAsync();
+
+        //        long invoiceId = invoice.NonGrnInvoiceId;
+
+        //        STEP 3: Insert Item Details
+        //        foreach (var item in model.Details)
+        //        {
+        //            var detail = new AccountNonGRNInvoiceDetails
+        //            {
+        //                NonGrnId = invoiceId,
+        //                Description = item.Itemname,
+        //                Itemname = item.Itemname,
+        //                Qty = item.Qty,
+        //                BasicAmount = item.BasicAmount,
+        //                TaxType = item.TaxType,
+        //                TaxAmount = item.TaxAmount,
+        //                TotalValue = item.TotalValue,
+        //                LedgerId = item.LedgerId,
+        //                IGST = item.IGST,
+        //                CGST = item.CGST,
+        //                SGST = item.SGST,
+        //                TaxRate = item.TaxRate
+        //            };
+
+        //            _msmeContext.AccountNonGRNInvoiceDetails.Add(detail);
+        //        }
+
+        //        await _msmeContext.SaveChangesAsync();
+
+        //        return Ok(new { success = true, invoiceId = invoiceId });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return full error message
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = "Error while saving Non-GRN Invoice",
+        //            error = ex.Message,
+        //            innerError = ex.InnerException?.Message
+        //        });
+        //    }
+        //}
         [HttpPost("SaveNonGRN")]
         public async Task<IActionResult> SaveNonGRN([FromBody] NonGRNSaveRequest model)
         {
             try
             {
-                if (model == null)
-                    return BadRequest("Invalid data");
+                if (model == null) return BadRequest("Invalid data");
 
-                long vendorId = model.Vendor.AccountVendorId;
+                int vendorId = model.Vendor.AccountVendorId;
+                long employeeId = model.Invoice.EmployeeId ?? 0;
                 string tempVendorCode = "";
 
-                // STEP 1: Create Vendor if not exists
-                if (vendorId == 0)
+                // Step 1: Create Vendor if not exists
+                if (vendorId == 0 && employeeId == 0)
                 {
                     string today = DateTime.Now.ToString("ddMMyyyy");
                     string prefix = "T/" + today + "/";
-
                     var lastCode = _msmeContext.AccountVendor
-                        .Where(x => x.VendorCode.StartsWith(prefix))
-                        .OrderByDescending(x => x.VendorCode)
-                        .Select(x => x.VendorCode)
-                        .FirstOrDefault();
+                                     .Where(x => x.VendorCode.StartsWith(prefix))
+                                     .OrderByDescending(x => x.VendorCode)
+                                     .Select(x => x.VendorCode)
+                                     .FirstOrDefault();
 
                     int nextNumber = 1;
-
                     if (!string.IsNullOrEmpty(lastCode))
-                    {
-                        string lastDigits = lastCode.Split('/').Last();
-                        nextNumber = Convert.ToInt32(lastDigits) + 1;
-                    }
+                        nextNumber = Convert.ToInt32(lastCode.Split('/').Last()) + 1;
 
                     tempVendorCode = prefix + nextNumber.ToString("D4");
 
@@ -667,34 +803,29 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         IFSCCode = model.Vendor.IFSCCode,
                         CreatedBy = 1,
                         CreatedDate = DateTime.Now,
-                        IsActive = true
+                        IsActive = true,
                     };
 
                     _msmeContext.AccountVendor.Add(newVendor);
                     await _msmeContext.SaveChangesAsync();
-
                     vendorId = newVendor.AccountVendorId;
                 }
 
-                // STEP 2: Insert Invoice
+                // Step 2: Insert Invoice
                 var invoice = new AccountNonGRNInvoice
                 {
                     InvoiceNo = model.Invoice.InvoiceNo,
                     InvoiceDate = model.Invoice.InvoiceDate,
                     NonGrnInvoice = model.Invoice.NonGrnInvoice,
                     PayDueDate = model.Invoice.PayDueDate,
-                    VendorId = (int)vendorId,
-                    EmployeeId = model.Invoice.EmployeeId,
-                    VendorCode = string.IsNullOrEmpty(model.Vendor.VendorCode)
-                                    ? tempVendorCode
-                                    : model.Vendor.VendorCode,
-
+                    VendorId = vendorId,
+                    EmployeeId = model.Invoice.EmployeeId == 0 ? null : model.Invoice.EmployeeId,
+                    VendorCode = string.IsNullOrEmpty(model.Vendor.VendorCode) ? tempVendorCode : model.Vendor.VendorCode,
                     TotalAmount = model.Details.Sum(i => i.TotalValue),
                     TotalTaxAmount = model.Details.Sum(i => i.TaxAmount),
                     SGSTAmount = model.Details.Sum(i => i.SGST),
                     CGSTAmount = model.Details.Sum(i => i.CGST),
                     IGSTAmount = model.Details.Sum(i => i.IGST),
-
                     CreatedBy = 1,
                     CreatedDate = DateTime.Now,
                     IsActive = true
@@ -705,14 +836,13 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                 long invoiceId = invoice.NonGrnInvoiceId;
 
-                // STEP 3: Insert Item Details
+                // Step 3: Insert Item Details
                 foreach (var item in model.Details)
                 {
                     var detail = new AccountNonGRNInvoiceDetails
                     {
                         NonGrnId = invoiceId,
                         Description = item.Itemname,
-                        //Itemname = item.Itemname,
                         Qty = item.Qty,
                         BasicAmount = item.BasicAmount,
                         TaxType = item.TaxType,
@@ -724,17 +854,14 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         SGST = item.SGST,
                         TaxRate = item.TaxRate
                     };
-
                     _msmeContext.AccountNonGRNInvoiceDetails.Add(detail);
                 }
 
                 await _msmeContext.SaveChangesAsync();
-
                 return Ok(new { success = true, invoiceId = invoiceId });
             }
             catch (Exception ex)
             {
-                // return full error message
                 return StatusCode(500, new
                 {
                     success = false,
@@ -744,5 +871,385 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 });
             }
         }
+        [HttpGet("GetApproveSellerNonGrnSo")]
+        public IActionResult GetApproveSellerNonGrnSo(string type)
+        {
+            try
+            {
+                // Get all VendorIds used in invoices
+                var vendorIds = _msmeContext.AccountNonGRNInvoice
+                    .Where(x => x.VendorId != null && x.VendorId != 0)
+                    .Select(x => x.VendorId)
+                    .Distinct()
+                    .ToList();
+
+                if (type == "NonGRN")
+                {
+                    // 1️⃣ Regular Vendors
+                    var regularVendors = _swamiContext.Potential_Vendor
+                        .Where(x => vendorIds.Contains(x.Id))
+                        .Select(x => new
+                        {
+                            VendorId = x.Id,
+                            VendorName = x.Company_Name ?? ""
+                        })
+                        .ToList();
+
+                    // 2️⃣ Temporary Vendors
+                    var tempVendors = _msmeContext.AccountVendor
+                        .Where(x => vendorIds.Contains(x.AccountVendorId))
+                        .Select(x => new
+                        {
+                            VendorId = x.AccountVendorId,
+                            VendorName = x.VendorName ?? ""
+                        })
+                        .ToList();
+
+                    // Merge both lists
+                    var vendors = regularVendors
+                        .Concat(tempVendors)
+                        .GroupBy(x => x.VendorId)
+                        .Select(g => g.First())
+                        .ToList();
+
+                    return Ok(new { data = vendors });
+                }
+
+                else if (type == "NonSO")
+                {
+                    // Buyers
+                    var buyers = _swamiContext.MASTER_SalesBuyerTbl
+                        .Where(x => vendorIds.Contains(x.Id))
+                        .Select(x => new
+                        {
+                            VendorId = x.Id,
+                            VendorName = x.Company_Name ?? ""
+                        })
+                        .ToList();
+
+                    return Ok(new { data = buyers });
+                }
+
+                return BadRequest(new { success = false, message = "Invalid Type" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+        [HttpGet("GetGrnInvoiceDetails")]
+        public IActionResult GetGrnInvoiceDetails(int seller, string checkval)
+        {
+            try
+            {
+                var grnDetails = (
+                    from inv in _msmeContext.AccountNonGRNInvoice
+                    join item in _msmeContext.AccountNonGRNInvoiceDetails
+                        on inv.NonGrnInvoiceId equals item.NonGrnId
+                    join led in _msmeContext.AccountLedger
+                        on item.LedgerId equals led.AccountLedgerId into ledgerJoin
+                    from led in ledgerJoin.DefaultIfEmpty()
+
+                    where inv.VendorId == seller && inv.NonGrnInvoice == checkval
+
+                    select new
+                    {
+                        grN_NO = inv.InvoiceNo,
+                        invoiceDate = inv.InvoiceDate,
+
+                        description = item.Description,
+                        qty = item.Qty,
+
+                        basicAmount = item.BasicAmount,
+
+                        totalValue = item.TotalValue,
+
+                        ledgerId = item.LedgerId,
+                        ledgerName = led.AccountLedgerName,
+
+                        taxRate = item.TaxRate,
+
+                        // ✅ ADD THESE
+                        totalTaxValue = item.TaxAmount,
+                        netAmount = item.TotalValue,
+
+                        cgst = item.CGST,
+                        sgst = item.SGST,
+                        igst = item.IGST,
+
+                        nonGrnInvoiceId = inv.NonGrnInvoiceId,
+                        approveNonGRNInvoice = inv.ApproveNonGRNInvoice
+                    }
+                ).ToList();
+
+                if (grnDetails.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "No GRN Found"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    grnDetails = grnDetails
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error fetching GRN details",
+                    error = ex.Message
+                });
+            }
+        }
+        [HttpPost("ApproveGrnInvoice")]
+        public IActionResult ApproveGrnInvoice([FromBody] List<ApproveNonGrnVM> model)
+        {
+            try
+            {
+                foreach (var item in model)
+                {
+                    var invoice = _msmeContext.AccountNonGRNInvoice
+                        .FirstOrDefault(x => x.NonGrnInvoiceId == item.NonGrnInvoiceId);
+
+                    if (invoice != null)
+                    {
+                        invoice.ApproveNonGRNInvoice = item.ApproveNonGRNInvoice;
+                        invoice.CheckNonGRNInvoice = "Approved";
+                    }
+                }
+
+                _msmeContext.SaveChanges();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "GRN approved successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    message = "Error while updating GRN",
+                    error = ex.Message
+                });
+            }
+        }
+        public class ApproveNonGrnVM
+        {
+            public int NonGrnInvoiceId { get; set; }
+            public bool ApproveNonGRNInvoice { get; set; }
+        }
+        [HttpGet("GetNonGrnBank")]
+        public IActionResult GetNonGrnBank([FromQuery] string supplier)
+        {
+            if (string.IsNullOrEmpty(supplier))
+            {
+                return BadRequest(new { message = "Supplier name is required" });
+            }
+
+            var bankList = new List<object>();
+
+            // Check Potential Vendor
+            var potentialVendor = _swamiContext.Potential_Vendor
+                                  .FirstOrDefault(v => v.Company_Name == supplier);
+
+            if (potentialVendor != null)
+            {
+                // Main bank
+                if (!string.IsNullOrEmpty(potentialVendor.Bank_Name))
+                {
+                    bankList.Add(new
+                    {
+                        BankName = potentialVendor.Bank_Name,
+                        Id = potentialVendor.Id
+                    });
+                }
+
+                // Other banks
+                var otherBanks = _msmeContext.AccountBankDetails
+                                  .Where(b => b.VendorId == potentialVendor.Id)
+                                  .Select(b => new
+                                  {
+                                      BankName = b.BankName,
+                                      Id = b.AccountBankDetailId
+                                  })
+                                  .ToList();
+
+                bankList.AddRange(otherBanks);
+            }
+            else
+            {
+                // Check Account Vendor
+                var accountVendor = _msmeContext.AccountVendor
+                                    .FirstOrDefault(v => v.VendorName == supplier);
+
+                if (accountVendor != null)
+                {
+                    if (!string.IsNullOrEmpty(accountVendor.BanckName))
+                    {
+                        bankList.Add(new
+                        {
+                            BankName = accountVendor.BanckName,
+                            Id = accountVendor.AccountVendorId
+                        });
+                    }
+
+                    var otherBanks = _msmeContext.AccountBankDetails
+                                      .Where(b => b.VendorId == accountVendor.AccountVendorId)
+                                      .Select(b => new
+                                      {
+                                          BankName = b.BankName,
+                                          Id = b.AccountBankDetailId
+                                      })
+                                      .ToList();
+
+                    bankList.AddRange(otherBanks);
+                }
+            }
+
+            return Ok(new { data = bankList });
+        }
+        [HttpGet("GetLedger")]
+        public IActionResult GetLedger()
+        {
+            var ledger = _msmeContext.AccountLedger
+                .Select(l => new
+                {
+                    l.AccountLedgerId,
+                    l.AccountLedgerName
+                })
+                .ToList();
+
+            return Ok(new { success = true, data = ledger });
+        }
+        [HttpGet("GetSubLedger")]
+        public IActionResult GetSubLedger(int ledgerId)
+        {
+            var ledger = _msmeContext.AccountSubLedger
+                .Where(s => s.AccountLedgerid == ledgerId)
+                .Select(l => new
+                {
+                    l.AccountLedgerSubid,
+                    l.AccountLedgerSubName
+                })
+                .ToList();
+
+            return Ok(new { success = true, data = ledger });
+        }
+        //[HttpGet("GetLedgerBalance")]
+        //public IActionResult GetLedgerBalance(int ledger)
+        //{
+        //    var balance = _msmeContext.AccountSubLedger
+        //        .Where(l => l.AccountLedgerSubid == ledger)
+        //        .Select(l => l.ClosingBal)
+        //        .FirstOrDefault();
+
+        //    return Ok(new { success = true, balance = balance });
+        //}
+
+        [HttpGet("GetPaymentAllocNonGrn")]
+        public IActionResult GetPaymentAllocNonGrn()
+        {
+            try
+            {
+                var latestPayments = _msmeContext.AccountPaymentAllocation
+                    .GroupBy(x => x.GRNNo)
+                    .Select(g => g.OrderByDescending(x => x.PaymentAllocateId).FirstOrDefault())
+                    .ToList();
+
+                var invoices = (from a in _msmeContext.AccountNonGRNInvoice
+                                join d in _msmeContext.AccountNonGRNInvoiceDetails
+                                    on a.NonGrnInvoiceId equals d.NonGrnId
+                                where a.ApproveNonGRNInvoice == true
+                                      && (a.NonGrnInvoice.Contains("NonGRN") || a.NonGrnInvoice.Contains("NonSO"))
+                                orderby a.NonGrnInvoiceId ascending
+
+                                select new
+                                {
+                                    a.NonGrnInvoiceId,
+                                    a.InvoiceNo,
+                                    a.InvoiceDate,
+                                    a.PayDueDate,
+                                    a.TotalAmount,
+                                    a.VendorCode
+                                })
+                                .Distinct()
+                                .ToList();
+
+                var potentialVendors = _swamiContext.Potential_Vendor
+                    .Select(x => new
+                    {
+                        x.Vendor_Code,
+                        x.Company_Name
+                    }).ToList();
+
+                var accountVendors = _msmeContext.AccountVendor
+                    .Select(x => new
+                    {
+                        x.VendorCode,
+                        x.VendorName
+                    }).ToList();
+
+                var result = invoices.Select(a =>
+                {
+                    var payment = latestPayments.FirstOrDefault(p => p.GRNNo == a.InvoiceNo);
+
+                    var supplierName =
+                        potentialVendors
+                            .Where(x => x.Vendor_Code == a.VendorCode)
+                            .Select(x => x.Company_Name)
+                            .FirstOrDefault()
+                        ??
+                        accountVendors
+                            .Where(x => x.VendorCode == a.VendorCode)
+                            .Select(x => x.VendorName)
+                            .FirstOrDefault();
+
+                    return new
+                    {
+                        Supplier_Name = supplierName,
+                        Due_Date = a.PayDueDate,
+                        Invoice_NO = a.InvoiceNo,
+                        Invoice_Date = a.InvoiceDate,
+                        Total_Amount = a.TotalAmount,
+                        VendorCode = a.VendorCode,
+
+                        BalanceAmount =
+                            (payment != null && payment.BalanceAmount != null && payment.BalanceAmount > 0)
+                            ? payment.BalanceAmount
+                            : a.TotalAmount
+                    };
+
+                }).Where(x => x.BalanceAmount != 0).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error loading payment allocation data",
+                    error = ex.Message
+                });
+            }
+        }
     }
+
 }

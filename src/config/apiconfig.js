@@ -1,8 +1,8 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-//  const BASE_URL = "https://localhost:7145/api";
+  const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -272,4 +272,12 @@ GET_STATES:`${BASE_URL}/Location/GetStates`,
 ADD_CITY:`${BASE_URL}/Location/AddCity`,
 GET_LOCATION_DATA:`${BASE_URL}/Location/GetLocationData`,
 UPDATE_LOCATION:`${BASE_URL}/Location/UpdateLocation`,
+
+// SDM - Enquiry
+GET_PEYMENTTERMS :`${BASE_URL}/SalesEnquiryQuotation/GetPaymentTerms`,
+GET_PRICEBASIS :`${BASE_URL}/SalesEnquiryQuotation/GetPriceList`,
+GET_SALESITEMS :`${BASE_URL}/SalesEnquiryQuotation/GetItemsFromSalesBuyer`,
+GET_GRADES :`${BASE_URL}/SalesEnquiryQuotation/GetGradeFromItem`,
+GET_ITEMdETAILS:`${BASE_URL}/SalesEnquiryQuotation/GetItemDetailsByGrade`,
+GET_BUYERDETAILS :`${BASE_URL}/SalesEnquiryQuotation/GetBuyerDetailsByGrade`,
 };

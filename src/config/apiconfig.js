@@ -1,8 +1,10 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-  const BASE_URL = "https://localhost:7145/api";
+
+  // const BASE_URL = "https://localhost:7145/api";
+
 
 
 export const API_ENDPOINTS = {
@@ -108,6 +110,7 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,
   GetSellers: `${BASE_URL}/GRN/suppliers`,
+  GetInvoicesBySeller: `${BASE_URL}/GRN/GetInvoicesBySeller`,
 
   GetGRNNumbersBySeller: `${BASE_URL}/GRN/GetGRNNumbersBySeller`,
   GetGRNsBySeller: `${BASE_URL}/GRN/GetGRNsBySeller`, // ✅ add this
@@ -117,7 +120,20 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
+    Vendorcategories: `${BASE_URL}/GRN/Vendorcategories`,
+        SalesBuyers: `${BASE_URL}/GRN/SalesBuyers`,
+
+
+    SaveNonGRN: `${BASE_URL}/GRN/SaveNonGRN`,
+    GetApproveSellerNonGrnSo: `${BASE_URL}/GRN/GetApproveSellerNonGrnSo`,
+    GetGrnInvoiceDetails: `${BASE_URL}/GRN/GetGrnInvoiceDetails`,
+    ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
+
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
+  GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
+  GetLedger: `${BASE_URL}/GRN/GetLedger`,
+  GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
+  GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
 
 VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,
@@ -280,4 +296,8 @@ GET_SALESITEMS :`${BASE_URL}/SalesEnquiryQuotation/GetItemsFromSalesBuyer`,
 GET_GRADES :`${BASE_URL}/SalesEnquiryQuotation/GetGradeFromItem`,
 GET_ITEMdETAILS:`${BASE_URL}/SalesEnquiryQuotation/GetItemDetailsByGrade`,
 GET_BUYERDETAILS :`${BASE_URL}/SalesEnquiryQuotation/GetBuyerDetailsByGrade`,
+
+DELETE_LOCATION:`${BASE_URL}/Location/DeleteLocation`,
+ACTIVATE_LOCATION:`${BASE_URL}/Location/ActivateLocation`,
+
 };

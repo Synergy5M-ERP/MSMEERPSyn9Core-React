@@ -11,6 +11,7 @@ const PaymentAllocation = () => {
   const [actualBal, setActualBal] = useState(0);
   const [baseActualBal, setBaseActualBal] = useState(0);
   const [selectedVendor, setSelectedVendor] = useState("");
+  const [subLedger, setSubLedger] = useState("");
 
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
@@ -333,7 +334,7 @@ debugger;
             {/* Filters */}
             <div className="row g-3 mb-3">
               <div className="row align-items-end">
-                <div className="col-3">
+                <div className="col-2">
                   <label className="form-label">Date</label>
                   <input
                     type="date"
@@ -346,7 +347,7 @@ debugger;
                     style={{ height: '40px' }}
                   />
                 </div>
-                <div className="col-4">
+                <div className="col-2">
                   <label className="form-label">Ledger Account</label>
                   <select
                     className="form-select"
@@ -374,8 +375,15 @@ debugger;
                     ))}
                   </select>
                 </div>
-
-                <div className="col-4">
+ <div className="col-md-2">
+                <label className="form-label fw-bold">Sub Ledger</label>
+                <input
+                  className="form-control"
+                  value={subLedger}
+                  onChange={(e) => setSubLedger(e.target.value)}
+                />
+              </div>
+                <div className="col-3">
                   <label className="form-label m-2">Balance Details</label>
                   <div
                     className={`alert mb-0 d-flex align-items-center ${

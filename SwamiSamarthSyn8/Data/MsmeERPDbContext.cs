@@ -269,6 +269,14 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
     public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
     public virtual DbSet<PQM_FinishProdCOATbl> PQM_FinishProdCOATbl { get; set; }
+    public virtual DbSet<Master_ItemVendorCategory> Master_ItemVendorCategory { get; set; }
+
+    public virtual DbSet<Master_Vendor> Master_Vendor { get; set; }
+
+    public virtual DbSet<Master_VendorAddresses> Master_VendorAddresses { get; set; }
+    public virtual DbSet<Master_VendorBankDetails> Master_VendorBankDetails { get; set; }
+
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -84,24 +84,6 @@ builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
 //===========================Jwt ===========================
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-
-            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
-
 // ✅ Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -126,7 +108,6 @@ app.UseSwaggerUI(c =>
 });
 app.UseSession();
 
-app.UseAuthentication();   // ✅ ADD THIS
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

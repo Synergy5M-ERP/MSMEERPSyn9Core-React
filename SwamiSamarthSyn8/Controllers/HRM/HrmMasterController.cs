@@ -205,7 +205,7 @@ public class HrmMasterController : ControllerBase
     //        default:
     //            return BadRequest("Invalid type");
     //    }
-    //}
+    ////}
     [HttpPost("{type}")]
     [Authorize]
     public async Task<IActionResult> Create(string type, [FromBody] JObject payload)

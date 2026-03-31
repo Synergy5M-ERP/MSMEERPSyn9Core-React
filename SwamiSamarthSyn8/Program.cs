@@ -1,8 +1,162 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//using Microsoft.EntityFrameworkCore;
+//using SwamiSamarthSyn8.Data;
+//using Serilog;
+//using Serilog.Sinks.MSSqlServer;
+//using System.Collections.ObjectModel;
+//using Newtonsoft.Json;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.IdentityModel.Tokens;
+//using System.Text;
+
+//var builder = WebApplication.CreateBuilder(args);
+
+//// ----------------- Configure Serilog -----------------
+//var columnOptions = new ColumnOptions
+//{
+//    AdditionalColumns = new Collection<SqlColumn>
+//    {
+//        new SqlColumn("ThreadId", System.Data.SqlDbType.NVarChar, dataLength: 50)
+//    }
+//};
+
+//Log.Logger = new LoggerConfiguration()
+//    .ReadFrom.Configuration(builder.Configuration)
+//    .Enrich.FromLogContext()
+//    .CreateLogger();
+
+//builder.Host.UseSerilog();
+//// ----------------- Services -----------------
+//builder.Services.AddControllersWithViews()
+//    .AddNewtonsoftJson(options =>
+//    {
+//        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+//    });
+
+////// ✅ Register DbContext
+////builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+////    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+//builder.Services.AddDbContext<MsmeERPDbContext>(options =>
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("MsmeDb")));
+
+//// 🔹 DB 2 : Swami Samarth
+//builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("SwamiSamarthDb")));
+
+
+//Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection")); builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidateLifetime = true,
+//        ValidateIssuerSigningKey = true,
+
+//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//        ValidAudience = builder.Configuration["Jwt:Audience"],
+//        IssuerSigningKey = new SymmetricSecurityKey(
+//         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+//     ),
+
+//        ClockSkew = TimeSpan.Zero // 🔥 ADD THIS
+//    };
+//});
+//builder.Services.AddAuthorization();
+//// ✅ CORS
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReact",
+//        policy => policy
+//            .WithOrigins("http://localhost:3000", "https://msmeerp-syn9reactapp.azurewebsites.net")
+//            .AllowAnyHeader()
+//            .AllowAnyMethod()
+//            .AllowCredentials());
+//});
+
+//builder.Services.AddSession();
+//builder.Services.AddHttpContextAccessor();
+
+////===========================Jwt ===========================
+//// ✅ Swagger
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
+
+//var app = builder.Build();
+
+//// ----------------- Middleware -----------------
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage();
+//}
+//else
+//{
+//    app.UseExceptionHandler("/error");
+//}
+
+//app.UseSwagger();
+//app.UseSwaggerUI(c =>
+//{
+//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
+//    c.RoutePrefix = "swagger";
+//});
+//app.UseSession();
+
+
+//app.UseHttpsRedirection();
+//app.UseStaticFiles();
+//app.UseRouting();
+//app.UseCors("AllowReact");
+//app.UseAuthentication(); // ✅ ADD THIS
+//app.UseAuthorization();
+
+//app.UseSession();
+
+//// ----------------- Default Route -----------------
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+//app.MapControllers();
+
+//// ----------------- Lifecycle Logging -----------------
+//app.Lifetime.ApplicationStarted.Register(() =>
+//{
+//    Log.Information("✅ Application started successfully at {time}", DateTime.UtcNow);
+//});
+//app.Lifetime.ApplicationStopping.Register(() =>
+//{
+//    Log.Warning("⚠️ Application is stopping at {time}", DateTime.UtcNow);
+//});
+//app.Lifetime.ApplicationStopped.Register(() =>
+//{
+//    Log.Information("🛑 Application stopped at {time}", DateTime.UtcNow);
+//});
+
+//// ----------------- Run App -----------------
+//try
+//{
+//    Log.Information("🚀 Starting the application...");
+//    app.Run();
+//}
+//catch (Exception ex)
+//{
+//    Log.Fatal(ex, "❌ Application failed to start.");
+//}
+//finally
+//{
+//    Log.CloseAndFlush();
+//}
+
+using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using Serilog;
-using Serilog.Sinks.MSSqlServer;
-using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -11,20 +165,13 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------- Configure Serilog -----------------
-var columnOptions = new ColumnOptions
-{
-    AdditionalColumns = new Collection<SqlColumn>
-    {
-        new SqlColumn("ThreadId", System.Data.SqlDbType.NVarChar, dataLength: 50)
-    }
-};
-
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
 // ----------------- Services -----------------
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
@@ -32,49 +179,55 @@ builder.Services.AddControllersWithViews()
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
     });
 
-//// ✅ Register DbContext
-//builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+// ✅ Database Connections
 builder.Services.AddDbContext<MsmeERPDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("MsmeDb")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MsmeDb")));
 
-// 🔹 DB 2 : Swami Samarth
 builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("SwamiSamarthDb")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SwamiSamarthDb")));
 
+// ----------------- JWT Authentication -----------------
+var jwtKey = builder.Configuration["Jwt:Key"];
 
-Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection")); builder.Services.AddAuthentication(options =>
+if (string.IsNullOrEmpty(jwtKey))
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    throw new Exception("JWT Key is missing in appsettings.json");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-     ),
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-        ClockSkew = TimeSpan.Zero // 🔥 ADD THIS
-    };
-});
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)),
+
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 builder.Services.AddAuthorization();
-// ✅ CORS
+
+// ----------------- CORS -----------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
         policy => policy
-            .WithOrigins("http://localhost:3000", "https://msmeerp-syn9reactapp.azurewebsites.net")
+            .WithOrigins(
+                "http://localhost:3000",
+                "https://msmeerp-syn9reactapp.azurewebsites.net"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -83,8 +236,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
-//===========================Jwt ===========================
-// ✅ Swagger
+// ----------------- Swagger -----------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -103,58 +255,59 @@ else
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
     c.RoutePrefix = "swagger";
 });
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseCors("AllowReact");
+
 app.UseSession();
 
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseCors("AllowReact");
-app.UseAuthentication(); // ✅ ADD THIS
+// ✅ IMPORTANT ORDER
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession();
-
-// ----------------- Default Route -----------------
+// ----------------- Routes -----------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
-// ----------------- Lifecycle Logging -----------------
+// ----------------- Logging -----------------
 app.Lifetime.ApplicationStarted.Register(() =>
 {
-    Log.Information("✅ Application started successfully at {time}", DateTime.UtcNow);
-});
-app.Lifetime.ApplicationStopping.Register(() =>
-{
-    Log.Warning("⚠️ Application is stopping at {time}", DateTime.UtcNow);
-});
-app.Lifetime.ApplicationStopped.Register(() =>
-{
-    Log.Information("🛑 Application stopped at {time}", DateTime.UtcNow);
+    Log.Information("✅ Application started");
 });
 
-// ----------------- Run App -----------------
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    Log.Warning("⚠️ Application stopping");
+});
+
+app.Lifetime.ApplicationStopped.Register(() =>
+{
+    Log.Information("🛑 Application stopped");
+});
+
+// ----------------- Run -----------------
 try
 {
-    Log.Information("🚀 Starting the application...");
+    Log.Information("🚀 Starting application...");
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "❌ Application failed to start.");
+    Log.Fatal(ex, "❌ Application failed to start");
 }
 finally
 {
     Log.CloseAndFlush();
 }
-
-
 
 //using Microsoft.EntityFrameworkCore;
 //using Microsoft.OpenApi;

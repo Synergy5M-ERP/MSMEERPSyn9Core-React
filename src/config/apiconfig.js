@@ -1,8 +1,10 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-const BASE_URL = "https://localhost:7145/api";
+
+// const BASE_URL = "https://localhost:7145/api";
+
 
 
 export const API_ENDPOINTS = {
@@ -110,6 +112,7 @@ export const API_ENDPOINTS = {
   Journal: `${BASE_URL}/journals`,
   Account: `${BASE_URL}/Account/`,
   GetSellers: `${BASE_URL}/GRN/suppliers`,
+  GetInvoicesBySeller: `${BASE_URL}/GRN/GetInvoicesBySeller`,
 
   GetGRNNumbersBySeller: `${BASE_URL}/GRN/GetGRNNumbersBySeller`,
   GetGRNsBySeller: `${BASE_URL}/GRN/GetGRNsBySeller`, // ✅ add this
@@ -119,7 +122,20 @@ export const API_ENDPOINTS = {
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
+  Vendorcategories: `${BASE_URL}/GRN/Vendorcategories`,
+  SalesBuyers: `${BASE_URL}/GRN/SalesBuyers`,
+
+
+  SaveNonGRN: `${BASE_URL}/GRN/SaveNonGRN`,
+  GetApproveSellerNonGrnSo: `${BASE_URL}/GRN/GetApproveSellerNonGrnSo`,
+  GetGrnInvoiceDetails: `${BASE_URL}/GRN/GetGrnInvoiceDetails`,
+  ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
+
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
+  GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
+  GetLedger: `${BASE_URL}/GRN/GetLedger`,
+  GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
+  GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
 
   VendorforProd: `${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,
@@ -237,7 +253,6 @@ export const API_ENDPOINTS = {
   ExportPRByNumberPdf: `${BASE_URL}/PurchaseReq/ExportByPRPdf`,
 
 
-
   //Get UOM
   ParametGetUOM: `${BASE_URL}/PlantSettingPara/GetUOM`,
   SaveMachine: `${BASE_URL}/Production/SaveMachine`,
@@ -277,6 +292,55 @@ export const API_ENDPOINTS = {
   ReactivateVendor: `${BASE_URL}/Vendor/ReactivateVendor`,
 
   GetVendorById: `${BASE_URL}/Vendor/GetVendorById`,
+
+  //Get UOM
+  ParametGetUOM: `${BASE_URL}/PlantSettingPara/GetUOM`,
+  SaveMachine: `${BASE_URL}/Production/SaveMachine`,
+  GetAllMachines: `${BASE_URL}/Production/GetAllMachines`,
+  DeleteMachine: `${BASE_URL}/Production/DeleteMachine`,
+  UpdateMachine: `${BASE_URL}/Production/UpdateMachineDetails`,
+  GetLocation: `${BASE_URL}/Product/GetLocations`,
+  Machinenames: `${BASE_URL}/Product/GetMachineNames/`,
+  GetSONumber: `${BASE_URL}/Product/GetSONumbers`,
+  Machinenames: `${BASE_URL}/Product/GetMachineNames`,
+  MachineNumber: `${BASE_URL}/Product/GetMachineNumber`,
+  MachineDetails: `${BASE_URL}/Product/GetMachineDetails`,
+  OrderDetails: `${BASE_URL}/Product/GetSpecificOrderDetails`,
+  SaveExtruderTemp: `${BASE_URL}/PlantSettingPara/SaveExtruderTemp`,
+  UniqueItem: `${BASE_URL}/Product/GetUniqueItemNames`,
+  Grade: `${BASE_URL}/Product/GetGradesByItem`,
+  GetSONumber: `${BASE_URL}/Product/GetSONumbers`,
+  GetSpecificOrderDetails: `${BASE_URL}/Product/GetSpecificOrderDetails`,
+  //Parameter Master
+  GET_UOM: `${BASE_URL}/Parameter/GetUOMList`,
+  CREATE_PARAMETER: `${BASE_URL}/Parameter/CreateParameter`,
+  GET_PARAMETERS: `${BASE_URL}/Parameter/GetParameters`,
+  UPDATE_PARAMETER_STATUS: `${BASE_URL}/Parameter/UpdateParameterStatus`,
+
+  ////Location Master
+  CREATE_SOURCE: `${BASE_URL}/Location/CreateSource`,
+  GET_SOURCES: `${BASE_URL}/Location/GetSources`,
+  CREATE_CONTINENT: `${BASE_URL}/Location/CreateContinent`,
+  GET_CONTINENTS: `${BASE_URL}/Location/GetContinents`,
+  CREATE_COUNTRY: `${BASE_URL}/Location/CreateCountry`,
+  GET_COUNTRIES: `${BASE_URL}/Location/GetCountries`,
+  ADD_STATE: `${BASE_URL}/Location/AddState`,
+  GET_STATES: `${BASE_URL}/Location/GetStates`,
+  ADD_CITY: `${BASE_URL}/Location/AddCity`,
+  GET_LOCATION_DATA: `${BASE_URL}/Location/GetLocationData`,
+  UPDATE_LOCATION: `${BASE_URL}/Location/UpdateLocation`,
+
+  // SDM - Enquiry
+  GET_PEYMENTTERMS: `${BASE_URL}/SalesEnquiryQuotation/GetPaymentTerms`,
+  GET_PRICEBASIS: `${BASE_URL}/SalesEnquiryQuotation/GetPriceList`,
+  GET_SALESITEMS: `${BASE_URL}/SalesEnquiryQuotation/GetItemsFromSalesBuyer`,
+  GET_GRADES: `${BASE_URL}/SalesEnquiryQuotation/GetGradeFromItem`,
+  GET_ITEMdETAILS: `${BASE_URL}/SalesEnquiryQuotation/GetItemDetailsByGrade`,
+  GET_BUYERDETAILS: `${BASE_URL}/SalesEnquiryQuotation/GetBuyerDetailsByGrade`,
+
+  DELETE_LOCATION: `${BASE_URL}/Location/DeleteLocation`,
+  ACTIVATE_LOCATION: `${BASE_URL}/Location/ActivateLocation`,
+
 
 };
 

@@ -1,86 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 import CreateItem from "../Masters/ItemMaster/CreateItem";
 import CreateVendor from "../Masters/vendorMaster/CreateVendor";
 import InventoryAdd from "../Masters/InventoryMaster/InventoryAdd";
-
-// import CreateItem from "./ItemMaster/CreateItem";
-// import CreateVendor from "../Masters/vendorMaster/CreateVendor";
-
+import MasterDashboard from "../Masters/MasterDashboard";
 
 function Masters() {
-  const [selectedPage, setSelectedPage] = useState("itemMaster");
+
+  const location = useLocation();
+
+  const [selectedPage, setSelectedPage] = useState("Dashboard");
+
+  useEffect(() => {
+    if (location.state?.page) {
+      setSelectedPage(location.state.page);
+    }
+  }, [location]);
 
   return (
     <div style={{ display: "flex", minHeight: "90vh" }}>
 
-      {/* ================= Sidebar ================= */}
+      {/* Sidebar */}
       <div
         style={{
           width: "250px",
           background: "#003d80",
           color: "white",
-          padding: "25px 20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "25px",
-          boxShadow: "2px 0 10px rgba(0,0,0,0.1)"
+          padding: "25px 20px"
         }}
       >
-        <h2 style={{ fontSize: "22px", marginBottom: "10px" }}>Masters</h2>
+        <h2>Masters</h2>
 
-        {/* Sidebar Options */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-            fontSize: "18px",
-            fontWeight: 600,
-            cursor: "pointer"
-          }}
-        >
-          <span
-            onClick={() => setSelectedPage("itemMaster")}
-            style={{
-              padding: "10px 12px",
-              borderRadius: "6px",
-              background: selectedPage === "itemMaster" ? "#0059b3" : "transparent"
-            }}
-          >
+        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+
+          <span onClick={() => setSelectedPage("Dashboard")}>
+            Dashboard
+          </span>
+
+          <span onClick={() => setSelectedPage("itemMaster")}>
             Item Master
           </span>
 
-          <span
-            onClick={() => setSelectedPage("vendorMaster")}
-            style={{
-              padding: "10px 12px",
-              borderRadius: "6px",
-              background: selectedPage === "vendorMaster" ? "#0059b3" : "transparent"
-            }}
-          >
+          <span onClick={() => setSelectedPage("vendorMaster")}>
             Vendor Master
           </span>
 
-          <span
-            onClick={() => setSelectedPage("inventoryMaster")}
-            style={{
-              padding: "10px 12px",
-              borderRadius: "6px",
-              background: selectedPage === "inventoryMaster" ? "#0059b3" : "transparent"
-            }}
-          >
+          <span onClick={() => setSelectedPage("inventoryMaster")}>
             Inventory Master
           </span>
+
         </div>
       </div>
 
-      {/* ================= Main Content ================= */}
-      <div style={{ flex: 1, padding: "30px 40px" }}>
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: "30px" }}>
+
+        {selectedPage === "Dashboard" && <MasterDashboard />}
+
         {selectedPage === "itemMaster" && <CreateItem />}
+
         {selectedPage === "vendorMaster" && <CreateVendor />}
+
         {selectedPage === "inventoryMaster" && <InventoryAdd />}
+
       </div>
+
     </div>
   );
 }

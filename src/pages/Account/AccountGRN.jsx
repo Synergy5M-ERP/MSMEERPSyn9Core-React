@@ -1,63 +1,85 @@
-
 import React, { useState } from "react";
 
 import CheckPayable from "./CheckPayable";
 import ApprovedPayable from "./ApprovedPayable";
-
+import CheckNonGRN from "./CheckNonGRN";
+import ApproveNonGRN from "./ApproveNonGRN";
 
 function AccountGRN() {
-  const [selectedPage, setSelectedPage] = useState("checkPayable");
-
+  const [selectedPage, setSelectedPage] = useState("checkGRN");
 
   return (
-    <div style={{ minHeight: "80vh"}}>
-      <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-        GRN Bill Passing
-      </h2>
+    <div style={{ minHeight: "80vh" }}>
+      
+    {/*  <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 15 }}>
+        Bill Passing
+      </h2>*/}
 
-      {/* Page Selector */}
- <div
- className="radio-btn-header"
->
-  <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
+      {/* All Radio Buttons */}
+      <div style={{ display: "flex", gap: "30px", flexWrap: "wrap", marginBottom: "20px" }}>
 
-  <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="checkPayable"
-        checked={selectedPage === 'checkPayable'}
-        onChange={() => setSelectedPage('checkPayable')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-  Check Payable
-    </label>
-   <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="approvePayable"
-        checked={selectedPage === 'approvePayable'}
-        onChange={() => setSelectedPage('approvePayable')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-   Approve Payable
-    </label>
- 
-  </div>
+        {/* GRN Check */}
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="billType"
+            value="checkGRN"
+            checked={selectedPage === "checkGRN"}
+            onChange={() => setSelectedPage("checkGRN")}
+            style={{ marginRight: "8px" }}
+          />
+          Bill Passing Check (GRN)
+        </label>
 
-</div>
+        {/* GRN Approve */}
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="billType"
+            value="approveGRN"
+            checked={selectedPage === "approveGRN"}
+            onChange={() => setSelectedPage("approveGRN")}
+            style={{ marginRight: "8px" }}
+          />
+          Bill Approve (GRN)
+        </label>
 
+        {/* NON GRN Check */}
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="billType"
+            value="checkNonGRN"
+            checked={selectedPage === "checkNonGRN"}
+            onChange={() => setSelectedPage("checkNonGRN")}
+            style={{ marginRight: "8px" }}
+          />
+          Bill Passing Check (NonGRN)
+        </label>
 
+        {/* NON GRN Approve */}
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="billType"
+            value="approveNonGRN"
+            checked={selectedPage === "approveNonGRN"}
+            onChange={() => setSelectedPage("approveNonGRN")}
+            style={{ marginRight: "8px" }}
+          />
+          Bill Approve (NonGRN)
+        </label>
 
-
-      {/* Render selected page with view prop */}
-      <div>
-        {selectedPage==='checkPayable'?(<CheckPayable/>):<ApprovedPayable/>
-        
-         
-        }
       </div>
+
+      {/* Render Components */}
+      <div>
+        {selectedPage === "checkGRN" && <CheckPayable />}
+        {selectedPage === "approveGRN" && <ApprovedPayable />}
+        {selectedPage === "checkNonGRN" && <CheckNonGRN />}
+        {selectedPage === "approveNonGRN" && <ApproveNonGRN />}
+      </div>
+
     </div>
   );
 }

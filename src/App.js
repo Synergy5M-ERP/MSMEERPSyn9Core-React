@@ -28,6 +28,9 @@ import Dashboard from "./pages/Dashboard";
 /* MASTERS */
 import MasterDashboard from "./pages/Masters/MasterConfiguration";
 import CreateVendor from "./pages/Masters/vendorMaster/CreateVendor";
+import VendorMaster from "./pages/Masters/vendorMaster/VendorMaster";
+
+// If VendorMaster.jsx is in src/pages/Vendor/
 import ViewVendor from "./pages/Masters/vendorMaster/ViewVendor";
 import CreateCommodity from "./pages/Masters/Commodity/CreateCommodity";
 import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
@@ -62,19 +65,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+// =====Item / Vendor Category =======
+import CreateItemCat from "./pages/Masters/ItemCategoryMaster/CreateItemCat";
+
+
 function App() {
   return (
     <Router>
       <Header />
- {/* ✅ ADD THIS ONCE */}
+      {/* ✅ ADD THIS ONCE */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnHover
+        newestOnTop={true}
+        closeOnClick={true}
+        pauseOnHover={false}
         draggable
+        theme="colored"
       />
       <Routes>
         {/* AUTH */}
@@ -102,16 +110,18 @@ function App() {
 
         {/* MASTERS */}
         <Route path="/masters" element={<MasterDashboard />} />
-        <Route path="/createvendor" element={<CreateVendor />} />
+
+        <Route path="/vendors/*" element={<VendorMaster />} />
+
         <Route path="/viewvendor" element={<ViewVendor />} />
         <Route path="/commodity" element={<CreateCommodity />} />
         <Route path="/viewcommodity" element={<ViewCommodity />} />
         <Route path="/viewbom" element={<ViewBOM />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-<Route path="/reset-password" element={<ResetPassword />} />
-{/* HRM / SALES */}
-<Route path="/hrm/*" element={<HrmConfiguration />} />
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* HRM / SALES */}
+        <Route path="/hrm/*" element={<HrmConfiguration />} />
+
         <Route path="/salesanddistribution" element={<SalesDistribution />} />
         <Route path="/warehouse" element={<WareHouse />} />
 
@@ -124,9 +134,12 @@ function App() {
         <Route path="/quality" element={<QualityModule />} />
 
         {/* ADMIN */}
-<Route path="/admin/*" element={<AdminConfiguration />} />
+        <Route path="/admin/*" element={<AdminConfiguration />} />
         {/* OTHER */}
         <Route path="/creditdebitnote" element={<CreditDebitNote />} />
+
+        <Route path="/createitemcat" element={<CreateItemCat />} />
+
       </Routes>
 
       <Footer />

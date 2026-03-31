@@ -1,18 +1,18 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-//const BASE_URL = "https://localhost:7145/api";
+const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
   // ================= HRM ADMIN =================
-    ModuleUserList: `${BASE_URL}/HRMAdminRegAPI/Login/GetModuleUserList`,
-      LOGIN: `${BASE_URL}/HRMAdminRegAPI/Login`,
-GetUserByEmpCode: `${BASE_URL}/HRMAdminRegAPI/GetUserByEmpCode`,
-Logout: `${BASE_URL}/HRMAdminRegAPI/Logout`,
-ForgotPassword: `${BASE_URL}/HRMAdminRegAPI/ForgotPassword`,
-ResetPassword: `${BASE_URL}/HRMAdminRegAPI/ResetPassword`,
+  ModuleUserList: `${BASE_URL}/HRMAdminRegAPI/Login/GetModuleUserList`,
+  LOGIN: `${BASE_URL}/HRMAdminRegAPI/Login`,
+  GetUserByEmpCode: `${BASE_URL}/HRMAdminRegAPI/GetUserByEmpCode`,
+  Logout: `${BASE_URL}/HRMAdminRegAPI/Logout`,
+  ForgotPassword: `${BASE_URL}/HRMAdminRegAPI/ForgotPassword`,
+  ResetPassword: `${BASE_URL}/HRMAdminRegAPI/ResetPassword`,
 
   ModuleUserData: `${BASE_URL}/HRMAdminRegAPI/Login/ModuleUserData`,
   GetUserDetails: `${BASE_URL}/HRMAdminRegAPI/GetUserDetails`,
@@ -21,25 +21,26 @@ ResetPassword: `${BASE_URL}/HRMAdminRegAPI/ResetPassword`,
   DEPARTMENT: `${BASE_URL}/HrmMaster/Department`,
   DESIGNATION: `${BASE_URL}/HrmMaster/Designation`,
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
-GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
-    GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
-        CreatePassword: `${BASE_URL}/HRMAdminRegAPI/CreatePassword`,
+  GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+  GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+  CreatePassword: `${BASE_URL}/HRMAdminRegAPI/CreatePassword`,
 
-GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
+  GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+  GET_SOURCE: `${BASE_URL}/HRMAdminRegAPI/GetSource`,
   GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
 
   GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
   GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
-  
+
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
 
- // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
+  // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
 
- // GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
+  // GET_COUNTRY: `${BASE_URL}/HrmMaster/GetCountry`,
   ///GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   //GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   //ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
@@ -47,16 +48,16 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
-  UpdateMatrixStatus:`${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
+  UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
- EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
   GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
   GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
-    UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
+  UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
-    GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
-HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
+  GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
+  HRMAdminReg: `${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -81,6 +82,7 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   AccountGroups: `${BASE_URL}/AccountGroups`,
   AccountSubGroup: `${BASE_URL}/Subgroups`,
   AccountSubSubGroup: `${BASE_URL}/SubSubgroups`,
+
 
   // ✅ FIXED
   Inventory: `${BASE_URL}/Inventory`,
@@ -119,10 +121,10 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
 
-VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
+  VendorforProd: `${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,
   // Ledger: `${BASE_URL}/AccountLedger`,
- // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
+  // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
   UpdateVendor: `${BASE_URL}/UpdateVendorApi`,
 
@@ -161,16 +163,16 @@ VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   GetUnits: `${BASE_URL}/GetUnits`,
   GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
   SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
-//------------------------Account APIs----------------------------------
+  //------------------------Account APIs----------------------------------
 
-GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
+  GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
   Category: `${BASE_URL}/Category`,
   //------------------------Account APIs----------------------------------
 
   // Employee endpoints
   Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
-  
+
 
   Departments: `${BASE_URL}/PurchaseReq/GetDepartments`,
 
@@ -179,7 +181,7 @@ GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   PR_EmployeeDetails: (empId) => `${BASE_URL}/PurchaseReq/employee/${empId}`,
 
   // Item endpoints
- 
+
   PR_ItemDetails: (itemId) => `${BASE_URL}/PurchaseReq/item/${itemId}`,
 
   // Specification/Grade endpoints
@@ -209,49 +211,75 @@ GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
 
   // Employee Endpoints
   PR_Employees: `${BASE_URL}/PurchaseReq/GetEmpList`,
-  
+
   // Item Endpoints
   ItemList: `${BASE_URL}/PurchaseReq/GetItemList`,
   PR_GradesForItem: (itemName) => `${BASE_URL}/PurchaseReq/GetGradesForItem?itemName=${encodeURIComponent(itemName)}`,
   PR_ItemDetails: (itemName, grade) => `${BASE_URL}/PurchaseReq/GetGradeDetails?itemName=${encodeURIComponent(itemName)}&grade=${encodeURIComponent(grade)}`,
-  
+
   // Requisition Type Endpoints
   ReqTypes: `${BASE_URL}/PurchaseReq/GetRequisitionTypes`,
-  
+
   // Budget Endpoints
   PR_BudgetByDept: (deptCode) => `${BASE_URL}/PurchaseReq/GetLastBudgetBalance?departmentCode=${encodeURIComponent(deptCode)}`,
-  
+
   // Purchase Request CRUD Endpoints
   CreateManualPR: `${BASE_URL}/PurchaseReq/Create`,
   UpdateManualPR: `${BASE_URL}/PurchaseReq/Update`,
   GetPRForEdit: `${BASE_URL}/PurchaseReq/GetPRForEdit`,
   ViewManualPRList: `${BASE_URL}/PurchaseReq/GetManualPR`,
   GetPRNumbers: `${BASE_URL}/PurchaseReq/GetPRNo`,
-   DeleteManualPR: (prNumber) => 
+  DeleteManualPR: (prNumber) =>
     `${BASE_URL}/PurchaseReq/Delete?prNumber=${encodeURIComponent(prNumber)}`,
-  ManualPRReport:`${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
+  ManualPRReport: `${BASE_URL}/PurchaseReq/GenerateDynamicReport`,
   // Export Endpoint
-  ExportPRByNumber:`${BASE_URL}/PurchaseReq/ExportByPR`,
-ExportPRByNumberPdf:`${BASE_URL}/PurchaseReq/ExportByPRPdf`,
+  ExportPRByNumber: `${BASE_URL}/PurchaseReq/ExportByPR`,
+  ExportPRByNumberPdf: `${BASE_URL}/PurchaseReq/ExportByPRPdf`,
 
 
 
-//Get UOM
-ParametGetUOM: `${BASE_URL}/PlantSettingPara/GetUOM`,
-SaveMachine:`${BASE_URL}/Production/SaveMachine`,
-GetAllMachines:`${BASE_URL}/Production/GetAllMachines`,
-DeleteMachine:`${BASE_URL}/Production/DeleteMachine`,
-UpdateMachine:`${BASE_URL}/Production/UpdateMachineDetails`,
-GetLocation:`${BASE_URL}/Product/GetLocations`,
-Machinenames:`${BASE_URL}/Product/GetMachineNames/`,
-GetSONumber:`${BASE_URL}/Product/GetSONumbers`,
-Machinenames:`${BASE_URL}/Product/GetMachineNames`,
-MachineNumber:`${BASE_URL}/Product/GetMachineNumber`,
-MachineDetails:`${BASE_URL}/Product/GetMachineDetails`,
-OrderDetails:`${BASE_URL}/Product/GetSpecificOrderDetails`,
-SaveExtruderTemp:`${BASE_URL}/PlantSettingPara/SaveExtruderTemp`,
-UniqueItem:`${BASE_URL}/Product/GetUniqueItemNames`,
-Grade:`${BASE_URL}/Product/GetGradesByItem`,
-GetSONumber:`${BASE_URL}/Product/GetSONumbers`,
-GetSpecificOrderDetails:`${BASE_URL}/Product/GetSpecificOrderDetails`,
+  //Get UOM
+  ParametGetUOM: `${BASE_URL}/PlantSettingPara/GetUOM`,
+  SaveMachine: `${BASE_URL}/Production/SaveMachine`,
+  GetAllMachines: `${BASE_URL}/Production/GetAllMachines`,
+  DeleteMachine: `${BASE_URL}/Production/DeleteMachine`,
+  UpdateMachine: `${BASE_URL}/Production/UpdateMachineDetails`,
+  GetLocation: `${BASE_URL}/Product/GetLocations`,
+  Machinenames: `${BASE_URL}/Product/GetMachineNames/`,
+  GetSONumber: `${BASE_URL}/Product/GetSONumbers`,
+  Machinenames: `${BASE_URL}/Product/GetMachineNames`,
+  MachineNumber: `${BASE_URL}/Product/GetMachineNumber`,
+  MachineDetails: `${BASE_URL}/Product/GetMachineDetails`,
+  OrderDetails: `${BASE_URL}/Product/GetSpecificOrderDetails`,
+  SaveExtruderTemp: `${BASE_URL}/PlantSettingPara/SaveExtruderTemp`,
+  UniqueItem: `${BASE_URL}/Product/GetUniqueItemNames`,
+  Grade: `${BASE_URL}/Product/GetGradesByItem`,
+  GetSONumber: `${BASE_URL}/Product/GetSONumbers`,
+  GetSpecificOrderDetails: `${BASE_URL}/Product/GetSpecificOrderDetails`,
+
+  /* =================Item Category Master API==================*/
+  SaveCategory: `${BASE_URL}/Item/ItemCategory`,
+  UpdateCategory: `${BASE_URL}/Item/UpdateCategory`,
+  GetVendorItemCategories: `${BASE_URL}/Item/GetVendorItemCategories`, // GET
+  DeleteCategory: `${BASE_URL}/Item/DeleteCategory`,
+  ActivateCategory: `${BASE_URL}/Item/ActivateCategory`,
+
+
+  /*=====Vendor Master API====== */
+  GetIndusCatSubcat: `${BASE_URL}/Vendor/GetIndusCatSubcat`,
+  GetPaymentTerms: `${BASE_URL}/Vendor/GetPaymentTerms`,
+  GetDeliveryTerms: `${BASE_URL}/Vendor/GetDeliveryTerms`,
+  SaveOrUpdateVendor: `${BASE_URL}/Vendor/SaveOrUpdateVendor`,
+  GenerateVendorCode: `${BASE_URL}/Vendor/GenerateVendorCode`,
+  GetVendorCategories: `${BASE_URL}/Vendor/GetVendorCategories`, // GET
+  GetVendorList: `${BASE_URL}/Vendor/GetVendorList`,
+  DeleteVendor: `${BASE_URL}/Vendor/DeleteVendor`,
+  ReactivateVendor: `${BASE_URL}/Vendor/ReactivateVendor`,
+
+  GetVendorById: `${BASE_URL}/Vendor/GetVendorById`,
+
 };
+
+
+//====Item Category Master API=======//
+

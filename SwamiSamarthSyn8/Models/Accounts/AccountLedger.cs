@@ -20,5 +20,9 @@ namespace SwamiSamarthSyn8.Models
         public string? Address { get; set; }
         public string? AccountLedgerNarration { get; set; }
         public bool IsActive { get; set; }
+        public string? GRNInvColumnName { get; set; }
+        public string? CrDr { get; set; }
+
+
     }
 }

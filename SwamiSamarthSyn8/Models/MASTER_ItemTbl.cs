@@ -98,4 +98,9 @@ public partial class MASTER_ItemTbl
 
     [StringLength(100)]
     public string? CheckSemiFinish { get; set; }
+    [StringLength(100)]
+    public string GLCode { get; set; }
+
+    [StringLength(300)]
+    public string LedgerName { get; set; }
 }

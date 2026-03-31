@@ -93,6 +93,6 @@ public partial class Potential_Vendor
 
     [StringLength(50)]
     public string? PAN_No { get; set; }
+    [NotMapped]
     public string Vendor_Categories { get; set; }
-
 }

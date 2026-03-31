@@ -36,6 +36,8 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<AccountSubVoucherType> AccountSubVoucherType { get; set; }
     public virtual DbSet<AccountLedger> AccountLedger { get; set; }
     public DbSet<AccountSubGroup> AccountSubGroup { get; set; }
+    public DbSet<AccountLedgerCrDR> AccountLedgerCrDR { get; set; }
+
     public DbSet<AccountSubSubGroup> AccountSubSubGroup { get; set; }
     public virtual DbSet<AccountPrimaryGroup> AccountPrimaryGroup { get; set; }
     public virtual DbSet<AccountFiscalPeriod> AccountFiscalPeriod { get; set; }

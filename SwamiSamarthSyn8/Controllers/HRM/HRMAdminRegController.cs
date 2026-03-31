@@ -558,6 +558,8 @@ public class HRMAdminRegAPIController : ControllerBase
         var claims = new[]
         {
         new Claim(ClaimTypes.Name, user.UserName ?? ""),
+            new Claim("UserId", user.UserId.ToString()),   // ✅ ADD THIS
+
         new Claim("EmpCode", user.Emp_Code ?? ""),
         new Claim(ClaimTypes.Role, user.UserRole ?? "User")
     };

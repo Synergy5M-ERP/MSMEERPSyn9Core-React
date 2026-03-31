@@ -71,9 +71,14 @@ const ApprovedPayable = () => {
         console.log(`🔍 PROCESSING GRN ${header.grnNumber || header.GRNNumber}: ${items.length} items`);
 
 const mappedItems = items.map((it) => {
+
   const tax = parseFloat(it.totalTaxValue ?? 0);
   const totalValue = parseFloat(it.totalItemValue ?? 0);
   const netAmount = parseFloat(it.netamount ?? 0);
+
+  const cgst = parseFloat(it.cgst ?? it.CGSTtaxrate ?? 0);
+  const sgst = parseFloat(it.sgst ?? it.SGSTtaxrate ?? 0);
+  const igst = parseFloat(it.igst ?? it.IGSTtaxrate ?? 0);
 
   const grandTotal = tax + totalValue;
 
@@ -88,15 +93,15 @@ const mappedItems = items.map((it) => {
     approvedQty: Number(it.approvedQty ?? 0),
     damagedQty: Number(it.damagedQty ?? 0),
 
-    cgst: Number(it.cgst ?? 0),
-    sgst: Number(it.sgst ?? 0),
-    igst: Number(it.igst ?? 0),
+    cgst,
+    sgst,
+    igst,
 
     totalTaxValue: tax,
     totalItemValue: totalValue,
-    netAmount: netAmount,   // ✅ ADD THIS LINE
+    netAmount: netAmount,
 
-    billItemValue: grandTotal,   // ✅ THIS IS GRAND TOTAL
+    billItemValue: grandTotal,
 
     billApprove:
       it.billApprove === true ||
@@ -246,26 +251,23 @@ const approvedGrandTotal = mappedItems.reduce(
 
     try {
 
-    const payload = grnsData
+  const payload = grnsData
   .filter((grn) => grn.items?.some((item) => item.billApprove))
   .map((grn) => ({
-    GRNNumber: grn.grnNumber,   // ✅ SEND GRN NUMBER
-    TotalAmount: Number(grn.approvedGrandTotal || 0),
+    GRNNumber: grn.grnNumber,
+    Total_Amount: Number(grn.approvedGrandTotal || 0)   // ✅ correct
   }));
 
 console.log("Payload:", payload);
-  
 
 
-      const res = await fetch(API_ENDPOINTS.SaveMultipleGRN, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
+     const res = await fetch(API_ENDPOINTS.ApproveGrns, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+});
       const result = await res.json();
 
       if (!res.ok) throw new Error(result.message || "Save failed");
@@ -653,19 +655,19 @@ console.log("Payload:", payload);
                             <div className="col-4">
                               <small className="text-muted">CGST</small>
                               <div className="fw-semibold text-success">
-                                {(selectedItem.cgst || 0).toFixed(2)}%
+ {(selectedItem.cgst || 0).toFixed(2)}%
                               </div>
                             </div>
                             <div className="col-4">
                               <small className="text-muted">SGST</small>
                               <div className="fw-semibold text-success">
-                                {(selectedItem.sgst || 0).toFixed(2)}%
+ {(selectedItem.sgst || 0).toFixed(2)}%
                               </div>
                             </div>
                             <div className="col-4">
                               <small className="text-muted">IGST</small>
                               <div className="fw-semibold text-success">
-                                {(selectedItem.igst || 0).toFixed(2)}%
+ {(selectedItem.igst || 0).toFixed(2)}%
                               </div>
                             </div>
                           </div>

@@ -103,10 +103,10 @@ const loadInvoiceNumbers = async (sellerName) => {
       toast.error("Transporter Name is required");
       return false;
     }
-    if (!formData.paymentDue) {
+   {/*if (!formData.paymentDue) {
       toast.error("Payment Due date is required");
       return false;
-    }
+   */ }
 
     const selectedItems = tableData.filter(row => row.billCheck === true);
     console.log("🔍 Validation found selected items:", selectedItems.length);
@@ -175,152 +175,120 @@ const fetchAllDropdowns = async () => {
 
   // --- 1. Adjust fetchGRNTableData to ADD items from multiple GRNs ---
 
-  const fetchGRNTableData = async (grnId) => {
-    if (!grnId) return;
+ const fetchGRNTableData = async (invoiceNumber) => {
+  if (!invoiceNumber) return;
 
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_ENDPOINTS.GetGRNDetails}?grnId=${grnId}`);
-      const data = await safeJson(res);
+  try {
+    setLoading(true);
 
-      if (!data.success || !data.data?.items) {
-        toast.warning("No items found for this GRN");
-        return;
+    const res = await fetch(
+      `${API_ENDPOINTS.GetGRNDetails}?invoice=${invoiceNumber}`
+    );
+
+    const data = await safeJson(res);
+
+    if (!data.success || !data.data?.items) {
+      toast.warning("No items found for this invoice");
+      return;
+    }
+
+   const newItems = data.data.items.map((item, index) => {
+ 
+  console.log("TAX VALUES FROM API:", item.cgst, item.sgst, item.igst);
+
+  let cgst = parseFloat(item.cgst) || 0;
+let sgst = parseFloat(item.sgst) || 0;
+let igst = parseFloat(item.igst) || 0;
+  return {
+    id: item.g_Id || `${invoiceNumber}-${item.itemName}-${index}`,
+    itemName: item.itemName || "",
+    grade: item.grade || "",
+    itemCode: item.itemCode || "",
+    receivedQty: Number(item.receivedQty) || 0,
+    approvedQty: Number(item.acceptedQty) || 0,
+    damagedQty: Number(item.rejectedQty) || 0,
+    rate: Number(item.rate) || 0,
+
+    cgst,
+    sgst,
+    igst,
+
+    backendTaxAmount: Number(item.taxAmount) || 0,
+    backendNetAmount: Number(item.netAmount) || 0
+  };
+});
+
+    // ✅ calculate totals
+    const itemsWithTotals = newItems.map((row) => {
+
+      const receivedQty = parseFloat(row.receivedQty) || 0;
+      const rate = parseFloat(row.rate) || 0;
+
+      const totalItemValue = receivedQty * rate;
+      const taxAmount = Number(row.backendTaxAmount) || 0;
+
+      return {
+        ...row,
+        totalItemValue,
+        taxAmount,
+        billItemValue: totalItemValue + taxAmount
+      };
+    });
+
+    setTableData(prevData => {
+
+      const existingIds = new Set(prevData.map(item => item.id));
+
+      const merged = [...prevData];
+
+      for (const item of itemsWithTotals) {
+        if (!existingIds.has(item.id)) {
+          merged.push(item);
+        }
       }
 
-      // Prepare new items with unique IDs to avoid collisions
-      // const newItems = data.data.items.map((item, index) => ({
-      //   id: `${grnId}-${item.itemName}-${index}`,
-      //   itemName: item.itemName || "",
-      //   grade: item.grade || "",
-      //   itemCode: item.itemCode || "",
-      //   receivedQty: item.receivedQty || 0,
-      //   approvedQty: item.acceptedQty || 0,
-      //   damagedQty: item.rejectedQty || 0,
-      //   receivedUnit: item.receivedUnit || "pcs",
-      //   cgst: item.taxType === "CGST" ? item.taxRate || 0 : 0,
-      //   sgst: item.taxType === "SGST" ? item.taxRate || 0 : 0,
-      //   igst: item.taxType === "IGST" ? item.taxRate || 0 : 0,
-      //   rate: item.rate || 0,
-      //   taxType: item.taxType || "",
-      //   billCheck: false,
-      //   isSelected: false,
-      //   taxAmount: 0,
-      //   totalItemValue: 0,
-      //   billItemValue: 0
-      // }));
-      const newItems = data.data.items.map((item, index) => {
-        // Handle CGST_SGST tax type properly
-        const taxRate = Number(item.taxRate) ?? 0;
-        let cgst = 0, sgst = 0, igst = 0;
+      updateGrandTotals(merged);
 
-        if (item.taxType === "CGST_SGST") {
-          cgst = taxRate / 2;  // Split equally
-          sgst = taxRate / 2;
-        } else if (item.taxType === "CGST") {
-          cgst = taxRate;
-        } else if (item.taxType === "SGST") {
-          sgst = taxRate;
-        } else if (item.taxType === "IGST") {
-          igst = taxRate;
-        }
+      return merged;
+    });
 
-        return {
-          id: item.g_Id ?? `${grnId}-${item.itemName}-${index}`,
-          gId: item.g_Id,
-          itemName: item.itemName ?? "",
-          // Backend doesn't have these - set defaults or fetch from elsewhere
-          grade: item.grade ?? "",
-          itemCode: item.itemCode ?? "",
-          receivedQty: Number(item.receivedQty) ?? 0,
-          approvedQty: Number(item.acceptedQty) ?? 0,
-          damagedQty: Number(item.rejectedQty) ?? 0,
-          rate: Number(item.rate) ?? 0,
-          taxType: item.taxType ?? "",
-          taxRate: taxRate,
-          backendTaxAmount: Number(item.taxAmount) ?? 0,
-          backendNetAmount: Number(item.netAmount) ?? 0,
-          receivedUnit: item.receivedUnit || "pcs",
-          cgst, sgst, igst,  // Now properly split
-          billCheck: false,
-          isSelected: false,
-          taxAmount: 0,
-          totalItemValue: 0,
-          billItemValue: 0
-        };
-      });
+    const header = data.data.header;
 
-      console.log(newItems);
-
-      // Calculate totals for new items
-      const itemsWithTotals = newItems.map((row) => {
-        const receivedQty = parseFloat(row.receivedQty) || 0;
-        const cgst = parseFloat(row.cgst) || 0;
-        const sgst = parseFloat(row.sgst) || 0;
-        const igst = parseFloat(row.igst) || 0;
-        const rate = parseFloat(row.rate) || 0;
-        return {
-          ...row,
-          taxAmount: (cgst + sgst + igst) * receivedQty,
-          totalItemValue: receivedQty * rate,
-          billItemValue: (receivedQty * rate) + ((cgst + sgst + igst) * receivedQty),
-        };
-      });
-
-      setTableData(prevData => {
-        // Merge avoiding duplicates by IDs
-        const existingIds = new Set(prevData.map(item => item.id));
-        const merged = [...prevData];
-        for (const item of itemsWithTotals) {
-          if (!existingIds.has(item.id)) {
-            merged.push(item);
-          }
-        }
-        updateGrandTotals(merged);
-        return merged;
-      });
-
-      // Also update formData header from last GRN loaded(optional)
-      const header = data.data.header;
-      setFormData(fd => ({
-        ...fd,
-        grnNumber: "", // Clear this if multiple loaded
-        grnDate: "",
-        poNumber: "",
-        poDate: "",
-        invoiceNumber: "",
-        invoiceDate: "",
-        vehicleNo: "",
-        TransporterName: "",
-        paymentDue: "",
-        status: "",
-        ...(
-          header ? {
+    setFormData(fd => ({
+      ...fd,
+      ...(header
+        ? {
             grnNumber: header.grnNumber || "",
-            grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
+            grnDate: header.grnDate
+              ? header.grnDate.split("T")[0]
+              : "",
             poNumber: header.poNumber || "",
-            poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
+            poDate: data.data.poDetails?.purchaseDate
+              ? data.data.poDetails.purchaseDate.split("T")[0]
+              : "",
             invoiceNumber: header.invoiceNumber || "",
-            invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
+            invoiceDate: header.invoiceDate
+              ? header.invoiceDate.split("T")[0]
+              : "",
             vehicleNo: header.vehicleNo || "",
             TransporterName: header.transporterName || "",
-            paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
-
+            paymentDue: header.paymentDue
+              ? header.paymentDue.split("T")[0]
+              : "",
             status: "Received"
-          } : {}
-        )
-      }));
+          }
+        : {})
+    }));
 
-      setEnteredGrnNumber(grnId);
+    setEnteredGrnNumber(invoiceNumber);
 
-    } catch (err) {
-      toast.error("Unable to load GRN data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+  } catch (err) {
+    console.error(err);
+    toast.error("Unable to load GRN data");
+  } finally {
+    setLoading(false);
+  }
+};
 
 const handleMasterBillCheck = useCallback((checked) => {
   setTableData(prevTableData => 
@@ -531,8 +499,7 @@ const handleChange = (e) => {
     }));
 
     // 🔹 Load GRN Details + Items
-    fetchGRNTableData(value);
-
+fetchGRNTableData(selectedInvoiceObj?.invoiceNumber);
     return;
   }
 
@@ -869,9 +836,9 @@ Invoice Number
               />
             </td>
             <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
-            <td>{(row.cgst || 0).toFixed(2)}%</td>
-            <td>{(row.sgst || 0).toFixed(2)}%</td>
-            <td>{(row.igst || 0).toFixed(2)}%</td>
+           <td>{Number(row.cgst || 0).toFixed(2)}%</td>
+<td>{Number(row.sgst || 0).toFixed(2)}%</td>
+<td>{Number(row.igst || 0).toFixed(2)}%</td>
             <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
             <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
           </tr>

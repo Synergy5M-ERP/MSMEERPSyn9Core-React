@@ -260,8 +260,7 @@ onChange={(e) => {
                     <th>PAID AMOUNT</th>
                     <th>BALANCE AMOUNT</th>
                     <th>BANK NAME</th>
-                    <th>RTGS NO</th>
-                    <th>RTGS DATE</th>
+                  
 
                   </tr>
 
@@ -330,13 +329,7 @@ onChange={(e) => {
                           <input className="form-control form-control-sm" />
                         </td>
 
-                        <td>
-                          <input className="form-control form-control-sm" />
-                        </td>
-
-                        <td>
-                          <input type="date" className="form-control form-control-sm" />
-                        </td>
+                       
 
                       </tr>
 

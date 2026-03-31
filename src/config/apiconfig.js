@@ -1,8 +1,8 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
-  //const BASE_URL = "https://localhost:7145/api";
+   const BASE_URL = "https://localhost:7145/api";
 
 
 export const API_ENDPOINTS = {
@@ -126,12 +126,17 @@ HRMAdminReg:`${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
     GetApproveSellerNonGrnSo: `${BASE_URL}/GRN/GetApproveSellerNonGrnSo`,
     GetGrnInvoiceDetails: `${BASE_URL}/GRN/GetGrnInvoiceDetails`,
     ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
+        ApproveGrns: `${BASE_URL}/GRN/ApproveGrns`,
+
 
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
   GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
   GetLedger: `${BASE_URL}/GRN/GetLedger`,
   GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
   GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
+  GetGRNInvoiceNames: `${BASE_URL}/LegderMaster/GetGRNInvoiceNames`,
+    SaveLedgerMapping: `${BASE_URL}/LegderMaster/SaveLedgerMapping`,
+
 
 VendorforProd:`${BASE_URL}/AccountBankDetails/Vendors`,
   Ledger: `${BASE_URL}/AccountLedger`,

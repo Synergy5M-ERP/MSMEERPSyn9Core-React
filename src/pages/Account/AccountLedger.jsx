@@ -339,6 +339,7 @@ const validateForm = () => {
               <input type="radio" name="formType" value="subledger" checked={formType === "subledger"} onChange={() => { setFormType("subledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
               Account Sub Ledger
             </label>
+            
           </div>
         </div>
 

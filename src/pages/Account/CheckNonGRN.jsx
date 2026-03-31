@@ -647,39 +647,40 @@ return (
 
   onChange={(selected) => {
 
-    if (!selected) {
-      setSelectedVendorId(null);
-      setShowForm(true);
-      return;
-    }
+  if (!selected) {
+    setSelectedVendorId(null);
+    setShowForm(true);
+    return;
+  }
 
-    setSelectedVendorId(selected.value);
-    setSelectedEmployeeId("");
+  const vendorId = Number(selected.value);
 
-    const vendor = vendors.find(v => v.id === selected.value);
+  setSelectedVendorId(vendorId);
+  setSelectedEmployeeId(false); // hide employee form
+  setShowForm(false); // hide employee form also
 
-    if (vendor) {
+  const vendor = vendors.find(v => v.id === vendorId);
 
-      setShowForm(false);
+  if (vendor) {
 
-      setFormData(prev => ({
-        ...prev,
-        partyName: vendor.company_Name || "",
-        vendorCode: vendor.vendorCode || "",
-        address: vendor.address || "",
-        city: vendor.city || "",
-        contactPerson: vendor.contact_Person || "",
-        contactNo: vendor.contact_Number || "",
-        bankName: vendor.bank_Name || "",
-        branchName: vendor.branch || "",
-        gstNo: vendor.gst_Number || "",
-          EmailID: vendor.email || ""
+    setFormData(prev => ({
+      ...prev,
+      partyName: vendor.company_Name || "",
+      vendorCode: vendor.vendorCode || "",
+      address: vendor.address || "",
+      city: vendor.city || "",
+      contactPerson: vendor.contact_Person || "",
+      contactNo: vendor.contact_Number || "",
+      bankName: vendor.bank_Name || "",
+      branchName: vendor.branch || "",
+      gstNo: vendor.gst_Number || "",
+      EmailID: vendor.email || ""
+    }));
 
-      }));
+  }
 
-    }
-
-  }}
+}}
+   
 />
         </div>
 

@@ -11,8 +11,8 @@ const PaymentAllocation = () => {
   const [actualBal, setActualBal] = useState(0);
   const [baseActualBal, setBaseActualBal] = useState(0);
   const [selectedVendor, setSelectedVendor] = useState("");
-  const [subLedger, setSubLedger] = useState("");
-
+const [subLedgers, setSubLedgers] = useState([]);
+const [subLedger, setSubLedger] = useState("");
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
   
@@ -39,35 +39,59 @@ const PaymentAllocation = () => {
     return JSON.stringify(rows) !== JSON.stringify(originalRows);
   }, [rows, originalRows]);
 
-  // Load ledgers on mount
-  useEffect(() => {
-    const loadLedgers = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.Ledger);
-        if (!res.ok) throw new Error("Failed to load ledgers");
 
-        const data = await res.json();
-        setLedgerOptions(data || []);
+    useEffect(() => {
+  const loadLedgers = async () => {
+    try {
+      const res = await fetch(API_ENDPOINTS.Ledger);
+      if (!res.ok) throw new Error("Failed to load ledgers");
 
-        if (data && data.length > 0) {
-          const first = data[0];
-          const bal = Number(first.closingBal || 0);
-          setLedgerId(first.accountLedgerId.toString());
-          setBaseActualBal(bal);
-          setActualBal(bal);
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("❌ Unable to load ledger list", {
-          toastId: "ledger-load-error"
-        });
-        setError("Unable to load ledger list.");
+      const data = await res.json();
+      setLedgerOptions(data || []);
+
+      if (data && data.length > 0) {
+        const first = data[0];
+        const bal = Number(first.closingBal || 0);
+
+        const ledgerId = first.accountLedgerId.toString();
+
+        setLedgerId(ledgerId);
+        setBaseActualBal(bal);
+        setActualBal(bal);
+
+        // ✅ Load subledger for first ledger automatically
+        fetchSubLedger(ledgerId);
       }
-    };
 
-    loadLedgers();
-  }, []);
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Unable to load ledger list", {
+        toastId: "ledger-load-error"
+      });
+      setError("Unable to load ledger list.");
+    }
+  };
 
+  loadLedgers();
+}, []);
+const fetchSubLedger = async (ledgerId) => {
+  try {
+    const res = await fetch(
+      `${API_ENDPOINTS.GetSubLedger}?ledgerId=${ledgerId}`
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSubLedgers(data.data || []);
+    } else {
+      setSubLedgers([]);
+    }
+  } catch (err) {
+    console.error("SubLedger load error", err);
+    setSubLedgers([]);
+  }
+};
   // ✅ Store original data when rows load
   useEffect(() => {
     if (rows.length > 0) {
@@ -377,11 +401,20 @@ debugger;
                 </div>
  <div className="col-md-2">
                 <label className="form-label fw-bold">Sub Ledger</label>
-                <input
-                  className="form-control"
-                  value={subLedger}
-                  onChange={(e) => setSubLedger(e.target.value)}
-                />
+                <select
+  className="form-select"
+  value={subLedger}
+  onChange={(e) => setSubLedger(e.target.value)}
+>
+  <option value="">Select Sub Ledger</option>
+
+  {subLedgers.map((s) => (
+    <option key={s.accountLedgerSubid} value={s.accountLedgerSubid}>
+      {s.accountLedgerSubName}
+    </option>
+  ))}
+
+</select>
               </div>
                 <div className="col-3">
                   <label className="form-label m-2">Balance Details</label>
@@ -460,9 +493,7 @@ debugger;
                     <th>Paid Amount</th>
                     <th>Balance Amount</th>
                       <th>Bank Name</th>
-    <th>RTGS Number</th>
-    <th>RTGS Date</th>
-
+   
                   </tr>
                 </thead>
                 <tbody>
@@ -528,39 +559,7 @@ debugger;
   />
 </td>
 
-<td>
-  <input
-    type="text"
-    className="form-control form-control-sm"
-    value={row.rtgsNumber}
-    onChange={(e) =>
-      setRows(prev =>
-        prev.map(r =>
-          r.accountGRNId === row.accountGRNId
-            ? { ...r, rtgsNumber: e.target.value }
-            : r
-        )
-      )
-    }
-  />
-</td>
 
-<td>
-  <input
-    type="date"
-    className="form-control form-control-sm"
-    value={row.rtgsDate}
-    onChange={(e) =>
-      setRows(prev =>
-        prev.map(r =>
-          r.accountGRNId === row.accountGRNId
-            ? { ...r, rtgsDate: e.target.value }
-            : r
-        )
-      )
-    }
-  />
-</td>
                           </tr>
                         ))}
                       </React.Fragment>

@@ -26,6 +26,8 @@ const Sidebar = ({ selected, onSelect }) => {
     
     // { label: 'AccountVoucher Type', icon: <AccountBalanceTwoTone />, key: 'AccountVoucherType' },
     { label: 'Account Configuration', icon: <AccountCircle />, key: 'Account' },
+        { label: 'Legder Master', icon: <AccountCircle />, key: 'LedgerMaster' },
+
      { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
 
       { label: 'Account Sale', icon: <SdCardAlert />, key: 'AccountSale' },

@@ -19,6 +19,7 @@ import AccountSale from './AccountSale';
 import BalanceSheet from './BalanceSheet';
 import FinancialConfiguration from './FinancialConfiguration';
 import ProfitLoss from './ProfitLoss';
+import LedgerMaster from './LedgerMaster';
 
 const AccountAndFinanceDashboard = () => {
 const [activePage, setActivePage] = useState('Dashboard');
@@ -41,6 +42,8 @@ const [activePage, setActivePage] = useState('Dashboard');
           {activePage === 'Account' && <AccountConfiguration/>}
           {activePage==='AccountVoucherType' && <AccountVoucherType/>}
           {activePage ==='AccountLedger' && <AccountLedger/>}
+                    {activePage ==='LedgerMaster' && <LedgerMaster/>}
+
           {activePage ==='AccountVoucher' && <VoucherConfiguration/>}
           {activePage ==='AccountJournal' && <AccountJournal/>}
 

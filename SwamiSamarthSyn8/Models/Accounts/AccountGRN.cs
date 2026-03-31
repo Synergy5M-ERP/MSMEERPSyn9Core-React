@@ -37,4 +37,6 @@ public class AccountGRN
     public decimal? IGSTAmount { get; set; }
 
     public bool IsActive { get; set; }
+    public DateOnly? QcApprovedDate { get; set; }
+    public DateOnly? ApprovedDate { get; set; }
 }

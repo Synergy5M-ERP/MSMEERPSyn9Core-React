@@ -144,7 +144,7 @@ namespace SwamiSamarthSyn8.Controllers.Masters
                 int continentId = _context.Master_Continent
                      .Where(x => x.conti_name == continent)
                      .Select(x => x.Continent_number)
-                     .FirstOrDefault() ?? 0;
+                     .FirstOrDefault();
 
                 int countryId = _context.Master_Country
                     .Where(x => x.country_name == country)

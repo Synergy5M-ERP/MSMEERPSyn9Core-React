@@ -12,6 +12,7 @@ namespace SwamiSamarthSyn8.Models.Masters
         public int country_id { get; set; }
         public string Country_Code { get; set; }
         public int? state_number { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string state_code { get; set; }
         public bool IsActive { get; set; }
     }

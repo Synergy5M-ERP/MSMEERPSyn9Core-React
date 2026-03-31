@@ -11,7 +11,7 @@ namespace SwamiSamarthSyn8.Models
         public int AccountSubGroupId { get; set; }
         public int AccountSubSubGroupId { get; set; }
         public string AccountLedgerName { get; set; }
-        public string? GLCode { get; set; }
+        public string? GLCode { get; set; }   // ✅ FIXED
         public string? MobileNo { get; set; }
         public string? EmailId { get; set; }
         public string? GSTNo { get; set; }
@@ -20,5 +20,9 @@ namespace SwamiSamarthSyn8.Models
         public string? Address { get; set; }
         public string? AccountLedgerNarration { get; set; }
         public bool IsActive { get; set; }
+        public string? GRNInvColumnName { get; set; }
+        public string? CrDr { get; set; }
+
+
     }
 }

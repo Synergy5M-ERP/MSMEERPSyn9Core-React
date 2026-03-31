@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models.HRM;
+using System.Security.Claims;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -101,14 +103,117 @@ public class HrmMasterController : ControllerBase
         var data = await _context.HRM_AuthorityMatrix.ToListAsync();
         return Ok(data);
     }
- 
 
 
+
+    //[HttpPost("{type}")]
+    //public async Task<IActionResult> Create(string type, [FromBody] JObject payload)
+    //{
+    //    if (payload == null)
+    //        return BadRequest("Invalid payload");
+
+    //    switch (type)
+    //    {
+    //        // ===================== DEPARTMENT =====================
+    //        case "Department":
+    //            {
+    //                var name = payload["DeptName"]?.ToString()?.Trim();
+    //                if (string.IsNullOrEmpty(name))
+    //                    return BadRequest("DeptName required");
+
+    //                if (await _context.HRM_Department.AnyAsync(x => x.DeptName.ToLower() == name.ToLower()))
+    //                    return BadRequest("Department already exists");
+
+    //                var code = await GenerateNextCode(
+    //                    _context.HRM_Department.Select(x => x.DeptCode)
+    //                );
+
+    //                var dept = new HRM_Department
+    //                {
+    //                    DeptName = name,
+    //                    DeptCode = code,
+    //                    IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+    //                    CreatedDate = DateTime.Now,
+    //                    CreatedBy = 1
+    //                };
+
+    //                _context.HRM_Department.Add(dept);
+    //                await _context.SaveChangesAsync();
+
+    //                return Ok(dept);
+    //            }
+
+    //        // ===================== DESIGNATION =====================
+    //        case "Designation":
+    //            {
+    //                var name = payload["DesignationName"]?.ToString()?.Trim();
+    //                if (string.IsNullOrEmpty(name))
+    //                    return BadRequest("DesignationName required");
+
+    //                if (await _context.HRM_Designation.AnyAsync(x => x.DesignationName.ToLower() == name.ToLower()))
+    //                    return BadRequest("Designation already exists");
+
+    //                var code = await GenerateNextCode(
+    //                    _context.HRM_Designation.Select(x => x.DesignationCode)
+    //                );
+
+    //                var desig = new HRM_Designation
+    //                {
+    //                    DesignationName = name,
+    //                    DesignationCode = code,
+    //                    IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+    //                    CreatedDate = DateTime.Now,
+    //                    CreatedBy = 1
+    //                };
+
+    //                _context.HRM_Designation.Add(desig);
+    //                await _context.SaveChangesAsync();
+
+    //                return Ok(desig);
+    //            }
+
+    //        // ===================== AUTHORITY MATRIX =====================
+    //        case "AuthorityMatrix":
+    //            {
+    //                var name = payload["AuthorityMatrixName"]?.ToString()?.Trim();
+    //                if (string.IsNullOrEmpty(name))
+    //                    return BadRequest("AuthorityMatrixName required");
+
+    //                if (await _context.HRM_AuthorityMatrix.AnyAsync(x => x.AuthorityMatrixName.ToLower() == name.ToLower()))
+    //                    return BadRequest("Authority already exists");
+
+    //                var code = await GenerateNextCode(
+    //                    _context.HRM_AuthorityMatrix.Select(x => x.AuthorityMatrixCode)
+    //                );
+
+    //                var auth = new HRM_AuthorityMatrix
+    //                {
+    //                    AuthorityMatrixName = name,
+    //                    AuthorityMatrixCode = code,
+    //                    IsSelected = payload["IsSelected"]?.ToObject<bool>() ?? false,
+    //                    IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
+    //                    CreatedDate = DateTime.Now,
+    //                    CreatedBy = 1
+    //                };
+
+    //                _context.HRM_AuthorityMatrix.Add(auth);
+    //                await _context.SaveChangesAsync();
+
+    //                return Ok(auth);
+    //            }
+
+    //        default:
+    //            return BadRequest("Invalid type");
+    //    }
+    //}
     [HttpPost("{type}")]
+    [Authorize]
     public async Task<IActionResult> Create(string type, [FromBody] JObject payload)
     {
         if (payload == null)
             return BadRequest("Invalid payload");
+
+        int userId = GetCurrentUserId();   // ✅ get logged-in user
 
         switch (type)
         {
@@ -119,7 +224,8 @@ public class HrmMasterController : ControllerBase
                     if (string.IsNullOrEmpty(name))
                         return BadRequest("DeptName required");
 
-                    if (await _context.HRM_Department.AnyAsync(x => x.DeptName.ToLower() == name.ToLower()))
+                    if (await _context.HRM_Department
+                        .AnyAsync(x => x.DeptName.ToLower() == name.ToLower()))
                         return BadRequest("Department already exists");
 
                     var code = await GenerateNextCode(
@@ -132,7 +238,7 @@ public class HrmMasterController : ControllerBase
                         DeptCode = code,
                         IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
                         CreatedDate = DateTime.Now,
-                        CreatedBy = 1
+                        CreatedBy = userId   // ✅ correct user id
                     };
 
                     _context.HRM_Department.Add(dept);
@@ -148,9 +254,6 @@ public class HrmMasterController : ControllerBase
                     if (string.IsNullOrEmpty(name))
                         return BadRequest("DesignationName required");
 
-                    if (await _context.HRM_Designation.AnyAsync(x => x.DesignationName.ToLower() == name.ToLower()))
-                        return BadRequest("Designation already exists");
-
                     var code = await GenerateNextCode(
                         _context.HRM_Designation.Select(x => x.DesignationCode)
                     );
@@ -161,7 +264,7 @@ public class HrmMasterController : ControllerBase
                         DesignationCode = code,
                         IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
                         CreatedDate = DateTime.Now,
-                        CreatedBy = 1
+                        CreatedBy = userId   // ✅ correct
                     };
 
                     _context.HRM_Designation.Add(desig);
@@ -177,9 +280,6 @@ public class HrmMasterController : ControllerBase
                     if (string.IsNullOrEmpty(name))
                         return BadRequest("AuthorityMatrixName required");
 
-                    if (await _context.HRM_AuthorityMatrix.AnyAsync(x => x.AuthorityMatrixName.ToLower() == name.ToLower()))
-                        return BadRequest("Authority already exists");
-
                     var code = await GenerateNextCode(
                         _context.HRM_AuthorityMatrix.Select(x => x.AuthorityMatrixCode)
                     );
@@ -191,7 +291,7 @@ public class HrmMasterController : ControllerBase
                         IsSelected = payload["IsSelected"]?.ToObject<bool>() ?? false,
                         IsActive = payload["IsActive"]?.ToObject<bool>() ?? true,
                         CreatedDate = DateTime.Now,
-                        CreatedBy = 1
+                        CreatedBy = userId   // ✅ correct
                     };
 
                     _context.HRM_AuthorityMatrix.Add(auth);
@@ -203,6 +303,15 @@ public class HrmMasterController : ControllerBase
             default:
                 return BadRequest("Invalid type");
         }
+    }
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            throw new UnauthorizedAccessException("User not logged in");
+
+        return Convert.ToInt32(userIdClaim);
     }
     private async Task<int> GenerateNextCode(IQueryable<int> codes)
     {
@@ -217,13 +326,87 @@ public class HrmMasterController : ControllerBase
 
 
 
-    
+
+    //[HttpPut("{type}/{id}")]
+    //public async Task<IActionResult> Update(string type, int id, [FromBody] JObject payload)
+    //{
+    //    switch (type)
+    //    {
+    //        // ===================== DEPARTMENT =====================
+    //        case "Department":
+    //            {
+    //                var dept = await _context.HRM_Department.FindAsync(id);
+    //                if (dept == null) return NotFound();
+
+    //                if (payload["DeptName"] != null)
+    //                    dept.DeptName = payload["DeptName"].ToString().Trim();
+
+    //                if (payload["IsActive"] != null)
+    //                    dept.IsActive = payload["IsActive"].ToObject<bool>();
+
+    //                dept.UpdatedDate = DateTime.Now;
+    //                dept.UpdatedBy = 1;
+
+    //                await _context.SaveChangesAsync();
+    //                return Ok(dept);
+    //            }
+
+    //        // ===================== DESIGNATION =====================
+    //        case "Designation":
+    //            {
+    //                var desig = await _context.HRM_Designation.FindAsync(id);
+    //                if (desig == null) return NotFound();
+
+    //                if (payload["DesignationName"] != null)
+    //                    desig.DesignationName = payload["DesignationName"].ToString().Trim();
+
+    //                if (payload["IsActive"] != null)
+    //                    desig.IsActive = payload["IsActive"].ToObject<bool>();
+
+    //                desig.UpdatedDate = DateTime.Now;
+    //                desig.UpdatedBy = 1;
+
+    //                await _context.SaveChangesAsync();
+    //                return Ok(desig);
+    //            }
+
+    //        // ===================== AUTHORITY MATRIX =====================
+    //        case "AuthorityMatrix":
+    //            {
+    //                var auth = await _context.HRM_AuthorityMatrix.FindAsync(id);
+    //                if (auth == null) return NotFound();
+
+    //                if (payload["AuthorityMatrixName"] != null)
+    //                    auth.AuthorityMatrixName = payload["AuthorityMatrixName"].ToString().Trim();
+
+    //                if (payload["IsSelected"] != null)
+    //                    auth.IsSelected = payload["IsSelected"].ToObject<bool>();
+
+    //                if (payload["IsActive"] != null)
+    //                    auth.IsActive = payload["IsActive"].ToObject<bool>();
+
+    //                auth.UpdatedDate = DateTime.Now;
+    //                auth.UpdatedBy = 1;
+
+    //                await _context.SaveChangesAsync();
+    //                return Ok(auth);
+    //            }
+
+    //        default:
+    //            return BadRequest("Invalid type");
+    //    }
+    //}
+    [Authorize]
     [HttpPut("{type}/{id}")]
     public async Task<IActionResult> Update(string type, int id, [FromBody] JObject payload)
     {
+        var userIdClaim = User.FindFirst("UserId")?.Value
+                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        int userId = userIdClaim != null ? Convert.ToInt32(userIdClaim) : 0;
+
         switch (type)
         {
-            // ===================== DEPARTMENT =====================
             case "Department":
                 {
                     var dept = await _context.HRM_Department.FindAsync(id);
@@ -236,13 +419,12 @@ public class HrmMasterController : ControllerBase
                         dept.IsActive = payload["IsActive"].ToObject<bool>();
 
                     dept.UpdatedDate = DateTime.Now;
-                    dept.UpdatedBy = 1;
+                    dept.UpdatedBy = userId; // ✅ FIXED
 
                     await _context.SaveChangesAsync();
                     return Ok(dept);
                 }
 
-            // ===================== DESIGNATION =====================
             case "Designation":
                 {
                     var desig = await _context.HRM_Designation.FindAsync(id);
@@ -255,13 +437,12 @@ public class HrmMasterController : ControllerBase
                         desig.IsActive = payload["IsActive"].ToObject<bool>();
 
                     desig.UpdatedDate = DateTime.Now;
-                    desig.UpdatedBy = 1;
+                    desig.UpdatedBy = userId; // ✅ FIXED
 
                     await _context.SaveChangesAsync();
                     return Ok(desig);
                 }
 
-            // ===================== AUTHORITY MATRIX =====================
             case "AuthorityMatrix":
                 {
                     var auth = await _context.HRM_AuthorityMatrix.FindAsync(id);
@@ -277,7 +458,7 @@ public class HrmMasterController : ControllerBase
                         auth.IsActive = payload["IsActive"].ToObject<bool>();
 
                     auth.UpdatedDate = DateTime.Now;
-                    auth.UpdatedBy = 1;
+                    auth.UpdatedBy = userId; // ✅ FIXED
 
                     await _context.SaveChangesAsync();
                     return Ok(auth);
@@ -379,14 +560,13 @@ public class HrmMasterController : ControllerBase
         return Ok(new { message = "Status updated" });
     }
 
-
     [HttpPost("OrgChartWithBudget")]
     public IActionResult OrgChartWithBudget(
       [FromBody] List<OrgChartWithBudgetDto> model)
     {
         if (model == null || !model.Any())
             return BadRequest("No data received");
-
+        //int userId = GetCurrentUserId();
         foreach (var job in model)
         {
             var entity = new HRM_Organization
@@ -434,7 +614,7 @@ public class HrmMasterController : ControllerBase
                 OnBoardDate = job.OnboardDate,
                 IsActive = true,
                 CreatedDate = DateTime.Now,
-                CreatedBy = 1
+                CreatedBy = 1 // ✅ FIXED
             };
 
             _context.HRM_Organization.Add(entity);
@@ -454,6 +634,7 @@ public class HrmMasterController : ControllerBase
 
         if (org == null)
             return NotFound("Organization not found");
+        int userId = GetCurrentUserId(); // ✅ reuse method
 
         org.DeptId = dto.DeptId;
         org.DesignationId = dto.DesignationId;
@@ -468,6 +649,8 @@ public class HrmMasterController : ControllerBase
         org.MinBudget = dto.MinBudget;
         org.MaxBudget = dto.MaxBudget;
         org.OnBoardDate = dto.OnBoardDate;
+        org.UpdatedDate = DateTime.Now;
+        org.UpdatedBy = userId;
 
         _context.SaveChanges();
 

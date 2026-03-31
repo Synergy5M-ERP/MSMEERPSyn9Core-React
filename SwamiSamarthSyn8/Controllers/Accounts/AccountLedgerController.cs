@@ -150,8 +150,9 @@ namespace SwamiSamarthSyn8.Accounts.Controller
                     x.AccountGroupId,
                     x.AccountLedgerId,
                     x.AccountLedgerName,
+                    x.IsActive,
                     x.GLCode,
-                    x.IsActive
+                    x.AccountLedgerNarration
                 })
                 .ToList();
 

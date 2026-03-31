@@ -64,6 +64,7 @@ public partial class SwamiSamarthDbContext : DbContext
 
     public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
     public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
+    public virtual DbSet<Master_VendorCategory> Master_VendorCategory { get; set; }
          //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
     public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction{ get; set; }
@@ -268,14 +269,15 @@ public partial class SwamiSamarthDbContext : DbContext
     public virtual DbSet<PrimaryItemMaster> PrimaryItemMasters { get; set; }
     public virtual DbSet<AlternateItemMaster> AlternateItemMasters { get; set; }
     public virtual DbSet<PQM_FinishProdCOATbl> PQM_FinishProdCOATbl { get; set; }
-
+    public virtual DbSet<Master_Parameter> Master_Parameter { get; set; }
+    public virtual DbSet<LocationDto> LocationDto { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer("Server=tcp:synergy-shripad.database.windows.net,1433;Initial Catalog=synergy-shripad;User ID=shripadsyn8;Password=Synergy5m@786;Encrypt=True;TrustServerCertificate=False;"
 
  );
     }
-
+    //
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AFM_PaymentTransaction>(entity =>

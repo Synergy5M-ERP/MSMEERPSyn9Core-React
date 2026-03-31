@@ -5,6 +5,8 @@ using Serilog.Sinks.MSSqlServer;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,8 +45,30 @@ builder.Services.AddDbContext<SwamiSamarthDbContext>(options =>
         builder.Configuration.GetConnectionString("SwamiSamarthDb")));
 
 
-Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection"));
+Log.Information("DB ConnectionString = " + builder.Configuration.GetConnectionString("DBConnection")); builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
 
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+     ),
+
+        ClockSkew = TimeSpan.Zero // 🔥 ADD THIS
+    };
+});
+builder.Services.AddAuthorization();
 // ✅ CORS
 builder.Services.AddCors(options =>
 {
@@ -100,6 +124,9 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwamiSamarthSyn8 API v1");
     c.RoutePrefix = "swagger";
 });
+app.UseSession();
+
+app.UseAuthentication();   // ✅ ADD THIS
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

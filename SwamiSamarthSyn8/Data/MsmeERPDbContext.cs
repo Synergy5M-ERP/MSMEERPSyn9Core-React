@@ -36,6 +36,8 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<AccountSubVoucherType> AccountSubVoucherType { get; set; }
     public virtual DbSet<AccountLedger> AccountLedger { get; set; }
     public DbSet<AccountSubGroup> AccountSubGroup { get; set; }
+    public DbSet<AccountLedgerCrDR> AccountLedgerCrDR { get; set; }
+
     public DbSet<AccountSubSubGroup> AccountSubSubGroup { get; set; }
     public virtual DbSet<AccountPrimaryGroup> AccountPrimaryGroup { get; set; }
     public virtual DbSet<AccountFiscalPeriod> AccountFiscalPeriod { get; set; }
@@ -44,6 +46,9 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<AccountGRNDetails> AccountGRNDetails { get; set; }
     public virtual DbSet<AccountGRN> AccountGRN { get; set; }
     public virtual DbSet<AccountBankDetails> AccountBankDetails { get; set; }
+    public virtual DbSet<AccountVendor> AccountVendor { get; set; }
+    public virtual DbSet<AccountNonGRNInvoice> AccountNonGRNInvoice { get; set; }
+    public virtual DbSet<AccountNonGRNInvoiceDetails> AccountNonGRNInvoiceDetails { get; set; }
     //---------Accounts-------//
     //---------Master Tables-------//
 
@@ -61,9 +66,12 @@ public partial class MsmeERPDbContext : DbContext
 
     public virtual DbSet<Master_Currency> Master_Currency { get; set; }
     public virtual DbSet<Master_UOM> Master_UOM { get; set; }
+    public virtual DbSet<Master_Parameter> Master_Parameter { get; set; }
 
     public virtual DbSet<Master_PaymentTerms> Master_PaymentTerms { get; set; }
     public virtual DbSet<Master_PriceBasis> Master_PriceBasis { get; set; }
+    public virtual DbSet<AccountNonGRN> AccountNonGRN { get; set; }
+    public virtual DbSet<AccountNonGRNDetails> AccountNonGRNDetails { get; set; }
     //complete masters //
     public virtual DbSet<AFM_PaymentTransaction> AFM_PaymentTransaction { get; set; }
     public virtual DbSet<AFM_WithdrawTransaction> AFM_WithdrawTransaction { get; set; }
@@ -278,6 +286,7 @@ public partial class MsmeERPDbContext : DbContext
 
 
 
+    public virtual DbSet<LocationDto> LocationDto { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer("Server=tcp:synergy-msmecore.database.windows.net,1433;Initial Catalog=MsmeERPDb;Persist Security Info=False;User ID=synergymsmecoresyn9;Password=Synergy@786;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;");

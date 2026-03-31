@@ -428,8 +428,8 @@ function CreateBOM() {
             Create BOM <span style={{ fontSize: "17px", color: "black" }}>(Finish Item Details)</span>
           </h3>
           <div className="row g-3 p-3">
-            <div className="col-md-3">
-              <label className="form-label label-dark">Select Finish Item Item</label>
+            <div className="col-md-2">
+              <label className="form-label label-dark">Select Finish Item</label>
               <Select
                 options={options}
                 placeholder="Search item..."
@@ -437,7 +437,7 @@ function CreateBOM() {
                 value={selectedItem}
                 isClearable />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Grade</label>
               <select
                 className="form-select"
@@ -449,28 +449,28 @@ function CreateBOM() {
                 ))}
               </select>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Item Code</label>
               <input type="text" className="form-control" value={itemDetails.itemCode} disabled />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">UOM</label>
               <input type="text" className="form-control" value={itemDetails.uom} disabled />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Currency</label>
               <input type="text" className="form-control" value={itemDetails.currency} disabled />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Average Price</label>
               <input type="text" className="form-control" value={itemDetails.avgPrice} disabled />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Assembly Code</label>
               <input type="text" className="form-control" value={assemblyCode} readOnly />
             </div>
 
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">
                 Quantity <span className="text-danger">*</span>
               </label>
@@ -492,7 +492,7 @@ function CreateBOM() {
                   }
                 }} />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Procure Type</label>
               <select id="ProcureType"
                 className="form-select"
@@ -504,17 +504,17 @@ function CreateBOM() {
               </select>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Level</label>
               <input type="text" className="form-control" value={level} disabled />
             </div>
 
-            <div className="col-md-3">
+            <div className="col-md-2">
               <label className="form-label label-dark">Buyer Name</label>
               <input type="text" className="form-control" value={itemDetails.buyerName} readOnly />
             </div>
 
-            <div className="col-md-3 d-flex align-items-end">
+            <div className="col-md-2 d-flex align-items-end">
               <button
                 onClick={addProductToList}
                 className="blue-button"

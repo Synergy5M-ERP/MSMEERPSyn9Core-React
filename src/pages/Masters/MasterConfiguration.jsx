@@ -19,6 +19,7 @@ import InventoryMaster from './InventoryMaster/InventoryMaster';
 import LocationMaster from './LocationMaster/LocationMaster';
 import ParameterMaster from './ParameterMaster/ParameterMaster';
 import FloorInventoryMaster from './FloorInventoryMaster/FloorInventortMaster';
+import CreateItemCat from './ItemCategoryMaster/CreateItemCat';
 const MasterConfiguration = () => {
   const [activePage, setActivePage] = useState('Dashboard');
 
@@ -44,6 +45,7 @@ const MasterConfiguration = () => {
           {activePage === 'location' && <LocationMaster />}
           {activePage === 'Parameter' && <ParameterMaster/>}
           {activePage === 'FloorInventory' && <FloorInventoryMaster/>}
+           {activePage === 'CreateItemCat' && <CreateItemCat/>}
           {/* Add more conditions for other pages */}
         </div>
       </div>

@@ -25,31 +25,30 @@ import {
     VolunteerActivismSharp,
 } from '@mui/icons-material';
 import { CreditCardIcon, SheetIcon, StoreIcon } from 'lucide-react';
-import { RiBillFill, RiMastercardFill, RiProductHuntFill } from 'react-icons/ri';
+import { RiBillFill, RiMastercardFill, RiProductHuntFill, RiFolderAddLine } from 'react-icons/ri';
 import ListItem from '@mui/material/ListItem';
 
 const MasterSidebar = ({ selected, onSelect }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [expandedMenu, setExpandedMenu] = useState(null);
 
-    const menuItems = 
-     [
-  { label: 'Dashboard', icon: <DashboardCustomize />, key: 'Dashboard' },
-  { label: ' Item Master', icon: <AddBox />, key: 'itemMaster' },
-  { label: ' Alternative Item Master', icon: <SwapHoriz />, key: 'alternateItem' },
-//   { label: 'Primary Items', icon: <Inventory />, key: 'primaryitems' },
-//   { label: 'Alternative Items', icon: <ChangeCircle />, key: 'Alternativeitems' },
-  { label: ' Vendor Master', icon: <StoreIcon />, key: 'vendorMaster' },
-    { label: '  Inventory Master', icon: <Inventory2Sharp />, key: 'Inventory' },
-  { label: ' Floor Inventory Master', icon: <Inventory2Sharp />, key: 'FloorInventory' },
-//   { label: ' BOM', icon: <SchemaRounded />, key: ' BOM' },
-  { label: ' Location Master', icon: <LocationCity />, key: 'location' },
-  { label: ' Commodity Master', icon: <Category />, key: 'commodityMaster' },
-  { label: ' Parameter Master', icon: <Tune />, key: 'Parameter' },
-  {
-label:'Bill Of Material',icon:<RiBillFill/>,key:'BOM'
-  }
-];
+    const menuItems =
+        [
+            { label: 'Dashboard', icon: <DashboardCustomize />, key: 'Dashboard' },
+            { label: ' Item Master', icon: <AddBox />, key: 'itemMaster' },
+            { label: ' Alternative Item Master', icon: <SwapHoriz />, key: 'alternateItem' },
+            //   { label: 'Primary Items', icon: <Inventory />, key: 'primaryitems' },
+            //   { label: 'Alternative Items', icon: <ChangeCircle />, key: 'Alternativeitems' },
+            { label: ' Vendor Master', icon: <StoreIcon />, key: 'vendorMaster' },
+            { label: '  Inventory Master', icon: <Inventory2Sharp />, key: 'Inventory' },
+            { label: ' Floor Inventory Master', icon: <Inventory2Sharp />, key: 'FloorInventory' },
+            //   { label: ' BOM', icon: <SchemaRounded />, key: ' BOM' },
+            { label: ' Location Master', icon: <LocationCity />, key: 'location' },
+            { label: ' Commodity Master', icon: <Category />, key: 'commodityMaster' },
+            { label: ' Parameter Master', icon: <Tune />, key: 'Parameter' },
+            { label: 'Bill Of Material', icon: <RiBillFill />, key: 'BOM' },
+            { label: 'Item/Vendor Category', icon: <RiFolderAddLine size={24} />, key: 'CreateItemCat' }
+        ];
 
 
     // Toggle submenu open/close on click

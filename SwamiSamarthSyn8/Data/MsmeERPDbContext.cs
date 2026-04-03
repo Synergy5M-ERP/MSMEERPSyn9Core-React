@@ -49,6 +49,8 @@ public partial class MsmeERPDbContext : DbContext
     public virtual DbSet<AccountVendor> AccountVendor { get; set; }
     public virtual DbSet<AccountNonGRNInvoice> AccountNonGRNInvoice { get; set; }
     public virtual DbSet<AccountNonGRNInvoiceDetails> AccountNonGRNInvoiceDetails { get; set; }
+    public virtual DbSet<AccountTransportationGRN> AccountTransportationGRN { get; set; }
+    public virtual DbSet<AccountTransportationGRNDetails> AccountTransportationGRNDetails { get; set; }
     //---------Accounts-------//
     //---------Master Tables-------//
 

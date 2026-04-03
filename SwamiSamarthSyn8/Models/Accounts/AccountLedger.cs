@@ -22,7 +22,9 @@ namespace SwamiSamarthSyn8.Models
         public bool IsActive { get; set; }
         public string? GRNInvColumnName { get; set; }
         public string? CrDr { get; set; }
-
+        public string? NONGRNInvColumnName { get; set; }
+        public string? TransportColumnName { get; set; }
+        public virtual ICollection<AccountSubLedger> AccountSubLedgers { get; set; }
 
     }
 }

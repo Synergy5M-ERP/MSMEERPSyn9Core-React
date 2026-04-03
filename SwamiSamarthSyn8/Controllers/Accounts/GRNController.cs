@@ -1608,7 +1608,61 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
        
-        
+
+        [HttpGet("GetTransporter")]
+        public async Task<IActionResult> GetTransporter()
+        {
+            try
+            {
+                var transporters = await _swamiContext.MMM_GRNTbl
+                    .Where(x => !string.IsNullOrEmpty(x.Transporter) && x.QC_Clearance_Date != null)
+                    .Select(x => x.Transporter)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToListAsync();
+
+                // React expects the data inside an object { data: [...] } based on your frontend code
+                return Ok(new { data = transporters });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+        }
+        [HttpGet("GetTransporterDetails")]
+        public async Task<IActionResult> GetTransporterDetails(string transporter)
+        {
+            if (string.IsNullOrEmpty(transporter))
+            {
+                return BadRequest("Transporter name is required.");
+            }
+
+            try
+            {
+                var data = await _swamiContext.MMM_GRNTbl
+                    .Where(x => x.Transporter == transporter && x.QC_Clearance_Date != null)
+                    .Select(x => new
+                    {
+                        GRNId = x.Id,
+                        LRNo = x.LR_NO,
+                        VehicleNo = x.Vehicle_No,
+                        SupplierName = x.Supplier_Name,
+                        Date = x.Invoice_Date,
+                        //FreightCharges = x.FreightCharges
+                    })
+                    .ToListAsync();
+
+                return Ok(new { data = data });
+            }
+            catch (Exception ex)
+            {
+                // Log the error (ex) here
+                return StatusCode(500, "Internal server error while fetching transporter details.");
+            }
+        }
     }
 
 }
+
+

@@ -35,6 +35,7 @@ useEffect(() => {
       console.log("API Response:", res.data);
 
       const options = res.data.map((item) => ({
+        
         value: item.id,          // must match backend JSON
         label: item.paymentTerm, // correct casing
       }));

@@ -3,7 +3,7 @@
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
 
-  // const BASE_URL = "https://localhost:7145/api";
+   //const BASE_URL = "https://localhost:7145/api";
 
 
 // const BASE_URL = "https://localhost:7145/api";
@@ -147,6 +147,10 @@ export const API_ENDPOINTS = {
   GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
   GetLedger: `${BASE_URL}/GRN/GetLedger`,
   GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
+  GetTransporter: `${BASE_URL}/GRN/GetTransporter`,
+    GetTransporterDetails: `${BASE_URL}/GRN/GetTransporterDetails`,
+
+  
   GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
   GetGRNInvoiceNames: `${BASE_URL}/LegderMaster/GetGRNInvoiceNames`,
     SaveLedgerMapping: `${BASE_URL}/LegderMaster/SaveLedgerMapping`,

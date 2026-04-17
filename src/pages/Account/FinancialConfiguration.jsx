@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import PaymentAllocation from "./PaymentAllocation";
 import ReceivableAllocation from "./ReceivableAllocation";
+import PaymentAllocationNonGrn from "./PaymentAllocationNonGrn";
+
 function FinancialConfiguration() {
     const [selectedPage, setSelectedPage] = useState("paymentAllocation");
  return (
         <div style={{ minHeight: "80vh" }}>
-            <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
+            {/* <h2 style={{ textAlign: "left", color: "#0066cc", margin: "12px" }}>
                 FinancialConfiguration
-            </h2>
+            </h2>*/}
 
             {/* Page Selector */}
             <div
@@ -17,7 +19,7 @@ function FinancialConfiguration() {
                     justifyContent: 'space-between', // space between two groups
                     alignItems: 'center',
                     gap: '30px',
-                    marginTop: '22px',
+                    // marginTop: '22px',
                     marginBottom: '12px',
                     padding: '14px 0 14px 5px',
                     borderRadius: '8px',
@@ -27,7 +29,7 @@ function FinancialConfiguration() {
             >
                 <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
 
-                    <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
                         <input
                             type="radio"
                             name="configTab"
@@ -38,8 +40,18 @@ function FinancialConfiguration() {
                         />
                        Payment Allocation
                     </label>
-
-                    <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
+                        <input
+                            type="radio"
+                            name="configTab"
+                            value="PaymentAllocationNonGrn"
+                            checked={selectedPage === 'PaymentAllocationNonGrn'}
+                            onChange={() => setSelectedPage('PaymentAllocationNonGrn')}
+                            style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
+                        />
+                       Payment Allocation Non-GRN
+                    </label>
+<label style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
                         <input
                             type="radio"
                             name="configTab"
@@ -60,7 +72,7 @@ function FinancialConfiguration() {
  <div>
                 {
                 
-                selectedPage === 'paymentAllocation' ? (<PaymentAllocation />) : selectedPage === 'receivableAllocation'? (
+                selectedPage === 'paymentAllocation' ? (<PaymentAllocation />) : selectedPage === 'PaymentAllocationNonGrn' ? (<PaymentAllocationNonGrn />) : selectedPage === 'receivableAllocation'? (
                     <ReceivableAllocation />
                 )
                :(<paymentAllocation/>)

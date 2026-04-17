@@ -96,35 +96,35 @@ const ViewManualPR = ({ onEdit }) => {
   };
 
 
-// Add a helper function for the download logic
-const downloadFile = async (url, fileName, type) => {
+  // Add a helper function for the download logic
+  const downloadFile = async (url, fileName, type) => {
     try {
-        toast.info(`Generating ${type}...`);
-        const response = await axios.get(url, { responseType: 'blob' });
-        const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(blobUrl);
-        toast.success(`${type} downloaded successfully`);
+      toast.info(`Generating ${type}...`);
+      const response = await axios.get(url, { responseType: 'blob' });
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      toast.success(`${type} downloaded successfully`);
     } catch (error) {
-        toast.error(`Failed to export ${type}`);
+      toast.error(`Failed to export ${type}`);
     }
-};
+  };
 
-const handleExportExcel = (item) => {
+  const handleExportExcel = (item) => {
     const fileName = `PR_${(item.prNo || item.id).replace(/[\\/]/g, '_')}.xlsx`;
     const url = `${API_ENDPOINTS.ExportPRByNumber}?prNumber=${item.prNo || item.id}`;
     downloadFile(url, fileName, 'Excel');
-};
+  };
 
-const handleExportPdf = (item) => {
+  const handleExportPdf = (item) => {
     const fileName = `PR_${(item.prNo || item.id).replace(/[\\/]/g, '_')}.pdf`;
     // Ensure you add this endpoint to your apiconfig.js
     const url = `${API_ENDPOINTS.ExportPRByNumberPdf}?prNumber=${item.prNo || item.id}`;
     downloadFile(url, fileName, 'PDF');
-};
+  };
 
   const handleExportClick = async (item) => {
     try {
@@ -225,29 +225,29 @@ const handleExportPdf = (item) => {
         </div> */}
         <div className='row'>
           <div className="col">
-            <label className="filter-label">PR Number</label>
-            <select className="filter-input" value={filters.prNumber} onChange={(e) => setFilters({ ...filters, prNumber: e.target.value })}>
+            <label className="label-color">PR Number</label>
+            <select className="select-field-style" value={filters.prNumber} onChange={(e) => setFilters({ ...filters, prNumber: e.target.value })}>
               <option value="">All PRs</option>
               {prNumbers.map(pr => <option key={pr.id} value={pr.id}>{pr.id}</option>)}
             </select>
           </div>
           <div className="col">
-            <label className="filter-label">Department</label>
-            <select className="filter-input" value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })}>
+            <label className="label-color">Department</label>
+            <select className="select-field-style" value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })}>
               <option value="">All Departments</option>
               {departments.map(d => <option key={d.id} value={d.departmentName}>{d.departmentName}</option>)}
             </select>
           </div>
           <div className="col">
-            <label className="filter-label">Start Date</label>
-            <input type="date" className="filter-input" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} />
+            <label className="label-color">Start Date</label>
+            <input type="date" className="input-field-style" value={filters.startDate} onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} />
           </div>
           <div className="col">
-            <label className="filter-label">End Date</label>
-            <input type="date" className="filter-input" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} />
+            <label className="label-color">End Date</label>
+            <input type="date" className="input-field-style" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} />
           </div>
           <div className='col'>
-            <label className="filter-label">Clear</label>
+            <label className="label-color">Clear</label>
             <button className="btn-clear" onClick={() => setFilters({ prNumber: '', department: '', startDate: '', endDate: '' })}>
               <FilterX size={18} />
             </button>
@@ -350,7 +350,7 @@ const handleExportPdf = (item) => {
                         <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.itemName)}</div>
                         <div style={{ fontSize: '11px', color: '#94a3b8' }}>Code: {item.itemCode}</div>
                       </td>
-                      <td  style={{ fontWeight: 600 }}>{formatDisplayValue(item.grade)}</td>
+                      <td style={{ fontWeight: 600 }}>{formatDisplayValue(item.grade)}</td>
                       <td >
                         <span style={{ fontWeight: 600 }}>{formatDisplayValue(item.requiredQty)}</span>
                         {item.uom && <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>{item.uom}</span>}
@@ -361,37 +361,37 @@ const handleExportPdf = (item) => {
                         </span>
                       </td>
 
-<td className="td-cell text-center">
-  <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-    {/* Edit Button */}
-    <button onClick={() => handleEditClick(item)} title="Edit" style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-      <Edit3 size={14} />
-    </button>
+                      <td className="td-cell text-center">
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          {/* Edit Button */}
+                          <button onClick={() => handleEditClick(item)} title="Edit" style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Edit3 size={14} />
+                          </button>
 
-    {/* Export Group */}
-    <div className="export-group" style={{ display: 'flex', border: '1px solid #86efac', borderRadius: '6px', overflow: 'hidden' }}>
-      <button 
-        onClick={() => handleExportExcel(item)} 
-        title="Export Excel"
-        style={{ background: '#dcfce7', color: '#166534', border: 'none', borderRight: '1px solid #86efac', padding: '6px 8px', cursor: 'pointer' }}
-      >
-        <FileSpreadsheet size={14} />
-      </button>
-      <button 
-        onClick={() => handleExportPdf(item)} 
-        title="Export PDF"
-        style={{ background: '#fef2f2', color: '#991b1b', border: 'none', padding: '6px 8px', cursor: 'pointer' }}
-      >
-        <Download size={14} />
-      </button>
-    </div>
+                          {/* Export Group */}
+                          <div className="export-group" style={{ display: 'flex', border: '1px solid #86efac', borderRadius: '6px', overflow: 'hidden' }}>
+                            <button
+                              onClick={() => handleExportExcel(item)}
+                              title="Export Excel"
+                              style={{ background: '#dcfce7', color: '#166534', border: 'none', borderRight: '1px solid #86efac', padding: '6px 8px', cursor: 'pointer' }}
+                            >
+                              <FileSpreadsheet size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleExportPdf(item)}
+                              title="Export PDF"
+                              style={{ background: '#fef2f2', color: '#991b1b', border: 'none', padding: '6px 8px', cursor: 'pointer' }}
+                            >
+                              <Download size={14} />
+                            </button>
+                          </div>
 
-    {/* Delete Button */}
-    <button onClick={() => handleDeleteClick(item)} title="Delete" style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-      <Trash2 size={14} />
-    </button>
-  </div>
-</td>
+                          {/* Delete Button */}
+                          <button onClick={() => handleDeleteClick(item)} title="Delete" style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
 
                       {/* <td className="td-cell text-center">
                         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
@@ -411,66 +411,7 @@ const handleExportPdf = (item) => {
                 </tbody>
               </table>
             </div>
-            {/* <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ background: 'linear-gradient(to bottom, #f1f5f9, #e2e8f0)' }}>
-                  <tr>
-                    <th className="th-cell">PR No</th>
-                    <th className="th-cell">Date</th>
-                    <th className="th-cell">Department</th>
-                    <th className="th-cell">Item Details</th>
-                    <th className="th-cell">Grade</th>
-                    <th className="th-cell">Quantity</th>
-                    <th className="th-cell">Value</th>
-                    <th className="th-cell text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, index) => (
-                    <tr key={item.id} className="table-row" style={{ background: index % 2 === 0 ? 'white' : '#fafbfc' }}>
-                      <td className="td-cell">
-                        <span style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'monospace' }}>
-                          {formatDisplayValue(item.prNo)}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'monospace' }} >
-                        {item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.department)}</div>
-                      </td>
-                      <td >
-                        <div style={{ fontWeight: 600 }}>{formatDisplayValue(item.itemName)}</div>
-                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Code: {item.itemCode}</div>
-                      </td>
-                      <td style={{ fontWeight: 600 }}>{formatDisplayValue(item.grade)}</td>
-                      <td >
-                        <span style={{ fontWeight: 600 }}>{formatDisplayValue(item.requiredQty)}</span>
-                        {item.uom && <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>{item.uom}</span>}
-                      </td>
-                      <td >
-                        <span style={{ fontWeight: 700, color: '#059669' }}>
-                          {item.value || item.totalValue ? `₹${parseFloat(item.value || item.totalValue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'N/A'}
-                        </span>
-                      </td>
-                      <td className="td-cell text-center">
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                          <button onClick={() => handleEditClick(item)} style={{ background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '1px solid #93c5fd', color: '#1e40af', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Edit3 size={14} /> 
-                          </button>
-                          <button onClick={() => handleExportClick(item)} style={{ background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '1px solid #86efac', color: '#166534', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Download size={14} /> 
-                          </button>
-                          <button onClick={() => handleDeleteClick(item)} style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '1px solid #fca5a5', color: '#b91c1c', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Trash2 size={14} /> 
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div> */}
+          
             <PaginationControls />
           </>
         )}
@@ -479,8 +420,7 @@ const handleExportPdf = (item) => {
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spinner { animation: spin 1s linear infinite; }
-        .filter-label { display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 6px; }
-        .filter-input { width: 100%; padding: 6px 4px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; }
+         .filter-input { width: 100%; padding: 6px 4px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white; }
         .btn-clear { background: linear-gradient(to bottom, #f8fafc, #f1f5f9) !important; border: 2px solid #cbd5e1 !important; padding: 6px 4px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; color: #475569; text-transform: uppercase; }
         .th-cell { padding: 10px; text-align: left; font-size: 12px; font-weight: 500; color: #334155; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
         .td-cell { padding: 10px 10px; font-size: 14px; color: #1e293b; border-bottom: 1px solid #f1f5f9; }

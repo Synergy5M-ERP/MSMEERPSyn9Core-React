@@ -223,12 +223,12 @@ function VoucherList() {
         <div className="row g-3 mb-4">
           {/* Vendor Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <DollarSign size={16} className="me-1" />
               Vendor Name
             </label>
             <select
-              className="form-select form-select-lg"
+              className="select-field-style"
               value={selectedVendorId}
               onChange={handleVendorChange}
               disabled={loadingDropdowns}
@@ -248,12 +248,12 @@ function VoucherList() {
 
           {/* Voucher Type Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <FileText size={16} className="me-1" />
               Voucher Type
             </label>
             <select
-              className="form-select form-select-lg"
+              className="select-field-style"
               value={selectedVoucherTypeId}
               onChange={handleVoucherTypeChange}
               disabled={loadingDropdowns}
@@ -269,18 +269,18 @@ function VoucherList() {
 
           {/* Reference Number Dropdown */}
           <div className="col-md-4">
-            <label className="form-label fw-semibold text-secondary mb-2">
+            <label className="label-color">
               <Calendar size={16} className="me-1" />
               Reference No
             </label>
             {loadingReferences ? (
-              <div className="form-select form-select-lg d-flex align-items-center">
+              <div className="select-field-style d-flex align-items-center">
                 <Loader2 className="animate-spin me-2" size={20} />
                 Loading references...
               </div>
             ) : selectedVoucherType?.voucherType === "Payment" ? (
               <select
-                className="form-select form-select-lg"
+                className="select-field-style"
                 value={selectedReferenceId}
                 onChange={handleReferenceChange}
                 disabled={!selectedVoucherTypeId}
@@ -294,7 +294,7 @@ function VoucherList() {
               </select>
             ) : selectedVoucherType?.voucherType === "Receipt" ? (
               <select
-                className="form-select form-select-lg"
+                className="select-field-style"
                 value={selectedReferenceId}
                 onChange={handleReferenceChange}
                 disabled={!selectedVoucherTypeId}
@@ -309,7 +309,7 @@ function VoucherList() {
             ) : (
               <input
                 type="text"
-                className="form-control form-control-lg"
+                className="input-field-style"
                 value={selectedReferenceId}
                 onChange={(e) => setSelectedReferenceId(e.target.value)}
                 placeholder="Enter reference number"
@@ -373,14 +373,14 @@ function VoucherList() {
                 
                 <div className="col-md-3">
                   <div className="d-flex flex-column">
-                    <small className="text-muted mb-1">Reference No</small>
+                    <label className="input-field-style">Reference No</label>
                     <strong className="text-dark">{voucherHeader.referenceNo || "N/A"}</strong>
                   </div>
                 </div>
                 
                 <div className="col-md-3">
                   <div className="d-flex flex-column">
-                    <small className="text-muted mb-1">Total Amount</small>
+                    <label className="input-field-style">Total Amount</label>
                     <strong className="text-success fs-5">
                       ₹{(parseFloat(voucherHeader.totalAmount) || 0).toLocaleString('en-IN', {
                         minimumFractionDigits: 2,

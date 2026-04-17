@@ -129,6 +129,8 @@ function Dashboard() {
         <label className='h5 m-2 text-primary'><input type="radio" name="chartType" value="balanceSheet" checked={chartType === 'balanceSheet'} onChange={() => setChartType('balanceSheet')} /> Balance Sheet</label>{' '}
         <label className='h5 m-2 text-primary'   ><input type="radio" name="chartType" value="profitLoss" checked={chartType === 'profitLoss'} onChange={() => setChartType('profitLoss')} /> Profit & Loss</label>{' '}
         <label className='h5 m-2 text-primary'         ><input type="radio" name="chartType" value="trialBalance" checked={chartType === 'trialBalance'} onChange={() => setChartType('trialBalance')} /> Trial Balance</label>
+        <label className='h5 m-2 text-primary'         ><input type="radio" name="chartType" value="GLSheet" checked={chartType === 'GLSheet'} onChange={() => setChartType('GLSheet')} /> GL Sheet</label>
+
       </div>
 
       {/* Timeframe selection */}

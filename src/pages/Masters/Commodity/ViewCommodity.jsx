@@ -353,7 +353,7 @@ const ViewCommodity = () => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                                <button className="cancel-btn" onClick={() => setShowEditModal(false)}>
                                     Cancel
                                 </button>
                                 <button className="btn btn-primary save" onClick={handleUpdate}>

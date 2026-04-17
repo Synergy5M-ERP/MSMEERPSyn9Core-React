@@ -237,7 +237,7 @@ const handleCancel = () => {
       {/* --- Submit & Cancel --- */}
 <div className="col-12 d-flex gap-2">
   <button type="submit" className="btn btn-primary flex-fill">Register</button>
-  <button type="button" className="btn btn-secondary flex-fill" onClick={handleCancel}>Cancel</button>
+  <button type="button" className="cancel-btn flex-fill" onClick={handleCancel}>Cancel</button>
 </div>
 
       </form>

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { API_ENDPOINTS } from "../../config/apiconfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { Badge } from "lucide-react";
+import { Spinner } from "react-bootstrap";
 const getToday = () => new Date().toISOString().split("T")[0];
 
 const ReceivableAllocation = () => {
@@ -13,6 +14,11 @@ const ReceivableAllocation = () => {
 
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
+  
+  // ✅ NEW: Save/Cancel state management
+  const [originalRows, setOriginalRows] = useState([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const originalRowsRef = useRef([]);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -26,6 +32,11 @@ const ReceivableAllocation = () => {
     acc[row.buyerName].push(row);
     return acc;
   }, {});
+
+  // ✅ Check if data has unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    return JSON.stringify(rows) !== JSON.stringify(originalRows);
+  }, [rows, originalRows]);
 
   // Load ledgers on mount
   useEffect(() => {
@@ -46,13 +57,22 @@ const ReceivableAllocation = () => {
         }
       } catch (err) {
         console.error(err);
-        toast.error("Unable to load ledger list.");
+        toast.error("❌ Unable to load ledger list", { toastId: "ledger-error" });
         setError("Unable to load ledger list.");
       }
     };
 
     loadLedgers();
   }, []);
+
+  // ✅ Store original data when rows load
+  useEffect(() => {
+    if (rows.length > 0) {
+      originalRowsRef.current = [...rows];
+      setOriginalRows([...rows]);
+      setIsDirty(false);
+    }
+  }, [rows.length]);
 
   // ✅ Load approved invoices with pagination
   useEffect(() => {
@@ -78,7 +98,6 @@ const ReceivableAllocation = () => {
         const items = data.data || data.items || [];
         console.log('Items count:', items.length);
 
-        // ✅ Sort DESC by invoice date (newest first)
         const sortedItems = items.sort((a, b) =>
           new Date(b.invoiceDate || b.InvoiceDate) - new Date(a.invoiceDate || a.InvoiceDate)
         );
@@ -112,7 +131,7 @@ const ReceivableAllocation = () => {
 
       } catch (err) {
         console.error('Fetch error:', err);
-        toast.error("Unable to load approved invoices.");
+        toast.error("❌ Unable to load approved invoices", { toastId: "invoices-error" });
         setError("Unable to load approved invoices.");
         setRows([]);
         setTotalCount(0);
@@ -122,9 +141,9 @@ const ReceivableAllocation = () => {
     };
 
     fetchReceivables();
-  }, [page, pageSize]);
+  }, [page, pageSize, baseActualBal]);
 
-  // ✅ REAL-TIME balance validation
+  // ✅ ENHANCED: REAL-TIME balance validation with dirty state
   const handleReceivedChange = (invoiceId, value) => {
     const numeric = Number(value);
     const receivedVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
@@ -137,8 +156,8 @@ const ReceivableAllocation = () => {
 
       if (proposedTotalReceived > baseActualBal) {
         toast.error(
-          `Insufficient balance! Available: ₹${baseActualBal.toFixed(2)}, ` +
-          `Proposed total: ₹${proposedTotalReceived.toFixed(2)}`
+          `⚠️ Insufficient balance!\nAvailable: ₹${baseActualBal.toFixed(2)}\nProposed: ₹${proposedTotalReceived.toFixed(2)}`,
+          { toastId: "balance-error" }
         );
         return prevRows;
       }
@@ -157,6 +176,7 @@ const ReceivableAllocation = () => {
 
       const totalReceived = updated.reduce((sum, r) => sum + (r.receivedAmount || 0), 0);
       setActualBal(Math.max(0, baseActualBal - totalReceived));
+      setIsDirty(true);
       return updated;
     });
   };
@@ -166,18 +186,31 @@ const ReceivableAllocation = () => {
       prevRows.map(row => {
         if (row.invoiceId !== invoiceId) return row;
         if (row.balanceAmount > 0) return row;
+        setIsDirty(true);
         return { ...row, isChecked: !row.isChecked };
       })
     );
   };
 
+  // ✅ ENHANCED SAVE with confirmation & loading
   const handleSave = async () => {
     const selectedRows = rows.filter(r => r.receivedAmount > 0);
 
     if (selectedRows.length === 0) {
-      toast.warning("Please enter received amounts for at least one invoice");
+      toast.warning("⚠️ Please enter received amounts for at least one invoice", { toastId: "no-payments" });
       return;
     }
+
+    const totalAmount = selectedRows.reduce((sum, r) => sum + r.receivedAmount, 0);
+    
+    if (!window.confirm(
+      `💰 Save ${selectedRows.length} receivable allocation(s)?\n\n` +
+      `Total Amount: ₹${totalAmount.toFixed(2)}\nDate: ${date}`
+    )) {
+      return;
+    }
+
+    toast.loading("💾 Saving allocations...", { toastId: "save-loading" });
 
     try {
       const payload = {
@@ -197,11 +230,46 @@ const ReceivableAllocation = () => {
 
       if (!res.ok) throw new Error("Failed to save receivable allocations");
 
-      toast.success("Receivable allocations saved successfully!");
+      toast.dismiss("save-loading");
+      toast.success(`✅ Saved successfully!\n${selectedRows.length} allocations | ₹${totalAmount.toFixed(2)}`, {
+        toastId: "save-success"
+      });
+      
+      // Reset dirty state
+      setIsDirty(false);
+      setOriginalRows([...rows]);
+      originalRowsRef.current = [...rows];
       setPage(1);
+      
     } catch (err) {
+      toast.dismiss("save-loading");
+      toast.error(`❌ Save failed: ${err.message}`, { toastId: "save-error" });
       console.error(err);
-      toast.error("Failed to save receivable allocations");
+    }
+  };
+
+  // ✅ NEW: CANCEL with confirmation
+  const handleCancel = () => {
+    if (!hasUnsavedChanges()) {
+      toast.info("ℹ️ No changes to cancel", { toastId: "no-changes" });
+      return;
+    }
+
+    const changesCount = rows.filter((row, idx) => 
+      row.receivedAmount !== originalRowsRef.current.find(r => r.invoiceId === row.invoiceId)?.receivedAmount
+    ).length;
+
+    if (window.confirm(`🚫 Discard ${changesCount} unsaved changes?`)) {
+      toast.loading("🔄 Restoring original data...", { toastId: "cancel-loading" });
+      
+      setRows([...originalRowsRef.current]);
+      setIsDirty(false);
+      
+      const totalReceived = originalRowsRef.current.reduce((sum, r) => sum + (r.receivedAmount || 0), 0);
+      setActualBal(Math.max(0, baseActualBal - totalReceived));
+      
+      toast.dismiss("cancel-loading");
+      toast.success("✅ Changes cancelled", { toastId: "cancel-success" });
     }
   };
 
@@ -221,73 +289,97 @@ const ReceivableAllocation = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" theme="colored" />
+      <ToastContainer 
+        position="top-right" 
+        theme="colored" 
+        limit={3}
+        autoClose={5000}
+      />
       <div className="container my-4">
-        <div className="card shadow-sm">
-          <div className="card-header bg-primary text-white">
-            <h5 className="mb-0">Receivables Allocation</h5>
+        <div className="card shadow-lg border-0">
+          {/* ✅ Header with title */}
+          <div className="card-header bg-gradient-primary text-white p-3">
+            <div className="d-flex justify-content-between align-items-center">
+              <h4 className="mb-0 fw-bold">
+                <i className="bi bi-receipt me-2"></i>
+                Receivables Allocation
+              </h4>
+              {isDirty && (
+                <Badge bg="warning" className="fs-6">
+                  <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                  {rows.filter(r => r.receivedAmount > 0).length} payments pending
+                </Badge>
+              )}
+            </div>
           </div>
 
-          <div className="card-body">
+          <div className="card-body p-4">
             {/* Filters */}
-            <div className="row g-3 mb-3">
-              <div className="row align-items-end">
-                <div className="col">
-                  <label className="form-label">Date</label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={date}
-                    onChange={(e) => {
-                      setDate(e.target.value);
-                      setPage(1);
-                    }}
-                    style={{ height: '40px' }}
-                  />
-                </div>
+            <div className="row g-3 mb-4">
+              <div className="col-md-3">
+                <label className="form-label fw-semibold">Date</label>
+                <input
+                  type="date"
+                  className="form-control form-control-lg"
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
 
-                <div className="col">
-                  <label className="form-label">Ledger Account</label>
-                  <select
-                    className="form-select"
-                    style={{ height: '40px' }}
-                    value={ledgerId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setLedgerId(id);
-                      setPage(1);
-                      const selected = ledgerOptions.find(
-                        (l) => l.accountLedgerId.toString() === id
-                      );
-                      if (selected) {
-                        const bal = Number(selected.closingBal || 0);
-                        setBaseActualBal(bal);
-                        setActualBal(bal);
-                      }
-                    }}
-                  >
-                    <option value="">Select ledger</option>
-                    {ledgerOptions.map((l) => (
-                      <option key={l.accountLedgerId} value={l.accountLedgerId}>
-                        {l.accountLedgerName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="col-md-4">
+                <label className="form-label fw-semibold">Ledger Account</label>
+                <select
+                  className="form-select form-select-lg"
+                  value={ledgerId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setLedgerId(id);
+                    setPage(1);
+                    const selected = ledgerOptions.find(
+                      (l) => l.accountLedgerId.toString() === id
+                    );
+                    if (selected) {
+                      const bal = Number(selected.closingBal || 0);
+                      setBaseActualBal(bal);
+                      setActualBal(bal);
+                    }
+                  }}
+                >
+                  <option value="">Select ledger</option>
+                  {ledgerOptions.map((l) => (
+                    <option key={l.accountLedgerId} value={l.accountLedgerId}>
+                      {l.accountLedgerName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="col">
-                  <label className="form-label m-2">Balance Details</label>
-                  <div
-                    className={`alert mb-0 d-flex align-items-center ${
-                      actualBal === 0 ? 'alert-danger' :
-                        actualBal < rows.reduce((sum, r) => sum + (r.receivedAmount || 0), 0) * 0.1 ? 'alert-warning' : 'alert-success'
-                    }`}
-                    style={{ height: '40px', paddingTop: '0', paddingBottom: '0' }}
-                  >
-                    <span>
-                      <strong>Balance:</strong> ₹{actualBal.toFixed(2)} |
-                      <strong> Allocated:</strong> ₹{rows.reduce((sum, r) => sum + (r.receivedAmount || 0), 0).toFixed(2)}
-                    </span>
+              <div className="col-md-5">
+                <label className="form-label fw-semibold mb-2">Balance Details</label>
+                <div
+                  className={`alert p-2 mb-0 d-flex align-items-center shadow-sm ${
+                    actualBal === 0 ? 'alert-danger' :
+                      actualBal < rows.reduce((sum, r) => sum + (r.receivedAmount || 0), 0) * 0.1 
+                        ? 'alert-warning' : 'alert-success'
+                  }`}
+                >
+                  <div className="w-100">
+                    <div className="d-flex justify-content-between">
+                      <span><strong>Available:</strong> ₹{actualBal.toFixed(2)}</span>
+                      <span><strong>Allocated:</strong> ₹{rows.reduce((sum, r) => sum + (r.receivedAmount || 0), 0).toFixed(2)}</span>
+                    </div>
+                    <div className="progress mt-1" style={{ height: '4px' }}>
+                      <div 
+                        className="progress-bar" 
+                        role="progressbar"
+                        style={{ 
+                          width: `${Math.min(100, (rows.reduce((sum, r) => sum + (r.receivedAmount || 0), 0) / baseActualBal) * 100)}%`
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -295,15 +387,37 @@ const ReceivableAllocation = () => {
 
             {/* Error & loading */}
             {error && (
-              <div className="alert alert-danger py-2 mb-3" role="alert">{error}</div>
+              <div className="alert alert-danger py-3 mb-4 shadow-sm" role="alert">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                {error}
+              </div>
             )}
             {loading && (
-              <div className="alert alert-info py-2 mb-3" role="alert">Loading...</div>
+              <div className="alert alert-info py-3 mb-4 shadow-sm text-center" role="alert">
+                <Spinner animation="border" className="me-2" />
+                Loading approved invoices...
+              </div>
             )}
 
-            <div className="d-flex justify-content-between align-items-center mb-2">
+            {/* ✅ Unsaved changes warning */}
+            {isDirty && (
+              <div className="alert alert-warning py-3 mb-4 shadow-sm d-flex align-items-center" role="alert">
+                <i className="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                  <strong>🔄 Unsaved changes detected!</strong> 
+                  <br className="d-none d-md-block" />
+                  <small>{rows.filter(r => r.receivedAmount > 0).length} allocations modified. Use Save/Cancel below.</small>
+                </div>
+              </div>
+            )}
+
+            {/* Page size selector */}
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+              <div className="text-muted">
+                <strong>{rows.length}</strong> invoices loaded
+              </div>
               <div className="d-flex align-items-center gap-2">
-                <span>Rows per page:</span>
+                <span className="text-muted">Rows per page:</span>
                 <select
                   className="form-select form-select-sm"
                   style={{ width: "90px" }}
@@ -317,28 +431,44 @@ const ReceivableAllocation = () => {
               </div>
             </div>
 
-            {/* ✅ Grouped Table Display */}
-            <div className="table-responsive">
-              <table className="table table-striped table-hover table-bordered align-middle">
-                <thead className="table-light">
+            {/* ✅ SCROLLABLE Table with Fixed Height */}
+            <div 
+              className="table-responsive border rounded shadow-sm mb-4"
+              style={{ 
+                maxHeight: '500px',  // ✅ Fixed height for scrollbar
+                overflowY: 'auto',
+                overflowX: 'auto',
+                border: '2px solid #e9ecef'
+              }}
+            >
+              <table className="table table-striped table-hover mb-0 align-middle">
+                <thead className="table-light sticky-top bg-white shadow-sm">
                   <tr>
-                    <th className="text-center">Select</th>
-                    <th>Invoice No</th>
-                    <th>Invoice Date</th>
-                    <th>Buyer Name</th>
-                    <th>Payment Due Date</th>
-                    <th>CGST</th>
-                    <th>SGST</th>
-                    <th>IGST</th>
-                    <th>Total Amount</th>
-                    <th>Received Amount</th>
-                    <th>Balance Amount</th>
+                    <th className="text-center" style={{ minWidth: '60px' }}>Select</th>
+                    <th style={{ minWidth: '120px' }}>Invoice No</th>
+                    <th style={{ minWidth: '110px' }}>Invoice Date</th>
+                    <th style={{ minWidth: '180px' }}>Buyer Name</th>
+                    <th style={{ minWidth: '130px' }}>Due Date</th>
+                    <th style={{ minWidth: '90px' }}>CGST</th>
+                    <th style={{ minWidth: '90px' }}>SGST</th>
+                    <th style={{ minWidth: '90px' }}>IGST</th>
+                    <th style={{ minWidth: '120px' }}>Total Amount</th>
+                    <th style={{ minWidth: '140px' }}>Received Amount</th>
+                    <th style={{ minWidth: '130px' }}>Balance</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="table-group-divider">
                   {Object.keys(groupedRows).length > 0 ? (
                     Object.entries(groupedRows).map(([buyerName, buyerRows]) => (
                       <React.Fragment key={buyerName}>
+                        {/* ✅ Buyer Group Header */}
+                        <tr className="table-group-heading bg-light">
+                          <td colSpan="11" className="p-3 fw-bold text-primary border-0">
+                            <i className="bi bi-people-fill me-2 text-info"></i>
+                            {buyerName} ({buyerRows.length} invoices)
+                          </td>
+                        </tr>
+                        
                         {/* Buyer Invoices */}
                         {buyerRows.map((row) => (
                           <tr key={row.invoiceId} className="table-hover">
@@ -353,16 +483,14 @@ const ReceivableAllocation = () => {
                                 />
                               </div>
                             </td>
-                            <td className="align-middle text-muted small">{row.invoiceNo}</td>
-                            <td className="fw-semibold align-middle text-muted small">{row.invoiceDate}</td>
-                            <td className="fw-semibold align-middle text-muted small">{row.buyerName}</td>
-                            <td className="fw-semibold align-middle text-muted small">{row.paymentDueDate}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.cgst.toFixed(2)}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.sgst.toFixed(2)}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.igst.toFixed(2)}</td>
-                            <td className="fw-semibold text-end align-middle fw-bold text-primary">
-                              ₹{row.totalAmount.toFixed(2)}
-                            </td>
+                            <td className="fw-semibold">{row.invoiceNo}</td>
+                            <td>{row.invoiceDate}</td>
+                            <td className="fw-medium text-wrap">{row.buyerName}</td>
+                            <td>{row.paymentDueDate || '-'}</td>
+                            <td className="text-end">₹{row.cgst.toFixed(2)}</td>
+                            <td className="text-end">₹{row.sgst.toFixed(2)}</td>
+                            <td className="text-end">₹{row.igst.toFixed(2)}</td>
+                            <td className="fw-bold text-primary text-end">₹{row.totalAmount.toFixed(2)}</td>
                             <td className="align-middle">
                               <input
                                 type="number"
@@ -370,15 +498,18 @@ const ReceivableAllocation = () => {
                                 style={{ minWidth: "120px" }}
                                 min="0"
                                 max={row.totalAmount}
-                                value={row.receivedAmount}
+                                value={row.receivedAmount || ''}
                                 onChange={(e) => handleReceivedChange(row.invoiceId, e.target.value)}
+                                placeholder="0.00"
                               />
                             </td>
                             <td className="text-end align-middle">
-                              <span className={`badge fs-6 fw-semibold px-3 py-2 shadow-sm ${
+                              <span className={`badge fs-6 fw-semibold px-3 py-2 shadow-sm lh-1 ${
                                 row.balanceAmount === 0
-                                  ? 'bg-success text-white border border-2 border-success'
-                                  : 'bg-warning text-dark border border-2 border-warning'
+                                  ? 'bg-success text-white border border-3 border-success'
+                                  : row.balanceAmount < row.totalAmount * 0.1
+                                    ? 'bg-warning text-dark border border-2 border-warning'
+                                    : 'bg-info text-white border border-2 border-info'
                               }`}>
                                 ₹{row.balanceAmount.toFixed(2)}
                               </span>
@@ -389,10 +520,13 @@ const ReceivableAllocation = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="11" className="text-center py-5">
+                      <td colSpan="11" className="text-center py-5 bg-light">
                         <div className="py-5">
-                          <h5 className="text-muted mb-1">{loading ? "Loading approved invoices..." : "No approved invoices found"}</h5>
-                          <p className="text-muted">Check your filters or date selection</p>
+                          <i className="bi bi-inbox display-4 text-muted mb-3"></i>
+                          <h5 className="text-muted mb-1">
+                            {loading ? "Loading approved invoices..." : "No approved invoices found"}
+                          </h5>
+                          <p className="text-muted mb-0">Check your date range or ledger selection</p>
                         </div>
                       </td>
                     </tr>
@@ -401,34 +535,93 @@ const ReceivableAllocation = () => {
               </table>
             </div>
 
-            {/* Pagination */}
-            <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-2 gap-2">
+            {/* ✅ PAGINATION */}
+            <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-4 mb-3 gap-3">
+              <div className="text-muted small">
+                <strong>Showing {startIndex}–{endIndex} of {totalCount} invoices</strong>
+              </div>
               <nav aria-label="Page navigation">
-                <ul className="pagination mb-0">
+                <ul className="pagination pagination-sm mb-0">
                   <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                    <button className="page-link" onClick={() => handlePageChange(1)}>« First</button>
+                    <button className="page-link" onClick={() => handlePageChange(1)}>
+                      <i className="bi bi-chevron-double-left"></i> First
+                    </button>
                   </li>
                   <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                    <button className="page-link" onClick={() => handlePageChange(page - 1)}>‹ Prev</button>
+                    <button className="page-link" onClick={() => handlePageChange(page - 1)}>
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
                   </li>
                   <li className="page-item disabled">
-                    <span className="page-link">Page {page} of {totalPages}</span>
+                    <span className="page-link">
+                      Page <strong>{page}</strong> of <strong>{totalPages}</strong>
+                    </span>
                   </li>
                   <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
-                    <button className="page-link" onClick={() => handlePageChange(page + 1)}>Next ›</button>
+                    <button className="page-link" onClick={() => handlePageChange(page + 1)}>
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
                   </li>
                   <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
-                    <button className="page-link" onClick={() => handlePageChange(totalPages)}>Last »</button>
+                    <button className="page-link" onClick={() => handlePageChange(totalPages)}>
+                      Last <i className="bi bi-chevron-double-right"></i>
+                    </button>
                   </li>
                 </ul>
               </nav>
-              <div className="text-muted small">
-                Showing {startIndex}–{endIndex} of {totalCount}
-              </div>
+            </div>
+
+            {/* ✅ SAVE/CANCEL BUTTONS AT BOTTOM */}
+            <div className="d-flex justify-content-end gap-3 p-4 bg-light border-top rounded-bottom shadow-sm">
+              <button 
+                className="btn btn-outline-secondary btn-lg px-5 py-3 shadow-sm"
+                onClick={handleCancel}
+                disabled={!isDirty || loading}
+              >
+                <i className="bi bi-x-circle-fill me-2"></i>
+                Cancel Changes
+              </button>
+              
+              <button 
+                className={`btn btn-success btn-lg px-5 py-3 shadow-sm position-relative ${
+                  !isDirty || rows.filter(r => r.receivedAmount > 0).length === 0 
+                    ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={handleSave}
+                disabled={!isDirty || loading || rows.filter(r => r.receivedAmount > 0).length === 0}
+              >
+                <i className="bi bi-check-circle-fill me-2"></i>
+                Save Allocations
+                {isDirty && rows.filter(r => r.receivedAmount > 0).length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
+                    {rows.filter(r => r.receivedAmount > 0).length}
+                    <span className="visually-hidden">payments</span>
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        :global(.bg-gradient-primary) {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        :global(.cursor-not-allowed) {
+          cursor: not-allowed !important;
+        }
+        :global(.table-group-heading) {
+          font-size: 1.1em;
+        }
+        :global(.table-group-divider) > tr > td {
+          border-top: 2px solid #dee2e6;
+        }
+        :global(.sticky-top) {
+          top: 0;
+          z-index: 10;
+        }
+      `}</style>
     </>
   );
 };

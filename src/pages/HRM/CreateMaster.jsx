@@ -87,7 +87,19 @@ const [orgForm, setOrgForm] = useState({
 // ORGANIZATION TABLE
 const [orgTable, setOrgTable] = useState([]);
 
+useEffect(() => {
+  const interceptor = axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
+  return () => {
+    axios.interceptors.request.eject(interceptor);
+  };
+}, []);
 useEffect(() => {
   fetchIndustries();
 }, []);
@@ -482,8 +494,17 @@ const handleSave = async () => {
   }
 
   try {
-    await axios.post(`${API_BASE_URL}/${formType}`, payload);
+const token = localStorage.getItem("token");
 
+await axios.post(
+  `${API_BASE_URL}/${formType}`,
+  payload,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }
+);
     toast.success("Saved successfully");
     fetchTableData();
     resetForm();

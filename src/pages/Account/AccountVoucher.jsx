@@ -208,8 +208,7 @@ function AccountVoucher() {
 
     function LoadingSpinner() {
         return (
-            <div
-                style={{
+            <div   style={{
                     position: "fixed",
                     top: 0,
                     left: 0,
@@ -218,11 +217,14 @@ function AccountVoucher() {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    background: "rgba(255,255,255,0.7)",
+                    background: "rgba(228, 19, 19, 0.7)",
                     zIndex: 2000,
-                }}
+                }} className="m-3 p-4">
+                <div
+              
             >
                 <Loader2 className="animate-spin" size={48} />
+            </div>
             </div>
         );
     }
@@ -283,7 +285,7 @@ function AccountVoucher() {
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Voucher Type*</label>
+                        <label className="label-color">Voucher Type*</label>
                         <select
                             className="form-select"
                             value={voucherTypeId}   // ✅ FIX
@@ -314,10 +316,10 @@ function AccountVoucher() {
                     </div>
 
                     <div className="col-3">
-                        <label className="form-label text-primary">Voucher Date*</label>
+                        <label className="label-color">Voucher Date*</label>
                         <input
                             type="date"
-                            className="form-control"
+                            className="input-field-style"
                             value={voucherDate}
                             onChange={(e) => setVoucherDate(e.target.value)}
                         />

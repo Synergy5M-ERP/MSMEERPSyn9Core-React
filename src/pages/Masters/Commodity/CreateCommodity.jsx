@@ -297,7 +297,7 @@ const CreateCommodity = ({ onSave }) => {
                                         <Save size={18} className="me-2" />
                                         Save
                                     </button>
-                                    <button type="button" className="btn btn-secondary" onClick={handleCancel}>
+                                    <button type="button" className="cancel-btn" onClick={handleCancel}>
                                         <X size={18} className="me-2" />
                                         Cancel
                                     </button>

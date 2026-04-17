@@ -3,17 +3,17 @@
 import React, { useState } from "react";
 import CreateManualPR from "./CreateManualPR";
 import ViewManualPR from "./ViewManualPR";
-import NotCreated from '../../components/NotCreated';
+
 import CreateReport from "./CreateReport";
 
 function ManualPR() {
-  const [selectedPage, setSelectedPage] = useState("create");
+  const [selectedPage, setSelectedPage] = useState("view");
   const [editData, setEditData] = useState(null);
 
   // Handler to switch to edit mode
   const handleEditRecord = (record) => {
     setEditData(record);
-    setSelectedPage("create");
+    setSelectedPage("view");
   };
 
   // Handler to clear edit mode after save/cancel
@@ -43,6 +43,20 @@ function ManualPR() {
         }}
       >
         <div style={{ display: 'flex', gap: '30px' }}>
+              <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="configTab"
+              value="view"
+              checked={selectedPage === 'view'}
+              onChange={() => {
+                setSelectedPage('view');
+                setEditData(null);
+              }}
+              style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
+            />
+            View
+          </label>
           <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
             <input
               type="radio"
@@ -58,20 +72,7 @@ function ManualPR() {
             {editData ? 'Edit Manual PR' : 'Create Manual PR'}
           </label>
           
-          <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-            <input
-              type="radio"
-              name="configTab"
-              value="standardReport"
-              checked={selectedPage === 'standardReport'}
-              onChange={() => {
-                setSelectedPage('standardReport');
-                setEditData(null);
-              }}
-              style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-            />
-            View
-          </label>
+      
           
           <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
             <input
@@ -91,7 +92,7 @@ function ManualPR() {
       <div>
         {selectedPage === 'create' ? (
           <CreateManualPR editData={editData} onClearEdit={handleClearEdit} />
-        ) : selectedPage === 'standardReport' ? (
+        ) : selectedPage === 'view' ? (
           <ViewManualPR onEdit={handleEditRecord} />
         ) : (
           <CreateReport />

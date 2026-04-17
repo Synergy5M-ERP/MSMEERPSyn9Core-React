@@ -130,7 +130,7 @@ export default function ViewBank({ view }) {
         <div className="row align-items-center">
           <div className="col-md-8">
             <select
-              className="form-select"
+              className="select-field-style"
               value={selectedVendor}
               onChange={(e) => handleVendorChange(e.target.value)}
             >

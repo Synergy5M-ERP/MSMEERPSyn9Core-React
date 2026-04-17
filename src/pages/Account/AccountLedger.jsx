@@ -33,7 +33,7 @@ export default function AccountLedger({ view }) {
   const [openingBal, setOpeningBal] = useState(0);
   const [closingBal, setClosingBal] = useState(0);
   const [description, setDescription] = useState("");
-  const [vendorCategoryId, setVendorCategoryId]= useState("");
+  const [vendorCategoryId, setVendorCategoryId] = useState("");
   const [vendorCategories, setVendorCategories] = useState([]);
   const [isBank, setIsBank] = useState(false);
 
@@ -41,38 +41,38 @@ export default function AccountLedger({ view }) {
   const [vendors, setVendors] = useState([]);
 
   const getAccountGroupName = (id) => {
-  const group = accountGroupOptions.find(g => g.id === id);
-  return group ? group.name : "—";
-};
+    const group = accountGroupOptions.find(g => g.id === id);
+    return group ? group.name : "—";
+  };
 
-const selectedCategory = vendorCategories
-  .find(v => v.vendorCategoryId === vendorCategoryId)
-  ?.vendorCategoryName?.toLowerCase();
+  const selectedCategory = vendorCategories
+    .find(v => v.vendorCategoryId === vendorCategoryId)
+    ?.vendorCategoryName?.toLowerCase();
 
-const subLedgerLabel =
-  selectedCategory === "seller"
-    ? "Seller Name"
-    : selectedCategory === "buyer"
-    ? "Buyer Name"
-    : "SubLedger Name";
+  const subLedgerLabel =
+    selectedCategory === "seller"
+      ? "Seller Name"
+      : selectedCategory === "buyer"
+        ? "Buyer Name"
+        : "SubLedger Name";
 
 
-const getPrimaryGroup = (id) => {
-  const primarygroup = primaryGroupOptions.find(
-    t => t.primaryGroupid === id
-  );
-  return primarygroup ? primarygroup.primaryGroupName : "—";
-};
+  const getPrimaryGroup = (id) => {
+    const primarygroup = primaryGroupOptions.find(
+      t => t.primaryGroupid === id
+    );
+    return primarygroup ? primarygroup.primaryGroupName : "—";
+  };
 
-const getAccountSubGroupName = (id) => {
-  const subgroup = accountSubGroupOptions.find(s => s.id === id)
-  return subgroup ? subgroup.accountSubGroupName : "—";
-};
+  const getAccountSubGroupName = (id) => {
+    const subgroup = accountSubGroupOptions.find(s => s.id === id)
+    return subgroup ? subgroup.accountSubGroupName : "—";
+  };
 
-const getAccountSubSubGroupName = (id) => {
-  const subsubgroup = accountSubSubGroupOptions.find(f => f.id === id)
-  return subsubgroup ? subsubgroup.accountSubSubGroupName : "—";
-};
+  const getAccountSubSubGroupName = (id) => {
+    const subsubgroup = accountSubSubGroupOptions.find(f => f.id === id)
+    return subsubgroup ? subsubgroup.accountSubSubGroupName : "—";
+  };
 
   // lists and UI state
   const [ledgers, setLedgers] = useState([]);
@@ -90,238 +90,238 @@ const getAccountSubSubGroupName = (id) => {
   const activeFilter = view || "active";
 
   useEffect(() => {
-          fetchPrimaryGroup()   
-          fetchVendorCategories()  
-      }, []);
+    fetchPrimaryGroup()
+    fetchVendorCategories()
+  }, []);
 
   // Fetch account types
   const fetchPrimaryGroup = async () => {
-  try {
-    const res = await fetch(`${API_ENDPOINTS.AccountPrimaryGroup}?isActive=true`);
+    try {
+      const res = await fetch(`${API_ENDPOINTS.AccountPrimaryGroup}?isActive=true`);
 
-    if (!res.ok) throw new Error("Failed to fetch Primary Group");
+      if (!res.ok) throw new Error("Failed to fetch Primary Group");
 
-    const data = await res.json();
-
-    const mapped = (Array.isArray(data) ? data : []).map((item) => ({
-      primaryGroupid: item.primaryGroupid,
-      primaryGroupName: item.primaryGroupName,
-      primaryGroupCode: Number(item.primaryGroupcode) // ✅ FIXED HERE
-    }));
-
-    setPrimaryGroupOptions(mapped);
-  } catch (err) {
-    toast.error("Failed to load Primary Groups");
-  }
-};
-
- // Fetch account groups
-const fetchAccountGroup = async (primarygroupid) => {
-  try {
-    let url = `${API_ENDPOINTS.AccountGroups}?isActive=true`;
-
-    if (primarygroupid) {
-      url += `&primarygroupid=${primarygroupid}`;
-    }
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch Account Groups");
-
-    const data = await res.json();
-
-     const mapped = (Array.isArray(data) ? data : []).map((item) => ({
-      accountGroupId: item.accountGroupId,
-      accountGroupName: item.accountGroupName,
-      accountGroupCode: item.accountGroupCode
-    }));
-
-    setAccountGroupOptions(mapped);
-  } catch (err) {
-    toast.error("Failed to load Account Group");
-  }
-};
-
-const fetchAccountSubGroup = async (groupid) => {
-  try {
-    let url = `${API_ENDPOINTS.AccountSubGroup}?isActive=true`;
-
-    if (groupid) {
-      url += `&groupid=${groupid}`;
-    }
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch Account Sub Groups");
-
-    const data = await res.json();
+      const data = await res.json();
 
       const mapped = (Array.isArray(data) ? data : []).map((item) => ({
-      accountSubGroupId: item.accountSubGroupId,
-      accountSubGroupName: item.accountSubGroupName,
-      subGroupCode: item.subGroupCode
-    }));
+        primaryGroupid: item.primaryGroupid,
+        primaryGroupName: item.primaryGroupName,
+        primaryGroupCode: Number(item.primaryGroupcode) // ✅ FIXED HERE
+      }));
 
-    setAccountSubGroupIptions(mapped);
-  } catch (err) {
-    toast.error("Failed to load Account Sub Group");
-  }
-};
+      setPrimaryGroupOptions(mapped);
+    } catch (err) {
+      toast.error("Failed to load Primary Groups");
+    }
+  };
 
-const fetchAccountSubSubGroup = async (subgroupid) => {
-  try {
-    let url = `${API_ENDPOINTS.AccountSubSubGroup}?isActive=true`;
+  // Fetch account groups
+  const fetchAccountGroup = async (primarygroupid) => {
+    try {
+      let url = `${API_ENDPOINTS.AccountGroups}?isActive=true`;
 
-    if (subgroupid) {
-      url += `&subgroupid=${subgroupid}`;
+      if (primarygroupid) {
+        url += `&primarygroupid=${primarygroupid}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch Account Groups");
+
+      const data = await res.json();
+
+      const mapped = (Array.isArray(data) ? data : []).map((item) => ({
+        accountGroupId: item.accountGroupId,
+        accountGroupName: item.accountGroupName,
+        accountGroupCode: item.accountGroupCode
+      }));
+
+      setAccountGroupOptions(mapped);
+    } catch (err) {
+      toast.error("Failed to load Account Group");
+    }
+  };
+
+  const fetchAccountSubGroup = async (groupid) => {
+    try {
+      let url = `${API_ENDPOINTS.AccountSubGroup}?isActive=true`;
+
+      if (groupid) {
+        url += `&groupid=${groupid}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch Account Sub Groups");
+
+      const data = await res.json();
+
+      const mapped = (Array.isArray(data) ? data : []).map((item) => ({
+        accountSubGroupId: item.accountSubGroupId,
+        accountSubGroupName: item.accountSubGroupName,
+        subGroupCode: item.subGroupCode
+      }));
+
+      setAccountSubGroupIptions(mapped);
+    } catch (err) {
+      toast.error("Failed to load Account Sub Group");
+    }
+  };
+
+  const fetchAccountSubSubGroup = async (subgroupid) => {
+    try {
+      let url = `${API_ENDPOINTS.AccountSubSubGroup}?isActive=true`;
+
+      if (subgroupid) {
+        url += `&subgroupid=${subgroupid}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch Account Sub Sub Groups");
+
+      const data = await res.json();
+
+      const mapped = (Array.isArray(data) ? data : []).map((item) => ({
+        accountSubSubGroupId: item.accountSubSubGroupId,
+        accountSubSubGroupName: item.accountSubSubGroupName,
+        subSubGroupCode: item.subSubGroupCode
+      }));
+
+      setAccountSubSubGroupIptions(mapped);
+    } catch (err) {
+      toast.error("Failed to load Account Sub Sub Group");
+    }
+  };
+
+  //-----Generate the GL code-----
+  useEffect(() => {
+
+    if (!primaryGroup || !accountGroup || !accountSubGroup) {
+      setGLPrefix("");
+      if (!editingId) setGLCode("");
+      return;
     }
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch Account Sub Sub Groups");
+    const primary = primaryGroupOptions.find(
+      p => Number(p.primaryGroupid) === Number(primaryGroup)
+    );
 
-    const data = await res.json();
+    const group = accountGroupOptions.find(
+      g => Number(g.accountGroupId) === Number(accountGroup)
+    );
 
-    const mapped = (Array.isArray(data) ? data : []).map((item) => ({
-      accountSubSubGroupId: item.accountSubSubGroupId,
-      accountSubSubGroupName: item.accountSubSubGroupName,
-      subSubGroupCode: item.subSubGroupCode
-    }));
+    const subGroup = accountSubGroupOptions.find(
+      s => Number(s.accountSubGroupId) === Number(accountSubGroup)
+    );
 
-    setAccountSubSubGroupIptions(mapped);
-  } catch (err) {
-    toast.error("Failed to load Account Sub Sub Group");
-  }
-};
+    const subSubGroup = accountSubSubGroupOptions.find(
+      s => Number(s.accountSubSubGroupId) === Number(accountSubSubGroup)
+    );
 
-//-----Generate the GL code-----
-useEffect(() => {
+    let prefix = "";
 
-  if (!primaryGroup || !accountGroup || !accountSubGroup) {
-    setGLPrefix("");
-    if (!editingId) setGLCode("");
-    return;
-  }
+    if (primary?.primaryGroupCode != null)
+      prefix += String(primary.primaryGroupCode);
 
-  const primary = primaryGroupOptions.find(
-    p => Number(p.primaryGroupid) === Number(primaryGroup)
-  );
+    if (group?.accountGroupCode != null)
+      prefix += String(group.accountGroupCode).padStart(2, "0");
 
-  const group = accountGroupOptions.find(
-    g => Number(g.accountGroupId) === Number(accountGroup)
-  );
+    if (subGroup?.subGroupCode != null)
+      prefix += String(subGroup.subGroupCode).padStart(2, "0");
 
-  const subGroup = accountSubGroupOptions.find(
-    s => Number(s.accountSubGroupId) === Number(accountSubGroup)
-  );
-
-  const subSubGroup = accountSubSubGroupOptions.find(
-    s => Number(s.accountSubSubGroupId) === Number(accountSubSubGroup)
-  );
-
-  let prefix = "";
-
-  if (primary?.primaryGroupCode != null)
-    prefix += String(primary.primaryGroupCode);
-
-  if (group?.accountGroupCode != null)
-    prefix += String(group.accountGroupCode).padStart(2, "0");
-
-  if (subGroup?.subGroupCode != null)
-    prefix += String(subGroup.subGroupCode).padStart(2, "0");
-
-  // optional sub-sub group
-  let subSubCode = "00";
-  if (accountSubSubGroup && subSubGroup?.subSubGroupCode != null) {
-    subSubCode = String(subSubGroup.subSubGroupCode).padStart(2, "0");
-  }
-
-  prefix += subSubCode;
-
-  setGLPrefix(prefix);
-
-  if (!editingId || !glCode) {
-
-    const filtered = ledgers
-      .map(l => {
-        let code = String(l.GLCode);
-
-        // ✅ convert old 7 digit codes to new format
-        if (code.length === 7) {
-          const base = code.slice(0,5);
-          const ledger = code.slice(-2);
-          code = base + "00" + ledger;
-        }
-
-        return code;
-      })
-      .filter(code => code.startsWith(prefix));
-
-    const numbers = filtered
-      .map(code => Number(code.slice(-2)))
-      .filter(n => !isNaN(n));
-
-    const nextNumber =
-      numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
-
-    setGLCode(prefix + String(nextNumber).padStart(2, "0"));
-  }
-
-}, [
-  primaryGroup,
-  accountGroup,
-  accountSubGroup,
-  accountSubSubGroup,
-  primaryGroupOptions,
-  accountGroupOptions,
-  accountSubGroupOptions,
-  accountSubSubGroupOptions,
-  ledgers
-]);
-
-const fetchVendorCategories = async () => {
-  try {
-    const res = await fetch(`${API_ENDPOINTS.VendorCategory}?isActive=true`);
-
-    if (!res.ok) throw new Error("Failed to fetch Vendor Categories");
-
-    const data = await res.json();
-
-    const mapped = (Array.isArray(data) ? data : []).map((item) => ({
-      vendorCategoryId: item.vendorCategoryId,
-      vendorCategoryName: item.vendorCategoryName
-    }));
-
-    setVendorCategories(mapped);
-  } catch (err) {
-    toast.error("Failed to load Vendor Categories");
-  }
-};
-
-useEffect(() => {
-  if (selectedCategory === "seller" || selectedCategory === "buyer") {
-    fetchVendors(selectedCategory);
-  } else {
-    setVendors([]);
-  }
-}, [selectedCategory]);
-
-const fetchVendors = async (categoryName) => {
-  try {
-    const res = await axios.get(API_ENDPOINTS.AllVendors);
-    let data = res.data || [];
-
-    // Filter based on category
-    if (categoryName === "seller") {
-      data = data.filter(v => v.type === "seller");
-    } else if (categoryName === "buyer") {
-      data = data.filter(v => v.type === "buyer");
+    // optional sub-sub group
+    let subSubCode = "00";
+    if (accountSubSubGroup && subSubGroup?.subSubGroupCode != null) {
+      subSubCode = String(subSubGroup.subSubGroupCode).padStart(2, "0");
     }
 
-    setVendors(data);
-  } catch (err) {
-    toast.error("Failed to load vendors");
-  }
-};
+    prefix += subSubCode;
 
-useEffect(() => {
+    setGLPrefix(prefix);
+
+    if (!editingId || !glCode) {
+
+      const filtered = ledgers
+        .map(l => {
+          let code = String(l.GLCode);
+
+          // ✅ convert old 7 digit codes to new format
+          if (code.length === 7) {
+            const base = code.slice(0, 5);
+            const ledger = code.slice(-2);
+            code = base + "00" + ledger;
+          }
+
+          return code;
+        })
+        .filter(code => code.startsWith(prefix));
+
+      const numbers = filtered
+        .map(code => Number(code.slice(-2)))
+        .filter(n => !isNaN(n));
+
+      const nextNumber =
+        numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+
+      setGLCode(prefix + String(nextNumber).padStart(2, "0"));
+    }
+
+  }, [
+    primaryGroup,
+    accountGroup,
+    accountSubGroup,
+    accountSubSubGroup,
+    primaryGroupOptions,
+    accountGroupOptions,
+    accountSubGroupOptions,
+    accountSubSubGroupOptions,
+    ledgers
+  ]);
+
+  const fetchVendorCategories = async () => {
+    try {
+      const res = await fetch(`${API_ENDPOINTS.VendorCategory}?isActive=true`);
+
+      if (!res.ok) throw new Error("Failed to fetch Vendor Categories");
+
+      const data = await res.json();
+
+      const mapped = (Array.isArray(data) ? data : []).map((item) => ({
+        vendorCategoryId: item.vendorCategoryId,
+        vendorCategoryName: item.vendorCategoryName
+      }));
+
+      setVendorCategories(mapped);
+    } catch (err) {
+      toast.error("Failed to load Vendor Categories");
+    }
+  };
+
+  useEffect(() => {
+    if (selectedCategory === "seller" || selectedCategory === "buyer") {
+      fetchVendors(selectedCategory);
+    } else {
+      setVendors([]);
+    }
+  }, [selectedCategory]);
+
+  const fetchVendors = async (categoryName) => {
+    try {
+      const res = await axios.get(API_ENDPOINTS.AllVendors);
+      let data = res.data || [];
+
+      // Filter based on category
+      if (categoryName === "seller") {
+        data = data.filter(v => v.type === "seller");
+      } else if (categoryName === "buyer") {
+        data = data.filter(v => v.type === "buyer");
+      }
+
+      setVendors(data);
+    } catch (err) {
+      toast.error("Failed to load vendors");
+    }
+  };
+
+  useEffect(() => {
     setCurrentPage(1);
     fetchLedgers("active");
     if (formType === "ledger") fetchLedgers(activeFilter);
@@ -331,7 +331,7 @@ useEffect(() => {
   const fetchLedgers = async (status = "active") => {
     setFetchLoading(true);
     try {
-      let url = API_ENDPOINTS.Ledger; 
+      let url = API_ENDPOINTS.Ledger;
       if (status === "active") url += "?isActive=true";
       else if (status === "inactive") url += "?isActive=false";
 
@@ -339,13 +339,13 @@ useEffect(() => {
       const raw = response?.data?.data ?? response?.data ?? [];
 
       const mapped = (Array.isArray(raw) ? raw : []).map((l) => ({
-        
+
         AccountLedgerId: l.AccountLedgerId ?? l.accountLedgerId,
         AccountLedgerName: l.AccountLedgerName ?? l.accountLedgerName,
         AccountLedgerNarration: l.AccountLedgerNarration ?? l.accountLedgerNarration,
         PrimaryGroupId: l.primaryGroupId ?? l.PrimaryGroupId ?? l.primaryGroup ?? l.PrimaryGroup,
         AccountGroupId: l.AccountGroupId ?? l.accountGroupId ?? l.AccountGroup ?? l.accountGroup,
-        AccountSubGroupId: l.AccountSubGroupId ?? l.accountSubGroupId ?? l.AccountSubGroup ?? l.accountSubGroup,  
+        AccountSubGroupId: l.AccountSubGroupId ?? l.accountSubGroupId ?? l.AccountSubGroup ?? l.accountSubGroup,
         AccountSubSubGroupId: l.AccountSubSubGroupId ?? l.accountSubSubGroupId ?? l.AccountSubSubGroup ?? l.accountSubSubGroup,
         GLCode: l.GLCode ?? l.glCode,
         LedgerGroupName: l.LedgerGroupName ?? l.ledgerGroupName ?? l.accountGroupName,
@@ -364,22 +364,22 @@ useEffect(() => {
   };
 
   const fetchSubLedgers = async (status = "active") => {
-  setFetchLoading(true);
-  try {
-    let url = API_ENDPOINTS.AccountSubLedger; 
-    if (status === "active") url += "?isActive=true";
-    else if (status === "inactive") url += "?isActive=false";
+    setFetchLoading(true);
+    try {
+      let url = API_ENDPOINTS.AccountSubLedger;
+      if (status === "active") url += "?isActive=true";
+      else if (status === "inactive") url += "?isActive=false";
 
-    const response = await axios.get(url);
+      const response = await axios.get(url);
 
-    // If API returns { data: [...] } OR [...]
-    const raw = Array.isArray(response.data)
-      ? response.data
-      : Array.isArray(response.data?.data)
-        ? response.data.data
-        : [];
+      // If API returns { data: [...] } OR [...]
+      const raw = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
 
-    const mapped = raw.map((s) => ({
+      const mapped = raw.map((s) => ({
         AccountLedgerSubid: s.AccountLedgerSubid ?? s.accountLedgerSubid,
         AccountLedgerSubName: s.AccountLedgerSubName ?? s.accountLedgerSubName,
         AccountLedgerSubNarration: s.AccountLedgerSubNarration ?? s.accountLedgerSubNarration,
@@ -398,16 +398,16 @@ useEffect(() => {
         ClosingBal: s.ClosingBal ?? s.closingBal ?? 0,
         IsBank: s.IsBank ?? s.isBank ?? false,
         IsActive: s.IsActive ?? s.isActive ?? true,
-    }));
+      }));
 
-    setSubLedgers(mapped);
-  } catch (err) {
-    toast.error(`Fetch Error: ${err.message}`);
-    setSubLedgers([]);
-  } finally {
-    setFetchLoading(false);
-  }
-};
+      setSubLedgers(mapped);
+    } catch (err) {
+      toast.error(`Fetch Error: ${err.message}`);
+      setSubLedgers([]);
+    } finally {
+      setFetchLoading(false);
+    }
+  };
 
   const handleCancel = () => {
     setLedgerGroupName("");
@@ -433,18 +433,18 @@ useEffect(() => {
 
   const validateForm = () => {
     if (formType === "ledger") {
-      if(!primaryGroup) return "Please select Primary Group";
+      if (!primaryGroup) return "Please select Primary Group";
       if (!accountGroup) return "Please select Account Group";
       if (!ledgerGroupName.trim()) return "Please enter Ledger Name";
       const validateGST = () => {
-      if (gstNo.trim() === "") return true; // Optional
+        if (gstNo.trim() === "") return true; // Optional
 
-      if (!gstRegex.test(gstNo)) {
-      toast.error("Invalid GST Number");
-      return false;
-      }
+        if (!gstRegex.test(gstNo)) {
+          toast.error("Invalid GST Number");
+          return false;
+        }
 
-      return true;
+        return true;
       };
       if (!description.trim()) return "Please enter Description";
     } else {
@@ -474,7 +474,7 @@ useEffect(() => {
           primaryGroupId: Number(primaryGroup),
           accountGroupId: Number(accountGroup),
           accountSubGroupId: Number(accountSubGroup),
-          accountSubSubGroupId : Number(accountSubSubGroup),
+          accountSubSubGroupId: Number(accountSubSubGroup),
           glCode: glCode,
           ledgerGroupName: ledgerGroupName,
           openingBal: openingBal || 0,
@@ -541,7 +541,7 @@ useEffect(() => {
       const subGroupId = item.AccountSubGroupId;
       const subSubGroupId = item.AccountSubSubGroupId;
 
-      console.log(primaryId +"--"+ groupId +"--"+ subGroupId +"--"+ subSubGroupId)
+      console.log(primaryId + "--" + groupId + "--" + subGroupId + "--" + subSubGroupId)
 
       setPrimaryGroup(primaryId);
 
@@ -581,8 +581,15 @@ useEffect(() => {
       setOpeningBal(item.OpeningBal ?? 0);
       setClosingBal(item.ClosingBal ?? 0);
       setIsBank(item.IsBank)
-      setEditingId(item.AccountLedgerSubid ?? null);
-    }
+      setEditingId(item.AccountLedgerId ?? null);
+    } 
+    // else {
+    //   setLedgerSubGroupName(item.AccountLedgerSubName ?? "");
+    //   setLedger(item.AccountLedgerSubName ?? "");
+    //   setDescription(item.AccountLedgerSubNarration ?? "");
+    //   setLedgerId(item.AccountLedgerid ?? "");
+    //   setEditingId(item.AccountLedgerSubid ?? null);
+    // }
   };
 
   const handleDelete = async (id) => {
@@ -624,7 +631,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const baseUrl = formType === "ledger" ? API_ENDPOINTS.AccountLedger : API_ENDPOINTS.AccountSubLedger;
-       const response = await axios.patch(`${baseUrl}${id}/activate`);
+      const response = await axios.patch(`${baseUrl}${id}/activate`);
 
       if (response.status === 200) {
         toast.success("Activated!");
@@ -661,11 +668,11 @@ useEffect(() => {
   if (fetchLoading) return <LoadingSpinner />;
 
   return (
-    <div style={{ background: "#f5f5f5", minHeight: "80vh", padding: "20px" }}>
+    <div style={{ background: "#f5f5f5", minHeight: "80vh", padding: "10px" }}>
       <ToastContainer position="top-right" autoClose={2000} />
 
       <div className="container-fluid">
-        <div style={{ background: "white", padding: "20px", borderRadius: "8px", marginBottom: "20px" }} className="d-flex justify-content-between align-items-center flex-wrap">
+        <div style={{ background: "white", fontSize: "18px", paddingTop: "15px", padding: "15px", borderRadius: "8px", marginBottom: "10px" }}>
           <div>
             <label style={{ marginRight: "20px" }}>
               <input type="radio" name="formType" value="ledger" checked={formType === "ledger"} onChange={() => { setFormType("ledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
@@ -675,6 +682,7 @@ useEffect(() => {
               <input type="radio" name="formType" value="subledger" checked={formType === "subledger"} onChange={() => { setFormType("subledger"); handleCancel(); }} style={{ marginRight: "8px" }} />
               Account Sub Ledger
             </label>
+
           </div>
         </div>
 
@@ -684,37 +692,37 @@ useEffect(() => {
               <div className="row">
                 {formType === "subledger" && (
                   <>
-                  <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
-                    <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="form-control">
-                      <option value="">-- Ledger Name --</option>
-                      {ledgers.map((l) => (
-                        <option key={l.AccountLedgerId} value={l.AccountLedgerId}>{l.AccountLedgerName}</option>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="col-6 mb-3">
+                      <label className="label-color">Ledger Name</label>
+                      <select value={ledgerId} onChange={(e) => setLedgerId(Number(e.target.value))} disabled={loading} className="input-field-style">
+                        <option value="">-- Ledger Name --</option>
+                        {ledgers.map((l) => (
+                          <option key={l.AccountLedgerId} value={l.AccountLedgerId}>{l.AccountLedgerName}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div className="col-6 mb-3">
-                    <label style={{ color: "#0066cc", fontWeight: "600" }}>Vendor Category</label>
-                    <select
-                      value={vendorCategoryId}
-                      onChange={(e) => {
-                        const id = Number(e.target.value);
-                        setVendorCategoryId(id);
-                        setVendorName("");
-                      }}
-                      disabled={loading}
-                      className="form-control">
-                    
-                      <option value="">-- Vendor Category --</option>
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Vendor Category</label>
+                      <select
+                        value={vendorCategoryId}
+                        onChange={(e) => {
+                          const id = Number(e.target.value);
+                          setVendorCategoryId(id);
+                          setVendorName("");
+                        }}
+                        disabled={loading}
+                        className="form-control">
 
-                      {vendorCategories.map((cat) => (
-                        <option key={cat.vendorCategoryId} value={cat.vendorCategoryId}>
-                          {cat.vendorCategoryName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                        <option value="">-- Vendor Category --</option>
+
+                        {vendorCategories.map((cat) => (
+                          <option key={cat.vendorCategoryId} value={cat.vendorCategoryId}>
+                            {cat.vendorCategoryName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </>
                 )}
 
@@ -726,100 +734,100 @@ useEffect(() => {
                     </div> */}
 
                     <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>
-                          {subLedgerLabel}
-                        </label>
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>
+                        {subLedgerLabel}
+                      </label>
 
-                        {selectedCategory === "other" ? (
-                          // ✅ INPUT for Other
-                          <input
-                            type="text"
-                            value={vendorName}
-                            onChange={(e) => setVendorName(e.target.value)}
-                            className="form-control"
-                            placeholder="Enter SubLedger Name"
-                            disabled={loading}
-                          />
-                        ) : selectedCategory === "seller" || selectedCategory === "buyer" ? (
-                          // ✅ DROPDOWN for Seller / Buyer
-                          // <select
-                          //   value={vendorName || ""}
-                          //   onChange={(e) => setVendorName(Number(e.target.value))}
-                          //   className="form-control"
-                          //   disabled={loading}
-                          // >
-                          //   <option value="">-- Select Vendor --</option>
+                      {selectedCategory === "other" ? (
+                        // ✅ INPUT for Other
+                        <input
+                          type="text"
+                          value={vendorName}
+                          onChange={(e) => setVendorName(e.target.value)}
+                          className="form-control"
+                          placeholder="Enter SubLedger Name"
+                          disabled={loading}
+                        />
+                      ) : selectedCategory === "seller" || selectedCategory === "buyer" ? (
+                        // ✅ DROPDOWN for Seller / Buyer
+                        // <select
+                        //   value={vendorName || ""}
+                        //   onChange={(e) => setVendorName(Number(e.target.value))}
+                        //   className="form-control"
+                        //   disabled={loading}
+                        // >
+                        //   <option value="">-- Select Vendor --</option>
 
-                          //   {vendors.map((v) => (
-                          //     <option key={v.vendorId} value={v.vendorId}>
-                          //       {v.vendorName}
-                          //     </option>
-                          //   ))}
-                          // </select>
-                          <Select
-                              options={vendors.map((v) => ({
+                        //   {vendors.map((v) => (
+                        //     <option key={v.vendorId} value={v.vendorId}>
+                        //       {v.vendorName}
+                        //     </option>
+                        //   ))}
+                        // </select>
+                        <Select
+                          options={vendors.map((v) => ({
+                            value: v.vendorId,
+                            label: v.vendorName,
+                            vendorCode: v.vendorCode, // 👈 important
+                            MobileNo: v.MobileNo ?? v.mobileNo ?? "",
+                            EmailId: v.EmailId ?? v.emailId ?? "",
+                            GstNo: v.GSTNo ?? v.GstNo ?? v.gstNo ?? "",
+                            Address: v.Address ?? v.address ?? "",
+                          }))}
+                          value={
+                            vendors
+                              .map((v) => ({
                                 value: v.vendorId,
                                 label: v.vendorName,
-                                vendorCode: v.vendorCode, // 👈 important
+                                vendorCode: v.vendorCode,
                                 MobileNo: v.MobileNo ?? v.mobileNo ?? "",
                                 EmailId: v.EmailId ?? v.emailId ?? "",
                                 GstNo: v.GSTNo ?? v.GstNo ?? v.gstNo ?? "",
                                 Address: v.Address ?? v.address ?? "",
-                              }))}
-                              value={
-                                vendors
-                                  .map((v) => ({
-                                    value: v.vendorId,
-                                    label: v.vendorName,
-                                    vendorCode: v.vendorCode,
-                                    MobileNo: v.MobileNo ?? v.mobileNo ?? "",
-                                    EmailId: v.EmailId ?? v.emailId ?? "",
-                                    GstNo: v.GSTNo ?? v.GstNo ?? v.gstNo ?? "",
-                                    Address: v.Address ?? v.address ?? "",
-                                  }))
-                                  .find((opt) => opt.value === vendorName) || null
-                              }
-                              onChange={(selected) => {
-                                setVendorName(selected?.value || "");
+                              }))
+                              .find((opt) => opt.value === vendorName) || null
+                          }
+                          onChange={(selected) => {
+                            setVendorName(selected?.value || "");
 
-                                // ✅ Auto-fill Assets Code
-                                setLedgerSubGroupName(selected?.label || "");
-                                setAssetsCode(selected?.vendorCode || "");
-                                setMobileNo(selected?.MobileNo || "");
-                                setEmailId(selected?.EmailId || "");
-                                setGstNo(selected?.GstNo || "")
-                                setAddress(selected?.Address || "");
-                              }}
-                              isDisabled={loading}
-                              placeholder="Search Vendor..."
-                            />
-                        ) : (
-                          // ✅ DEFAULT EMPTY STATE
-                          <input
-                            type="text"
-                            className="form-control"
-                            value=""
-                            placeholder="Select Vendor Category first"
-                            disabled
-                          />
-                        )}
-                      </div>
+                            // ✅ Auto-fill Assets Code
+                            setLedgerSubGroupName(selected?.label || "");
+                            setAssetsCode(selected?.vendorCode || "");
+                            setMobileNo(selected?.MobileNo || "");
+                            setEmailId(selected?.EmailId || "");
+                            setGstNo(selected?.GstNo || "")
+                            setAddress(selected?.Address || "");
+                          }}
+                          isDisabled={loading}
+                          placeholder="Search Vendor..."
+                        />
+                      ) : (
+                        // ✅ DEFAULT EMPTY STATE
+                        <input
+                          type="text"
+                          className="form-control"
+                          value=""
+                          placeholder="Select Vendor Category first"
+                          disabled
+                        />
+                      )}
+                    </div>
 
                     <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Assets Code</label>
-                      <input type="text" value={assetsCode} 
-                       onChange={(e) => {
-                        // Remove any non-digit character
-                        const onlyNumbers = e.target.value.replace(/\D/g, "");
-                        setAssetsCode(onlyNumbers);
-                      }} 
-                      className="form-control" placeholder="Enter Assets Code" disabled={loading} />
+                      <input type="text" value={assetsCode}
+                        onChange={(e) => {
+                          // Remove any non-digit character
+                          const onlyNumbers = e.target.value.replace(/\D/g, "");
+                          setAssetsCode(onlyNumbers);
+                        }}
+                        className="form-control" placeholder="Enter Assets Code" disabled={loading} />
                     </div>
                   </div>
                 )}
 
-                 {formType === "subledger" && (
-                 <div className="row">
+                {formType === "subledger" && (
+                  <div className="row">
                     <div className="col-6 mb-3">
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Opening Balance</label>
                       <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="form-control" placeholder="Opening Balance" disabled={loading} />
@@ -829,81 +837,83 @@ useEffect(() => {
                       <label style={{ color: "#0066cc", fontWeight: "600" }}>Closing Balance</label>
                       <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="form-control" placeholder="Closing Balance" disabled={loading} />
                     </div>
-                  </div> 
+                  </div>
                 )}
 
                 {formType === "subledger" && (
-                    <div className="row">
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Mobile No</label>
-                        <input type="text" 
-                        value={mobileNo} 
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Mobile No</label>
+                      <input type="text"
+                        value={mobileNo}
                         onChange={(e) => {
-                        // Allow only digits
+                          // Allow only digits
                           const val = e.target.value.replace(/\D/g, "");
 
-                        // Limit to 10 digits
-                        if (val.length <= 10) {
-                        setMobileNo(val);}}} 
-                        className="form-control" 
+                          // Limit to 10 digits
+                          if (val.length <= 10) {
+                            setMobileNo(val);
+                          }
+                        }}
+                        className="form-control"
                         placeholder="Enter Mobile No"
                         disabled={loading} />
-                      </div>
-
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Email ID</label>
-                        <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="form-control" placeholder="Enter Email ID" disabled={loading} />
-                      </div>
                     </div>
+
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Email ID</label>
+                      <input type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="form-control" placeholder="Enter Email ID" disabled={loading} />
+                    </div>
+                  </div>
                 )}
 
-                 {formType === "subledger" && (
-                 <div className="row">
+                {formType === "subledger" && (
+                  <div className="row">
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>GSTNo</label>
-                      <input type="text" 
-                      value={gstNo} 
-                      maxLength={15}
-                      onChange={(e) => setGstNo(e.target.value.toUpperCase())} 
-                      className="form-control" 
-                      placeholder="Enter GST No" 
-                      disabled={loading} />
+                      <label className="label-color">GSTNo</label>
+                      <input type="text"
+                        value={gstNo}
+                        maxLength={15}
+                        onChange={(e) => setGstNo(e.target.value.toUpperCase())}
+                        className="input-field-style"
+                        placeholder="Enter GST No"
+                        disabled={loading} />
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Address</label>
-                      <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
+                      <label className="label-color">Address</label>
+                      <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="input-field-style" rows={2} placeholder="Enter Address" disabled={loading}></textarea>
                     </div>
-                  </div> 
-                 )}                  
+                  </div>
+                )}
               </div>
 
               {formType === "ledger" && (
                 <>
                   <div className="row">
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Primary Group</label>
-                        <select value={primaryGroup || ""} 
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Primary Group</label>
+                      <select value={primaryGroup || ""}
                         onChange={(e) => {
                           const primarygroupid = Number(e.target.value);
                           setPrimaryGroup(primarygroupid);
-                          setAccountGroup("");    
+                          setAccountGroup("");
                           setAccountSubGroup("");
                           setAccountSubSubGroup("");       // reset selected group
                           fetchAccountGroup(primarygroupid);     // fetch filtered groups
                         }}
                         disabled={loading} className="form-control">
-                          <option value="">--Select Primary Group--</option>
-                          {primaryGroupOptions.map((type) => (
-                            <option key={type.primaryGroupid} value={type.primaryGroupid}>{type.primaryGroupName}</option>
-                          ))}
-                        </select>
-                      </div>                 
+                        <option value="">--Select Primary Group--</option>
+                        {primaryGroupOptions.map((type) => (
+                          <option key={type.primaryGroupid} value={type.primaryGroupid}>{type.primaryGroupName}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Group</label>
-                        <select value={Number(accountGroup)} 
-                         onChange={(e) => {
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Group</label>
+                      <select value={Number(accountGroup)}
+                        onChange={(e) => {
                           const groupid = Number(e.target.value);
                           setAccountGroup(Number(groupid));
                           setAccountSubGroup("");
@@ -912,19 +922,19 @@ useEffect(() => {
                         }}
                         // onChange={(e) => setAccountGroup(Number(e.target.value))} 
                         disabled={loading} className="form-control">
-                          <option value="">--Select Group--</option>
-                          {accountGroupOptions.map((grp) => (
-                            <option key={grp.accountGroupId} value={grp.accountGroupId}>{grp.accountGroupName}</option>
-                          ))}
-                        </select>
-                      </div>
+                        <option value="">--Select Group--</option>
+                        {accountGroupOptions.map((grp) => (
+                          <option key={grp.accountGroupId} value={grp.accountGroupId}>{grp.accountGroupName}</option>
+                        ))}
+                      </select>
                     </div>
+                  </div>
 
-                    <div className="row">
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Account SubGroup</label>
-                        <select value={accountSubGroup} 
-                         onChange={(e) => {
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Account SubGroup</label>
+                      <select value={accountSubGroup}
+                        onChange={(e) => {
                           const subgroupid = Number(e.target.value);
                           setAccountSubGroup(subgroupid);
                           setAccountSubSubGroup("");           // reset selected group
@@ -932,55 +942,55 @@ useEffect(() => {
                         }}
                         // onChange={(e) => setAccountSubGroup(Number(e.target.value))} 
                         disabled={loading} className="form-control">
-                          <option value="">--Select Sub Group--</option>
-                          {accountSubGroupOptions.map((grp) => (
-                            <option key={grp.accountSubGroupId} value={grp.accountSubGroupId}>{grp.accountSubGroupName}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Sub SubGroup</label>
-                        <select value={accountSubSubGroup} onChange={(e) => setAccountSubSubGroup(Number(e.target.value))} disabled={loading} className="form-control">
-                          <option value="">--Select Group--</option>
-                          {accountSubSubGroupOptions.map((grp) => (
-                            <option key={grp.accountSubSubGroupId} value={grp.accountSubSubGroupId}>{grp.accountSubSubGroupName}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
-                        <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Name" disabled={loading} />
-                      </div>
-
-                      <div className="col-6 mb-3">
-                        <label style={{ color: "#0066cc", fontWeight: "600" }}>GL Code</label>
-                        {/* <input type="text" value={glCode} onChange={(e) => setGLCode(e.target.value)} className="form-control" placeholder="Enter GL Code" disabled={loading} /> */}
-                        <input type="text" value={glCode} className="form-control" disabled={loading} readOnly />
-                      </div>
-                    </div>
-
-                   <div className="row">
-                    <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Opening Balance</label>
-                      <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="form-control" placeholder="Opening Balance" disabled={loading} />
+                        <option value="">--Select Sub Group--</option>
+                        {accountSubGroupOptions.map((grp) => (
+                          <option key={grp.accountSubGroupId} value={grp.accountSubGroupId}>{grp.accountSubGroupName}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="col-6 mb-3">
-                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Closing Balance</label>
-                      <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="form-control" placeholder="Closing Balance" disabled={loading} />
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Account Sub SubGroup</label>
+                      <select value={accountSubSubGroup} onChange={(e) => setAccountSubSubGroup(Number(e.target.value))} disabled={loading} className="form-control">
+                        <option value="">--Select Group--</option>
+                        {accountSubSubGroupOptions.map((grp) => (
+                          <option key={grp.accountSubSubGroupId} value={grp.accountSubSubGroupId}>{grp.accountSubSubGroupName}</option>
+                        ))}
+                      </select>
                     </div>
-                  </div>             
+                  </div>
+
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>Ledger Name</label>
+                      <input type="text" value={ledgerGroupName} onChange={(e) => setLedgerGroupName(e.target.value)} className="form-control" placeholder="Enter Ledger Name" disabled={loading} />
+                    </div>
+
+                    <div className="col-6 mb-3">
+                      <label style={{ color: "#0066cc", fontWeight: "600" }}>GL Code</label>
+                      {/* <input type="text" value={glCode} onChange={(e) => setGLCode(e.target.value)} className="form-control" placeholder="Enter GL Code" disabled={loading} /> */}
+                      <input type="text" value={glCode} className="form-control" disabled={loading} readOnly />
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label className="label-color">Opening Balance</label>
+                      <input type="number" value={openingBal} onChange={(e) => setOpeningBal(Number(e.target.value))} className="input-field-style" placeholder="Opening Balance" disabled={loading} />
+                    </div>
+
+                    <div className="col-6 mb-3">
+                      <label className="label-color">Closing Balance</label>
+                      <input type="number" value={closingBal} onChange={(e) => setClosingBal(Number(e.target.value))} className="input-field-style" placeholder="Closing Balance" disabled={loading} />
+                    </div>
+                  </div>
                 </>
               )}
 
               <div className="row">
                 <div className="col-12 mb-3">
-                  <label style={{ color: "#0066cc", fontWeight: "600" }}>Description</label>
-                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="form-control" placeholder="Enter description" rows={2} disabled={loading}></textarea>
+                  <label className="label-color">Description</label>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input-field-style" placeholder="Enter description" rows={2} disabled={loading}></textarea>
                 </div>
               </div>
 
@@ -991,12 +1001,12 @@ useEffect(() => {
                       <input
                         type="radio"
                         name="isBank"
-                        value="true"                        
+                        value="true"
                         checked={isBank === true}
                         onChange={() => setIsBank(true)}
-                        disabled={loading}/>                      
+                        disabled={loading} />
                       Is Bank
-                    </label>         
+                    </label>
                   </div>
                 </div>
               </div>
@@ -1006,10 +1016,10 @@ useEffect(() => {
                   onClick={handleSave}
                   className="btn btn-primary save"
                   disabled={loading}>
-                
+
                   <Save size={18} style={{ marginRight: "6px" }} /> Save
                 </button>
-                <button onClick={handleCancel} className="btn btn-secondary" disabled={loading}>
+                <button onClick={handleCancel} className="cancel-btn" disabled={loading}>
                   Cancel
                 </button>
               </div>
@@ -1018,11 +1028,11 @@ useEffect(() => {
 
           <div className="col-lg-5">
             <div style={{ background: "white", padding: "20px", borderRadius: "8px" }}>
-              <h5 style={{ color: "#0066cc", fontWeight: "600" }}>{formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}</h5>
+              <h5 className="label-color">{formType === "ledger" ? "Ledgers List" : "Sub Ledgers List"}</h5>
 
               <table className="table table-bordered table-striped mt-3">
                 <thead>
-                  <tr>                    
+                  <tr>
                     <th className="text-primary">{formType === "ledger" ? "Ledger Name" : "SubLedger Name"}</th>
 
                     {activeFilter === "active" ? (
@@ -1057,7 +1067,7 @@ useEffect(() => {
                                 onClick={() => handleEdit(item)}
                                 disabled={loading}
                                 className="btn btn-link p-0">
-                              
+
                                 <Eye size={18} />
                               </button>
                             </td>
@@ -1069,7 +1079,7 @@ useEffect(() => {
                                 }
                                 disabled={loading}
                                 className="btn btn-link text-danger p-0">
-                              
+
                                 <Trash2 size={18} />
                               </button>
                             </td>
@@ -1090,7 +1100,7 @@ useEffect(() => {
                       </tr>
                       // <tr key={item.AccountLedgerId ?? item.AccountLedgerSubid}>
                       //   {/* LEDGER LIST → Show Account Group Name */}
-                       
+
                       //   {formType === "subledger" && (
                       //     <td>{ledgers.find((l) => Number(l.AccountLedgerId) === Number(item.AccountLedgerid))?.AccountLedgerName ?? "N/A"}</td>
                       //   )}

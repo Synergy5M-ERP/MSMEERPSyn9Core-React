@@ -1,11 +1,16 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
+import axios from "axios";
 import AddEmployee from "./pages/HRM/EmployeeMaster/AddEmployee";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /* AUTH */
 import RegisterPage from "./pages/RegisterPage";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/HRM/ForgotPassword";
+import ResetPassword from "./pages/HRM/ResetPassword";
 
 /* ACCOUNT */
 import AccountTypePage from "./pages/Account/AccountTypePage";
@@ -24,6 +29,9 @@ import Dashboard from "./pages/Dashboard";
 /* MASTERS */
 import MasterDashboard from "./pages/Masters/MasterConfiguration";
 import CreateVendor from "./pages/Masters/vendorMaster/CreateVendor";
+import VendorMaster from "./pages/Masters/vendorMaster/VendorMaster";
+
+// If VendorMaster.jsx is in src/pages/Vendor/
 import ViewVendor from "./pages/Masters/vendorMaster/ViewVendor";
 import CreateCommodity from "./pages/Masters/Commodity/CreateCommodity";
 import ViewCommodity from "./pages/Masters/Commodity/ViewCommodity";
@@ -58,11 +66,32 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+// =====Item / Vendor Category =======
+import CreateItemCat from "./pages/Masters/ItemCategoryMaster/CreateItemCat";
+
+
 function App() {
+
+  // ✅ Add this
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  }
   return (
     <Router>
       <Header />
-
+      {/* ✅ ADD THIS ONCE */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={true}
+        pauseOnHover={false}
+        draggable
+        theme="colored"
+      />
       <Routes>
         {/* AUTH */}
         <Route path="/register" element={<RegisterPage />} />
@@ -89,15 +118,18 @@ function App() {
 
         {/* MASTERS */}
         <Route path="/masters" element={<MasterDashboard />} />
-        <Route path="/createvendor" element={<CreateVendor />} />
+
+        <Route path="/vendors/*" element={<VendorMaster />} />
+
         <Route path="/viewvendor" element={<ViewVendor />} />
         <Route path="/commodity" element={<CreateCommodity />} />
         <Route path="/viewcommodity" element={<ViewCommodity />} />
         <Route path="/viewbom" element={<ViewBOM />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* HRM / SALES */}
-<Route path="/hrm/*" element={<HrmConfiguration />} />
-        
+        <Route path="/hrm/*" element={<HrmConfiguration />} />
+
         <Route path="/salesanddistribution" element={<SalesDistribution />} />
         <Route path="/warehouse" element={<WareHouse />} />
 
@@ -111,9 +143,11 @@ function App() {
 
         {/* ADMIN */}
         <Route path="/admin/*" element={<AdminConfiguration />} />
-
         {/* OTHER */}
         <Route path="/creditdebitnote" element={<CreditDebitNote />} />
+
+        <Route path="/createitemcat" element={<CreateItemCat />} />
+
       </Routes>
 
       <Footer />

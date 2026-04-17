@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import NotCreated from "../../components/NotCreated";
 
 function CrystalReport() {
-  // radio: which report
+  
   const [reportType, setReportType] = useState(" Daily Wise Production"); 
-  // dropdown: which variant
+
   const [variant, setVariant] = useState("Customized"); 
 
   const getPageContent = () => {
-    // here you route to pages using both reportType + variant
+  
     if (reportType === " Daily Wise Production" && variant === "Customized") {
       return <NotCreated />;          //  Daily Wise Production Wise + Customized
     }

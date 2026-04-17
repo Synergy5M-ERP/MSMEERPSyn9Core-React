@@ -19,16 +19,7 @@ function BOM() {
 
       {/* Selector row */}
       <div
-        style={{
-          display: "flex",
-          gap: "30px",
-          marginTop: "15px",
-          marginBottom: "15px",
-          padding: "14px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.07)",
-          background: "#fff",
-        }}
+        className="radio-btn-header"
       >
         <label style={{ fontWeight: 600, fontSize: "16px", cursor: "pointer" }}>
           <input

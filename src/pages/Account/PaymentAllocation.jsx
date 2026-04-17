@@ -11,7 +11,8 @@ const PaymentAllocation = () => {
   const [actualBal, setActualBal] = useState(0);
   const [baseActualBal, setBaseActualBal] = useState(0);
   const [selectedVendor, setSelectedVendor] = useState("");
-
+const [subLedgers, setSubLedgers] = useState([]);
+const [subLedger, setSubLedger] = useState("");
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
   
@@ -38,35 +39,59 @@ const PaymentAllocation = () => {
     return JSON.stringify(rows) !== JSON.stringify(originalRows);
   }, [rows, originalRows]);
 
-  // Load ledgers on mount
-  useEffect(() => {
-    const loadLedgers = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.Ledger);
-        if (!res.ok) throw new Error("Failed to load ledgers");
 
-        const data = await res.json();
-        setLedgerOptions(data || []);
+    useEffect(() => {
+  const loadLedgers = async () => {
+    try {
+      const res = await fetch(API_ENDPOINTS.Ledger);
+      if (!res.ok) throw new Error("Failed to load ledgers");
 
-        if (data && data.length > 0) {
-          const first = data[0];
-          const bal = Number(first.closingBal || 0);
-          setLedgerId(first.accountLedgerId.toString());
-          setBaseActualBal(bal);
-          setActualBal(bal);
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("❌ Unable to load ledger list", {
-          toastId: "ledger-load-error"
-        });
-        setError("Unable to load ledger list.");
+      const data = await res.json();
+      setLedgerOptions(data || []);
+
+      if (data && data.length > 0) {
+        const first = data[0];
+        const bal = Number(first.closingBal || 0);
+
+        const ledgerId = first.accountLedgerId.toString();
+
+        setLedgerId(ledgerId);
+        setBaseActualBal(bal);
+        setActualBal(bal);
+
+        // ✅ Load subledger for first ledger automatically
+        fetchSubLedger(ledgerId);
       }
-    };
 
-    loadLedgers();
-  }, []);
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Unable to load ledger list", {
+        toastId: "ledger-load-error"
+      });
+      setError("Unable to load ledger list.");
+    }
+  };
 
+  loadLedgers();
+}, []);
+const fetchSubLedger = async (ledgerId) => {
+  try {
+    const res = await fetch(
+      `${API_ENDPOINTS.GetSubLedger}?ledgerId=${ledgerId}`
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSubLedgers(data.data || []);
+    } else {
+      setSubLedgers([]);
+    }
+  } catch (err) {
+    console.error("SubLedger load error", err);
+    setSubLedgers([]);
+  }
+};
   // ✅ Store original data when rows load
   useEffect(() => {
     if (rows.length > 0) {
@@ -97,31 +122,41 @@ const PaymentAllocation = () => {
         const sortedItems = items.sort((a, b) =>
           new Date(b.GRNDate || b.grnDate) - new Date(a.GRNDate || a.grnDate)
         );
+const mapped = sortedItems.map((r) => {
 
-        const mapped = sortedItems.map((r) => {
-          const totalAmount = Number(r.TotalAmount || r.totalAmount || r.TotalTaxAmount || 0);
-          const paidAmount = Number(r.PaidAmount || r.paidAmount || 0);
-          const balanceAmount = totalAmount - paidAmount;
+  console.log("Each Row:", r); // 👈 DEBUG
 
-          return {
-            accountGRNId: r.AccountGRNId || r.accountGRNId,
-            grnNumber: r.GRNNumber || r.grnNumber,
-            grnDate: (r.GRNDate || r.grnDate)?.split('T')[0] || r.grnDate,
-            vendorName: r.VendorName || r.Description || r.vendorName,
-            poNumber: r.poNumber || r.PONumber || '',
-            poDate: r.poDate || r.PODate || '',
-            invoiceNumber: r.invoiceNumber || r.InvoiceNumber || '',
-            invoiceDate: r.invoiceDate || r.InvoiceDate || '',
-            cgst: Number(r.CGST || r.cgst || 0),
-            sgst: Number(r.SGST || r.sgst || 0),
-            igst: Number(r.IGST || r.igst || 0),
-            totalAmount,
-            paidAmount,
-            balanceAmount,
-            isChecked: balanceAmount === 0
-          };
-        });
+  const totalAmount = Number(
+    r.totalAmount ??
+    r.total_Amount ??   // ✅ correct property from API
+    0
+  );
+  const paidAmount = Number(
+    r.paidAmount ??
+    r.PaidAmount ??
+    0
+  );
 
+  const balanceAmount = totalAmount - paidAmount;
+
+  return {
+    accountGRNId: r.accountGRNId ?? r.AccountGRNId,
+    grnNumber: r.grnNumber ?? r.GRNNumber,
+    grnDate: (r.grnDate ?? r.GRNDate)?.split("T")[0] || "",
+    vendorName: r.vendorName ?? r.VendorName ?? "",
+    poNumber: r.poNumber ?? r.PONumber ?? "",
+    invoiceNumber: r.invoiceNumber ?? r.InvoiceNumber ?? "",
+
+    bankName: "",
+    rtgsNumber: "",
+    rtgsDate: "",
+
+    totalAmount,
+    paidAmount,
+    balanceAmount,
+    isChecked: balanceAmount === 0
+  };
+});
         setRows(mapped);
         setTotalCount(data.totalCount || items.length);
 
@@ -212,18 +247,22 @@ debugger;
     toast.loading("💾 Saving payment allocations...", { toastId: "save-loading" });
 
     try {
-      const payload = {
+     const payload = {
   ledgerId: Number(ledgerId),
-  date,
+  date: date,
   payments: selectedRows.map(row => ({
     accountGRNId: row.accountGRNId,
-    paidAmount: row.paidAmount,
-    totalAmount: row.totalAmount,
-    balanceAmount: row.balanceAmount,
-    cgst: row.cgst,
-    sgst: row.sgst,
-    igst: row.igst,
-    rtgsNo: "" // optional
+
+    totalAmount: Number(row.totalAmount),
+    paidAmount: Number(row.paidAmount),
+    balanceAmount: Number(row.balanceAmount),
+
+    cgst: 0,
+    sgst: 0,
+    igst: 0,
+
+    rtgsNo: row.rtgsNumber || "",
+    rtgsDate: row.rtgsDate || null
   }))
 };
 
@@ -319,7 +358,7 @@ debugger;
             {/* Filters */}
             <div className="row g-3 mb-3">
               <div className="row align-items-end">
-                <div className="col-3">
+                <div className="col-2">
                   <label className="form-label">Date</label>
                   <input
                     type="date"
@@ -332,7 +371,7 @@ debugger;
                     style={{ height: '40px' }}
                   />
                 </div>
-                <div className="col-4">
+                <div className="col-2">
                   <label className="form-label">Ledger Account</label>
                   <select
                     className="form-select"
@@ -360,8 +399,24 @@ debugger;
                     ))}
                   </select>
                 </div>
+ <div className="col-md-2">
+                <label className="form-label fw-bold">Sub Ledger</label>
+                <select
+  className="form-select"
+  value={subLedger}
+  onChange={(e) => setSubLedger(e.target.value)}
+>
+  <option value="">Select Sub Ledger</option>
 
-                <div className="col-4">
+  {subLedgers.map((s) => (
+    <option key={s.accountLedgerSubid} value={s.accountLedgerSubid}>
+      {s.accountLedgerSubName}
+    </option>
+  ))}
+
+</select>
+              </div>
+                <div className="col-3">
                   <label className="form-label m-2">Balance Details</label>
                   <div
                     className={`alert mb-0 d-flex align-items-center ${
@@ -433,13 +488,12 @@ debugger;
                     <th>Vendor Name</th>
                     <th>PO Number</th>
                     <th>Invoice No</th>
-                    <th>Invoice Date</th>
-                    <th>CGST</th>
-                    <th>SGST</th>
-                    <th>IGST</th>
+                   
                     <th>Total Amount</th>
                     <th>Paid Amount</th>
                     <th>Balance Amount</th>
+                      <th>Bank Name</th>
+   
                   </tr>
                 </thead>
                 <tbody>
@@ -465,13 +519,9 @@ debugger;
                             <td className="fw-semibold align-middle text-muted small">{row.vendorName}</td>
                             <td className="fw-semibold align-middle text-muted small">{row.poNumber}</td>
                             <td className="fw-semibold align-middle text-muted small">{row.invoiceNumber}</td>
-                            <td className="fw-semibold align-middle text-muted small">{row.invoiceDate}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.cgst.toFixed(2)}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.sgst.toFixed(2)}</td>
-                            <td className="fw-semibold text-end align-middle text-muted small">₹{row.igst.toFixed(2)}</td>
+                            
                             <td className="fw-semibold text-end align-middle fw-bold text-primary">
-                              ₹{row.totalAmount.toFixed(2)}
-                            </td>
+₹{Number(row.totalAmount || 0).toFixed(2)}                            </td>
                             <td className="align-middle">
                               <input
                                 type="number"
@@ -492,6 +542,24 @@ debugger;
                                 ₹{row.balanceAmount.toFixed(2)}
                               </span>
                             </td>
+                            <td>
+  <input
+    type="text"
+    className="form-control form-control-sm"
+    value={row.bankName}
+    onChange={(e) =>
+      setRows(prev =>
+        prev.map(r =>
+          r.accountGRNId === row.accountGRNId
+            ? { ...r, bankName: e.target.value }
+            : r
+        )
+      )
+    }
+  />
+</td>
+
+
                           </tr>
                         ))}
                       </React.Fragment>
@@ -571,3 +639,8 @@ debugger;
 };
 
 export default PaymentAllocation;
+
+
+
+
+

@@ -26,6 +26,7 @@ const AddEmployee = () => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
+  
 const [authorityLevel, setAuthorityLevel] = useState("");
 const [authorities, setAuthorities] = useState([]);
 const [expandedSections, setExpandedSections] = useState({
@@ -68,7 +69,10 @@ const isEditMode = Boolean(employeeId);
     previousExperience: '',
     previousIndustry: '',
     department: "",
-  designation: ""
+  designation: "",
+ authorityMatrixId: "",   // ✅ ADD THIS
+  joiningAuthorityId: "",  // ✅ ADD THIS
+  currentAuthorityId: "", 
   });
 
   const [employerInfo, setEmployerInfo] = useState({
@@ -252,6 +256,28 @@ const fetchCurrency = async () => {
       const emp = data.employee;
       const empEmployer = data.employer;
       const empSalary = data.salary;
+// decide authority level based on backend value
+// normalize backend value
+const backendAuthorityLevel =
+  empEmployer.authorityLevel?.toLowerCase() ?? "";
+
+
+let authorityLevelValue = "";
+let joiningAuthorityId = "";
+let currentAuthorityId = "";
+
+if (backendAuthorityLevel === "joining") {
+  authorityLevelValue = "joining";
+  joiningAuthorityId = data.employee.authorityMatrixId;
+}
+
+if (backendAuthorityLevel === "current") {
+  authorityLevelValue = "current";
+  currentAuthorityId = data.employee.authorityMatrixId;
+}
+
+// 🔥 this controls which dropdown is visible
+setAuthorityLevel(authorityLevelValue);
 
       setEmployeeInfo({
         fullName: emp.fullName ?? "",
@@ -283,7 +309,13 @@ const fetchCurrency = async () => {
         previousExperience: emp.previousExperience ?? "",
         previousIndustry: emp.previousIndustry ?? "",
         department: emp.deptId ?? "",
-        designation: emp.designationId ?? ""
+    authorityLevel: authorityLevelValue,
+  joiningAuthorityId,
+  currentAuthorityId,
+  authorityMatrixId:
+    authorityLevelValue === "joining"
+      ? joiningAuthorityId
+      : currentAuthorityId
       });
 
       // Map Employer Info
@@ -474,20 +506,26 @@ useEffect(() => {
   const { name, value } = e.target;
 
   if (name === "joiningAuthorityId") {
-    const selected = authorities.find(
-      a => a.authorityMatrixId === parseInt(value)
-    );
-
     setEmployerInfo(prev => ({
       ...prev,
       joiningAuthorityId: value,
-      joiningAuthorityName: selected?.authorityMatrixName || ""
+      authorityMatrixId: value
+    }));
+    return;
+  }
+
+  if (name === "currentAuthorityId") {
+    setEmployerInfo(prev => ({
+      ...prev,
+      currentAuthorityId: value,
+      authorityMatrixId: value
     }));
     return;
   }
 
   setEmployerInfo(prev => ({ ...prev, [name]: value }));
 };
+
 
 
 const handleSalaryChange = (e) => {
@@ -640,24 +678,14 @@ const handleSave = async () => {
   ];
 
 const handleSubmit = async () => {
+  debugger;
   try {
     const formData = new FormData();
 
     // ===============================
     // 1️⃣ Resolve AuthorityMatrixId
-    // ===============================
-    let finalAuthorityMatrixId = "";
+ 
 
-    if (authorityLevel === "joining") {
-      finalAuthorityMatrixId = employerInfo.joiningAuthorityId;
-    } else if (authorityLevel === "current") {
-      finalAuthorityMatrixId = employerInfo.currentAuthorityId;
-    }
-
-    if (!finalAuthorityMatrixId) {
-      toast.error("Please select Authority Level");
-      return;
-    }
 
     // ===============================
     // 2️⃣ Employee Info
@@ -665,8 +693,8 @@ const handleSubmit = async () => {
     Object.entries(employeeInfo).forEach(([k, v]) =>
       formData.append(k, v ?? "")
     );
+  formData.append("EmployeeId", employeeId);
 
-    // Add missing backend fields mapping
     formData.append("MaritualStatus", employeeInfo.marriedStatus ?? "");
     formData.append("UANNo", employeeInfo.uan ?? "");
     formData.append("EPFONo", employeeInfo.epfoAcNo ?? "");
@@ -684,18 +712,30 @@ const handleSubmit = async () => {
       }
     });
 
-    // Add missing employer fields mapping
     formData.append("DeptId", employerInfo.department ?? "");
     formData.append("JoiningDate", employerInfo.dateOfJoining ?? "");
     formData.append("NoticePeriod", employerInfo.noticesPeriod ?? "");
     formData.append("LeaveDate", employerInfo.dateOfLeaving ?? "");
     formData.append("RelievingDate", employerInfo.dateOfReleaving ?? "");
     formData.append("ESISNo", employerInfo.esicPwnNo ?? "");
-    formData.append("PFContributionAuthorityLevel", employerInfo.authorityLevel ?? "");
-formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
+        formData.append("DesinationId", employerInfo.designationId ?? "");
 
-    // 🔥 IMPORTANT: send AuthorityMatrixId
-    formData.append("AuthorityMatrixId", finalAuthorityMatrixId);
+    formData.append(
+      "PFContributionAuthorityLevel",
+      employerInfo.authorityLevel ?? ""
+    );
+
+    formData.append("AuthorityLevel", authorityLevel?? "");
+formData.append(
+  "DesignationId",
+  employerInfo.designation ?? ""
+);
+
+formData.append(
+  "AuthorityMatrixId",
+  employerInfo.authorityMatrixId ?? ""
+);
+
 
     // ===============================
     // 4️⃣ Salary Structure
@@ -704,9 +744,11 @@ formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
       formData.append(k, v ?? "")
     );
 
-    // Add missing salary fields mapping
     formData.append("CarAllowance", salaryStructure.car ?? "");
-    formData.append("AnnualIncrementDate", salaryStructure.annualIncDate ?? "");
+    formData.append(
+      "AnnualIncrementDate",
+      salaryStructure.annualIncDate ?? ""
+    );
     formData.append("AnnualCTC", salaryStructure.annualCtcRs ?? "");
 
     // ===============================
@@ -718,12 +760,22 @@ formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
     // ===============================
     // 6️⃣ API Call
     // ===============================
-    if (isEditMode) {
-      formData.append("id", employeeId);
-      await axios.put(API_ENDPOINTS.UPDATE_EMPLOYEE, formData);
-      toast.success("Employee updated successfully ✅");
+   if (isEditMode) {
+  await axios.put(
+    `${API_ENDPOINTS.UpdateEmployee}/${employeeId}`,
+    formData,
+   
+  );
+
+  toast.success("Employee updated successfully ✅");
+
     } else {
-      await axios.post(API_ENDPOINTS.SaveEmployee, formData);
+      await axios.post(API_ENDPOINTS.SaveEmployee, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       toast.success("Employee added successfully 🎉");
     }
 
@@ -739,6 +791,7 @@ formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
     toast.error(errorMessage);
   }
 };
+
 
 
   return (
@@ -1989,20 +2042,22 @@ formData.append("AuthorityLevel", authorityLevel);  // ✅ REQUIRED
   </button>
 
   <button
-  onClick={handleSubmit}
-  style={{
-    padding: '10px 30px',
-    backgroundColor: isEditMode ? '#4CAF50' : '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500'
-  }}
->
-  {isEditMode ? "Update" : "Save"}
-</button>
+      type="button" // keeps page from refreshing
+      onClick={handleSubmit}
+      style={{
+        padding: "10px 30px",
+        backgroundColor: isEditMode ? "#4CAF50" : "#2196F3",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "14px",
+        fontWeight: "500",
+      }}
+    >
+      {isEditMode ? "Update" : "Save"}
+    </button>
+  
 
 </div>
 

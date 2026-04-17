@@ -12,6 +12,8 @@ const CheckPayable = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [grnNumbers, setGrnNumbers] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [invoiceNumbers, setInvoiceNumbers] = useState([]);
+const [selectedInvoice, setSelectedInvoice] = useState("");
   const [enteredGrnNumber, setEnteredGrnNumber] = useState("");
   const [masterBillCheck, setMasterBillCheck] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,7 +33,29 @@ const CheckPayable = () => {
     taxAmount: 0,
     grandTotal: 0,
   });
+const loadInvoiceNumbers = async (sellerName) => {
 
+  if (!sellerName) {
+    setInvoiceNumbers([]);
+    return;
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API_ENDPOINTS.GetInvoicesBySeller}?sellerName=${sellerName}`
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setInvoiceNumbers(data.data);
+    }
+
+  } catch {
+    toast.error("Unable to load invoices");
+  }
+};
   // ✅ SAFE JSON PARSER
   const safeJson = async (res) => {
     try {
@@ -79,10 +103,10 @@ const CheckPayable = () => {
       toast.error("Transporter Name is required");
       return false;
     }
-    if (!formData.paymentDue) {
+   {/*if (!formData.paymentDue) {
       toast.error("Payment Due date is required");
       return false;
-    }
+   */ }
 
     const selectedItems = tableData.filter(row => row.billCheck === true);
     console.log("🔍 Validation found selected items:", selectedItems.length);
@@ -115,8 +139,7 @@ const CheckPayable = () => {
   useEffect(() => {
     fetchAllDropdowns();
   }, []);
-
-  const fetchAllDropdowns = async () => {
+const fetchAllDropdowns = async () => {
     try {
       setLoading(true);
       const res = await fetch(API_ENDPOINTS.GetSellers);
@@ -132,6 +155,7 @@ const CheckPayable = () => {
       setLoading(false);
     }
   };
+
 
   // ✅ LOAD GRN NUMBERS
   const loadGrnNumbers = async (sellerName) => {
@@ -151,152 +175,120 @@ const CheckPayable = () => {
 
   // --- 1. Adjust fetchGRNTableData to ADD items from multiple GRNs ---
 
-  const fetchGRNTableData = async (grnId) => {
-    if (!grnId) return;
+ const fetchGRNTableData = async (invoiceNumber) => {
+  if (!invoiceNumber) return;
 
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_ENDPOINTS.GetGRNDetails}?grnId=${grnId}`);
-      const data = await safeJson(res);
+  try {
+    setLoading(true);
 
-      if (!data.success || !data.data?.items) {
-        toast.warning("No items found for this GRN");
-        return;
+    const res = await fetch(
+      `${API_ENDPOINTS.GetGRNDetails}?invoice=${invoiceNumber}`
+    );
+
+    const data = await safeJson(res);
+
+    if (!data.success || !data.data?.items) {
+      toast.warning("No items found for this invoice");
+      return;
+    }
+
+   const newItems = data.data.items.map((item, index) => {
+ 
+  console.log("TAX VALUES FROM API:", item.cgst, item.sgst, item.igst);
+
+  let cgst = parseFloat(item.cgst) || 0;
+let sgst = parseFloat(item.sgst) || 0;
+let igst = parseFloat(item.igst) || 0;
+  return {
+    id: item.g_Id || `${invoiceNumber}-${item.itemName}-${index}`,
+    itemName: item.itemName || "",
+    grade: item.grade || "",
+    itemCode: item.itemCode || "",
+    receivedQty: Number(item.receivedQty) || 0,
+    approvedQty: Number(item.acceptedQty) || 0,
+    damagedQty: Number(item.rejectedQty) || 0,
+    rate: Number(item.rate) || 0,
+
+    cgst,
+    sgst,
+    igst,
+
+    backendTaxAmount: Number(item.taxAmount) || 0,
+    backendNetAmount: Number(item.netAmount) || 0
+  };
+});
+
+    // ✅ calculate totals
+    const itemsWithTotals = newItems.map((row) => {
+
+      const receivedQty = parseFloat(row.receivedQty) || 0;
+      const rate = parseFloat(row.rate) || 0;
+
+      const totalItemValue = receivedQty * rate;
+      const taxAmount = Number(row.backendTaxAmount) || 0;
+
+      return {
+        ...row,
+        totalItemValue,
+        taxAmount,
+        billItemValue: totalItemValue + taxAmount
+      };
+    });
+
+    setTableData(prevData => {
+
+      const existingIds = new Set(prevData.map(item => item.id));
+
+      const merged = [...prevData];
+
+      for (const item of itemsWithTotals) {
+        if (!existingIds.has(item.id)) {
+          merged.push(item);
+        }
       }
 
-      // Prepare new items with unique IDs to avoid collisions
-      // const newItems = data.data.items.map((item, index) => ({
-      //   id: `${grnId}-${item.itemName}-${index}`,
-      //   itemName: item.itemName || "",
-      //   grade: item.grade || "",
-      //   itemCode: item.itemCode || "",
-      //   receivedQty: item.receivedQty || 0,
-      //   approvedQty: item.acceptedQty || 0,
-      //   damagedQty: item.rejectedQty || 0,
-      //   receivedUnit: item.receivedUnit || "pcs",
-      //   cgst: item.taxType === "CGST" ? item.taxRate || 0 : 0,
-      //   sgst: item.taxType === "SGST" ? item.taxRate || 0 : 0,
-      //   igst: item.taxType === "IGST" ? item.taxRate || 0 : 0,
-      //   rate: item.rate || 0,
-      //   taxType: item.taxType || "",
-      //   billCheck: false,
-      //   isSelected: false,
-      //   taxAmount: 0,
-      //   totalItemValue: 0,
-      //   billItemValue: 0
-      // }));
-      const newItems = data.data.items.map((item, index) => {
-        // Handle CGST_SGST tax type properly
-        const taxRate = Number(item.taxRate) ?? 0;
-        let cgst = 0, sgst = 0, igst = 0;
+      updateGrandTotals(merged);
 
-        if (item.taxType === "CGST_SGST") {
-          cgst = taxRate / 2;  // Split equally
-          sgst = taxRate / 2;
-        } else if (item.taxType === "CGST") {
-          cgst = taxRate;
-        } else if (item.taxType === "SGST") {
-          sgst = taxRate;
-        } else if (item.taxType === "IGST") {
-          igst = taxRate;
-        }
+      return merged;
+    });
 
-        return {
-          id: item.g_Id ?? `${grnId}-${item.itemName}-${index}`,
-          gId: item.g_Id,
-          itemName: item.itemName ?? "",
-          // Backend doesn't have these - set defaults or fetch from elsewhere
-          grade: item.grade ?? "",
-          itemCode: item.itemCode ?? "",
-          receivedQty: Number(item.receivedQty) ?? 0,
-          approvedQty: Number(item.acceptedQty) ?? 0,
-          damagedQty: Number(item.rejectedQty) ?? 0,
-          rate: Number(item.rate) ?? 0,
-          taxType: item.taxType ?? "",
-          taxRate: taxRate,
-          backendTaxAmount: Number(item.taxAmount) ?? 0,
-          backendNetAmount: Number(item.netAmount) ?? 0,
-          receivedUnit: item.receivedUnit || "pcs",
-          cgst, sgst, igst,  // Now properly split
-          billCheck: false,
-          isSelected: false,
-          taxAmount: 0,
-          totalItemValue: 0,
-          billItemValue: 0
-        };
-      });
+    const header = data.data.header;
 
-      console.log(newItems);
-
-      // Calculate totals for new items
-      const itemsWithTotals = newItems.map((row) => {
-        const receivedQty = parseFloat(row.receivedQty) || 0;
-        const cgst = parseFloat(row.cgst) || 0;
-        const sgst = parseFloat(row.sgst) || 0;
-        const igst = parseFloat(row.igst) || 0;
-        const rate = parseFloat(row.rate) || 0;
-        return {
-          ...row,
-          taxAmount: (cgst + sgst + igst) * receivedQty,
-          totalItemValue: receivedQty * rate,
-          billItemValue: (receivedQty * rate) + ((cgst + sgst + igst) * receivedQty),
-        };
-      });
-
-      setTableData(prevData => {
-        // Merge avoiding duplicates by IDs
-        const existingIds = new Set(prevData.map(item => item.id));
-        const merged = [...prevData];
-        for (const item of itemsWithTotals) {
-          if (!existingIds.has(item.id)) {
-            merged.push(item);
-          }
-        }
-        updateGrandTotals(merged);
-        return merged;
-      });
-
-      // Also update formData header from last GRN loaded(optional)
-      const header = data.data.header;
-      setFormData(fd => ({
-        ...fd,
-        grnNumber: "", // Clear this if multiple loaded
-        grnDate: "",
-        poNumber: "",
-        poDate: "",
-        invoiceNumber: "",
-        invoiceDate: "",
-        vehicleNo: "",
-        TransporterName: "",
-        paymentDue: "",
-        status: "",
-        ...(
-          header ? {
+    setFormData(fd => ({
+      ...fd,
+      ...(header
+        ? {
             grnNumber: header.grnNumber || "",
-            grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
+            grnDate: header.grnDate
+              ? header.grnDate.split("T")[0]
+              : "",
             poNumber: header.poNumber || "",
-            poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
+            poDate: data.data.poDetails?.purchaseDate
+              ? data.data.poDetails.purchaseDate.split("T")[0]
+              : "",
             invoiceNumber: header.invoiceNumber || "",
-            invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
+            invoiceDate: header.invoiceDate
+              ? header.invoiceDate.split("T")[0]
+              : "",
             vehicleNo: header.vehicleNo || "",
             TransporterName: header.transporterName || "",
-            paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
-
+            paymentDue: header.paymentDue
+              ? header.paymentDue.split("T")[0]
+              : "",
             status: "Received"
-          } : {}
-        )
-      }));
+          }
+        : {})
+    }));
 
-      setEnteredGrnNumber(grnId);
+    setEnteredGrnNumber(invoiceNumber);
 
-    } catch (err) {
-      toast.error("Unable to load GRN data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+  } catch (err) {
+    console.error(err);
+    toast.error("Unable to load GRN data");
+  } finally {
+    setLoading(false);
+  }
+};
 
 const handleMasterBillCheck = useCallback((checked) => {
   setTableData(prevTableData => 
@@ -469,57 +461,71 @@ const handleMasterBillCheck = useCallback((checked) => {
 
 
   // ✅ HANDLE FORM CHANGES
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
-    if (name === "sellerName") {
-      const selectedSupplier = suppliers.find(s => s.id === Number(value));
-      setFormData(fd => ({
-        ...fd,
-        sellerName: selectedSupplier?.name || "",
-        vendorId: Number(value) || 0
-      }));
-      loadGrnNumbers(selectedSupplier?.name || "");
-      setTableData([]);
-      setSelectedGrn("");
-      setEnteredGrnNumber("");
-      return;
-    }
+  // 🔹 Seller Change
+  if (name === "sellerName") {
 
-    if (name === "grnNumber") {
-      const grnId = value;
-      setSelectedGrn(grnId);
-      setFormData(fd => ({ ...fd, grnNumber: grnId }));
-      fetchGRNTableData(grnId);
-      return;
-    }
+    const selectedSupplier = suppliers.find(
+      s => s.id === Number(value)
+    );
 
-    setFormData(fd => ({ ...fd, [name]: value }));
-  };
+    setFormData(fd => ({
+      ...fd,
+      vendorId: Number(value),
+      sellerName: selectedSupplier?.name || ""
+    }));
 
-  // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
-  // const handleBillCheckChange = useCallback(() => {
-  //   // console.log("🔄 Toggling billCheck at index:", index);
+    // Load invoices for this seller
+    loadInvoiceNumbers(selectedSupplier?.name || "");
 
-  //   setTableData(prevTableData => {
-  //     const newTableData = prevTableData.map((row, i) => {
-  //       if (i === index) {
-  //         const newBillCheck = !row.billCheck;
-  //         console.log(`✅ Row ${index} billCheck changed to:`, newBillCheck);
-  //         return {
-  //           ...row,
-  //           billCheck: newBillCheck,
-  //           isSelected: newBillCheck
-  //         };
-  //       }
-  //       return row;
-  //     });
+    return;
+  }
 
-  //     updateGrandTotals(newTableData);
-  //     return newTableData;
-  //   });
-  // }, []);
+  // 🔹 Invoice Change (LOAD GRN DATA)
+  if (name === "invoiceNumber") {
 
+    setSelectedInvoice(value);
+
+    const selectedInvoiceObj = invoiceNumbers.find(
+      inv => inv.id === Number(value)
+    );
+
+    setFormData(fd => ({
+      ...fd,
+      invoiceNumber: selectedInvoiceObj?.invoiceNumber || ""
+
+    }));
+
+    // 🔹 Load GRN Details + Items
+fetchGRNTableData(selectedInvoiceObj?.invoiceNumber);
+    return;
+  }
+
+  // 🔹 GRN Change (if you still use GRN dropdown)
+  if (name === "grnNumber") {
+
+    const grnId = value;
+
+    setSelectedGrn(grnId);
+
+    setFormData(fd => ({
+      ...fd,
+      grnNumber: grnId
+    }));
+
+    fetchGRNTableData(grnId);
+
+    return;
+  }
+
+  // 🔹 Default Field Change
+  setFormData(fd => ({
+    ...fd,
+    [name]: value
+  }));
+};
   const handleBillCheckChange = useCallback((index) => {
     console.log("🔄 Toggling billCheck at index:", index);
     setTableData(prevTableData => {
@@ -668,14 +674,14 @@ const handleMasterBillCheck = useCallback((checked) => {
         <div className="row mb-3">
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> Seller Name</label>
-            <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
+           <select className="form-select" name="sellerName" value={formData.vendorId || ""} onChange={handleChange}>
               <option value="">Select Seller</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
-          <div className="col mb-3">
+          {/*<div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> GRN Number</label>
             <select className="form-select" value={selectedGrn || ""} onChange={handleChange} name="grnNumber">
               <option value="">Select GRN No.</option>
@@ -685,21 +691,51 @@ const handleMasterBillCheck = useCallback((checked) => {
                 </option>
               ))}
             </select>
-          </div>
+          </div>*/}
+          <div className="col mb-3">
+<label className="form-label text-primary fw-semibold">
+Invoice Number
+</label>
+
+<select
+  className="form-select"
+  name="invoiceNumber"
+  value={selectedInvoice}
+  onChange={handleChange}
+>
+
+<option value="">Select Invoice</option>
+
+{invoiceNumbers.map(inv => (
+<option key={inv.id} value={inv.id}>
+{inv.invoiceNumber}
+</option>
+))}
+
+</select>
+</div>
+
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> GRN Date</label>
             <input type="date" name="grnDate" className="form-control" value={formData.grnDate} onChange={handleChange} required />
           </div>
+         
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold"> Invoice No</label>
-            <input type="text" name="invoiceNumber" className="form-control" value={formData.invoiceNumber} onChange={handleChange} required />
-          </div>
+            <label className="form-label text-primary fw-semibold"> GRN Number</label>
+<input
+  type="text"
+  name="grnNumber"
+  className="form-control"
+  value={formData.grnNumber}   // ✅ correct
+  onChange={handleChange}
+  required
+/>          </div>
           <div className="col mb-3">
-            <label className="form-label text-primary fw-semibold">Invoice Date</label>
-            <input type="date" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
+            <label className="form-label text-primary fw-semibold"> Invoice Date</label>
+            <input type="text" name="invoiceDate" className="form-control" value={formData.invoiceDate} onChange={handleChange} required />
           </div>
         </div>
-
+ 
         <div className="row mb-3">
           <div className="col mb-3">
             <label className="form-label text-primary fw-semibold"> PO Number</label>
@@ -800,9 +836,9 @@ const handleMasterBillCheck = useCallback((checked) => {
               />
             </td>
             <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
-            <td>{(row.cgst || 0).toFixed(2)}%</td>
-            <td>{(row.sgst || 0).toFixed(2)}%</td>
-            <td>{(row.igst || 0).toFixed(2)}%</td>
+           <td>{Number(row.cgst || 0).toFixed(2)}%</td>
+<td>{Number(row.sgst || 0).toFixed(2)}%</td>
+<td>{Number(row.igst || 0).toFixed(2)}%</td>
             <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
             <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
           </tr>

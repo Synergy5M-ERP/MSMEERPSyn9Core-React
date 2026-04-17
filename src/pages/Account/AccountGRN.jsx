@@ -1,73 +1,51 @@
-
 import React, { useState } from "react";
-
 import CheckPayable from "./CheckPayable";
 import ApprovedPayable from "./ApprovedPayable";
-
+import CheckNonGRN from "./CheckNonGRN";
+import ApproveNonGRN from "./ApproveNonGRN";
+// Import the new components
+import TransporterGRN from "./TransporterGRN";
+import TransporterApprove from "./TransporterApprove";
 
 function AccountGRN() {
-  const [selectedPage, setSelectedPage] = useState("checkPayable");
+  const [selectedPage, setSelectedPage] = useState("checkGRN");
 
+  const radioOptions = [
+    { id: "checkGRN", label: "Bill Passing(GRN)" },
+    { id: "approveGRN", label: "Bill Approve(GRN)" },
+    { id: "checkNonGRN", label: "Bill Passing(NonGRN)" },
+    { id: "approveNonGRN", label: "Bill Approve(NonGRN)" },
+    { id: "transporterGRN", label: "Bill Passing(Transporter)" },
+    { id: "transporterApprove", label: "Bill Approve(Transporter)" },
+  ];
 
   return (
-    <div style={{ minHeight: "80vh"}}>
-      <h2 style={{ textAlign: "left", color: "#0066cc", marginBottom: 0 }}>
-        GRN Bill Passing
-      </h2>
+    <div style={{ minHeight: "80vh", padding: "20px", background: "#f4f6f9" }}>
+      {/* Radio Button Group */}
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "20px", background: "#fff", padding: "15px", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.08)" }}>
+        {radioOptions.map((opt) => (
+          <label key={opt.id} style={{ fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <input
+              type="radio"
+              name="billType"
+              value={opt.id}
+              checked={selectedPage === opt.id}
+              onChange={() => setSelectedPage(opt.id)}
+              style={{ marginRight: "8px" }}
+            />
+            {opt.label}
+          </label>
+        ))}
+      </div>
 
-      {/* Page Selector */}
- <div
-  style={{
-    display: 'flex',
-    justifyContent: 'space-between', // space between two groups
-    alignItems: 'center',
-    gap: '30px',
-    marginTop: '22px',
-    marginBottom: '12px',
-    padding: '14px 0 14px 5px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.07)',
-    background: '#fff',
-  }}
->
-  <div style={{ display: 'flex', gap: '30px' /* group left radio buttons with gap */ }}>
-
-  <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="checkPayable"
-        checked={selectedPage === 'checkPayable'}
-        onChange={() => setSelectedPage('checkPayable')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-  Check Payable
-    </label>
-   <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
-      <input
-        type="radio"
-        name="configTab"
-        value="approvePayable"
-        checked={selectedPage === 'approvePayable'}
-        onChange={() => setSelectedPage('approvePayable')}
-        style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
-      />
-   Approve Payable
-    </label>
- 
-  </div>
-
-</div>
-
-
-
-
-      {/* Render selected page with view prop */}
-      <div>
-        {selectedPage==='checkPayable'?(<CheckPayable/>):<ApprovedPayable/>
-        
-         
-        }
+      {/* Render Components */}
+      <div className="content-area">
+        {selectedPage === "checkGRN" && <CheckPayable />}
+        {selectedPage === "approveGRN" && <ApprovedPayable />}
+        {selectedPage === "checkNonGRN" && <CheckNonGRN />}
+        {selectedPage === "approveNonGRN" && <ApproveNonGRN />}
+        {selectedPage === "transporterGRN" && <TransporterGRN />}
+        {selectedPage === "transporterApprove" && <TransporterApprove />}
       </div>
     </div>
   );

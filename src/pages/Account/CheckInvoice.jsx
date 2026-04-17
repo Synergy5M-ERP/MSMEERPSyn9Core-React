@@ -509,11 +509,11 @@ const handleSave = async () => {
         </div>
 
         {/* BUTTONS */}
-        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
+        <div className="d-flex  gap-3 mt-4 mb-2">
           <button
             onClick={handleSave}
             disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-            className="btn btn-primary btn-lg px-5 py-2 position-relative"
+            className="save-btn"
             style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
           >
             {saveLoading ? (
@@ -526,7 +526,7 @@ const handleSave = async () => {
             )}
           </button>
           <button
-            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
+            className="cancel-btn"
             style={{ borderRadius: "8px" }}
             onClick={handleCancel}
             disabled={saveLoading}

@@ -40,9 +40,9 @@ const DynamicReport = () => {
     };
 
     return (
-        <div style={{ padding: '30px', background: '#f0f2f5', minHeight: '100vh' }}>
+        <div style={{ padding: '15px', background: '#f0f2f5', minHeight: '80vh' }}>
             <ToastContainer />
-            <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', padding: '15px', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
               
 
                 <div style={{
@@ -50,7 +50,7 @@ const DynamicReport = () => {
                     // This forces exactly 7 columns in every row
                     gridTemplateColumns: 'repeat(7, 1fr)',
                     gap: '10px',
-                    marginBottom: '20px'
+                    // marginBottom: '10px'
                 }}>
                     {columns.filter(c => c.toLowerCase().includes(search.toLowerCase())).map(col => (
                         <div
@@ -75,7 +75,7 @@ const DynamicReport = () => {
                                 <Square size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
                             }
                             <span style={{
-                                fontSize: '11px', // Slightly smaller font to prevent text overlap
+                                fontSize: '11px', 
                                 fontWeight: 600,
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
@@ -87,7 +87,7 @@ const DynamicReport = () => {
                     ))}
                 </div>
 
-                <div style={{ marginTop: '25px', display: 'flex', gap: '12px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '12px' }}>
                     <button onClick={() => handleAction('preview')} style={{ ...btnStyle, background: '#6366f1' }}><Eye size={18} /> Preview</button>
                     <button onClick={() => handleAction('excel')} style={{ ...btnStyle, background: '#10b981' }}><Download size={18} /> Excel</button>
                     <button onClick={() => handleAction('pdf')} style={{ ...btnStyle, background: '#ef4444' }}><Download size={18} /> PDF</button>
@@ -95,7 +95,7 @@ const DynamicReport = () => {
                 </div>
 
                 {preview.length > 0 && (
-                    <div style={{ marginTop: '40px' }}>
+                    <div style={{ marginTop: '20px' }}>
                         {/* <h3 style={{ marginBottom: '15px' }}>Data Preview ({preview.length} Records)</h3> */}
                         <div style={{ maxHeight: '310px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '10px' }} className="custom-scroll">
                             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>

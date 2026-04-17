@@ -40,9 +40,9 @@ function AccountSale() {
         onChange={() => setSelectedPage('checkInvoice')}
         style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
       />
-  Check Invoice
+  Check / Approve Invoice
     </label>
-   <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
+   {/* <label style={{ fontWeight: 600, fontSize: '18px', cursor: 'pointer' }}>
       <input
         type="radio"
         name="configTab"
@@ -52,7 +52,7 @@ function AccountSale() {
         style={{ width: 18, height: 18, cursor: 'pointer', marginRight: '8px' }}
       />
    Approve Invoice
-    </label>
+    </label> */}
  
   </div>
 

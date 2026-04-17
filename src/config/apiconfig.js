@@ -10,9 +10,9 @@ export const API_ENDPOINTS = {
   DEPARTMENT: `${BASE_URL}/HrmMaster/Department`,
   DESIGNATION: `${BASE_URL}/HrmMaster/Designation`,
   AUTHORITY_MATRIX: `${BASE_URL}/HrmMaster/AuthorityMatrix`,
-GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
-    GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
-GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
+  GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
+  GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
+  GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
 
   GET_INDUSTRY: `${BASE_URL}/HRMAdminRegAPI/GetIndustry`,
   GET_CONTINENT: `${BASE_URL}/HRMAdminRegAPI/GetContinent`,
@@ -34,20 +34,26 @@ GET_CURRENCY:`${BASE_URL}/HrmMaster/GetCurrency`,
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
   UpdateMatrixStatus: `${BASE_URL}/HrmOrgInfo/UpdateStatus`, // PUT /{id}
   EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
- EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
+  EditMatrix: `${BASE_URL}/HrmOrgInfo/EditMatrix`,
   GetAll_Employee: `${BASE_URL}/HrmOrgInfo/GetAllEmployees`,
   SaveEmployee: `${BASE_URL}/HrmOrgInfo/SaveAddEmployee`,
-GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
+  GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
+
   //------------------------Account APIs----------------------------------
-  Ledger: `${BASE_URL}/AccountLedger/`,
-  SubLedger: `${BASE_URL}/AccountSubLedger/`,
-  VoucherType: `${BASE_URL}/AccountVoucherType/`,
-  SubVoucherType: `${BASE_URL}/AccountSubVoucherType/`,
+  AccountLedger: `${BASE_URL}/AccountLedger/`,
+  AccountSubLedger: `${BASE_URL}/AccountSubLedger/`,
+  VendorCategory: `${BASE_URL}/VendorCategory`,
+  AllVendors: `${BASE_URL}/AllVendors`,
+  AccountVoucherCategory: `${BASE_URL}/AccountVoucherCategory`,
+  AccountVoucherType: `${BASE_URL}/AccountVoucherType/`,
+  AccountSubVoucherType: `${BASE_URL}/AccountSubVoucherType/`,
   Comapny: `${BASE_URL}/AccountCompany/`,
   FiscalPeriod: `${BASE_URL}/AccountFiscalPeriod/`,
   BankDetails: `${BASE_URL}/AccountBankDetails/`,
   Vendors: `${BASE_URL}/vendors/`,
+  Vendors: `${BASE_URL}/AccountBankDetails/Vendors`,
+  Vendors: `${BASE_URL}/AccountBankDetails/`,
   Invoices: `${BASE_URL}/AccountLedger/`,
   Items: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
@@ -58,23 +64,20 @@ GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   PONumber: `${BASE_URL}/po-numbers`,
   ItemNames: `${BASE_URL}/Item/GetAllItemsApi`,
   Journal: `${BASE_URL}/journals`,
-  AccountType: `${BASE_URL}/Account/AccountType`,
+  AccountPrimaryGroup: `${BASE_URL}/AccountPrimaryGroup`,
   Voucher: `${BASE_URL}/vouchers`,
-  Group: `${BASE_URL}/AccountGroups`,
-  AccountSubGroup: `${BASE_URL}/Subgroups`,
-  AccountSubSubGroup: `${BASE_URL}/SubSubgroups`,
+  AccountGroups: `${BASE_URL}/AccountGroups`,
+  AccountSubGroup: `${BASE_URL}/AccountSubGroup`,
+  AccountSubSubGroup: `${BASE_URL}/AccountSubSubGroup`,
 
   // ✅ FIXED
   Inventory: `${BASE_URL}/Inventory`,
-  Vendors: `${BASE_URL}/AccountBankDetails/`,
   AccountBankDetails: `${BASE_URL}/AccountBankDetails`,
   AccountBankDetailsSave: `${BASE_URL}/AccountBankDetails`,
 
   Invoices: `${BASE_URL}/Invoices/`,
   AccountBankDetails: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
-  // CreditNote: `${BASE_URL}/credit-note`,
-  // DebitNote: `${BASE_URL}/Debit-note`,
 
   OutwardQc: `${BASE_URL}/OutwardQCReport`,
   SaveRejectionQty: `${BASE_URL}/SaveRejectionQty`,
@@ -94,39 +97,32 @@ GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   GetGRNsBySeller: `${BASE_URL}/GRN/GetGRNsBySeller`, // ✅ add this
   GetgrnSellers: `${BASE_URL}/GRN/GetgrnSellers`,
   SaveMultipleGRN: `${BASE_URL}/GRN/SaveMultipleGRN`,
-  Vendors: `${BASE_URL}/AccountBankDetails/Vendors`,
 
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
   SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
 
-
   Ledger: `${BASE_URL}/AccountLedger`,
-  // Ledger: `${BASE_URL}/AccountLedger`,
- // AllVendor: `${BASE_URL}/GetAllVendorsApi`,
   DeleteItem: `${BASE_URL}/DeleteItemApi`,
   UpdateVendor: `${BASE_URL}/UpdateVendorApi`,
 
   AccountVoucher: `${BASE_URL}/AccountVoucher`,
-  CategoryVendors: `${BASE_URL}/CategoryVendors`,
-  PurchaseOrders: `${BASE_URL}/PurchaseOrders`,
-  SalesInvoices: `${BASE_URL}/SalesInvoices`,
-  GetPurchaseAmountById: `${BASE_URL}/GetPurchaseAmountById`,
-  GetSaleAmountById: `${BASE_URL}/GetSaleAmountById`,
-  PaymentMode: `${BASE_URL}/PaymentMode`,
-  Status: `${BASE_URL}/Status`,
+  VoucherCategory: `${BASE_URL}/VoucherCategory`,
+  AllSubLedger: `${BASE_URL}/AllSubLedger/`,
+  VoucherCategoryWiseType: `${BASE_URL}/VoucherCategoryWiseType`,
+  GenerateVoucherNo: `${BASE_URL}/GenerateVoucherNo`,
+  GetLedgerWiseData: `${BASE_URL}/GetLedgerWiseData`,
 
-  //===========BOM API========================
-  //===========Enquiry API====================
   GetPRNumbers: `${BASE_URL}/Enquiry/GetPRNumbers`,
   GetPRItemDetails: `${BASE_URL}/Enquiry/GetPRItemDetails`,
   GetNextVoucherNumber: `${BASE_URL}/GetNextVoucherNumber`,
   GetVoucherDetails: `${BASE_URL}/GetVoucherDetails`,
 
   AccountSale: `${BASE_URL}/AccountSale`,
-  Getbuyers: `${BASE_URL}/Buyers`,
-  GetinvoiceNumbersBybuyer: `${BASE_URL}/GetinvoiceNumbersBybuyer`,
-  GetInvoiceItemDetails: `${BASE_URL}/GetInvoiceItemDetails`,
+  GetBuyersInvoiceDetails: `${BASE_URL}/GetBuyersInvoiceDetails`,
+  GetCheckedInvoices: `${BASE_URL}/GetCheckedInvoices`,
+  Getbuyers: `${BASE_URL}/Getbuyers`,
+  
   CheckedSaleDetails: `${BASE_URL}/CheckedSaleDetails`,
   ApprovedAccountSale: `${BASE_URL}/ApprovedAccountSale`,
 
@@ -142,11 +138,9 @@ GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   GetUnits: `${BASE_URL}/GetUnits`,
   GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
   SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
-//------------------------Account APIs----------------------------------
-
-GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
+  
+  GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
-  Category: `${BASE_URL}/Category`,
   //------------------------Account APIs----------------------------------
 
   // Employee endpoints

@@ -13,7 +13,7 @@ const CheckPayable = () => {
   const [grnNumbers, setGrnNumbers] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [enteredGrnNumber, setEnteredGrnNumber] = useState("");
-
+  const [masterBillCheck, setMasterBillCheck] = useState(false);
   const [formData, setFormData] = useState({
     vendorId: "",
     sellerName: "",
@@ -271,18 +271,18 @@ const CheckPayable = () => {
         paymentDue: "",
         status: "",
         ...(
-         header ? {
-         grnNumber: header.grnNumber || "",
-  grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
-  poNumber: header.poNumber || "",
-  poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
-  invoiceNumber: header.invoiceNumber || "",
-  invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
-  vehicleNo: header.vehicleNo || "",
-  TransporterName: header.transporterName || "",
-    paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
+          header ? {
+            grnNumber: header.grnNumber || "",
+            grnDate: header.grnDate ? header.grnDate.split("T")[0] : "",
+            poNumber: header.poNumber || "",
+            poDate: data.data.poDetails?.poDate ? data.data.poDetails.poDate.split("T")[0] : "",
+            invoiceNumber: header.invoiceNumber || "",
+            invoiceDate: header.invoiceDate ? header.invoiceDate.split("T")[0] : "",
+            vehicleNo: header.vehicleNo || "",
+            TransporterName: header.transporterName || "",
+            paymentDue: header.paymentDue ? header.paymentDue.split("T")[0] : "",   // ✅ FIX
 
-  status: "Received"
+            status: "Received"
           } : {}
         )
       }));
@@ -295,6 +295,19 @@ const CheckPayable = () => {
       setLoading(false);
     }
   };
+
+
+
+const handleMasterBillCheck = useCallback((checked) => {
+  setTableData(prevTableData => 
+    prevTableData.map(row => ({
+      ...row,
+      billCheck: checked,
+      isSelected: checked
+    }))
+  );
+  setMasterBillCheck(checked);
+}, []);
 
   // --- 2. Save all tableData items, checked or not ---
 
@@ -311,49 +324,49 @@ const CheckPayable = () => {
       draggable: false,
     });
 
-   // ✅ FIXED PAYLOAD - Matches backend model exactly
-const payload = {
-  VendorId: Number(formData.vendorId) || 0,
-  SellerName: formData.sellerName,
-  grnNumber: formData.grnNumber,
-  grnDate: formData.grnDate,
-  poNumber: formData.poNumber,
-  poDate: formData.poDate,
-  invoiceNumber: formData.invoiceNumber,
-  invoiceDate: formData.invoiceDate,
-  vehicleNo: formData.vehicleNo,
-  TransporterName: formData.TransporterName,
-  paymentDue: formData.paymentDue,
-  status: formData.status || "Received",
-  totalAmount: formData.totalAmount,
-  taxAmount: formData.taxAmount,
-  grandAmount: formData.grandTotal,
-    BillStatus: "Pending", // <-- Add this field as required by backend
+    // ✅ FIXED PAYLOAD - Matches backend model exactly
+    const payload = {
+      VendorId: Number(formData.vendorId) || 0,
+      SellerName: formData.sellerName,
+      grnNumber: formData.grnNumber,
+      grnDate: formData.grnDate,
+      poNumber: formData.poNumber,
+      poDate: formData.poDate,
+      invoiceNumber: formData.invoiceNumber,
+      invoiceDate: formData.invoiceDate,
+      vehicleNo: formData.vehicleNo,
+      TransporterName: formData.TransporterName,
+      paymentDue: formData.paymentDue,
+      status: formData.status || "Received",
+      totalAmount: formData.totalAmount,
+      taxAmount: formData.taxAmount,
+      grandAmount: formData.grandTotal,
+      BillStatus: "Pending", // <-- Add this field as required by backend
 
-  Description: formData.sellerName || "Payable GRN",
-  Items: tableData.map(item => ({
-    Description: `${item.itemName} `,
-    itemName: item.itemName,
-    grade: item.grade,
-    itemCode: item.itemCode,
-    receivedQty: parseFloat(item.receivedQty) || 0,
-    approvedQty: parseFloat(item.approvedQty) || 0,
-    damagedQty: parseFloat(item.damagedQty) || 0,
-    unit: item.receivedUnit || "pcs",
-    TaxType: item.taxType || "",
-    cgst: parseFloat(item.cgst) || 0,
-    sgst: parseFloat(item.sgst) || 0,
-    igst: parseFloat(item.igst) || 0,
-    rate: parseFloat(item.rate) || 0,
-     // ✅ USE UI VALUES
-    TotalAmount: Number(item.backendNetAmount) || 0,
-    TotalTaxAmount: Number(item.backendTaxAmount) || 0,
+      Description: formData.sellerName || "Payable GRN",
+      Items: tableData.map(item => ({
+        Description: `${item.itemName} `,
+        itemName: item.itemName,
+        grade: item.grade,
+        itemCode: item.itemCode,
+        receivedQty: parseFloat(item.receivedQty) || 0,
+        approvedQty: parseFloat(item.approvedQty) || 0,
+        damagedQty: parseFloat(item.damagedQty) || 0,
+        unit: item.receivedUnit || "pcs",
+        TaxType: item.taxType || "",
+        cgst: parseFloat(item.cgst) || 0,
+        sgst: parseFloat(item.sgst) || 0,
+        igst: parseFloat(item.igst) || 0,
+        rate: parseFloat(item.rate) || 0,
+        // ✅ USE UI VALUES
+        TotalAmount: Number(item.backendNetAmount) || 0,
+        TotalTaxAmount: Number(item.backendTaxAmount) || 0,
 
-    billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
-    billCheck: item.billCheck === true,
-    TransporterName: formData.TransporterName || ""
-  }))
-};
+        billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
+        billCheck: item.billCheck === true,
+        TransporterName: formData.TransporterName || ""
+      }))
+    };
 
     console.log("💾 Sending payload to backend:", payload);
 
@@ -485,9 +498,30 @@ const payload = {
   };
 
   // ✅ FIXED BILL CHECK HANDLER - 100% WORKING
+  // const handleBillCheckChange = useCallback(() => {
+  //   // console.log("🔄 Toggling billCheck at index:", index);
+
+  //   setTableData(prevTableData => {
+  //     const newTableData = prevTableData.map((row, i) => {
+  //       if (i === index) {
+  //         const newBillCheck = !row.billCheck;
+  //         console.log(`✅ Row ${index} billCheck changed to:`, newBillCheck);
+  //         return {
+  //           ...row,
+  //           billCheck: newBillCheck,
+  //           isSelected: newBillCheck
+  //         };
+  //       }
+  //       return row;
+  //     });
+
+  //     updateGrandTotals(newTableData);
+  //     return newTableData;
+  //   });
+  // }, []);
+
   const handleBillCheckChange = useCallback((index) => {
     console.log("🔄 Toggling billCheck at index:", index);
-
     setTableData(prevTableData => {
       const newTableData = prevTableData.map((row, i) => {
         if (i === index) {
@@ -502,10 +536,19 @@ const payload = {
         return row;
       });
 
+      const allChecked = newTableData.every(row => row.billCheck === true);
+      const someChecked = newTableData.some(row => row.billCheck === true);
+      setMasterBillCheck(allChecked ? true : someChecked ? 'indeterminate' : false);
+
       updateGrandTotals(newTableData);
       return newTableData;
     });
   }, []);
+
+
+
+
+
 
   // ✅ QUANTITY CHANGE HANDLER
   const handleQuantityChange = useCallback((index, field) => (e) => {
@@ -535,6 +578,19 @@ const payload = {
   }, []);
 
   // ✅ UPDATE GRAND TOTALS
+  // const updateGrandTotals = (data) => {
+  //   const selectedItems = data.filter(row => row.billCheck === true);
+  //   const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
+  //   const taxAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.taxAmount) || 0), 0);
+  //   const grandTotal = totalAmount + taxAmount;
+
+  //   setFormData(fd => ({
+  //     ...fd,
+  //     totalAmount,
+  //     taxAmount,
+  //     grandTotal,
+  //   }));
+  // };
   const updateGrandTotals = (data) => {
     const selectedItems = data.filter(row => row.billCheck === true);
     const totalAmount = selectedItems.reduce((sum, row) => sum + (parseFloat(row.totalItemValue) || 0), 0);
@@ -548,7 +604,6 @@ const payload = {
       grandTotal,
     }));
   };
-
   // ✅ AUTO UPDATE TOTALS WHEN TABLE CHANGES
   useEffect(() => {
     if (tableData.length > 0) {
@@ -671,10 +726,23 @@ const payload = {
 
 
         {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
-       <div className="table-responsive">
+<div className="table-responsive">
   <table className="table table-bordered align-middle mt-3">
     <thead>
       <tr style={{ backgroundColor: "#f0f6ff" }}>
+        {/* ✅ MASTER CHECKBOX - ONE BUTTON SELECTS ALL */}
+        {/* <th className="text-primary" style={{ width: "60px" }}>
+          <div className="form-check">
+            <input
+              type="checkbox"
+              id="masterBillCheck"
+              checked={masterBillCheck}
+              onChange={(e) => handleMasterBillCheck(e.target.checked)}
+              className="form-check-input"
+              title="Select All Items"
+            />
+          </div>
+        </th> */}
         <th className="text-primary">Item Name</th>
         <th className="text-primary">Grade</th>
         <th className="text-primary">Item Code</th>
@@ -687,18 +755,20 @@ const payload = {
         <th className="text-primary">IGST (%)</th>
         <th className="text-primary">Total Tax (₹)</th>
         <th className="text-primary">Total Amount (₹)</th>
-        {/* <th className="text-primary">Calculated Total (₹)</th> */}
-        <th className="text-primary">Bill Check</th>
       </tr>
     </thead>
     <tbody>
       {loading ? (
-        <tr><td colSpan={14} className="text-center p-5"><LoadingSpinner /></td></tr>
+        <tr><td colSpan={13} className="text-center p-5"><LoadingSpinner /></td></tr>
       ) : tableData.length === 0 ? (
-        <tr><td colSpan={14} className="text-center text-muted py-5">Select GRN to load items</td></tr>
+        <tr><td colSpan={13} className="text-center text-muted py-5">Select GRN to load items</td></tr>
       ) : (
         tableData.map((row, index) => (
           <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
+            {/* ✅ NO INDIVIDUAL CHECKBOX - Just visual feedback */}
+            {/* <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+              {row.billCheck ? '✓' : ''}
+            </td> */}
             <td><strong>{row.itemName}</strong></td>
             <td>{row.grade || '-'}</td>
             <td>{row.itemCode || '-'}</td>
@@ -735,31 +805,33 @@ const payload = {
             <td>{(row.igst || 0).toFixed(2)}%</td>
             <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
             <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
-            {/* <td className="fw-bold text-primary">₹{(row.totalItemValue || 0).toFixed(2)}</td> */}
-            <td style={{ textAlign: "center", width: "100px" }}>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  id={`billCheck-${row.id}`}
-                  checked={row.billCheck === true}
-                  onChange={() => handleBillCheckChange(index)}
-                  className="form-check-input"
-                />
-                <label
-                  htmlFor={`billCheck-${row.id}`}
-                  className="form-check-label ms-1"
-                  style={{ cursor: "pointer", fontSize: "14px" }}
-                >
-                  Bill
-                </label>
-              </div>
-            </td>
           </tr>
         ))
       )}
     </tbody>
+   <tfoot>
+  <tr>
+    <td colSpan={14} style={{ textAlign: "center" }}>
+      <div className="form-check d-inline-flex align-items-center m-2" style={{ gap: "8px" }}>
+        <input
+          type="checkbox"
+          id="masterBillCheck"
+          checked={masterBillCheck}
+          onChange={(e) => handleMasterBillCheck(e.target.checked)}
+          className="form-check-input border "
+          title="Select All Items"
+        />
+        <label htmlFor="masterBillCheck" className="form-check-label">
+          Select All
+        </label>
+      </div>
+    </td>
+  </tr>
+</tfoot>
   </table>
 </div>
+
+
 
 
         {/* BUTTONS */}

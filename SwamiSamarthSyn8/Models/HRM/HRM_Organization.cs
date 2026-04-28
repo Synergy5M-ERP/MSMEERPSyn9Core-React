@@ -25,6 +25,8 @@ namespace SwamiSamarthSyn8.Models.HRM
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public bool IsActive { get; set; }
+        public string? Status { get; set; }
+
     }
 
 }

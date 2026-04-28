@@ -396,7 +396,7 @@ public class HrmMasterController : ControllerBase
     //            return BadRequest("Invalid type");
     //    }
     //}
-    [Authorize]
+    //[Authorize]
     [HttpPut("{type}/{id}")]
     public async Task<IActionResult> Update(string type, int id, [FromBody] JObject payload)
     {
@@ -535,7 +535,9 @@ public class HrmMasterController : ControllerBase
                      o.MinBudget,
                      o.MaxBudget,
                      o.OnBoardDate,
-                     o.IsActive
+                     Status = "Vacant",
+
+                     o.IsActive,
                  }).ToList();
 
             return Ok(result);
@@ -657,5 +659,84 @@ public class HrmMasterController : ControllerBase
         return Ok(new { message = "Organization updated successfully" });
     }
 
+    [HttpGet("vacantpositions")]
+    public IActionResult GetVacantPositions()
+    {
+        try
+        {
+            var data = (from org in _context.HRM_Organization
+                        where org.Status == "Vacant"   // ✅ ONLY VACANT RECORDS
 
+                        join dept in _context.HRM_Department
+                            on org.DeptId equals dept.DeptId into d
+                        from dept in d.DefaultIfEmpty()
+
+                        join desig in _context.HRM_Designation
+                            on org.DesignationId equals desig.DesignationId into des
+                        from desig in des.DefaultIfEmpty()
+
+                        join ind in _context.Master_Industry
+                            on org.IndustryId equals ind.IndustryId into i
+                        from ind in i.DefaultIfEmpty()
+
+                        join c in _context.Master_Country
+                            on org.CountryId equals c.country_id into co
+                        from c in co.DefaultIfEmpty()
+
+                        join s in _context.Master_State
+                            on org.StateId equals s.state_id into st
+                        from s in st.DefaultIfEmpty()
+
+                        join city in _context.Master_City
+                            on org.CityId equals city.city_id into ci
+                        from city in ci.DefaultIfEmpty()
+
+                        join cur in _context.Master_Currency
+                            on org.CurrencyId equals cur.CurrencyId into cu
+                        from cur in cu.DefaultIfEmpty()
+
+                        select new
+                        {
+                            OrganizationId = org.OrganizationId,
+
+                            Department = dept != null ? dept.DeptName : null,
+                            Position = desig != null ? desig.DesignationName : null,
+                            Industry = ind != null ? ind.IndustryName : null,
+
+                            Country = c != null ? c.country_name : null,
+                            State = s != null ? s.state_name : null,
+                            City = city != null ? city.city_name : null,
+
+                            Currency = cur != null ? cur.Currency_Code : null,
+
+                            Level = org.Level,
+                            Experience = org.Experience,
+                            Qualification = org.Qualification,
+
+                            Maximum_Budget = org.MaxBudget,
+                            Minimum_Budget = org.MinBudget,
+
+                            Onboard_Date = org.OnBoardDate,
+                            Status = org.Status
+                        })
+                        .Take(1000)
+                        .ToList();
+
+            return Ok(new
+            {
+                success = true,
+                data = data
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "Error fetching vacant positions",
+                error = ex.Message
+            });
+        }
+    
+}
 }

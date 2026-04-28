@@ -1202,8 +1202,186 @@ public async Task<IActionResult> GetEmployeeAttendance()
 
             return Ok(new { success = true });
         }
+        [HttpGet("staff-salary")]
+        public IActionResult GetStaffSalary()
+        {
+            var attendanceData = _context.HRM_EmployeeDailyAttendance
+      .Where(x => x.IsActive == true)
+      .GroupBy(x => x.EmpCode)
+      .Select(g => new
+      {
+          EmpCode = g.Key,
+          AttendanceCount = g.Count()
+      })
+      .ToList();
 
+            // ✅ Move DB query first, then switch to memory
+            var result = (from emp in _context.HRM_Employee
+                          join empDetails in _context.HRM_EmployerDetails
+                          on emp.EmployeeId equals empDetails.EmployeeId into empDetGroup
+                          from empDetails in empDetGroup.DefaultIfEmpty()
 
+                          join sal in _context.HRM_EmployeeSalaryDetails
+                          on emp.EmployeeId equals sal.EmployeeId into salGroup
+                          from sal in salGroup.DefaultIfEmpty()
 
+                          where emp.IsActive == true
+                          select new
+                          {
+                              emp,
+                              empDetails,
+                              sal
+                          })
+                          .AsEnumerable() // ✅ VERY IMPORTANT
+                          .Select(x => new
+                          {
+                              empCode = x.emp.EmpCode,
+                              fullName = x.emp.FullName,
+
+                              department = x.empDetails?.DeptId,
+                              shiftHours = x.empDetails?.ShiftHours,
+                              pfContribution = x.empDetails?.PFContribution,
+                              esic = x.empDetails?.ESISNo,
+
+                              salaryStatus = x.empDetails?.Category,
+
+                              basicSalary = x.sal?.MonthlyBasicSalary ?? 0,
+                              hra = x.sal?.HouseRentAllowance ?? 0,
+                              additional = x.sal?.AdditionalBenefits ?? 0,
+
+                              totalSalary =
+                                  (x.sal?.MonthlyBasicSalary ?? 0)
+                                + (x.sal?.HouseRentAllowance ?? 0)
+                                + (x.sal?.AdditionalBenefits ?? 0),
+
+                              dailyPay = x.sal?.DailySalary ?? 0,
+
+                              grossSalary = x.sal?.MonthlyGrossSalary ?? 0,
+                              professionalTax = x.sal?.ProfessionalTax ?? 0,
+
+                              // ✅ Attendance Mapping (SAFE)
+                              attendanceDays = attendanceData
+                                  .FirstOrDefault(a => a.EmpCode == x.emp.EmpCode)
+                                  ?.AttendanceCount ?? 0
+                          })
+                          .ToList();
+
+            return Ok(result);
+        }
+        [HttpGet("attendance")]
+        public IActionResult GetAttendance(string selectedMonth)
+        {
+            if (string.IsNullOrEmpty(selectedMonth))
+                return BadRequest("Month required");
+
+            DateTime date = DateTime.ParseExact(selectedMonth, "yyyy-MM", null);
+
+            var start = new DateTime(date.Year, date.Month, 1);
+            var end = start.AddMonths(1);
+
+            var raw = _context.HRM_EmployeeDailyAttendance
+                .Where(x => x.AttendanceDate >= start &&
+                            x.AttendanceDate < end &&
+                            x.TimeIn != "Absent" &&
+                            x.TimeOut != "Absent")
+                .ToList();
+
+            var empData = _context.HRM_EmpInfoTbl
+                .Select(e => new
+                {
+                    e.Emp_Code,
+                    e.Shift_Hours,
+                    e.SalaryStatus
+                }).ToList();
+
+            var result = raw.GroupBy(x => x.EmpCode)
+                .Select(g =>
+                {
+                    int totalHours = 0;
+                    double overtime = 0;
+
+                    foreach (var r in g)
+                    {
+                        if (!string.IsNullOrEmpty(r.TotalWorkHours))
+                        {
+                            var parts = r.TotalWorkHours.Split(' ');
+                            if (parts.Length >= 2 && int.TryParse(parts[0], out int h))
+                                totalHours += h;
+                        }
+
+                        if (!string.IsNullOrEmpty(r.OverTimeHours))
+                        {
+                            var parts = r.OverTimeHours.Split(' ');
+                            if (parts.Length >= 2 && double.TryParse(parts[0], out double ot))
+                                overtime += ot;
+                        }
+                    }
+
+                    var emp = empData.FirstOrDefault(e => e.Emp_Code == g.Key);
+
+                    double shift = (double)(emp?.Shift_Hours ?? 0);
+                    string category = emp?.SalaryStatus ?? "Employee";
+
+                    double attendance = category == "Staff"
+                        ? g.Select(x => x.AttendanceDate).Distinct().Count()
+                        : totalHours;
+
+                    double otDays = shift > 0 ? overtime / shift : 0;
+
+                    return new
+                    {
+                        EmpCode = g.Key,
+                        Category = category,
+                        Attendance = attendance,
+                        TotalHours = totalHours,
+                        Overtime = overtime,
+                        OvertimeDays = Math.Round(otDays, 2)
+                    };
+                }).ToList();
+
+            return Ok(result);
+        }
+        [HttpPost("save-salary")]
+        public IActionResult SaveSalary([FromBody] List<HRM_EmployeeSalaryDetails> data)
+        {
+            if (data == null || !data.Any())
+                return BadRequest("No data");
+
+            foreach (var item in data)
+            {
+                _context.HRM_EmployeeSalaryDetails.Add(item);
+            }
+
+            _context.SaveChanges();
+
+            return Ok(new { message = "Saved successfully" });
+        }
+        //[HttpGet("salary-list")]
+        //public IActionResult SalaryList()
+        //{
+        //    var salary = _context.HRM_EmployeeSalaryDetails.ToList();
+        //    var emp = _context.HRM_EmpInfoTbl.ToList();
+
+        //    var result = (from s in salary
+        //                  join e in emp
+        //                  on s.EmpCode equals e.Emp_Code into grp
+        //                  from e in grp.DefaultIfEmpty()
+        //                  select new
+        //                  {
+        //                      s.Id,
+        //                      s.Month,
+        //                      s.EmpName,
+        //                      s.EmpCode,
+        //                      s.TotalSalary,
+        //                      s.PaySalary,
+        //                      s.OvertimeHours,
+        //                      s.AdvancePaid,
+        //                      BankAccount = e?.BankAccountNo,
+        //                      IFSC = e?.IFSC_Code,
+        //                      UAN = e?.UAN
+        //                  }).ToList();
+
+        //    return Ok(result);
+        //}
     }
 }

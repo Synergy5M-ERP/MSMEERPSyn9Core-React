@@ -10,23 +10,23 @@ namespace SwamiSamarthSyn8.Models.Accounts
         [Key]
         public long TransporterGRNId { get; set; }
 
-        public int VendorId { get; set; }
+        public int? VendorId { get; set; }
 
-        public string InvoiceNo { get; set; }
+        public string? InvoiceNo { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime? InvoiceDate { get; set; }
 
-        public int TaxTypeId { get; set; }
-        public decimal TaxAmount { get; set; }
-        public decimal Qty { get; set; }
+        public int? TaxTypeId { get; set; }
+        public decimal? TaxAmount { get; set; }
+        public decimal? Qty { get; set; }
         public DateTime? Date { get; set; }
 
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
-        public decimal NetAmount { get; set; }
+        public decimal? NetAmount { get; set; }
 
-        public decimal TotalAmount { get; set; }
+        public decimal? TotalAmount { get; set; }
 
         public decimal? SGSTAmount { get; set; }
 
@@ -37,7 +37,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public bool ApproveTransportation { get; set; }
 
         public int? CreatedBy { get; set; }
-        public string LedgerId { get; set; }
+        public string? LedgerId { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime? CreatedDate { get; set; }

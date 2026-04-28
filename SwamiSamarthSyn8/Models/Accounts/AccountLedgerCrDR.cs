@@ -14,6 +14,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         [Column(TypeName = "date")]
         public DateTime? Date { get; set; }
+        public long? SubLedgerId { get; set; }
 
         public decimal? OpeningBalance { get; set; }
 
@@ -22,5 +23,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public decimal? Debit { get; set; }
 
         public long? VoucherId { get; set; }
+        public decimal? SubClosingBal { get; set; }
+        public decimal? SubOpeningBal { get; set; }
     }
 }

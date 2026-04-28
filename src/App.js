@@ -56,7 +56,7 @@ import AdminConfiguration from "./pages/AdminPanel/AdminConfiguration";
 /* INVENTORY */
 import InventoryAdd from "./pages/Masters/InventoryMaster/InventoryAdd";
 import InventoryEdit from "./pages/Masters/InventoryMaster/InventoryEdit";
-
+import TransporterApprove from "./pages/Account/TransporterApprove";
 /* LAYOUT */
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -110,6 +110,7 @@ function App() {
         <Route path="/accountconfiguration" element={<AccountConfiguration />} />
         <Route path="/accfinancedashboard" element={<AccountAndFinanceDashboard />} />
         <Route path="/accountgroupsubgroup" element={<AccountGroupSubgroup />} />
+        <Route path="/TransporterApprove" element={<TransporterApprove />} />
 
         {/* INVENTORY */}
         <Route path="/inventory" element={<InventoryAdd />} />

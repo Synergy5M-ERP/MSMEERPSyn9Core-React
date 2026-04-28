@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+import { API_ENDPOINTS } from "../../config/apiconfig";
 function GrossSalary() {
   const [month, setMonth] = useState("");
   const [monthDays, setMonthDays] = useState(0);
@@ -30,30 +30,42 @@ function GrossSalary() {
   };
 
   /* ================= Load Employees ================= */
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get(
-        "/OrgnizationMatrix/GetStaffSalaryList"
-      );
+const fetchEmployees = async () => {
+  if (!month) {
+    alert("Please select month first");
+    return;
+  }
 
-      const mapped = res.data.map((e) => ({
-        ...e,
-        attendanceDays: 0,
-        paidLeave: 0,
-        overtimeHours: 0,
-        paidDays: 0,
-        overtimePay: 0,
-        grossSalary: 0,
-        esic: 0,
-        payableSalary: 0,
-      }));
+  try {
+    const res = await axios.get(API_ENDPOINTS.StaffSalary);
 
-      setEmployees(mapped);
-    } catch (error) {
-      alert("Failed to load employee list");
-    }
-  };
+    console.log("API DATA:", res.data); // 👈 DEBUG
+const mapped = res.data.map((e) => ({
+    attendanceDays: e.attendanceDays || 0, // ✅ AUTO FROM API
 
+  empCode: e.empCode,
+  fullName: e.fullName,
+  dailyPay: e.dailyPay,
+  pfContribution: e.pfContribution,
+  professionalTax: e.professionalTax,
+  esic: e.esic,
+
+  attendanceDays: 0,
+  paidLeave: 0,
+  overtimeHours: 0,
+  paidDays: 0,
+  overtimePay: 0,
+  grossSalary: 0,
+  esicAmount: 0,
+  payableSalary: 0,
+}));
+
+    setEmployees(mapped);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load employee list");
+  }
+};
   /* ================= Calculate Salary ================= */
   const calculateSalary = () => {
     const updated = employees.map((emp) => {
@@ -68,19 +80,18 @@ function GrossSalary() {
       const grossSalary = dailyPay * paidDays;
       const overtimePay = Number(emp.overtimeHours) * dailyPay;
 
-      const esic =
-        emp.YNFESIC === "YES"
-          ? (grossSalary + overtimePay) * 0.0075
-          : 0;
+    const esic =
+  emp.ESIC
+    ? (grossSalary + overtimePay) * 0.0075
+    : 0;
 
-      const payableSalary =
-        grossSalary +
-        overtimePay -
-        (esic +
-          Number(emp.PF_Conrtibution || 0) +
-          Number(emp.Professional_Tax || 0) +
-          Number(welfareFund));
-
+const payableSalary =
+  grossSalary +
+  overtimePay -
+  (esic +
+    Number(emp.PFContribution || 0) +
+    Number(emp.ProfessionalTax || 0) +
+    Number(welfareFund));
       return {
         ...emp,
         paidDays,
@@ -192,9 +203,8 @@ function GrossSalary() {
           <tbody>
             {employees.map((emp, i) => (
               <tr key={i}>
-                <td>{emp.FullName}</td>
-                <td>{emp.Emp_Code}</td>
-
+                <td>{emp.fullName}</td>
+<td>{emp.empCode}</td>
                 <td>
                   <input
                     type="number"

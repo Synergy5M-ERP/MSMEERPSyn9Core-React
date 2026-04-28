@@ -1174,16 +1174,28 @@ const handleEditOrganization = (row) => {
   />
 </td>
 
-  <td>
+ <td>
+  {activeFilter === "active" ? (
     <Trash2
       size={20}
       role="button"
       className="text-danger"
       title="Deactivate"
-  onClick={() => toggleOrganizationActive(row.organizationId, false)}
-
+      onClick={() =>
+        toggleOrganizationActive(row.organizationId, false)
+      }
     />
-  </td>
+  ) : (
+    <button
+      className="btn btn-sm btn-success"
+      onClick={() =>
+        toggleOrganizationActive(row.organizationId, true)
+      }
+    >
+      Activate
+    </button>
+  )}
+</td>
 </tr>
             ))
           ) : (

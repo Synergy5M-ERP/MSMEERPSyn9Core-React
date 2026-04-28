@@ -967,48 +967,47 @@ formData.append(
                 // }}
                 >
                   <div className='row'>
+<div className='col-md-2'>
+  <label style={labelStyle}>Title</label>
+  <select
+    name="title"
+    value={employeeInfo.title}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+  >
+    <option value="">Select</option>
+    <option value="Mr">Mr</option>
+    <option value="Ms">Ms</option>
+    <option value="Mrs">Mrs</option>
+  </select>
+</div>
 
-                    <div className='col'>
-                      <label style={labelStyle}>Title</label>
-                      <select
-                        style={inputStyle}
-                        name="title"
-                        value={employeeInfo.title}
-                        onChange={handleEmployeeChange}
-                      >
-                        <option value="">Select</option>
-                        <option value="Mr">Mr</option>
-                        <option value="Ms">Ms</option>
-                        <option value="Mrs">Mrs</option>
-                      </select>
-                    </div>
-                    <div className='col'>
+<div className='col-md-6'>
   <label style={labelStyle}>Full Name</label>
   <input
     type="text"
-    style={inputStyle}
     name="fullName"
     value={employeeInfo.fullName}
     onChange={handleEmployeeChange}
     placeholder="Enter full name"
+    style={inputStyle}
   />
 </div>
 
-                    <div className='col'>
-                      <label style={labelStyle}>Gender</label>
-                      <select
-                        style={inputStyle}
-                        name="gender"
-                        value={employeeInfo.gender}
-                        onChange={handleEmployeeChange}
-                      >
-                        <option value="">Select</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-
+<div className='col-md-2'>
+  <label style={labelStyle}>Gender</label>
+  <select
+    name="gender"
+    value={employeeInfo.gender}
+    onChange={handleEmployeeChange}
+    style={inputStyle}
+  >
+    <option value="">Select</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
                   </div>
 
                   <div className='row'>
@@ -1072,8 +1071,8 @@ formData.append(
                         onChange={handleEmployeeChange}
                       >
                         <option value="">Select Status</option>
-                        <option value="Single">Married</option>
-                        <option value="Married">UnMarried</option>
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
                       </select>
                     </div>
                   </div>
@@ -1189,13 +1188,19 @@ formData.append(
 
                     <div className='col'>
                       <label style={labelStyle}>Aadhar No</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="aadharNo"
-                        value={employeeInfo.aadharNo}
-                        onChange={handleEmployeeChange}
-                      />
+                     <input
+  type="text"
+  style={inputStyle}
+  name="aadharNo"
+  value={employeeInfo.aadharNo}
+  maxLength={12}   // ✅ limit to 12 digits
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, ""); // ✅ allow only numbers
+    handleEmployeeChange({
+      target: { name: "aadharNo", value }
+    });
+  }}
+/>
                     </div>
 
                   </div>
@@ -1203,23 +1208,35 @@ formData.append(
                   <div className='row'>
                     <div className='col'>
                       <label style={labelStyle}>Pan No</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="panNo"
-                        value={employeeInfo.panNo}
-                        onChange={handleEmployeeChange}
-                      />
+                     <input
+  type="text"
+  style={inputStyle}
+  name="panNo"
+  value={employeeInfo.panNo}
+  maxLength={10}   // ✅ fixed length
+  onChange={(e) => {
+    const value = e.target.value.toUpperCase(); // ✅ force uppercase
+    handleEmployeeChange({
+      target: { name: "panNo", value }
+    });
+  }}
+/>
                     </div>
                     <div className='col'>
                       <label style={labelStyle}>Bank Account No</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="bankAccountNo"
-                        value={employeeInfo.bankAccountNo}
-                        onChange={handleEmployeeChange}
-                      />
+                     <input
+  type="text"
+  style={inputStyle}
+  name="bankAccountNo"
+  value={employeeInfo.bankAccountNo}
+  maxLength={18}   // ✅ max length
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, ""); // ✅ only numbers
+    handleEmployeeChange({
+      target: { name: "bankAccountNo", value }
+    });
+  }}
+/>
                     </div>
                     <div className='col'>
                       <label style={labelStyle}>Bank Name</label>
@@ -1232,15 +1249,29 @@ formData.append(
                       />
                     </div>
                     <div className='col'>
-                      <label style={labelStyle}>IFSC Code</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        name="ifscCode"
-                        value={employeeInfo.ifscCode}
-                        onChange={handleEmployeeChange}
-                      />
-                    </div>
+  <label style={labelStyle}>IFSC Code</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="ifscCode"
+    value={employeeInfo.ifscCode}
+    maxLength="11"
+    onChange={(e) => {
+      const value = e.target.value.toUpperCase();
+
+      // Allow only A-Z and 0-9
+      if (/^[A-Z0-9]*$/.test(value)) {
+        handleEmployeeChange({
+          target: {
+            name: "ifscCode",
+            value: value
+          }
+        });
+      }
+    }}
+    placeholder="SBIN0001234"
+  />
+</div>
                     <div className='col'>
                       <label style={labelStyle}>Nominee</label>
                       <input
@@ -1522,16 +1553,30 @@ formData.append(
   </select>
 </div>
 
-                  <div className='col'>
-                    <label style={labelStyle}>PF No</label>
-                    <input
-                      type="text"
-                      style={inputStyle}
-                      name="pfNo"
-                      value={employerInfo.pfNo}
-                      onChange={handleEmployerChange}
-                    />
-                  </div>
+                 <div className='col'>
+  <label style={labelStyle}>PF No</label>
+  <input
+    type="text"
+    style={inputStyle}
+    name="pfNo"
+    value={employerInfo.pfNo}
+    maxLength="20"
+    onChange={(e) => {
+      const value = e.target.value.toUpperCase();
+
+      // Allow letters + numbers only
+      if (/^[A-Z0-9]*$/.test(value)) {
+        handleEmployerChange({
+          target: {
+            name: "pfNo",
+            value: value
+          }
+        });
+      }
+    }}
+    placeholder="Enter PF Number"
+  />
+</div>
                   <div className='col'>
                     <label style={labelStyle}>ESIC NO/PWN NO</label>
                     <input

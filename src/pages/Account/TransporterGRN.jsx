@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { API_ENDPOINTS } from "../../config/apiconfig";
-
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
 const TransporterGRN = () => {
     // 1. Core State
     const [formData, setFormData] = useState({
@@ -16,8 +22,8 @@ const TransporterGRN = () => {
         SGSTRate: 0,
         CGSTRate: 0,
         Payment_Due_Date: new Date().toISOString().split('T')[0],
-        ApproveBill: false,
-        ledgerId: ""
+    CheckTransportation: false,   // ✅ ADD THIS
+    ledgerIds: []   // ✅ replace ledgerId
     });
 
     const [totals, setTotals] = useState({
@@ -60,12 +66,21 @@ const TransporterGRN = () => {
                 setLedgers(ledgerRes.data.data || ledgerRes.data || []);
             } catch (err) {
                 console.error("Initialization Error", err);
-                Swal.fire("Error", "Could not load initial setup data", "error");
-            }
+Toast.fire({
+    icon: "error",
+    title: "Could not load initial setup data"
+});            }
         };
         init();
     }, []);
-
+const handleLedgerToggle = (id) => {
+    setFormData(prev => ({
+        ...prev,
+        ledgerIds: prev.ledgerIds.includes(id)
+            ? prev.ledgerIds.filter(l => l !== id)   // remove
+            : [...prev.ledgerIds, id]                // add
+    }));
+};
     // 3. Calculation Logic
     useEffect(() => {
         const basicAmt = parseFloat(formData.Price) || 0;
@@ -105,8 +120,10 @@ const TransporterGRN = () => {
             // Set data from res.data.data as per your JSON structure
             setTableData(res.data.data || []);
         } catch (err) {
-            Swal.fire("Error", "Failed to load transporter GRN details", "error");
-        }
+Toast.fire({
+    icon: "error",
+    title: "Failed to load transporter GRN details"
+});        }
     };
 
     const toggleRow = (id) => {
@@ -114,36 +131,97 @@ const TransporterGRN = () => {
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
         );
     };
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (selectedRows.length === 0) {
-            return Swal.fire("Required", "Please select at least one LR from the table", "warning");
-        }
+    if (selectedRows.length === 0) {
+        return Toast.fire({
+    icon: "warning",
+    title: "Please select at least one LR"
+});
+    }
+        const firstRow = tableData.find(r => r.grnId === selectedRows[0]);
 
-        const payload = {
-            ...formData,
-            NetAmount: totals.NetAmount,
-            TaxAmount: totals.TotalTax,
-            TotalAmount: totals.GrandTotal,
-            IGSTAmount: totals.IGSTAmount,
-            SGSTAmount: totals.SGSTAmount,
-            CGSTAmount: totals.CGSTAmount,
-            SelectedGRNs: selectedRows.map(id => {
-                const row = tableData.find(r => r.GRNId === id);
-                return { GRNId: id, LRNo: row?.LRNo };
-            })
+  const headerDate = firstRow?.date
+        ? (typeof firstRow.date === "string" && firstRow.date.includes("/Date")
+            ? new Date(parseInt(firstRow.date.replace(/\D/g, ""))).toISOString()
+            : new Date(firstRow.date).toISOString())
+        : null;
+ const payload = {
+    TransporterInvoiceNo: formData.TransporterInvoiceNo,
+    InvoiceDate: formData.InvoiceDate,
+            Date: headerDate,
+
+    Qty: formData.Qty,
+    Price: formData.Price,
+
+    NetAmount: parseFloat(totals.NetAmount),
+    TaxAmount: parseFloat(totals.TotalTax),
+    TotalAmount: parseFloat(totals.GrandTotal),
+
+    IGSTAmount: parseFloat(totals.IGSTAmount),
+    SGSTAmount: parseFloat(totals.SGSTAmount),
+    CGSTAmount: parseFloat(totals.CGSTAmount),
+    CheckTransportation: formData.CheckTransportation,
+
+    Payment_Due_Date: formData.Payment_Due_Date,
+
+    // ✅ FIXES
+LedgerIds: formData.ledgerIds.map(id => parseInt(id)),   SellerName: formData.VendorId,
+ // ✅ MUST SEND THIS
+       // ✅ THIS IS THE MAIN FIX
+    Details: selectedRows.map(id => {
+        const row = tableData.find(r => r.grnId === id);
+        return {
+            GRNId: id,
+            LRNo: row?.lrNo,
+        IsLRPass: true   // ✅ THIS IS REQUIRED
+
+    
         };
+    })
+};
+   try {
+    const res = await axios.post(API_ENDPOINTS.SaveTransportrationGRN, payload);
+ if (res.data?.success) {
+        Toast.fire({
+            icon: 'success',
+            title: res.data.message || 'Saved successfully'
+        });
 
-        try {
-            await axios.post(`${API_ENDPOINTS.GetTransporter}Save`, payload);
-            Swal.fire("Success", "Transporter GRN Saved Successfully", "success");
-            setTableData([]);
-            setSelectedRows([]);
-        } catch (err) {
-            Swal.fire("Error", "Failed to save data", "error");
-        }
-    };
+        // ✅ ADD RESET CODE HERE (AFTER SUCCESS)
+        setSelectedRows([]);
+        setTableData([]);
+        setFormData({
+            VendorId: "",
+            TransporterInvoiceNo: "",
+            InvoiceDate: new Date().toISOString().split('T')[0],
+            Price: 0,
+            Qty: 0,
+            TaxType: "",
+            IGSTRate: 0,
+            SGSTRate: 0,
+            CGSTRate: 0,
+            Payment_Due_Date: new Date().toISOString().split('T')[0],
+            CheckTransportation: false,
+            ledgerIds: []
+        });
+
+    } else {
+        Toast.fire({
+            icon: 'error',
+            title: res.data?.message || 'Save failed'
+        });
+    }
+
+} catch (err) {
+    Toast.fire({
+        icon: 'error',
+        title: 'API Failed'
+    });
+}
+
+};
 
     return (
         <div className="main-content" style={{ padding: '20px' }}>
@@ -222,16 +300,27 @@ const TransporterGRN = () => {
                         )}
 
                         <div>
-                            <label style={{ fontWeight: '600', display: 'block', marginBottom: '5px' }}>Ledger</label>
-                            <select className="form-control" value={formData.ledgerId} onChange={(e) => setFormData({...formData, ledgerId: e.target.value})} required>
-                                <option value="">Select Ledger</option>
-                                {ledgers.map(l => (
-                                    <option key={l.accountLedgerId} value={l.accountLedgerId}>
-                                        {l.accountLedgerName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+    <label style={{ fontWeight: '600', display: 'block', marginBottom: '5px' }}>
+        Select Ledgers
+    </label>
+
+    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
+        {ledgers.map(l => (
+            <div key={l.accountLedgerId}>
+                <label style={{ cursor: 'pointer' }}>
+                    <input
+                        type="checkbox"
+                        value={l.accountLedgerId}
+                        checked={formData.ledgerIds.includes(l.accountLedgerId)}
+                        onChange={() => handleLedgerToggle(l.accountLedgerId)}
+                        style={{ marginRight: '8px' }}
+                    />
+                    {l.accountLedgerName}
+                </label>
+            </div>
+        ))}
+    </div>
+</div>
                         <div>
                            <label style={{ fontWeight: '600', display: 'block', marginBottom: '5px' }}>Payment Due Date</label>
                             <input type="date" className="form-control" value={formData.Payment_Due_Date} onChange={(e) => setFormData({...formData, Payment_Due_Date: e.target.value})} />
@@ -291,12 +380,14 @@ const TransporterGRN = () => {
                     <div style={{ marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px', textAlign: 'center' }}>
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ cursor: 'pointer', fontSize: '15px' }}>
-                                <input 
-                                    type="checkbox" 
-                                    style={{ transform: 'scale(1.2)', marginRight: '10px' }}
-                                    checked={formData.ApproveBill} 
-                                    onChange={(e) => setFormData({...formData, ApproveBill: e.target.checked})} 
-                                />
+                            <input 
+    type="checkbox"
+    checked={formData.CheckTransportation || false}
+    onChange={(e) => setFormData({
+        ...formData,
+        CheckTransportation: e.target.checked
+    })}
+/>
                                 I verify and approve this bill for payment
                             </label>
                         </div>

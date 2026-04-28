@@ -1,11 +1,10 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Package, Factory, DollarSign,
   Settings, ShoppingCart, TrendingUp, Lock
 } from "lucide-react";
-
 const ALL_MODULES = [
   {
     id: "hrm",
@@ -70,18 +69,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [showLoginAlert, setShowLoginAlert] = useState(false);
 
-  const user = useMemo(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      if (!stored) return null;
-      const parsed = JSON.parse(stored);
-      console.log("All user keys:", Object.keys(parsed));
-      return parsed;
-    } catch {
-      return null;
-    }
-  }, []);
+const [user, setUser] = useState(null);
 
+useEffect(() => {
+  try {
+    const stored = sessionStorage.getItem("user");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setUser(parsed);
+    }
+  } catch {
+    setUser(null);
+  }
+}, []);
   const allowedModules = useMemo(() => {
     if (!user) return [];
     return ALL_MODULES.filter((m) => hasPermission(user, m.permissionKeys));

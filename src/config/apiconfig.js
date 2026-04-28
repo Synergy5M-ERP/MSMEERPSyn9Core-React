@@ -3,7 +3,7 @@
 const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
 
-   //const BASE_URL = "https://localhost:7145/api";
+  //const BASE_URL = "https://localhost:7145/api";
 
 
 // const BASE_URL = "https://localhost:7145/api";
@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
   GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
+ vacantpositions: `${BASE_URL}/HrmMaster/vacantpositions`,
 
   // GET_CURRENCY: `${BASE_URL}/HrmMaster/GetCurrency`,
 
@@ -49,7 +50,6 @@ export const API_ENDPOINTS = {
   ///GET_STATE: `${BASE_URL}/HrmMaster/GetState`,
   //GET_CITY: `${BASE_URL}/HrmMaster/GetCity`,
   //ORG_CHART_WITH_BUDGET: `${BASE_URL}/HrmMaster/OrgChartWithBudget`,
-
   Emp_Info: `${BASE_URL}/HrmOrgInfo/EmpInfo`,           // GET
   MatrixSave: `${BASE_URL}/HrmOrgInfo/SaveEmpInfo`,     // POST
   MatrixList: `${BASE_URL}/HrmOrgInfo/MatrixList`,      // GET
@@ -61,8 +61,10 @@ export const API_ENDPOINTS = {
   GetEmployeeById: `${BASE_URL}/HrmOrgInfo/GetEmployeeById`,
   UpdateEmployee: `${BASE_URL}/HrmOrgInfo/UpdateEmployee`, // base only
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
+  UpdateEmployeeStatus: `${BASE_URL}/HrmOrgInfo/UpdateEmployeeStatus`,
   GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
   HRMAdminReg: `${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
+StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   //------------------------Account APIs----------------------------------//
   Ledger: `${BASE_URL}/AccountLedger/`,
   SubLedger: `${BASE_URL}/AccountSubLedger/`,
@@ -149,7 +151,10 @@ export const API_ENDPOINTS = {
   GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
   GetTransporter: `${BASE_URL}/GRN/GetTransporter`,
     GetTransporterDetails: `${BASE_URL}/GRN/GetTransporterDetails`,
-
+    SaveTransportrationGRN: `${BASE_URL}/GRN/SaveTransportrationGRN`,
+    GetApproveTransporter: `${BASE_URL}/GRN/GetApproveTransporter`,
+ GetApproveTransporterDetails: `${BASE_URL}/GRN/GetApproveTransporterDetails`,
+    UpdateApproveStatusBulk: `${BASE_URL}/GRN/UpdateApproveStatusBulk`,
   
   GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
   GetGRNInvoiceNames: `${BASE_URL}/LegderMaster/GetGRNInvoiceNames`,

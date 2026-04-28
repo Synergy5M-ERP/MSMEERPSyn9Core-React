@@ -120,21 +120,26 @@ const handleEdit = async (emp) => {
 
 
   /* ================= ACTIVATE / DEACTIVATE ================= */
-  const updateStatus = async (employeeId, isActive) => {
-    const action = isActive ? "activate" : "deactivate";
+ const updateStatus = async (employeeId, isActive) => {
+  const action = isActive ? "activate" : "deactivate";
 
-    if (!window.confirm(`Are you sure you want to ${action} this employee?`))
-      return;
+  if (!window.confirm(`Are you sure you want to ${action} this employee?`))
+    return;
 
-    try {
-      const url = `${API_ENDPOINTS.UpdateEmployeeStatus}/${employeeId}?isActive=${isActive}`;
-      await fetch(url, { method: "PUT" });
-      fetchEmployees();
-    } catch {
-      alert("Failed to update status");
-    }
-  };
+  try {
+    const url = `${API_ENDPOINTS.UpdateEmployeeStatus}/${employeeId}?isActive=${isActive}`;
 
+    const res = await fetch(url, { method: "PUT" });
+
+    if (!res.ok) throw new Error();
+
+    alert(isActive ? "Employee Activated" : "Employee Deactivated");
+
+    fetchEmployees(); // refresh data
+  } catch {
+    alert("Failed to update status");
+  }
+};
 
   const totalCount = filteredEmployees.length;
 const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -228,16 +233,27 @@ const pagedEmployees = filteredEmployees.slice(
           </button>
         </td>
 
-        <td>
-          <span
-               onClick={() => handleDeactivate(e.employeeId)}
-
-                            
-            style={{ cursor: "pointer", color: "#dc3545" }}
-          >
-            <FaTrash />
-          </span>
-        </td>
+       <td className="text-center">
+  {e.isActive ? (
+    // 🔴 ACTIVE → Deactivate (Trash icon)
+    <span
+      onClick={() => updateStatus(e.employeeId, false)}
+      style={{ cursor: "pointer", color: "#dc3545" }}
+      title="Deactivate"
+    >
+      <FaTrash />
+    </span>
+  ) : (
+    // 🟢 INACTIVE → Activate (Text or icon)
+    <span
+      onClick={() => updateStatus(e.employeeId, true)}
+      style={{ cursor: "pointer", color: "#28a745", fontWeight: "bold" }}
+      title="Activate"
+    >
+      Activate
+    </span>
+  )}
+</td>
       </tr>
     ))
   ) : (

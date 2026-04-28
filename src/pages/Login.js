@@ -34,8 +34,10 @@ const handleSubmit = async (e) => {
 
       const userData = response.data.user;   // ✅ MOVE HERE
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(userData));
+     // localStorage.setItem("token", response.data.token);
+      //localStorage.setItem("user", JSON.stringify(userData));
+sessionStorage.setItem("user", JSON.stringify(response.data.user));
+sessionStorage.setItem("token", response.data.token);
 
       window.dispatchEvent(new Event("storage"));
 

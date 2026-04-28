@@ -268,17 +268,24 @@ console.log("Payload:", payload);
   },
   body: JSON.stringify(payload)
 });
-      const result = await res.json();
+    const sellerId = selectedSeller; // ✅ store first
 
-      if (!res.ok) throw new Error(result.message || "Save failed");
+toast.update(TOAST_ID, {
+  render: `✅ Saved ${payload.length} approved GRNs!`,
+  type: "success",
+  isLoading: false,
+  autoClose: 3000,
+});
 
-      toast.update(TOAST_ID, {
-        render: `✅ Saved ${payload.length} approved GRNs!`,
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
+// ✅ Reload data FIRST
+await loadAllGrnsWithDetails(sellerId);
 
+// ✅ THEN reset (optional)
+setSelectedSeller("");
+setGrnsData([]);
+// ✅ Refresh data
+
+// ✅ Reload fresh data (optional)
       await loadAllGrnsWithDetails(selectedSeller);
     } catch (error) {
       toast.update(TOAST_ID, {

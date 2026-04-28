@@ -21,21 +21,14 @@ const Sidebar = ({ selected, onSelect }) => {
 
   const menuItems = [
     { label: 'Dashboard', icon: <Dashboard />, key: 'Dashboard' },
-    //  { label: 'Master', icon: <RiMastercardFill />, key: 'Masters' },
+    { label: 'Master', icon: <RiMastercardFill />, key: 'Masters' },
     { label: 'Group Configuration', icon: <GroupAddRounded />, key: 'Group' },
-    
-    // { label: 'AccountVoucher Type', icon: <AccountBalanceTwoTone />, key: 'AccountVoucherType' },
     { label: 'Account Configuration', icon: <AccountCircle />, key: 'Account' },
-        { label: 'Legder Master', icon: <AccountCircle />, key: 'LedgerMaster' },
-
-     { label: 'Account GRN', icon: <GppGoodSharp />, key: 'AccountGRN' },
-
-      { label: 'Account Sale', icon: <SdCardAlert />, key: 'AccountSale' },
-          { label: 'Account Voucher', icon: <VolunteerActivismSharp />, key: 'AccountVoucher' },
+    { label: 'Account Inward', icon: <GppGoodSharp />, key: 'AccountGRN' },
+    { label: 'Account Outward', icon: <SdCardAlert />, key: 'AccountSale' },
     { label: 'Financial Configuration', icon: <CurrencyRupeeOutlined />, key: 'FinancialConfiguration' },
-
+    { label: 'Account Voucher', icon: <VolunteerActivismSharp />, key: 'AccountVoucher' },
     { label: 'Credit Debit Note', icon: <CreditCardIcon />, key: 'CreditDebitNote' },
-  
     {
       label: 'Report',
       icon: <SheetIcon />,

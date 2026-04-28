@@ -2,12 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Save, Trash2, Loader2, X } from 'lucide-react';
 import { API_ENDPOINTS } from "../../config/apiconfig";
-//const API_BASE_URL = 'https://msmeerp-syn9core.azurewebsites.net/api/AccountBankDetails';
-//const API_BASE_URL = 'https://localhost:7145/api/AccountBankDetails';
-//const API_BASE_URL = 'https://msmeerpsyn9-core.azurewebsites.net/api '
- const BASE_URL = "https://localhost:7145/api";
-
-
 
 function AccountBankDetails({ view = 'active' }) {
 const [vendorId, setVendorId] = useState('');
@@ -48,6 +42,9 @@ const [vendorId, setVendorId] = useState('');
   const fetchVendorNames = async () => {
   try {
     const res = await fetch(API_ENDPOINTS.Vendors);
+
+    console.log(res)
+
     if (!res.ok) throw new Error('Failed to fetch vendors');
 
     const json = await res.json();
@@ -57,14 +54,13 @@ const [vendorId, setVendorId] = useState('');
       company_Name: v.company_Name  // ✅ MATCH API (case-sensitive)
     }));
 
+    console.log(normalized)
+
     setVendorNames(normalized);
   } catch (err) {
     showToast(err.message, 'error');
   }
 };
-
-
-
 
     const fetchBanks = async (status = "active") => {
         setFetchLoading(true);
@@ -144,8 +140,6 @@ const [vendorId, setVendorId] = useState('');
         branchName: branchName.trim(),
         ifscCode: ifscCode.trim(),
     };
-
-
 
         if (editingIndex !== null) {
             const updated = [...stagedBanks];
@@ -227,7 +221,6 @@ const [vendorId, setVendorId] = useState('');
         setLoading(false);
     }
 };
-
 
     const handleDeleteStaged = (index) => {
         showAlert(

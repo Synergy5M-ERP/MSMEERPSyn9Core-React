@@ -536,7 +536,7 @@ console.log(CreditNoteData)
                 </select>
             </div>
 
-            <div className="col-3">
+            {/* <div className="col-3">
               <label style={{
                 textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
               }}>
@@ -579,6 +579,57 @@ console.log(CreditNoteData)
                   fontSize: 15,
                   background: "white",
                   cursor: "pointer",
+                }}>
+
+                <option value="">
+                  {category === "SELLER" ? "Select GRN No" : "Select Invoice No"}
+                </option>
+
+                {invoiceOptions.map((o) => (
+                  <option key={o.invoiceGrnId} value={o.invoiceGrnId}>
+                    {category === "SELLER" ? o.grnNo : o.invoiceNo}
+                  </option>
+                ))}
+              </select>
+            </div> */}
+
+            <div className="col-3">
+              <label style={{
+                textAlign: 'left', display: 'block', color: '#0066cc', fontSize: '16px', fontWeight: '600', marginBottom: '8px'
+              }}>
+                Invoice Number <span style={{ color: "#ef4444" }}>*</span></label>
+              <select
+                value={invoice}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+
+                  setInvoice(selectedId)
+
+                  const selectedObj = invoiceOptions.find(
+                    o => o.invoiceGrnId === Number(selectedId)
+                  );
+
+                  // FETCH ITEMS HERE 👇
+                  if (category === "SELLER") {
+                    fetchItemsByGRN(selectedId);
+                  } else {
+                    fetchItemsByInvoice(selectedId);
+                  }
+
+                  setPaymentDueDate(
+                    selectedObj?.paymentDueDate
+                      ? selectedObj.paymentDueDate.split("T")[0]
+                      : ""
+                  );
+
+                  setItems([]);
+                  setItem(emptyItem);
+                }}
+
+                disabled={!vendor || isLoading}
+                style={{
+                  width: "100%",padding: "12px 16px",borderRadius: 10,                                    
+                  border: "2px solid #e2e8f0",fontSize: 15, background: "white",cursor: "pointer",                                                   
                 }}>
 
                 <option value="">

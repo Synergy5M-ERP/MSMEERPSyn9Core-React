@@ -25,6 +25,7 @@ const recordsPerPage=3;
 const indexOfLast=currentPage*recordsPerPage;
 const indexOfFirst=indexOfLast-recordsPerPage
 const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
+
   useEffect(() => {
     fetchFiscalPeriods(view);
   }, [view]);
@@ -38,15 +39,17 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
 
       const response = await axios.get(url);
       const raw = response.data.data || response.data || [];
+     
       const mappedFiscalPeriods = raw.map((l) => ({
         id: l.accountFiscalPeriodId || l.id,
         FiscalPeriodName: l.fiscalPeriodName,
-        FiscalPeriodStartDate: l.fiscalPeriodStartDate,
-        FiscalPeriodEndDate: l.fiscalPeriodEndDate,
+        FiscalPeriodStartDate: l.fiscalPeriodStartDate?.split("T")[0],
+        FiscalPeriodEndDate: l.fiscalPeriodEndDate?.split("T")[0],
         FiscalPeriodStatus: l.fiscalPeriodStatus,
         FiscalYear: l.fiscalYear,
         IsActive: l.isActive,
       }));
+
       setFiscalPeriods(mappedFiscalPeriods);
     }
     catch (error) {
@@ -303,11 +306,11 @@ const currentRecords=FiscalPeriods.slice(indexOfFirst,indexOfLast)
               <table className="table table-bordered table-striped mt-3">
                 <thead>
                   <tr style={{ borderBottom: '2px solid' }}>
-                    <th className="text-primary">Fiscal Period Name</th>
-                    <th className="text-primary">Start Date</th>
-                    <th className="text-primary">End Date</th>
-                    <th className="text-primary">Fiscal Period Status</th>
-                    <th className="text-primary">Fiscal Year</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Name</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '18px', fontWeight: '600' }}>Start Date</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '18px', fontWeight: '600' }}>End Date</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '18px', fontWeight: '600' }}>Fiscal Period Status</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '18px', fontWeight: '600' }}>Fiscal Year</th>
                     {view === "active" ? (
                       <>
                         <th className="text-primary">Edit</th>

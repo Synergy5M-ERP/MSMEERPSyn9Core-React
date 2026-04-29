@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
-import Select from "react-select";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../config/apiconfig";
-
+import Select, { components } from "react-select";
 const CheckNonGRN = () => {
   const navigate = useNavigate();
+const [ledgers, setLedgers] = useState([]);
+  const [selectedLedgers, setSelectedLedgers] = useState([]);
+
+  const ledgerOptions = ledgers.map(l => ({
+    value: l.accountLedgerId,
+    label: l.accountLedgerName
+  }));
   const [employees, setEmployees] = useState([]);
 const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 const [categories, setCategories] = useState([]);
@@ -25,7 +31,7 @@ const [billType, setBillType] = useState("");
 const [igstRate, setIgstRate] = useState("");
 const [sgstRate, setSgstRate] = useState("");
 const [cgstRate, setCgstRate] = useState("");
-const [ledgers, setLedgers] = useState([]);
+
 const [masterBillCheck, setMasterBillCheck] = useState(false);
  const [formData, setFormData] = useState({
    employeeName: "",
@@ -67,6 +73,40 @@ const [masterBillCheck, setMasterBillCheck] = useState(false);
   description: "",     // invoice description
   glDescription: ""    // GL description
 });
+
+  
+const Option = (props) => {
+  return (
+    <div>
+      <components.Option {...props}>
+        <input
+          type="checkbox"
+          checked={props.isSelected}
+          onChange={() => null}
+        />{" "}
+        <label>{props.label}</label>
+      </components.Option>
+    </div>
+  );
+};
+useEffect(() => {
+  if (ledgers.length > 0) {
+    const defaultLedgers = ledgers
+      .filter(l =>
+        l.accountLedgerName.toLowerCase().includes("igst") ||
+        l.accountLedgerName.toLowerCase().includes("cgst") ||
+        l.accountLedgerName.toLowerCase().includes("sgst")
+      )
+      .map(l => l.accountLedgerId);
+
+    setSelectedLedgers(defaultLedgers);
+
+    setFormData(prev => ({
+      ...prev,
+      ledgerId: defaultLedgers.join("|")
+    }));
+  }
+}, [ledgers]);
 const vendorOptions = vendors.map((v) => ({
   value: v.id,
   label: v.company_Name || v.companyName
@@ -454,8 +494,7 @@ Itemname: i.description || "",      // optional
       TaxType: i.taxType || "",
       TaxAmount: Number(i.totalTax || 0),
       TotalValue: Number(i.totalItemValue || 0),
-      LedgerId: Number(i.ledgerId || 0),
-      IGST: Number(i.igst || 0),
+LedgerId: i.ledgerId  , // string "9|37|38"      IGST: Number(i.igst || 0),
       CGST: Number(i.cgst || 0),
       SGST: Number(i.sgst || 0),
       TaxRate: Number(i.taxRate || 0)
@@ -1318,22 +1357,32 @@ Email    </label>
   <div className="col-md-3">
     <label className="form-label fw-bold text-primary">Ledger</label>
 
-    <select
-      className="form-select"
-      value={formData.ledgerId}
-      onChange={handleLedgerChange}
-    >
-      <option value="">Select Ledger</option>
+    <Select
+  options={ledgerOptions}
+  isMulti
+  closeMenuOnSelect={false}
+  hideSelectedOptions={false}
+  placeholder="Select Ledger"
+  value={ledgerOptions.filter(l =>
+    selectedLedgers.includes(l.value)
+  )}
+  onChange={(selected) => {
+    const values = selected ? selected.map(s => s.value) : [];
 
-      {ledgers.map((ledger) => (
-        <option
-          key={ledger.accountLedgerId}
-          value={ledger.accountLedgerId}
-        >
-          {ledger.accountLedgerName}
-        </option>
-      ))}
-    </select>
+    setSelectedLedgers(values);
+
+    setFormData(prev => ({
+      ...prev,
+      ledgerId: values.join("|")   // ✅ store like your DB format
+    }));
+  }}
+  styles={{
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999
+    })
+  }}
+/>
   </div>
 
 </div>

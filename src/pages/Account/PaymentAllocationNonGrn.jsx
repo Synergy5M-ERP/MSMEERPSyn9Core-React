@@ -74,7 +74,7 @@ const fetchBank = async (supplier) => {
 
       setLoading(true);
 
-      const res = await fetch(API_ENDPOINTS.GetPaymentAllocNonGrn);
+      const res = await fetch(API_ENDPOINTS.GetPaymentAllocNonGrnTrans);
 
       const result = await res.json();
 

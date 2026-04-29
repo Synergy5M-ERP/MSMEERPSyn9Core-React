@@ -3,7 +3,7 @@
  const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
 
-  // const BASE_URL = "https://localhost:7145/api";
+//onst BASE_URL = "https://localhost:7145/api";
 
 
 // const BASE_URL = "https://localhost:7145/api";
@@ -78,10 +78,10 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   AccountSubVoucherType: `${BASE_URL}/AccountSubVoucherType/`,
   Comapny: `${BASE_URL}/AccountCompany/`,
   FiscalPeriod: `${BASE_URL}/AccountFiscalPeriod/`,
-  BankDetails: `${BASE_URL}/AccountBankDetails/`,
+  BankDetails: `${BASE_URL}/AccountBankDetails/BankDetails`,
   Vendors: `${BASE_URL}/vendors/`,
   Vendors: `${BASE_URL}/AccountBankDetails/Vendors`,
-  Vendors: `${BASE_URL}/AccountBankDetails/`,
+  //Vendors: `${BASE_URL}/AccountBankDetails/`,
   Invoices: `${BASE_URL}/AccountLedger/`,
   Items: `${BASE_URL}/AccountBankDetails/`,
   Banks: `${BASE_URL}/banks`,
@@ -101,7 +101,7 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
 
   // ✅ FIXED
   Inventory: `${BASE_URL}/Inventory`,
-  AccountBankDetails: `${BASE_URL}/AccountBankDetails`,
+  AccountBankDetails: `${BASE_URL}/AccountBankDetails/AccountBankDetail`,
   AccountBankDetailsSave: `${BASE_URL}/AccountBankDetails`,
 
   Invoices: `${BASE_URL}/Invoices/`,
@@ -148,7 +148,7 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
 
 
-  SavePaymentAllocation: `${BASE_URL}/GRN/SavePaymentAllocation`,
+  SavePaymentAllocation: `${BASE_URL}/PaymentAllocation/SavePaymentAllocation`,
   GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
   GetLedger: `${BASE_URL}/GRN/GetLedger`,
   GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
@@ -159,7 +159,7 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
  GetApproveTransporterDetails: `${BASE_URL}/GRN/GetApproveTransporterDetails`,
     UpdateApproveStatusBulk: `${BASE_URL}/GRN/UpdateApproveStatusBulk`,
   
-  GetPaymentAllocNonGrn: `${BASE_URL}/GRN/GetPaymentAllocNonGrn`,
+  GetPaymentAllocNonGrnTrans: `${BASE_URL}/PaymentAllocation/GetPaymentAllocNonGrnTrans`,
   GetGRNInvoiceNames: `${BASE_URL}/LegderMaster/GetGRNInvoiceNames`,
     SaveLedgerMapping: `${BASE_URL}/LegderMaster/SaveLedgerMapping`,
 

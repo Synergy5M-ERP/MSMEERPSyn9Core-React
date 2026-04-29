@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import Select, { components } from "react-select";
 import { API_ENDPOINTS } from "../../config/apiconfig";
+
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -11,6 +13,7 @@ const Toast = Swal.mixin({
 });
 const TransporterGRN = () => {
     // 1. Core State
+     
     const [formData, setFormData] = useState({
         VendorId: "",
         TransporterInvoiceNo: "",
@@ -25,6 +28,14 @@ const TransporterGRN = () => {
     CheckTransportation: false,   // ✅ ADD THIS
     ledgerIds: []   // ✅ replace ledgerId
     });
+       const [ledgers, setLedgers] = useState([]);
+const [transporters, setTransporters] = useState([]);
+    const [tableData, setTableData] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
+const ledgerOptions = ledgers.map(l => ({
+  value: l.accountLedgerId,
+  label: l.accountLedgerName
+}));
 
     const [totals, setTotals] = useState({
         NetAmount: "0.00",
@@ -35,11 +46,23 @@ const TransporterGRN = () => {
         GrandTotal: "0.00"
     });
 
-    const [transporters, setTransporters] = useState([]);
-    const [ledgers, setLedgers] = useState([]);
-    const [tableData, setTableData] = useState([]);
-    const [selectedRows, setSelectedRows] = useState([]);
+    
+useEffect(() => {
+  if (ledgers.length > 0) {
+    const defaultLedgers = ledgers
+      .filter(l =>
+        l.accountLedgerName.toLowerCase().includes("igst") ||
+        l.accountLedgerName.toLowerCase().includes("cgst") ||
+        l.accountLedgerName.toLowerCase().includes("sgst")
+      )
+      .map(l => l.accountLedgerId);
 
+    setFormData(prev => ({
+      ...prev,
+      ledgerIds: defaultLedgers
+    }));
+  }
+}, [ledgers]);
     // ✅ FIXED: Better date formatting to handle "12-02-2026" or "/Date()/"
     const formatDate = (dateStr) => {
         if (!dateStr) return "";
@@ -53,7 +76,19 @@ const TransporterGRN = () => {
         // If it's a standard string like "12-02-2026"
         return dateStr; 
     };
-
+const Option = (props) => {
+  return (
+    <components.Option {...props}>
+      <input
+        type="checkbox"
+        checked={props.isSelected}
+        onChange={() => null}
+        style={{ marginRight: "8px" }}
+      />
+      {props.label}
+    </components.Option>
+  );
+};
     // 2. Fetch Initial Data
     useEffect(() => {
         const init = async () => {
@@ -300,26 +335,42 @@ LedgerIds: formData.ledgerIds.map(id => parseInt(id)),   SellerName: formData.Ve
                         )}
 
                         <div>
-    <label style={{ fontWeight: '600', display: 'block', marginBottom: '5px' }}>
-        Select Ledgers
-    </label>
+ 
 
-    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
-        {ledgers.map(l => (
-            <div key={l.accountLedgerId}>
-                <label style={{ cursor: 'pointer' }}>
-                    <input
-                        type="checkbox"
-                        value={l.accountLedgerId}
-                        checked={formData.ledgerIds.includes(l.accountLedgerId)}
-                        onChange={() => handleLedgerToggle(l.accountLedgerId)}
-                        style={{ marginRight: '8px' }}
-                    />
-                    {l.accountLedgerName}
-                </label>
-            </div>
-        ))}
-    </div>
+   <div>
+  <label style={{ fontWeight: '600', marginBottom: '5px' }}>
+    Select Ledgers
+  </label>
+
+  <Select
+    options={ledgerOptions}
+    isMulti
+    closeMenuOnSelect={false}
+    hideSelectedOptions={false}
+    components={{ Option }}
+    placeholder="Select Ledger"
+    
+    value={ledgerOptions.filter(l =>
+      formData.ledgerIds.includes(l.value)
+    )}
+
+    onChange={(selected) => {
+      const values = selected ? selected.map(s => s.value) : [];
+
+      setFormData(prev => ({
+        ...prev,
+        ledgerIds: values   // ✅ array store
+      }));
+    }}
+
+    styles={{
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 9999
+      })
+    }}
+  />
+</div>
 </div>
                         <div>
                            <label style={{ fontWeight: '600', display: 'block', marginBottom: '5px' }}>Payment Due Date</label>

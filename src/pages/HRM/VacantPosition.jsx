@@ -46,7 +46,7 @@ const VacantPosition = () => {
               <th>MAX BUDGET</th>
               <th>MIN BUDGET</th>
               <th>JOINING DATE</th>
-              <th>EMPLOYEE NAME</th>
+              
               <th>STATUS</th>
             </tr>
           </thead>
@@ -55,26 +55,25 @@ const VacantPosition = () => {
             {data.map((item, i) => (
               <tr key={i}>
                 {/* ✅ MATCH API FIELD NAMES */}
-                <td>{item.deptName}</td>
-                <td>{item.designationName}</td>
+                <td>{item.department}</td>
+                <td>{item.position}</td>
                 <td>{item.level}</td>
                 <td>{item.experience}</td>
                 <td>{item.qualification}</td>
-                <td>{item.industryName}</td>
-                <td>{item.countryName}</td>
-                <td>{item.stateName}</td>
-                <td>{item.cityName}</td>
+                <td>{item.industry}</td>
+                <td>{item.country}</td>
+                <td>{item.state}</td>
+                <td>{item.city}</td>
                 <td>{item.currencyName}</td>
-                <td>{item.maxBudget}</td>
-                <td>{item.minBudget}</td>
+                <td>{item.maximum_Budget}</td>
+                <td>{item.minimum_Budget}</td>
 
                 <td>
-                  {item.onBoardDate
-                    ? new Date(item.onBoardDate).toLocaleDateString()
+                  {item.onboard_Date
+                    ? new Date(item.onboard_Date).toLocaleDateString()
                     : "N/A"}
                 </td>
 
-                <td>{item.employee_Name || "-"}</td>
                 <td>{item.status}</td>
               </tr>
             ))}

@@ -375,40 +375,44 @@ namespace SwamiSamarthSyn8.Controllers.HRM
         {
             var employees =
                 from e in _context.HRM_Employee
-                join d in _context.HRM_Department on e.DeptId equals d.DeptId into dj
+
+                join d in _context.HRM_Department
+                    on e.DeptId equals d.DeptId into dj
                 from d in dj.DefaultIfEmpty()
 
-                join des in _context.HRM_Designation on e.DesignationId equals des.DesignationId into desj
+                join des in _context.HRM_Designation
+                    on e.DesignationId equals des.DesignationId into desj
                 from des in desj.DefaultIfEmpty()
 
-                join a in _context.HRM_AuthorityMatrix on e.AuthorityMatrixId equals a.AuthorityMatrixId into aj
+                join a in _context.HRM_AuthorityMatrix
+                    on e.AuthorityMatrixId equals a.AuthorityMatrixId into aj
                 from a in aj.DefaultIfEmpty()
 
-                where e.IsActive
+                where e.IsActive == true
+
                 select new
                 {
                     employeeId = e.EmployeeId,
-                    empCode = e.EmpCode,
-                    fullName = e.FullName,
-                    email = e.Email,
+                    empCode = e.EmpCode ?? "",
+                    fullName = e.FullName ?? "",
+                    email = e.Email ?? "",
 
-                    deptId = e.DeptId,
-                    department = d.DeptName,
-                    departmentCode = d.DeptCode,
+                    // ✅ SAFE NULL HANDLING
+                    deptId = e.DeptId.HasValue ? e.DeptId.Value : 0,
+                    department = d != null ? (d.DeptName ?? "") : "",
+                    departmentCode = d != null && d.DeptCode.HasValue ? d.DeptCode.Value : 0,
 
-                    designationId = e.DesignationId,
-                    designation = des.DesignationName,
-                    designationCode = des.DesignationCode,
+                    designationId = e.DesignationId.HasValue ? e.DesignationId.Value : 0,
+                    designation = des != null ? (des.DesignationName ?? "") : "",
+                    designationCode = des != null && des.DesignationCode.HasValue ? des.DesignationCode.Value : 0,
 
-                    authorityMatrixId = e.AuthorityMatrixId,
-                    authority = a.AuthorityMatrixName,
-                    authorityCode = a.AuthorityMatrixId
+                    authorityMatrixId = e.AuthorityMatrixId.HasValue ? e.AuthorityMatrixId.Value : 0,
+                    authority = a != null ? (a.AuthorityMatrixName ?? "") : "",
+                    authorityCode = a != null ? a.AuthorityMatrixId : 0
                 };
 
             return Ok(employees.ToList());
         }
-
-
         // ======================================================
         // POST: api/HrmMaster/AuthorityMatrix
         [HttpPost("SaveEmpInfo")]

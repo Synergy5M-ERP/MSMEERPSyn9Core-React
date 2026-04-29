@@ -29,6 +29,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public List<TransporterGRNDetailItem> Details { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? Payment_Due_Date { get; set; }
+        public string? VendorCode { get; set; }
 
 
     }

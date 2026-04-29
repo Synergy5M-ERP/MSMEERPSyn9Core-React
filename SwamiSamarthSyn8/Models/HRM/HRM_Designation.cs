@@ -8,9 +8,9 @@ namespace SwamiSamarthSyn8.Models.HRM
         [Key]
         public int DesignationId { get; set; }   // PK
 
-        public string DesignationName { get; set; }
+        public string? DesignationName { get; set; }
 
-        public int DesignationCode { get; set; }
+        public int? DesignationCode { get; set; }
 
         public int CreatedBy { get; set; }
 

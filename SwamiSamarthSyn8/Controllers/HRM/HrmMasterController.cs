@@ -229,9 +229,10 @@ public class HrmMasterController : ControllerBase
                         return BadRequest("Department already exists");
 
                     var code = await GenerateNextCode(
-                        _context.HRM_Department.Select(x => x.DeptCode)
-                    );
-
+      _context.HRM_Department
+          .Where(x => x.DeptCode.HasValue)
+          .Select(x => x.DeptCode.Value)
+  );
                     var dept = new HRM_Department
                     {
                         DeptName = name,
@@ -255,8 +256,10 @@ public class HrmMasterController : ControllerBase
                         return BadRequest("DesignationName required");
 
                     var code = await GenerateNextCode(
-                        _context.HRM_Designation.Select(x => x.DesignationCode)
-                    );
+    _context.HRM_Designation
+        .Where(x => x.DesignationCode.HasValue)
+        .Select(x => x.DesignationCode.Value)
+);
 
                     var desig = new HRM_Designation
                     {

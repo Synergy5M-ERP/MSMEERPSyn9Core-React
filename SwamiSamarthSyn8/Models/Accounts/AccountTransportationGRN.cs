@@ -38,6 +38,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
 
         public int? CreatedBy { get; set; }
         public string? LedgerId { get; set; }
+        public string? VendorCode { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime? CreatedDate { get; set; }

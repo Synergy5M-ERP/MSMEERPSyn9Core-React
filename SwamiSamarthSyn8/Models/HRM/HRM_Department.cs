@@ -8,9 +8,9 @@ namespace SwamiSamarthSyn8.Models.HRM
         [Key]
         public int DeptId { get; set; }          // PK
 
-        public string DeptName { get; set; }
+        public string? DeptName { get; set; }
 
-        public int DeptCode { get; set; }
+        public int? DeptCode { get; set; }
 
         public int CreatedBy { get; set; }
 

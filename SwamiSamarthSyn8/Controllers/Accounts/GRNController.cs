@@ -36,25 +36,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             return Ok(new { success = true, data = sellers });
         }
 
-        // ✔ GET GRN NUMBERS BY SELLER
-        //[HttpGet("GetGRNNumbersBySeller")]
-        //public async Task<IActionResult> GetGRNNumbersBySeller([FromQuery] string sellerName)
-        //{
-        //    if (string.IsNullOrEmpty(sellerName))
-        //        return BadRequest(new { success = false, message = "Seller name is required" });
-
-        //    var grnNumbers = await _swamiContext.MMM_GRNTbl
-        //        .Where(g => g.Supplier_Name == sellerName)
-        //        .Select(g => new
-        //        {
-        //            g.Id,
-        //            grnNumber = g.GRN_NO
-        //        })
-        //        .OrderBy(g => g.grnNumber)
-        //        .ToListAsync();
-
-        //    return Ok(new { success = true, data = grnNumbers });
-        //}
+        
         [HttpGet("GetInvoicesBySeller")]
         public async Task<IActionResult> GetInvoicesBySeller([FromQuery] string sellerName)
         {
@@ -82,24 +64,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 data = invoices
             });
         }
-        // ✔ GET PO NUMBERS BY GRN NUMBER
-        //[HttpGet("GetPONumbersByGRN")]
-        //public async Task<IActionResult> GetPONumbersByGRN([FromQuery] string grnNumber)
-        //{
-        //    if (string.IsNullOrEmpty(grnNumber))
-        //        return BadRequest(new { success = false, message = "GRN number is required" });
-
-        //    var poNumbers = await _context.MMM_GRNTbl
-        //        .Where(g => g.GRN_NO == grnNumber)
-        //        .Select(g => new
-        //        {
-        //            poNumber = g.PO_No
-        //        })
-        //        .Distinct()
-        //        .ToListAsync();
-
-        //    return Ok(new { success = true, data = poNumbers });
-        //}
+       
         [HttpGet("GetPODetailsByGRN")]
         public async Task<IActionResult> GetPODetailsByGRN([FromQuery] string grnNumber)
         {
@@ -377,20 +342,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
             return Ok(new { success = true, data = groupedData });
         }
-        //[HttpGet("GetGRNsBySeller")]
-        //public async Task<IActionResult> GetGRNsBySeller(int sellerId)
-        //{
-        //    var grns = await _msmeContext.AccountGRN
-        //        .Where(g =>
-        //            g.VendorId == sellerId &&
-        //            g.IsActive &&
-        //            g.CheckGRN == true   // ✅ Only Checked GRN
-        //        )
-        //        .OrderByDescending(g => g.GRNNumber)
-        //        .ToListAsync();
-
-        //    return Ok(new { success = true, data = grns });
-        //}
+        
         [HttpPost("SaveMultipleGRN")]
         public IActionResult SaveMultipleGRN([FromBody] List<ApproveGRNDto> approvals)
         {
@@ -430,70 +382,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 });
             }
         }
-        //[HttpGet("GRNApprovedDetails")]
-        //public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
-        //{
-        //    try
-        //    {
-        //        // STEP 1: Get approved GRNs
-        //        var approvedGRNs = await _msmeContext.AccountGRN
-        //            .Where(a => a.IsActive == true && a.ApprovedGRN == true)
-        //            .OrderByDescending(a => a.AccountGRNId)
-        //            .ToListAsync();
-
-        //        var grnNumbers = approvedGRNs
-        //            .Select(a => a.InvoiceNumber)
-        //            .ToList();
-
-        //        // STEP 2: Get GRN details from other DB
-        //        var grnDetails = await _swamiContext.MMM_GRNTbl
-        //            .Where(g => grnNumbers.Contains(g.Invoice_NO))
-        //            .ToListAsync();
-
-        //        // STEP 3: Manual Join in Memory
-        //        var result = (from a in approvedGRNs
-        //                      join g in grnDetails
-        //                      on a.InvoiceNumber equals g.Invoice_NO
-        //                      orderby a.AccountGRNId descending
-        //                      select new
-        //                      {
-        //                          a.AccountGRNId,
-        //                          a.GRNNumber,
-        //                          GRNDate = g.GRN_Date,
-        //                          VendorName = g.Supplier_Name,
-        //                          PONumber = g.PO_No,
-        //                          InvoiceNumber = g.Invoice_NO,
-        //                          a.Total_Amount,
-        //                          a.SGSTAmount,
-        //                          a.CGSTAmount,
-        //                          a.IGSTAmount
-        //                      }).ToList();
-
-        //        var totalCount = result.Count;
-
-        //        var pagedData = result
-        //            .Skip((page - 1) * pageSize)
-        //            .Take(pageSize)
-        //            .ToList();
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            data = pagedData,
-        //            totalCount,
-        //            currentPage = page,
-        //            pageSize
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new
-        //        {
-        //            success = false,
-        //            message = ex.Message
-        //        });
-        //    }
-        //}
+       
         [HttpGet("GRNApprovedDetails")]
         public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
         {
@@ -840,73 +729,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 subledgervendor.ClosingBal = subledgervendor.ClosingBal + credit;
             }
         }
-        [HttpPost("SavePaymentAllocation")]
-        public async Task<IActionResult> SavePaymentAllocation(
-     [FromBody] PaymentAllocationRequest request)
-        {
-            if (request?.Payments == null || !request.Payments.Any())
-                return BadRequest("No payment data received");
-
-            using var transaction = await _msmeContext.Database.BeginTransactionAsync();
-
-            try
-            {
-                foreach (var payment in request.Payments)
-                {
-                    var grn = await _msmeContext.AccountGRN
-                        .FirstOrDefaultAsync(x =>
-                            x.AccountGRNId == payment.AccountGRNId &&
-                            x.IsActive);
-
-                    if (grn == null)
-                        return BadRequest("GRN not found");
-
-                    var allocation = new AccountPaymentAllocation
-                    {
-                        GRNNo = grn.GRNNumber,
-                        GRNDate = grn.CreatedDate,
-                        PurchaseNo = grn.InvoiceNumber,
-                        PaymentDueDate = null,
-                        VendorId = grn.VendorId,
-
-                        CGST = payment.CGST,
-                        SGST = payment.SGST,
-                        IGST = payment.IGST,
-
-                        TotalTaxAmount = payment.CGST + payment.SGST + payment.IGST,
-                        TotalAmount = payment.TotalAmount,
-
-                        PaidAmount = payment.PaidAmount,
-                        BalanceAmount = payment.BalanceAmount,
-
-                        RTGSNo = payment.RTGSNo ?? "",
-                        RTGSAmount = payment.PaidAmount,
-                        RTGSDate = payment.RTGSDate ?? request.Date,
-
-                        Description = $"Payment against GRN {grn.GRNNumber}",
-                        IsActive = true
-                    };
-
-                    _msmeContext.AccountPaymentAllocation.Add(allocation);
-
-                    // Update GRN
-                    grn.UpdatedDate = DateTime.Now;
-
-                    if (payment.BalanceAmount == 0)
-                        grn.CheckGRN = true;
-                }
-
-                await _msmeContext.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, ex.Message);
-            }
-        }
+   
         [HttpGet("Vendorcategories")]
         public async Task<IActionResult> GetCategories()
         {
@@ -978,144 +801,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
 
-        //[HttpPost("SaveNonGRN")]
-        //public async Task<IActionResult> SaveNonGRN([FromBody] NonGRNSaveRequest model)
-        //{
-        //    try
-        //    {
-        //        if (model == null)
-        //            return BadRequest("Invalid data");
-
-
-        //        long vendorId = model.Vendor.AccountVendorId;
-        //        long employeeId = model.Invoice.EmployeeId ?? 0;
-
-        //        string tempVendorCode = "";
-
-        //        /*------------------------------------
-        //          STEP 1 : Create Vendor if not exists
-        //        ------------------------------------*/
-
-        //        if (vendorId == 0 && employeeId == 0)
-        //        {
-
-        //            string today = DateTime.Now.ToString("ddMMyyyy");
-        //            string prefix = "T/" + today + "/";
-
-        //            var lastCode = _msmeContext.AccountVendor
-        //                .Where(x => x.VendorCode.StartsWith(prefix))
-        //                .OrderByDescending(x => x.VendorCode)
-        //                .Select(x => x.VendorCode)
-        //                .FirstOrDefault();
-
-        //            int nextNumber = 1;
-
-        //            if (!string.IsNullOrEmpty(lastCode))
-        //            {
-        //                string lastDigits = lastCode.Split('/').Last();
-        //                nextNumber = Convert.ToInt32(lastDigits) + 1;
-        //            }
-
-        //            tempVendorCode = prefix + nextNumber.ToString("D4");
-
-        //            var newVendor = new AccountVendor
-        //            {
-        //                VendorName = model.Vendor.VendorName,
-        //                VendorCode = tempVendorCode,
-        //                Address = model.Vendor.Address,
-        //                City = model.Vendor.City,
-        //                GSTNo = model.Vendor.GSTNo,
-        //                EmailID = model.Vendor.EmailID,
-        //                ContactPerson = model.Vendor.ContactPerson,
-        //                ContactNo = model.Vendor.ContactNo,
-        //                BanckName = model.Vendor.BanckName,
-        //                BranchName = model.Vendor.BranchName,
-        //                AccountNo = model.Vendor.AccountNo,
-        //                IFSCCode = model.Vendor.IFSCCode,
-        //                CreatedBy = 1,
-        //                CreatedDate = DateTime.Now,
-        //                IsActive = true,
-
-
-
-        //            };
-
-        //            _msmeContext.AccountVendor.Add(newVendor);
-        //            await _msmeContext.SaveChangesAsync();
-
-        //            vendorId = newVendor.AccountVendorId;
-        //        }
-
-        //        STEP 2: Insert Invoice
-        //        var invoice = new AccountNonGRNInvoice
-        //        {
-        //            InvoiceNo = model.Invoice.InvoiceNo,
-        //            InvoiceDate = model.Invoice.InvoiceDate,
-        //            NonGrnInvoice = model.Invoice.NonGrnInvoice,
-        //            PayDueDate = model.Invoice.PayDueDate,
-        //            VendorId = (int)vendorId,
-        //             ✅ SAVE EMPLOYEE ID
-        //            EmployeeId = model.Invoice.EmployeeId == 0
-        //            ? null
-        //            : model.Invoice.EmployeeId,
-        //            VendorCode = string.IsNullOrEmpty(model.Vendor.VendorCode)
-        //                            ? tempVendorCode
-        //                            : model.Vendor.VendorCode,
-
-        //            TotalAmount = model.Details.Sum(i => i.TotalValue),
-        //            TotalTaxAmount = model.Details.Sum(i => i.TaxAmount),
-        //            SGSTAmount = model.Details.Sum(i => i.SGST),
-        //            CGSTAmount = model.Details.Sum(i => i.CGST),
-        //            IGSTAmount = model.Details.Sum(i => i.IGST),
-        //            CreatedBy = 1,
-        //            CreatedDate = DateTime.Now,
-        //            IsActive = true
-        //        };
-
-        //        _msmeContext.AccountNonGRNInvoice.Add(invoice);
-        //        await _msmeContext.SaveChangesAsync();
-
-        //        long invoiceId = invoice.NonGrnInvoiceId;
-
-        //        STEP 3: Insert Item Details
-        //        foreach (var item in model.Details)
-        //        {
-        //            var detail = new AccountNonGRNInvoiceDetails
-        //            {
-        //                NonGrnId = invoiceId,
-        //                Description = item.Itemname,
-        //                Itemname = item.Itemname,
-        //                Qty = item.Qty,
-        //                BasicAmount = item.BasicAmount,
-        //                TaxType = item.TaxType,
-        //                TaxAmount = item.TaxAmount,
-        //                TotalValue = item.TotalValue,
-        //                LedgerId = item.LedgerId,
-        //                IGST = item.IGST,
-        //                CGST = item.CGST,
-        //                SGST = item.SGST,
-        //                TaxRate = item.TaxRate
-        //            };
-
-        //            _msmeContext.AccountNonGRNInvoiceDetails.Add(detail);
-        //        }
-
-        //        await _msmeContext.SaveChangesAsync();
-
-        //        return Ok(new { success = true, invoiceId = invoiceId });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return full error message
-        //        return StatusCode(500, new
-        //        {
-        //            success = false,
-        //            message = "Error while saving Non-GRN Invoice",
-        //            error = ex.Message,
-        //            innerError = ex.InnerException?.Message
-        //        });
-        //    }
-        //}
+     
         [HttpPost("SaveNonGRN")]
         public async Task<IActionResult> SaveNonGRN([FromBody] NonGRNSaveRequest model)
         {
@@ -1185,7 +871,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     IGSTAmount = model.Details.Sum(i => i.IGST),
                     CreatedBy = 1,
                     CreatedDate = DateTime.Now,
-                    IsActive = true
+                    IsActive = true,
                 };
 
                 _msmeContext.AccountNonGRNInvoice.Add(invoice);
@@ -1299,7 +985,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
         }
         [HttpGet("GetGrnInvoiceDetails")]
-        public IActionResult GetGrnInvoiceDetails(int seller, string checkval)
+        public IActionResult GetGrnInvoiceDetails(int? seller, string checkval)
         {
             try
             {
@@ -1516,98 +1202,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             return Ok(new { success = true, balance = balance });
         }
 
-        [HttpGet("GetPaymentAllocNonGrn")]
-        public IActionResult GetPaymentAllocNonGrn()
-        {
-            try
-            {
-                var latestPayments = _msmeContext.AccountPaymentAllocation
-                    .GroupBy(x => x.GRNNo)
-                    .Select(g => g.OrderByDescending(x => x.PaymentAllocateId).FirstOrDefault())
-                    .ToList();
-
-                var invoices = (from a in _msmeContext.AccountNonGRNInvoice
-                                join d in _msmeContext.AccountNonGRNInvoiceDetails
-                                    on a.NonGrnInvoiceId equals d.NonGrnId
-                                where a.ApproveNonGRNInvoice == true
-                                      && (a.NonGrnInvoice.Contains("NonGRN") || a.NonGrnInvoice.Contains("NonSO"))
-                                orderby a.NonGrnInvoiceId ascending
-
-                                select new
-                                {
-                                    a.NonGrnInvoiceId,
-                                    a.InvoiceNo,
-                                    a.InvoiceDate,
-                                    a.PayDueDate,
-                                    a.TotalAmount,
-                                    a.VendorCode
-                                })
-                                .Distinct()
-                                .ToList();
-
-                var potentialVendors = _swamiContext.Potential_Vendor
-                    .Select(x => new
-                    {
-                        x.Vendor_Code,
-                        x.Company_Name
-                    }).ToList();
-
-                var accountVendors = _msmeContext.AccountVendor
-                    .Select(x => new
-                    {
-                        x.VendorCode,
-                        x.VendorName
-                    }).ToList();
-
-                var result = invoices.Select(a =>
-                {
-                    var payment = latestPayments.FirstOrDefault(p => p.GRNNo == a.InvoiceNo);
-
-                    var supplierName =
-                        potentialVendors
-                            .Where(x => x.Vendor_Code == a.VendorCode)
-                            .Select(x => x.Company_Name)
-                            .FirstOrDefault()
-                        ??
-                        accountVendors
-                            .Where(x => x.VendorCode == a.VendorCode)
-                            .Select(x => x.VendorName)
-                            .FirstOrDefault();
-
-                    return new
-                    {
-                        Supplier_Name = supplierName,
-                        Due_Date = a.PayDueDate,
-                        Invoice_NO = a.InvoiceNo,
-                        Invoice_Date = a.InvoiceDate,
-                        Total_Amount = a.TotalAmount,
-                        VendorCode = a.VendorCode,
-
-                        BalanceAmount =
-                            (payment != null && payment.BalanceAmount != null && payment.BalanceAmount > 0)
-                            ? payment.BalanceAmount
-                            : a.TotalAmount
-                    };
-
-                }).Where(x => x.BalanceAmount != 0).ToList();
-
-                return Ok(new
-                {
-                    success = true,
-                    data = result
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = "Error loading payment allocation data",
-                    error = ex.Message
-                });
-            }
-        }
-
         //   [HttpGet("GetPaymentAllocNonGrn")]
         //   public IActionResult GetPaymentAllocNonGrn()
         //   {
@@ -1794,21 +1388,31 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 }
 
                 var firstGrnId = model.Details.First().GRNId;
+                var vendorData = (from g in _swamiContext.MMM_GRNTbl
+                                  join v in _swamiContext.Potential_Vendor
+                                  on g.Supplier_Name equals v.Company_Name
+                                  where g.Id == firstGrnId
+                                  select new
+                                  {
+                                      VendorId = v.Id,
+                                      VendorCode = v.Vendor_Code
+                                  }).FirstOrDefault();
 
-                var vendorId = (from g in _swamiContext.MMM_GRNTbl
-                                join v in _swamiContext.Potential_Vendor
-                                on g.Supplier_Name equals v.Company_Name
-                                where g.Id == firstGrnId
-                                select v.Id).FirstOrDefault();
-
-                if (vendorId == 0)
+                if (vendorData == null || vendorData.VendorId == 0)
                 {
-                    return BadRequest("Vendor not found for selected GRN!");
+                    return BadRequest ("Vendor not found for selected GRN!");
+                
                 }
 
+                int vendorId = vendorData.VendorId;
+                string vendorCode = vendorData.VendorCode;
+
+                // ✅ Prepare header
                 var header = new AccountTransportationGRN
                 {
                     VendorId = vendorId,
+                    VendorCode = vendorCode,
+
                     InvoiceNo = model.TransporterInvoiceNo,
                     InvoiceDate = model.InvoiceDate,
                     Date = model.Date,

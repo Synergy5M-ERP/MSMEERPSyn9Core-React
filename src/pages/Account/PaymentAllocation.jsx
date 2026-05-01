@@ -40,45 +40,10 @@ const [subLedger, setSubLedger] = useState("");
   }, [rows, originalRows]);
 
 
-    useEffect(() => {
-  const loadLedgers = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.Ledger);
-      if (!res.ok) throw new Error("Failed to load ledgers");
-
-      const data = await res.json();
-      setLedgerOptions(data || []);
-
-      if (data && data.length > 0) {
-        const first = data[0];
-        const bal = Number(first.closingBal || 0);
-
-        const ledgerId = first.accountLedgerId.toString();
-
-        setLedgerId(ledgerId);
-        setBaseActualBal(bal);
-        setActualBal(bal);
-
-        // ✅ Load subledger for first ledger automatically
-        fetchSubLedger(ledgerId);
-      }
-
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Unable to load ledger list", {
-        toastId: "ledger-load-error"
-      });
-      setError("Unable to load ledger list.");
-    }
-  };
-
-  loadLedgers();
-}, []);
-const fetchSubLedger = async (ledgerId) => {
+    
+const fetchSubLedger = async () => {
   try {
-    const res = await fetch(
-      `${API_ENDPOINTS.GetSubLedger}?ledgerId=${ledgerId}`
-    );
+    const res = await fetch(API_ENDPOINTS.GetSubLedger);
 
     const data = await res.json();
 
@@ -100,7 +65,9 @@ const fetchSubLedger = async (ledgerId) => {
       setIsDirty(false);
     }
   }, [rows.length]);
-
+useEffect(() => {
+  fetchSubLedger();
+}, []);
   useEffect(() => {
     const fetchPayments = async () => {
       setLoading(true);
@@ -112,7 +79,7 @@ const fetchSubLedger = async (ledgerId) => {
           pageSize: pageSize.toString()
         });
 
-        const res = await fetch(`${API_ENDPOINTS.GetApprovedGrn}?${params.toString()}`);
+        const res = await fetch(`${API_ENDPOINTS.GetApprovedGrnPaymentAllocation}?${params.toString()}`);
 
         if (!res.ok) throw new Error(`Failed to load approved GRNs: ${res.status}`);
 
@@ -370,34 +337,6 @@ debugger;
                     }}
                     style={{ height: '40px' }}
                   />
-                </div>
-                <div className="col-2">
-                  <label className="form-label">Ledger Account</label>
-                  <select
-                    className="form-select"
-                    style={{ height: '40px' }}
-                    value={ledgerId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setLedgerId(id);
-                      setPage(1);
-                      const selected = ledgerOptions.find(
-                        (l) => l.accountLedgerId.toString() === id
-                      );
-                      if (selected) {
-                        const bal = Number(selected.closingBal || 0);
-                        setBaseActualBal(bal);
-                        setActualBal(bal);
-                      }
-                    }}
-                  >
-                    <option value="">Select ledger</option>
-                    {ledgerOptions.map((l) => (
-                      <option key={l.accountLedgerId} value={l.accountLedgerId}>
-                        {l.accountLedgerName}
-                      </option>
-                    ))}
-                  </select>
                 </div>
  <div className="col-md-2">
                 <label className="form-label fw-bold">Sub Ledger</label>

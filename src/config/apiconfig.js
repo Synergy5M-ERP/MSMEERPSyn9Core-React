@@ -1,9 +1,9 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
- const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+// const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
 
-//onst BASE_URL = "https://localhost:7145/api";
+const BASE_URL = "https://localhost:7145/api";
 
 
 // const BASE_URL = "https://localhost:7145/api";
@@ -147,11 +147,12 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   GetGrnInvoiceDetails: `${BASE_URL}/GRN/GetGrnInvoiceDetails`,
   ApproveGrnInvoice: `${BASE_URL}/GRN/ApproveGrnInvoice`,
 
+  GetApprovedGrnPaymentAllocation: `${BASE_URL}/PaymentAllocation/GetApprovedGrnPaymentAllocation`,
 
   SavePaymentAllocation: `${BASE_URL}/PaymentAllocation/SavePaymentAllocation`,
-  GetNonGrnBank: `${BASE_URL}/GRN/GetNonGrnBank`,
-  GetLedger: `${BASE_URL}/GRN/GetLedger`,
-  GetSubLedger: `${BASE_URL}/GRN/GetSubLedger`,
+  GetNonGrnBank: `${BASE_URL}/PaymentAllocation/GetNonGrnBank`,
+  GetLedger: `${BASE_URL}/PaymentAllocation/GetLedger`,
+  GetSubLedger: `${BASE_URL}/PaymentAllocation/GetSubLedger`,
   GetTransporter: `${BASE_URL}/GRN/GetTransporter`,
     GetTransporterDetails: `${BASE_URL}/GRN/GetTransporterDetails`,
     SaveTransportrationGRN: `${BASE_URL}/GRN/SaveTransportrationGRN`,
@@ -200,7 +201,6 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   GetNextDebitNoteNo: `${BASE_URL}/GetNextDebitNoteNo`,
   SaveDebitNote: `${BASE_URL}/SaveDebitNote`,
   
-  GetApprovedGrn: `${BASE_URL}/GRN/GRNApprovedDetails`,
   GetApprovedInvoice: `${BASE_URL}/GetApprovedInvoice`,
   //------------------------Account APIs----------------------------------
 

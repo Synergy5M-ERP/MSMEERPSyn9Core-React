@@ -10,36 +10,36 @@ public class AccountVendor
     public int? VendorCategoryId { get; set; }
 
     [MaxLength(250)]
-    public string VendorName { get; set; }
+    public string? VendorName { get; set; }
 
-    public string VendorCode { get; set; }
-    public string Address { get; set; }
+    public string? VendorCode { get; set; }
+    public string? Address { get; set; }
 
     [MaxLength(100)]
-    public string City { get; set; }
+    public string? City { get; set; }
 
     [MaxLength(50)]
-    public string GSTNo { get; set; }
+    public string? GSTNo { get; set; }
 
     [MaxLength(50)]
-    public string EmailID { get; set; }
+    public string? EmailID { get; set; }
 
     [MaxLength(250)]
-    public string ContactPerson { get; set; }
+    public string? ContactPerson { get; set; }
 
     [MaxLength(20)]
-    public string ContactNo { get; set; }
+    public string? ContactNo { get; set; }
 
     [MaxLength(50)]
-    public string BanckName { get; set; }
+    public string? BanckName { get; set; }
 
     [MaxLength(250)]
-    public string BranchName { get; set; }
+    public string? BranchName { get; set; }
 
     [MaxLength(50)]
-    public string AccountNo { get; set; }
+    public string? AccountNo { get; set; }
 
-    public string IFSCCode { get; set; }
+    public string? IFSCCode { get; set; }
 
     public int? CreatedBy { get; set; }
     public DateTime? CreatedDate { get; set; }
@@ -48,5 +48,5 @@ public class AccountVendor
 
     [JsonIgnore]
     [ValidateNever]
-    public ICollection<AccountNonGRNInvoice> NonGRNInvoices { get; set; }
+    public ICollection<AccountNonGRNInvoice>? NonGRNInvoices { get; set; }
 }

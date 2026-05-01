@@ -9,11 +9,15 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public long LedgerCrDrId { get; set; }
 
         public long? LedegrId { get; set; }
-
-        public long? InvoiceId { get; set; }
+        public string? InvoiceNO { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime? Date { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime? InvoiceDate { get; set; }
+        public long? InvoiceId { get; set; }
+
+     
         public long? SubLedgerId { get; set; }
 
         public decimal? OpeningBalance { get; set; }

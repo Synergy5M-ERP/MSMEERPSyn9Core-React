@@ -14,31 +14,32 @@ namespace SwamiSamarthSyn8.Models
         public long? VendorId { get; set; }
 
         [Required]
-        public string AccountLedgerSubName { get; set; }
+        public string? AccountLedgerSubName { get; set; }
 
         [StringLength(20)]
-        public string AssetsCode { get; set; }
+        public string? AssetsCode { get; set; }
 
         public decimal? OpeningBal { get; set; }
 
         public decimal? ClosingBal { get; set; }
 
         [StringLength(50)]
-        public string MobileNo { get; set; }
+        public string? MobileNo { get; set; }
 
         [StringLength(50)]
-        public string EmailId { get; set; }
+        public string? EmailId { get; set; }
 
         [StringLength(50)]
-        public string GSTNo { get; set; }
+        public string? GSTNo { get; set; }
 
         [StringLength(500)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
-        public string AccountLedgerSubNarration { get; set; }
+        public string? AccountLedgerSubNarration { get; set; }
 
         public bool IsActive { get; set; }
+        public bool IsBank { get; set; }
 
-        public virtual AccountLedger AccountLedger { get; set; }
+        public virtual AccountLedger? AccountLedger { get; set; }
     }
 }

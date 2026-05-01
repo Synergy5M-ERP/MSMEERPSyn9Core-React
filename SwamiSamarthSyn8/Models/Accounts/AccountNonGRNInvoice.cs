@@ -7,13 +7,13 @@ public class AccountNonGRNInvoice
     [Key]
     public long NonGrnInvoiceId { get; set; }
 
-    public string NonGrnInvoice { get; set; }
+    public string? NonGrnInvoice { get; set; }
 
     public long? EmployeeId { get; set; }
     public int? VendorId { get; set; }
 
-    public string VendorCode { get; set; }
-    public string InvoiceNo { get; set; }
+    public string? VendorCode { get; set; }
+    public string? InvoiceNo { get; set; }
     public DateTime? InvoiceDate { get; set; }
     public DateTime? PayDueDate { get; set; }
 
@@ -35,9 +35,9 @@ public class AccountNonGRNInvoice
 
     [JsonIgnore]
     [ValidateNever]
-    public AccountVendor Vendor { get; set; }
+    public AccountVendor? Vendor { get; set; }
 
     [JsonIgnore]
     [ValidateNever]
-    public ICollection<AccountNonGRNInvoiceDetails> InvoiceDetails { get; set; }
+    public ICollection<AccountNonGRNInvoiceDetails>? InvoiceDetails { get; set; }
 }

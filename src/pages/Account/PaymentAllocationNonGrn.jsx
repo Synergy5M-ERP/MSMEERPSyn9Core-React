@@ -9,33 +9,20 @@ const PaymentAllocationNonGrn = () => {
 
   const [date, setDate] = useState(getToday());
   const [dueDate, setDueDate] = useState("");
-  const [ledger, setLedger] = useState("");
+  
   const [subLedger, setSubLedger] = useState("");
   const [pageSize, setPageSize] = useState(10);
-const [ledgers, setLedgers] = useState([]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [subLedgers, setSubLedgers] = useState([]);
   const [banks, setBanks] = useState([]);
   useEffect(() => {
-  fetchLedger();
+  fetchSubLedger();   // 🔥 THIS IS MISSING
 }, []);
-const fetchLedger = async () => {
-  try {
-    const res = await fetch(API_ENDPOINTS.GetLedger);
-    const data = await res.json();
-
-    if (data.success) {
-      setLedgers(data.data);
-    }
-  } catch (err) {
-    console.error("Ledger load error", err);
-  }
-};
-const fetchSubLedger = async (ledgerId) => {
+const fetchSubLedger = async () => {
   try {
     const res = await fetch(
-      `${API_ENDPOINTS.GetSubLedger}?ledgerId=${ledgerId}`
+      `${API_ENDPOINTS.GetSubLedger}`
     );
 
     const data = await res.json();
@@ -169,26 +156,7 @@ const fetchBank = async (supplier) => {
                 />
               </div>
 
-              <div className="col-md-2">
-                <label className="form-label fw-bold">Ledger Account</label>
-               <select
-  className="form-select"
-  value={ledger}
-onChange={(e) => {
-  setLedger(e.target.value);
-  fetchSubLedger(e.target.value);
-}}  
->
-  <option value="">Select Ledger</option>
-
-  {ledgers.map((l) => (
-    <option key={l.accountLedgerId} value={l.accountLedgerId}>
-      {l.accountLedgerName}
-    </option>
-  ))}
-
-</select>
-              </div>
+            
 
               <div className="col-md-2">
                 <label className="form-label fw-bold">Sub Ledger</label>

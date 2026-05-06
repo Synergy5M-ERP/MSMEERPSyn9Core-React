@@ -36,28 +36,42 @@ const TransporterApprove = () => {
   /////////////////////////////////////////////////////////////
   // SAVE
   /////////////////////////////////////////////////////////////
-  const handleSave = () => {
-
-    const updates = grnData.map(item => ({
+ const handleApprove = (item) => {
+  const payload = [
+    {
       transporterGRNId: item.transporterGRNId,
-      approve: item.approveTransportation
-    }));
+      approve: true
+    }
+  ];
 
-    fetch(API_ENDPOINTS.UpdateApproveStatusBulk, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates)
+  fetch(API_ENDPOINTS.UpdateApproveStatusBulk, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        Swal.fire("Success", res.message, "success");
+
+        // update UI
+        setGrnData(prev =>
+          prev.map(x =>
+            x.transporterGRNId === item.transporterGRNId
+              ? { ...x, approveTransportation: true }
+              : x
+          )
+        );
+      } else {
+        Swal.fire("Error", res.message, "error");
+      }
     })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          Swal.fire("Success", res.message, "success");
-        } else {
-          Swal.fire("Error", res.message, "error");
-        }
-      });
-  };
-
+    .catch(() => {
+      Swal.fire("Error", "API Failed", "error");
+    });
+};
   /////////////////////////////////////////////////////////////
   // DATE FORMAT
   /////////////////////////////////////////////////////////////
@@ -109,12 +123,12 @@ const TransporterApprove = () => {
                     ₹ {item.totalAmount?.toLocaleString("en-IN")}
                   </td>
 
-               <td>
+              <td>
   <button
     className={`btn btn-sm ${
       item.approveTransportation ? "btn-secondary" : "btn-success"
     }`}
-    onClick={() => handleCheckChange(item.transporterGRNId)}
+    onClick={() => handleApprove(item)}
   >
     {item.approveTransportation ? "Approved" : "Approve"}
   </button>

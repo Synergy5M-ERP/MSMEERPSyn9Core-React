@@ -154,8 +154,8 @@
 
 /* BUTTON */
 .btn-success {
-  background-color: #198754;
-  border: none;
-  padding: 5px 12px;
-  font-size: 13px;
+  background-color: #198754 !important;
+  color: #fff !important;
+  border: none !important;
 }
+

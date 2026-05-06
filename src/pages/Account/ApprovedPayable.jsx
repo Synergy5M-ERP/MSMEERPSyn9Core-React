@@ -167,17 +167,14 @@ const handleSingleApprove = async (row) => {
         </td>
 
         <td>
-          <button
-            className={`btn btn-sm ${
-              row.billApprove
-                ? "btn-success"
-                : "btn-outline-secondary"
-            }`}
-            onClick={() => handleSingleApprove(row)}
-          >
-            {row.billApprove ? "Approved" : "Approve"}
-          </button>
-        </td>
+  <button
+    className="btn btn-success btn-sm"
+    onClick={() => handleSingleApprove(row)}
+    disabled={row.billApprove}   // optional but recommended
+  >
+    {row.billApprove ? "Approved" : "Approve"}
+  </button>
+</td>
       </tr>
     ))
   )}

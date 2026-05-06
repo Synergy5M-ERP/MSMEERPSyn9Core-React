@@ -107,7 +107,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         [HttpGet("GetSubLedger")]
         public IActionResult GetSubLedger()
         {
-            var ledger = _msmeContext.AccountSubLedger
+            var ledger = _swamiContext.AccountSubLedger
                   .Where(x => x.IsActive && x.IsBank == true)  // ✅ FIX
                 .Select(l => new
                 {
@@ -287,12 +287,17 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         {
             try
             {
-                // ✅ STEP 1: Latest Payments
                 var latestPayments = _msmeContext.AccountPaymentAllocation
-                    .GroupBy(x => x.InvoiceNo)
-                    .Select(g => g.OrderByDescending(x => x.PaymentAllocateId).FirstOrDefault())
-                    .ToList();
-
+     .Select(x => new
+     {
+         x.PaymentAllocateId,
+         InvoiceNo = x.InvoiceNo.ToString(),   // 🔥 convert here
+         x.BalanceAmount
+     })
+     .AsEnumerable()   // move to memory AFTER selecting needed fields
+     .GroupBy(x => x.InvoiceNo)
+     .Select(g => g.OrderByDescending(x => x.PaymentAllocateId).FirstOrDefault())
+     .ToList();
                 // ✅ STEP 2: Non-GRN Invoices
                 var invoices = _msmeContext.AccountNonGRNInvoice
                     .Where(a =>
@@ -302,21 +307,34 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     .ToList();
 
                 // ✅ STEP 3: Vendors
-                var potentialVendors = _swamiContext.Potential_Vendor.ToList();
-                var accountVendors = _msmeContext.AccountVendor.ToList();
-
+                var potentialVendors = _swamiContext.Potential_Vendor
+                    .Select(x => new
+                    {
+                        Vendor_Code = x.Vendor_Code.ToString(),   // 🔥 force convert
+                        Company_Name = x.Company_Name
+                    })
+                    .ToList();
+                var accountVendors = _msmeContext.AccountVendor
+                    .Select(x => new
+                    {
+                        VendorCode = x.VendorCode.ToString(),
+                        VendorName = x.VendorName
+                    })
+                    .ToList();
                 // ✅ STEP 4: Non-GRN Data
                 var nonGrnData = invoices.Select(a =>
                 {
                     var payment = latestPayments
-                        .FirstOrDefault(p => p.InvoiceNo == a.InvoiceNo);
-
+.FirstOrDefault(p =>
+    (p.InvoiceNo != null ? p.InvoiceNo.ToString() : "") ==
+    (a.InvoiceNo ?? "")
+);
                     // 🔥 FIX: Convert to string properly
                     string vendorCode = a.VendorCode?.ToString() ?? "";
 
                     var supplier =
                         potentialVendors
-                            .Where(x => (x.Vendor_Code ?? "") == vendorCode)
+                          .Where(x => x.Vendor_Code == vendorCode)
                             .Select(x => x.Company_Name)
                             .FirstOrDefault()
                         ??
@@ -335,7 +353,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     {
                         Supplier_Name = supplier,
                         Due_Date = a.PayDueDate,
-                        Invoice_NO = a.InvoiceNo,
+                        Invoice_NO = a.InvoiceNo ?? "",
                         Invoice_Date = a.InvoiceDate,
                         Total_Amount = a.TotalAmount,
                         VendorCode = vendorCode,
@@ -396,7 +414,9 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message
+                    message = ex.Message,
+                    stack = ex.StackTrace   // 🔥 will show exact line
+
                 });
             }
         }

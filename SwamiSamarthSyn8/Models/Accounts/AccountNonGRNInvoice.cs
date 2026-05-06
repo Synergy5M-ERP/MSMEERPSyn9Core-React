@@ -12,7 +12,7 @@ public class AccountNonGRNInvoice
     public long? EmployeeId { get; set; }
     public int? VendorId { get; set; }
 
-    public string? VendorCode { get; set; }
+    public string VendorCode { get; set; }
     public string? InvoiceNo { get; set; }
     public DateTime? InvoiceDate { get; set; }
     public DateTime? PayDueDate { get; set; }

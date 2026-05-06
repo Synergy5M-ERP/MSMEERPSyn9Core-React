@@ -10,7 +10,7 @@ namespace SwamiSamarthSyn8.Models
         public int AccountGroupId { get; set; }
         public int AccountSubGroupId { get; set; }
         public int AccountSubSubGroupId { get; set; }
-        public string AccountLedgerName { get; set; }
+        public string? AccountLedgerName { get; set; }
         public string? GLCode { get; set; }   // ✅ FIXED
         public string? MobileNo { get; set; }
         public string? EmailId { get; set; }

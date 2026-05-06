@@ -15,7 +15,6 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public DateTime? Date { get; set; }
         [Column(TypeName = "date")]
         public DateTime? InvoiceDate { get; set; }
-        public long? InvoiceId { get; set; }
 
      
         public long? SubLedgerId { get; set; }
@@ -25,6 +24,7 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public decimal? ClosingBalance { get; set; }
         public decimal? Credit { get; set; }
         public decimal? Debit { get; set; }
+        public string? Type { get; set; }
 
         public long? VoucherId { get; set; }
         public decimal? SubClosingBal { get; set; }

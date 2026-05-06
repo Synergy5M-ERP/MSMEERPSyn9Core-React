@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SwamiSamarthSyn8.Data;
 using SwamiSamarthSyn8.Models;
 using SwamiSamarthSyn8.Models.Accounts;
+using System;
 
 namespace SwamiSamarthSyn8.Controllers.Accounts
 {
@@ -520,117 +521,273 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         ////        });
         ////    }
         ////}
-            ////// ================= APPROVE GRN API =================
-            //      [HttpGet("GRNApprovedDetails")]
-            //      public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
-            //      {
-            //          try
-            //          {
-            //              // ✅ STEP 1: Get latest payment (MSME CONTEXT)
-            //              var latestPayments = await _msmeContext.AccountPaymentAllocation
-            //                  .GroupBy(x => x.GRNNo)
-            //                  .Select(g => g
-            //                      .OrderByDescending(x => x.PaymentAllocateId)
-            //                      .FirstOrDefault())
-            //                  .ToListAsync();
+        ////// ================= APPROVE GRN API =================
+        //      [HttpGet("GRNApprovedDetails")]
+        //      public async Task<IActionResult> GRNApprovedDetails(int page = 1, int pageSize = 10)
+        //      {
+        //          try
+        //          {
+        //              // ✅ STEP 1: Get latest payment (MSME CONTEXT)
+        //              var latestPayments = await _msmeContext.AccountPaymentAllocation
+        //                  .GroupBy(x => x.GRNNo)
+        //                  .Select(g => g
+        //                      .OrderByDescending(x => x.PaymentAllocateId)
+        //                      .FirstOrDefault())
+        //                  .ToListAsync();
 
-            //              // ✅ STEP 2: Get GRNs (MSME CONTEXT)
-            //              var grns = await _msmeContext.AccountGRN
-            //                  .Where(a => a.IsActive == true && a.ApprovedGRN == true)
-            //                  .OrderByDescending(a => a.AccountGRNId)
-            //                  .ToListAsync();
+        //              // ✅ STEP 2: Get GRNs (MSME CONTEXT)
+        //              var grns = await _msmeContext.AccountGRN
+        //                  .Where(a => a.IsActive == true && a.ApprovedGRN == true)
+        //                  .OrderByDescending(a => a.AccountGRNId)
+        //                  .ToListAsync();
 
-            //              var grnNumbers = grns.Select(x => x.GRNNumber).ToList();
+        //              var grnNumbers = grns.Select(x => x.GRNNumber).ToList();
 
-            //              // ✅ STEP 3: Get SWAMI DATA
-            //              var swamiGrns = await _swamiContext.MMM_GRNTbl
-            //                  .Where(x => grnNumbers.Contains(x.GRN_NO))
-            //                  .ToListAsync();
+        //              // ✅ STEP 3: Get SWAMI DATA
+        //              var swamiGrns = await _swamiContext.MMM_GRNTbl
+        //                  .Where(x => grnNumbers.Contains(x.GRN_NO))
+        //                  .ToListAsync();
 
-            //              var grnIds = swamiGrns.Select(x => x.Id).ToList();
+        //              var grnIds = swamiGrns.Select(x => x.Id).ToList();
 
-            //              var grnProducts = await _swamiContext.MMM_GRNProductTbl
-            //                  .Where(x => grnIds.Contains(x.G_Id))
-            //                  .ToListAsync();
+        //              var grnProducts = await _swamiContext.MMM_GRNProductTbl
+        //                  .Where(x => grnIds.Contains(x.G_Id))
+        //                  .ToListAsync();
 
-            //              // ✅ STEP 4: Vendor Codes
-            //              var vendorCodes = await _swamiContext.Potential_Vendor
-            //                  .ToListAsync();
+        //              // ✅ STEP 4: Vendor Codes
+        //              var vendorCodes = await _swamiContext.Potential_Vendor
+        //                  .ToListAsync();
 
-            //              var result = (
-            //    from a in grns
+        //              var result = (
+        //    from a in grns
 
-            //    join g in swamiGrns
-            //        on a.GRNNumber equals g.GRN_NO into gj
-            //    from g in gj.DefaultIfEmpty()
+        //    join g in swamiGrns
+        //        on a.GRNNumber equals g.GRN_NO into gj
+        //    from g in gj.DefaultIfEmpty()
 
-            //    join i in grnProducts
-            //        on (g != null ? g.Id : 0) equals i.G_Id into ij
-            //    from i in ij.DefaultIfEmpty()
+        //    join i in grnProducts
+        //        on (g != null ? g.Id : 0) equals i.G_Id into ij
+        //    from i in ij.DefaultIfEmpty()
 
-            //    join p in latestPayments
-            //        on a.GRNNumber equals p.GRNNo.ToString() into pj   // ✅ FIXED
-            //    from p in pj.DefaultIfEmpty()
+        //    join p in latestPayments
+        //        on a.GRNNumber equals p.GRNNo.ToString() into pj   // ✅ FIXED
+        //    from p in pj.DefaultIfEmpty()
 
-            //    where p == null || p.BalanceAmount != 0
+        //    where p == null || p.BalanceAmount != 0
 
-            //    orderby a.AccountGRNId descending
+        //    orderby a.AccountGRNId descending
 
-            //    select new
-            //    {
-            //        a.AccountGRNId,
-            //        a.GRNNumber,
+        //    select new
+        //    {
+        //        a.AccountGRNId,
+        //        a.GRNNumber,
 
-            //        GRNDate = g?.GRN_Date,
-            //        Supplier_Name = g?.Supplier_Name,
-            //        Due_Date = g?.Payment_Due_On,
+        //        GRNDate = g?.GRN_Date,
+        //        Supplier_Name = g?.Supplier_Name,
+        //        Due_Date = g?.Payment_Due_On,
 
-            //        PONumber = g?.PO_No,
-            //        InvoiceNumber = g?.Invoice_NO,
-            //        InvoiceDate = g?.Invoice_Date,
+        //        PONumber = g?.PO_No,
+        //        InvoiceNumber = g?.Invoice_NO,
+        //        InvoiceDate = g?.Invoice_Date,
 
-            //        PurchaseDate = i?.Purchase_Date,
+        //        PurchaseDate = i?.Purchase_Date,
 
-            //        Total_Amount = a.Total_Amount,
+        //        Total_Amount = a.Total_Amount,
 
-            //        VendorCode = vendorCodes
-            //            .Where(x => x.Company_Name == g?.Supplier_Name)
-            //            .Select(x => x.Vendor_Code.ToString())   // ✅ FIXED
-            //            .FirstOrDefault(),
+        //        VendorCode = vendorCodes
+        //            .Where(x => x.Company_Name == g?.Supplier_Name)
+        //            .Select(x => x.Vendor_Code.ToString())   // ✅ FIXED
+        //            .FirstOrDefault(),
 
-            //        BalanceAmount = (p != null && p.BalanceAmount > 0)
-            //            ? (decimal?)p.BalanceAmount
-            //            : null
-            //    }
-            //).ToList();
+        //        BalanceAmount = (p != null && p.BalanceAmount > 0)
+        //            ? (decimal?)p.BalanceAmount
+        //            : null
+        //    }
+        //).ToList();
 
-            //              // ✅ PAGINATION AFTER FILTER
-            //              var totalCount = result.Count;
+        //              // ✅ PAGINATION AFTER FILTER
+        //              var totalCount = result.Count;
 
-            //              var pagedData = result
-            //                  .Skip((page - 1) * pageSize)
-            //                  .Take(pageSize)
-            //                  .ToList();
+        //              var pagedData = result
+        //                  .Skip((page - 1) * pageSize)
+        //                  .Take(pageSize)
+        //                  .ToList();
 
-            //              return Ok(new
-            //              {
-            //                  success = true,
-            //                  data = pagedData,
-            //                  totalCount,
-            //                  currentPage = page,
-            //                  pageSize
-            //              });
-            //          }
-            //          catch (Exception ex)
-            //          {
-            //              return StatusCode(500, new
-            //              {
-            //                  success = false,
-            //                  message = ex.Message
-            //              });
-            //          }
-            //      }
-            [HttpPost("ApproveGrns")]
+        //              return Ok(new
+        //              {
+        //                  success = true,
+        //                  data = pagedData,
+        //                  totalCount,
+        //                  currentPage = page,
+        //                  pageSize
+        //              });
+        //          }
+        //          catch (Exception ex)
+        //          {
+        //              return StatusCode(500, new
+        //              {
+        //                  success = false,
+        //                  message = ex.Message
+        //              });
+        //          }
+        //      }
+        //        [HttpPost("ApproveGrns")]
+        //    public async Task<IActionResult> ApproveGrns(string grnNumber, decimal? totalAmount)
+        //    {
+        //        try
+        //        {
+        //            if (string.IsNullOrEmpty(grnNumber))
+        //                return BadRequest(new { success = false, message = "Invalid GRN number" });
+
+        //            // ---------------- UPDATE GRN ----------------
+        //            var record = await _msmeContext.AccountGRN
+        //                .FirstOrDefaultAsync(x => x.GRNNumber == grnNumber);
+
+        //            if (record == null)
+        //                return NotFound(new { success = false, message = "GRN not found" });
+
+        //            record.ApprovedGRN = true;
+        //            record.Total_Amount = totalAmount;
+        //            record.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
+
+        //            await _msmeContext.SaveChangesAsync();
+
+        //            // ---------------- GET GRN MASTER ----------------
+        //            string grnNo = grnNumber;
+
+        //            // ================= GET MASTER =================
+        //            var getGrn = _swamiContext.MMM_GRNTbl
+        //                .FirstOrDefault(x => x.GRN_NO == grnNo);
+
+        //            if (getGrn == null)
+        //                return NotFound(new { success = false, message = "GRN not found" });
+
+
+        //            var getItems = _swamiContext.MMM_GRNProductTbl
+        //               .Where(x => x.G_Id == getGrn.Id)
+        //               .ToList();
+
+        //            var getVendorName = getGrn.Supplier_Name;
+
+        //            var getvendorcode = _swamiContext.Potential_Vendor
+        //                .Where(x => x.Company_Name == getVendorName)
+        //                .Select(x => new
+        //                {
+        //                    x.Vendor_Code
+        //                })
+        //                .FirstOrDefault();
+        //            string vendorCode = getvendorcode?.Vendor_Code;
+
+        //            if (string.IsNullOrEmpty(vendorCode))
+        //            {
+        //                return BadRequest(new
+        //                {
+        //                    success = false,
+        //                    message = "Vendor code not found"
+        //                });
+        //            }
+        //            if (!getItems.Any())
+        //                return NotFound(new { success = false, message = "GRN items not found" });
+
+        //            // ================= GET ITEM NAMES =================
+        //            var itemNames = getItems
+        //                .Select(x => x.Item_Name)
+        //                .Distinct()
+        //                .ToList();
+
+        //            // ---------------- GET LEDGER IDS ----------------
+        //            var masterLedgers = await _swamiContext.MASTER_ItemTbl
+        //                .Where(x => itemNames.Contains(x.Item_Name))
+        //                .Select(x => x.LedgerName ?? "")
+        //                .ToListAsync();
+
+        //            List<int> ledgerIds = new List<int>();
+
+        //            foreach (var ledgerString in masterLedgers)
+        //            {
+        //                if (string.IsNullOrWhiteSpace(ledgerString)) continue;
+
+        //                var ids = ledgerString
+        //                    .Split('|')
+        //                    .Select(x => x.Trim())
+        //                    .Where(x => !string.IsNullOrEmpty(x))
+        //.Select(x =>
+        //{
+        //    if (int.TryParse(x, out int id))
+        //        return id;
+        //    return 0;
+        //})
+        //.Where(x => x != 0);
+        //                ledgerIds.AddRange(ids);
+        //            }
+
+        //            ledgerIds = ledgerIds.Distinct().ToList();
+
+        //            // ---------------- GET LEDGER MAPPING ----------------
+        //            var ledgerMappings = await _msmeContext.AccountLedger
+        //                .Where(x => ledgerIds.Contains(x.AccountLedgerId))
+        //                .ToListAsync();
+
+        //            // ---------------- CREATE LEDGER ENTRIES ----------------
+        //            foreach (var map in ledgerMappings)
+        //            {
+        //                if (string.IsNullOrEmpty(map.GRNInvColumnName))
+        //                    continue;
+
+        //                decimal amount = 0;
+
+        //                foreach (var item in getItems)
+        //                {
+        //                    var property = item.GetType().GetProperty(map.GRNInvColumnName);
+        //                    if (property == null) continue;
+
+        //                    var value = property.GetValue(item);
+
+        //                    if (value != null && decimal.TryParse(value.ToString(), out decimal val))
+        //                        amount += val;
+        //                }
+
+        //                if (amount <= 0) continue;
+
+        //                decimal credit = 0;
+        //                decimal debit = 0;
+
+        //                if (map.CrDr == "Credit")
+        //                    credit = amount;
+        //                else if (map.CrDr == "Debit")
+
+        //                    debit = amount;
+        //                // ✅ FIX DATE CONVERSION
+        //                DateTime? invoiceDate = getGrn.Invoice_Date.HasValue
+        //                    ? getGrn.Invoice_Date.Value.ToDateTime(TimeOnly.MinValue)
+        //                    : null;
+
+        //                DateTime? qcDate = getGrn.QC_Clearance_Date.HasValue
+        //                    ? getGrn.QC_Clearance_Date.Value.ToDateTime(TimeOnly.MinValue)
+        //                    : null;
+        //                AddLedgerEntry(map.AccountLedgerId, getGrn.Invoice_NO, invoiceDate, credit, debit, getvendorcode.Vendor_Code, qcDate);
+
+        //            }
+
+        //            await _msmeContext.SaveChangesAsync();
+
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return StatusCode(500, new
+        //            {
+        //                success = false,
+        //                message = ex.Message
+        //            });
+        //        }
+
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "GRN Approved and Accounting Entry Created"
+        //        });
+        //    }
+        [HttpPost("ApproveGrns")]
         public async Task<IActionResult> ApproveGrns(string grnNumber, decimal? totalAmount)
         {
             try
@@ -652,49 +809,37 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 await _msmeContext.SaveChangesAsync();
 
                 // ---------------- GET GRN MASTER ----------------
-                string grnNo = grnNumber;
-
-                // ================= GET MASTER =================
                 var getGrn = _swamiContext.MMM_GRNTbl
-                    .FirstOrDefault(x => x.GRN_NO == grnNo);
+                    .FirstOrDefault(x => x.GRN_NO == grnNumber);
 
                 if (getGrn == null)
-                    return NotFound(new { success = false, message = "GRN not found" });
-
+                    return NotFound(new { success = false, message = "GRN not found in master" });
 
                 var getItems = _swamiContext.MMM_GRNProductTbl
-                   .Where(x => x.G_Id == getGrn.Id)
-                   .ToList();
-
-                var getVendorName = getGrn.Supplier_Name;
-
-                var getvendorcode = _swamiContext.Potential_Vendor
-                    .Where(x => x.Company_Name == getVendorName)
-                    .Select(x => new
-                    {
-                        x.Vendor_Code
-                    })
-                    .FirstOrDefault();
-                string vendorCode = getvendorcode?.Vendor_Code;
-
-                if (string.IsNullOrEmpty(vendorCode))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Vendor code not found"
-                    });
-                }
-                if (!getItems.Any())
-                    return NotFound(new { success = false, message = "GRN items not found" });
-
-                // ================= GET ITEM NAMES =================
-                var itemNames = getItems
-                    .Select(x => x.Item_Name)
-                    .Distinct()
+                    .Where(x => x.G_Id == getGrn.Id)
                     .ToList();
 
-                // ---------------- GET LEDGER IDS ----------------
+                if (!getItems.Any())
+                    return NotFound(new { success = false, message = "GRN items not found" }); 
+                var getVendorName = getGrn.Supplier_Name;
+
+                // ✅ FIX: Vendor using VendorId (BEST)
+                var getvendorcode = _swamiContext.Potential_Vendor
+                .Where(x => x.Company_Name == getVendorName)
+                .Select(x => new
+                {
+                    x.Vendor_Code
+                })
+                .FirstOrDefault();
+
+                if (!getItems.Any())
+                    return BadRequest(new { success = false, message = "GRN items not found" });
+
+
+                // ---------------- ITEM NAMES ----------------
+                var itemNames = getItems.Select(x => x.Item_Name).Distinct().ToList();
+
+                // ---------------- LEDGER IDS ----------------
                 var masterLedgers = await _swamiContext.MASTER_ItemTbl
                     .Where(x => itemNames.Contains(x.Item_Name))
                     .Select(x => x.LedgerName ?? "")
@@ -706,28 +851,26 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 {
                     if (string.IsNullOrWhiteSpace(ledgerString)) continue;
 
-                    var ids = ledgerString
-                        .Split('|')
+                    var ids = ledgerString.Split('|')
                         .Select(x => x.Trim())
-                        .Where(x => !string.IsNullOrEmpty(x))
-    .Select(x =>
-    {
-        if (int.TryParse(x, out int id))
-            return id;
-        return 0;
-    })
-    .Where(x => x != 0);
+                        .Where(x => int.TryParse(x, out _))
+                        .Select(int.Parse);
+
                     ledgerIds.AddRange(ids);
                 }
 
                 ledgerIds = ledgerIds.Distinct().ToList();
 
-                // ---------------- GET LEDGER MAPPING ----------------
+                // ---------------- LEDGER MAPPING ----------------
                 var ledgerMappings = await _msmeContext.AccountLedger
                     .Where(x => ledgerIds.Contains(x.AccountLedgerId))
                     .ToListAsync();
 
-                // ---------------- CREATE LEDGER ENTRIES ----------------
+                // ---------------- DATE CONVERSION ----------------
+                DateTime? invoiceDate = getGrn.Invoice_Date?.ToDateTime(TimeOnly.MinValue);
+                DateTime? qcDate = getGrn.QC_Clearance_Date?.ToDateTime(TimeOnly.MinValue);
+
+                // ---------------- CREATE ENTRIES ----------------
                 foreach (var map in ledgerMappings)
                 {
                     if (string.IsNullOrEmpty(map.GRNInvColumnName))
@@ -737,39 +880,37 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                     foreach (var item in getItems)
                     {
-                        var property = item.GetType().GetProperty(map.GRNInvColumnName);
-                        if (property == null) continue;
+                        var prop = item.GetType().GetProperty(map.GRNInvColumnName);
+                        if (prop == null) continue;
 
-                        var value = property.GetValue(item);
-
+                        var value = prop.GetValue(item);
                         if (value != null && decimal.TryParse(value.ToString(), out decimal val))
                             amount += val;
                     }
 
                     if (amount <= 0) continue;
 
-                    decimal credit = 0;
-                    decimal debit = 0;
+                    decimal credit = map.CrDr == "Credit" ? amount : 0;
+                    decimal debit = map.CrDr == "Debit" ? amount : 0;
 
-                    if (map.CrDr == "Credit")
-                        credit = amount;
-                    else if (map.CrDr == "Debit")
-
-                        debit = amount;
-                    // ✅ FIX DATE CONVERSION
-                    DateTime? invoiceDate = getGrn.Invoice_Date.HasValue
-                        ? getGrn.Invoice_Date.Value.ToDateTime(TimeOnly.MinValue)
-                        : null;
-
-                    DateTime? qcDate = getGrn.QC_Clearance_Date.HasValue
-                        ? getGrn.QC_Clearance_Date.Value.ToDateTime(TimeOnly.MinValue)
-                        : null;
-                    AddLedgerEntry(map.AccountLedgerId, getGrn.Invoice_NO, invoiceDate, credit, debit, getvendorcode.Vendor_Code, qcDate);
-
+                    AddLedgerEntry(
+                        map.AccountLedgerId,
+                        getGrn.Invoice_NO,
+                        invoiceDate,
+                        credit,
+                        debit,
+                        getvendorcode.Vendor_Code,
+                        qcDate
+                    );
                 }
 
                 await _msmeContext.SaveChangesAsync();
 
+                return Ok(new
+                {
+                    success = true,
+                    message = "GRN Approved and Accounting Entry Created"
+                });
             }
             catch (Exception ex)
             {
@@ -779,12 +920,6 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     message = ex.Message
                 });
             }
-
-            return Ok(new
-            {
-                success = true,
-                message = "GRN Approved and Accounting Entry Created"
-            });
         }
         private decimal GetLastClosingBalance(int ledgerId)
         {
@@ -797,14 +932,83 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         }
 
 
+        //private void AddLedgerEntry(
+        //    int ledgerId,
+        //    string Invoice_NO,
+        //    DateTime? InvoiceDate,
+        //    decimal credit,
+        //    decimal debit,
+        //    string Vendorcode,
+        //    DateTime? qcDate)
+        //{
+        //    var subledgerid = _msmeContext.AccountSubLedger
+        //        .Where(i => i.AccountLedgerid == ledgerId && i.AssetsCode == Vendorcode)
+        //        .Select(i => i.AccountLedgerSubid)
+        //        .FirstOrDefault();
+
+        //    decimal openingBalance = GetLastClosingBalance(ledgerId);
+
+        //    decimal closingBalance = openingBalance;
+
+        //    if (credit > 0)
+        //        closingBalance += credit;
+
+        //    if (debit > 0)
+        //        closingBalance += debit;
+
+        //    decimal subOpeningBalance = 0;
+        //    decimal subClosingBalance = 0;
+
+        //    if (subledgerid != 0)
+        //    {
+        //        subOpeningBalance = _msmeContext.AccountLedgerCrDR
+        //            .Where(x => x.LedegrId == ledgerId && x.SubLedgerId == subledgerid)
+        //            .OrderByDescending(x => x.LedgerCrDrId)
+        //            .Select(x => x.SubClosingBal ?? 0)
+        //            .FirstOrDefault();
+
+        //        subClosingBalance = subOpeningBalance + credit + debit;
+        //    }
+
+        //    var transaction = new AccountLedgerCrDR
+        //    {
+        //        LedegrId = ledgerId,
+        //        InvoiceNO = Invoice_NO,
+        //        Date = qcDate,
+        //        OpeningBalance = openingBalance,
+        //        Credit = credit,
+        //        Debit = debit,
+        //        ClosingBalance = closingBalance,
+        //        SubLedgerId = subledgerid,
+        //        SubOpeningBal = subOpeningBalance,
+        //        SubClosingBal = subClosingBalance,
+        //        InvoiceDate = InvoiceDate
+        //    };
+
+        //    _msmeContext.AccountLedgerCrDR.Add(transaction);
+
+        //    var ledger = _msmeContext.AccountLedger
+        //        .FirstOrDefault(l => l.AccountLedgerId == ledgerId);
+
+        //    if (ledger != null)
+        //        ledger.ClosingBal = closingBalance;
+
+        //    var subledgervendor = _msmeContext.AccountSubLedger
+        //        .FirstOrDefault(i => i.AssetsCode == Vendorcode && i.AccountLedgerid == ledgerId);
+
+        //    if (subledgervendor != null)
+        //    {
+        //        subledgervendor.ClosingBal += credit;
+        //    }
+        //}
         private void AddLedgerEntry(
-            int ledgerId,
-            string Invoice_NO,
-            DateTime? InvoiceDate,
-            decimal credit,
-            decimal debit,
-            string Vendorcode,
-            DateTime? qcDate)
+    int ledgerId,
+    string Invoice_NO,
+    DateTime? InvoiceDate,
+    decimal credit,
+    decimal debit,
+    string Vendorcode,
+    DateTime? qcDate)
         {
             var subledgerid = _msmeContext.AccountSubLedger
                 .Where(i => i.AccountLedgerid == ledgerId && i.AssetsCode == Vendorcode)
@@ -812,14 +1016,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 .FirstOrDefault();
 
             decimal openingBalance = GetLastClosingBalance(ledgerId);
-
-            decimal closingBalance = openingBalance;
-
-            if (credit > 0)
-                closingBalance += credit;
-
-            if (debit > 0)
-                closingBalance += debit;
+            decimal closingBalance = openingBalance + credit + debit;
 
             decimal subOpeningBalance = 0;
             decimal subClosingBalance = 0;
@@ -847,9 +1044,9 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 SubLedgerId = subledgerid,
                 SubOpeningBal = subOpeningBalance,
                 SubClosingBal = subClosingBalance,
-                InvoiceDate = InvoiceDate
+                InvoiceDate = InvoiceDate,
+                Type = "PURCHASE"
             };
-
             _msmeContext.AccountLedgerCrDR.Add(transaction);
 
             var ledger = _msmeContext.AccountLedger
@@ -858,15 +1055,12 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             if (ledger != null)
                 ledger.ClosingBal = closingBalance;
 
-            var subledgervendor = _msmeContext.AccountSubLedger
+            var subledger = _msmeContext.AccountSubLedger
                 .FirstOrDefault(i => i.AssetsCode == Vendorcode && i.AccountLedgerid == ledgerId);
 
-            if (subledgervendor != null)
-            {
-                subledgervendor.ClosingBal += credit;
-            }
+            if (subledger != null)
+                subledger.ClosingBal += credit;
         }
-
         [HttpGet("Vendorcategories")]
         public async Task<IActionResult> GetCategories()
         {
@@ -1653,23 +1847,25 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     if (!item.approve)
                         continue;
 
+                    // ================= GET MASTER =================
                     var grn = _msmeContext.AccountTransportationGRN
-                                      .FirstOrDefault(x => x.TransporterGRNId == item.transporterGRNId);
+                        .FirstOrDefault(x => x.TransporterGRNId == item.transporterGRNId);
 
                     if (grn == null)
                         continue;
 
-                    // ✅ Approve
+                    // ✅ Approve flag
                     grn.ApproveTransportation = true;
 
-                    var details = _msmeContext.AccountTransportationGRN
-                                          .Where(x => x.TransporterGRNId == grn.TransporterGRNId)
-                                          .ToList();
+                    // ================= GET DETAILS =================
+                    var details = _msmeContext.AccountTransportationGRNDetails
+                        .Where(x => x.TransporterGRNId == grn.TransporterGRNId)
+                        .ToList();
 
                     if (!details.Any())
                         continue;
 
-                    // ================= Ledger IDs =================
+                    // ================= GET LEDGER IDS =================
                     List<int> ledgerIds = new List<int>();
 
                     if (!string.IsNullOrWhiteSpace(grn.LedgerId))
@@ -1684,25 +1880,30 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     if (!ledgerIds.Any())
                         continue;
 
+                    // ================= LEDGER MAPPING =================
                     var ledgerMappings = _msmeContext.AccountLedger
-                                                .Where(x => ledgerIds.Contains(x.AccountLedgerId))
-                                                .ToList();
+                        .Where(x => ledgerIds.Contains(x.AccountLedgerId))
+                        .ToList();
 
+                    // ================= GET GRN ID =================
                     var grnId = _msmeContext.AccountTransportationGRNDetails
                         .Where(x => x.TransporterGRNId == grn.TransporterGRNId)
                         .Select(i => i.GRNId)
                         .FirstOrDefault();
 
-                    var transporter = (from grn1 in _swamiContext.MMM_GRNTbl
-                                       where grn1.Id == grnId
-                                       select grn1.Transporter).FirstOrDefault();
+                    // ================= GET TRANSPORTER =================
+                    var transporter = _swamiContext.MMM_GRNTbl
+                        .Where(x => x.Id == grnId)
+                        .Select(x => x.Transporter)
+                        .FirstOrDefault();
 
+                    // ================= GET VENDOR CODE =================
                     var vendorCode = _swamiContext.Potential_Vendor
                         .Where(i => i.Company_Name == transporter)
                         .Select(i => i.Vendor_Code)
                         .FirstOrDefault();
 
-                    // ================= Ledger Entry =================
+                    // ================= CREATE LEDGER ENTRIES =================
                     foreach (var map in ledgerMappings)
                     {
                         if (string.IsNullOrEmpty(map.TransportColumnName))
@@ -1728,7 +1929,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                         AddLedgerEntryTransport(
                             map.AccountLedgerId,
-                            (int)grn.TransporterGRNId,
+                            grn.InvoiceNo,
                             credit,
                             debit,
                             vendorCode
@@ -1740,6 +1941,15 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
 
                 _msmeContext.SaveChanges();
 
+                if (processedCount == 0)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "No GRNs were approved."
+                    });
+                }
+
                 return Ok(new
                 {
                     success = true,
@@ -1748,10 +1958,19 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
-        private void AddLedgerEntryTransport(int ledgerId, int invoiceId, decimal credit, decimal debit, string vendorCode)
+        private void AddLedgerEntryTransport(
+       int ledgerId,
+       string invoiceNo,
+       decimal credit,
+       decimal debit,
+       string vendorCode)
         {
             int subLedgerId = _msmeContext.AccountSubLedger
                 .Where(i => i.AccountLedgerid == ledgerId && i.AssetsCode == vendorCode)
@@ -1759,26 +1978,49 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 .FirstOrDefault();
 
             decimal openingBalance = GetLastClosingBalance(ledgerId);
+
+            // ✅ Correct balance logic
             decimal closingBalance = openingBalance + credit - debit;
+
+            decimal subOpeningBalance = 0;
+            decimal subClosingBalance = 0;
+
+            if (subLedgerId != 0)
+            {
+                subOpeningBalance = _msmeContext.AccountLedgerCrDR
+                    .Where(x => x.LedegrId == ledgerId && x.SubLedgerId == subLedgerId)
+                    .OrderByDescending(x => x.LedgerCrDrId)
+                    .Select(x => x.SubClosingBal ?? 0)
+                    .FirstOrDefault();
+
+                subClosingBalance = subOpeningBalance + credit + debit;
+            }
 
             var transaction = new AccountLedgerCrDR
             {
                 LedegrId = ledgerId,
-                InvoiceId = invoiceId,
+                InvoiceNO = invoiceNo,
                 Date = DateTime.Now,
                 OpeningBalance = openingBalance,
                 Credit = credit,
                 Debit = debit,
                 ClosingBalance = closingBalance,
                 SubLedgerId = subLedgerId,
+                SubOpeningBal = subOpeningBalance,
+                SubClosingBal = subClosingBalance,
+                Type = "TRANSPORT"
             };
 
             _msmeContext.AccountLedgerCrDR.Add(transaction);
 
-            var ledger = _msmeContext.AccountLedger.FirstOrDefault(l => l.AccountLedgerId == ledgerId);
+            // ✅ Update Ledger
+            var ledger = _msmeContext.AccountLedger
+                .FirstOrDefault(l => l.AccountLedgerId == ledgerId);
+
             if (ledger != null)
                 ledger.ClosingBal = closingBalance;
 
+            // ✅ Update SubLedger
             var subLedgerVendor = _msmeContext.AccountSubLedger
                 .FirstOrDefault(i => i.AssetsCode == vendorCode && i.AccountLedgerid == ledgerId);
 

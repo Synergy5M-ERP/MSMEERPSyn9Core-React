@@ -32,6 +32,10 @@ const [selectedInvoice, setSelectedInvoice] = useState("");
     totalAmount: 0,
     taxAmount: 0,
     grandTotal: 0,
+      // ✅ ADD THESE
+  debitNumber: "",
+  debitNoteDate: "",
+
   });
 const loadInvoiceNumbers = async (sellerName) => {
 
@@ -317,48 +321,88 @@ const handleMasterBillCheck = useCallback((checked) => {
     });
 
     // ✅ FIXED PAYLOAD - Matches backend model exactly
-    const payload = {
-      VendorId: Number(formData.vendorId) || 0,
-      SellerName: formData.sellerName,
-      grnNumber: formData.grnNumber,
-      grnDate: formData.grnDate,
-      poNumber: formData.poNumber,
-      poDate: formData.poDate,
-      invoiceNumber: formData.invoiceNumber,
-      invoiceDate: formData.invoiceDate,
-      vehicleNo: formData.vehicleNo,
-      TransporterName: formData.TransporterName,
-      paymentDue: formData.paymentDue,
-      status: formData.status || "Received",
-      totalAmount: formData.totalAmount,
-      taxAmount: formData.taxAmount,
-      grandAmount: formData.grandTotal,
-      BillStatus: "Pending", // <-- Add this field as required by backend
+   const payload = {
+  VendorId: Number(formData.vendorId) || 0,
+  SellerName: formData.sellerName,
+  grnNumber: formData.grnNumber,
+  grnDate: formData.grnDate,
+  poNumber: formData.poNumber,
+  poDate: formData.poDate,
+  invoiceNumber: formData.invoiceNumber,
+  invoiceDate: formData.invoiceDate,
+  vehicleNo: formData.vehicleNo,
+  TransporterName: formData.TransporterName,
+  paymentDue: formData.paymentDue,
+  status: formData.status || "Received",
 
-      Description: formData.sellerName || "Payable GRN",
-      Items: tableData.map(item => ({
-        Description: `${item.itemName} `,
-        itemName: item.itemName,
-        grade: item.grade,
-        itemCode: item.itemCode,
-        receivedQty: parseFloat(item.receivedQty) || 0,
-        approvedQty: parseFloat(item.approvedQty) || 0,
-        damagedQty: parseFloat(item.damagedQty) || 0,
-        unit: item.receivedUnit || "pcs",
-        TaxType: item.taxType || "",
-        cgst: parseFloat(item.cgst) || 0,
-        sgst: parseFloat(item.sgst) || 0,
-        igst: parseFloat(item.igst) || 0,
-        rate: parseFloat(item.rate) || 0,
-        // ✅ USE UI VALUES
-        TotalAmount: Number(item.backendNetAmount) || 0,
-        TotalTaxAmount: Number(item.backendTaxAmount) || 0,
+  // ✅ NEW FIELDS
+  TotalNetAmount: tableData.reduce(
+    (sum, item) => sum + Number(item.backendNetAmount || 0),
+    0
+  ),
 
-        billItemValue: Number(item.backendNetAmount) + Number(item.backendTaxAmount),
-        billCheck: item.billCheck === true,
-        TransporterName: formData.TransporterName || ""
-      }))
-    };
+  CGSTAmount: tableData.reduce(
+    (sum, item) => sum + Number(item.cgst || 0),
+    0
+  ),
+
+  SGSTAmount: tableData.reduce(
+    (sum, item) => sum + Number(item.sgst || 0),
+    0
+  ),
+
+  IGSTAmount: tableData.reduce(
+    (sum, item) => sum + Number(item.igst || 0),
+    0
+  ),
+
+  TotalAmount: tableData.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.backendNetAmount || 0) +
+      Number(item.backendTaxAmount || 0),
+    0
+  ),
+
+  TDSAmount: 0,
+
+  NetPayable: tableData.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.backendNetAmount || 0) +
+      Number(item.backendTaxAmount || 0),
+    0
+  ),
+
+  BillStatus: "Pending",
+  Description: formData.sellerName || "Payable GRN",
+
+  Items: tableData.map(item => ({
+    Description: `${item.itemName}`,
+    itemName: item.itemName,
+    grade: item.grade,
+    itemCode: item.itemCode,
+    receivedQty: parseFloat(item.receivedQty) || 0,
+    approvedQty: parseFloat(item.approvedQty) || 0,
+    damagedQty: parseFloat(item.damagedQty) || 0,
+    unit: item.receivedUnit || "pcs",
+    TaxType: item.taxType || "",
+    cgst: parseFloat(item.cgst) || 0,
+    sgst: parseFloat(item.sgst) || 0,
+    igst: parseFloat(item.igst) || 0,
+    rate: parseFloat(item.rate) || 0,
+
+    TotalAmount: Number(item.backendNetAmount) || 0,
+    TotalTaxAmount: Number(item.backendTaxAmount) || 0,
+
+    billItemValue:
+      Number(item.backendNetAmount || 0) +
+      Number(item.backendTaxAmount || 0),
+
+    billCheck: item.billCheck === true,
+    TransporterName: formData.TransporterName || ""
+  }))
+};
 
     console.log("💾 Sending payload to backend:", payload);
 
@@ -758,144 +802,354 @@ Invoice Number
             <input type="date" name="paymentDue" className="form-control" value={formData.paymentDue} onChange={handleChange} required />
           </div>
         </div>
+<hr />
 
+<div className="row mt-3">
 
+  <div className="col-md-2 d-flex align-items-center">
+    <h6 className="fw-bold text-primary mb-0">
+      Debit Note
+    </h6>
+  </div>
 
-        {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
-<div className="table-responsive">
-  <table className="table table-bordered align-middle mt-3">
-    <thead>
-      <tr style={{ backgroundColor: "#f0f6ff" }}>
-        {/* ✅ MASTER CHECKBOX - ONE BUTTON SELECTS ALL */}
-        {/* <th className="text-primary" style={{ width: "60px" }}>
-          <div className="form-check">
-            <input
-              type="checkbox"
-              id="masterBillCheck"
-              checked={masterBillCheck}
-              onChange={(e) => handleMasterBillCheck(e.target.checked)}
-              className="form-check-input"
-              title="Select All Items"
-            />
-          </div>
-        </th> */}
-        <th className="text-primary">Item Name</th>
-        <th className="text-primary">Grade</th>
-        <th className="text-primary">Item Code</th>
-        <th className="text-primary">Received Qty</th>
-        <th className="text-primary">Approved Qty</th>
-        <th className="text-primary">Damaged Qty</th>
-        <th className="text-primary">Rate (₹)</th>
-        <th className="text-primary">CGST (%)</th>
-        <th className="text-primary">SGST (%)</th>
-        <th className="text-primary">IGST (%)</th>
-        <th className="text-primary">Total Tax (₹)</th>
-        <th className="text-primary">Total Amount (₹)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {loading ? (
-        <tr><td colSpan={13} className="text-center p-5"><LoadingSpinner /></td></tr>
-      ) : tableData.length === 0 ? (
-        <tr><td colSpan={13} className="text-center text-muted py-5">Select GRN to load items</td></tr>
-      ) : (
-        tableData.map((row, index) => (
-          <tr key={row.id} className={row.billCheck ? "table-success" : ""}>
-            {/* ✅ NO INDIVIDUAL CHECKBOX - Just visual feedback */}
-            {/* <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-              {row.billCheck ? '✓' : ''}
-            </td> */}
-            <td><strong>{row.itemName}</strong></td>
-            <td>{row.grade || '-'}</td>
-            <td>{row.itemCode || '-'}</td>
-            <td>
-              <input
-                type="number"
-                className="form-control form-control-sm"
-                value={row.receivedQty || ""}
-                onChange={handleQuantityChange(index, 'receivedQty')}
-                min="0" step="0.01"
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                className="form-control form-control-sm"
-                value={row.approvedQty || ""}
-                onChange={handleQuantityChange(index, 'approvedQty')}
-                min="0" step="0.01"
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                className="form-control form-control-sm"
-                value={row.damagedQty || ""}
-                onChange={handleQuantityChange(index, 'damagedQty')}
-                min="0" step="0.01"
-              />
-            </td>
-            <td className="fw-bold">₹{(row.rate || 0).toFixed(2)}</td>
-           <td>{Number(row.cgst || 0).toFixed(2)}%</td>
-<td>{Number(row.sgst || 0).toFixed(2)}%</td>
-<td>{Number(row.igst || 0).toFixed(2)}%</td>
-            <td className="fw-bold text-success">₹{(row.backendTaxAmount || 0).toFixed(2)}</td>
-            <td className="fw-bold text-info">₹{(row.backendNetAmount || 0).toFixed(2)}</td>
-          </tr>
-        ))
-      )}
-    </tbody>
-   <tfoot>
-  <tr>
-    <td colSpan={14} style={{ textAlign: "center" }}>
-      <div className="form-check d-inline-flex align-items-center m-2" style={{ gap: "8px" }}>
-        <input
-          type="checkbox"
-          id="masterBillCheck"
-          checked={masterBillCheck}
-          onChange={(e) => handleMasterBillCheck(e.target.checked)}
-          className="form-check-input border "
-          title="Select All Items"
-        />
-        <label htmlFor="masterBillCheck" className="form-check-label">
-          Select All
-        </label>
-      </div>
-    </td>
-  </tr>
-</tfoot>
-  </table>
+  {/* Debit Note Number */}
+  <div className="col-md-4">
+    <label className="form-label fw-semibold">
+      Debit Note Number
+    </label>
+
+    <input
+      type="text"
+      name="debitNumber"
+      className="form-control"
+      value={formData.debitNumber || ""}
+      readOnly
+    />
+  </div>
+
+  {/* Debit Note Date */}
+  <div className="col-md-4">
+    <label className="form-label fw-semibold">
+      Debit Note Date
+    </label>
+
+    <input
+      type="date"
+      name="debitNoteDate"
+      className="form-control"
+      value={formData.debitNoteDate || ""}
+      onChange={handleChange}
+    />
+  </div>
+
 </div>
 
 
+        {/* ✅ FIXED TABLE WITH WORKING CHECKBOXES */}
+{/* ✅ FIXED TABLE WITH CHECKBOX + TOTALS LIKE MVC VIEW */}
 
+{/* ✅ TABLE UI SAME AS IMAGE FORMAT */}
 
-        {/* BUTTONS */}
-        <div className="d-flex justify-content-center gap-3 mt-4 mb-2">
-          <button
-            onClick={handleSave}
-            disabled={saveLoading || tableData.filter(row => row.billCheck === true).length === 0}
-            className="btn btn-primary btn-lg px-5 py-2 position-relative"
-            style={{ fontWeight: 600, borderRadius: "8px", minWidth: "140px" }}
-          >
-            {saveLoading ? (
-              <>
-                <Loader2 className="animate-spin me-2" size={20} />
-                Saving...
-              </>
-            ) : (
-              `Save `
-            )}
-          </button>
-          <button
-            className="btn btn-outline-secondary btn-lg px-5 py-2 fw-bold"
-            style={{ borderRadius: "8px" }}
-            onClick={handleCancel}
-            disabled={saveLoading}
-          >
-            Reset
-          </button>
-        </div>
+<div className="table-responsive mt-4">
+  <table
+    className="table table-bordered text-center align-middle"
+    style={{
+      border: "1px solid #d6d6d6",
+      fontSize: "15px"
+    }}
+  >
+    <thead>
+      <tr
+        style={{
+          background: "#eef1f5",
+          color: "#1f2d3d",
+          fontWeight: "600"
+        }}
+      >
+        <th style={{ minWidth: "260px" }}>
+          Item Name
+          <br />
+          Grade
+          <br />
+          Item Code
+        </th>
+
+        <th style={{ minWidth: "150px" }}>
+          Received Qty
+          <br />
+          Rejected Qty
+          <br />
+          Approved Qty
+        </th>
+
+        <th>Net Amt</th>
+        <th>CGST Amt</th>
+        <th>SGST Amt</th>
+        <th>IGST Amt</th>
+        <th>Total Tax (₹)</th>
+        <th>Total Amount (₹)</th>
+        <th>TDS Amt</th>
+        <th>Net Payable</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {tableData.length === 0 ? (
+        <tr>
+          <td colSpan={10} className="py-5 text-muted">
+            No Data Found
+          </td>
+        </tr>
+      ) : (
+        tableData.map((row, index) => {
+          const netAmt = Number(row.backendNetAmount || 0);
+
+          const cgst = Number(row.cgst || 0);
+          const sgst = Number(row.sgst || 0);
+          const igst = Number(row.igst || 0);
+
+          const totalTax = Number(row.backendTaxAmount || 0);
+
+          const totalAmount = netAmt + totalTax;
+
+          const tdsAmt = 0;
+
+          const netPayable = totalAmount - tdsAmt;
+
+          return (
+            <tr key={index}>
+              {/* ITEM DETAILS */}
+              <td className="fw-medium">
+                {row.itemName}
+                <br />
+                {row.grade}
+                <br />
+                {row.itemCode}
+              </td>
+
+              {/* QTY */}
+              <td>
+                <div>{Number(row.receivedQty || 0).toFixed(2)}</div>
+                <div>{Number(row.damagedQty || 0).toFixed(2)}</div>
+                <div>{Number(row.approvedQty || 0).toFixed(2)}</div>
+              </td>
+
+              {/* NET */}
+              <td>
+                {netAmt.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* CGST */}
+              <td>
+                {cgst.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* SGST */}
+              <td>
+                {sgst.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* IGST */}
+              <td>
+                {igst.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* TOTAL TAX */}
+              <td>
+                {totalTax.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* TOTAL */}
+              <td>
+                {totalAmount.toFixed(2)}
+                <br />
+                0.00
+              </td>
+
+              {/* TDS */}
+              <td>{tdsAmt.toFixed(2)}</td>
+
+              {/* NET PAYABLE */}
+              <td>{netPayable.toFixed(2)}</td>
+            </tr>
+          );
+        })
+      )}
+    </tbody>
+
+    {/* ✅ FOOTER TOTALS */}
+    <tfoot>
+      <tr
+        style={{
+          background: "#f5f5f5",
+          fontWeight: "700",
+          fontSize: "16px"
+        }}
+      >
+        <td colSpan={2}>TOTAL</td>
+
+        {/* NET TOTAL */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum + Number(item.backendNetAmount || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* CGST TOTAL */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum + Number(item.cgst || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* SGST TOTAL */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum + Number(item.sgst || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* IGST TOTAL */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum + Number(item.igst || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* TOTAL TAX */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum + Number(item.backendTaxAmount || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* GRAND TOTAL */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum +
+                Number(item.backendNetAmount || 0) +
+                Number(item.backendTaxAmount || 0),
+              0
+            )
+            .toFixed(2)}
+          <br />
+          0.00
+        </td>
+
+        {/* TDS */}
+        <td>0.00</td>
+
+        {/* NET PAYABLE */}
+        <td>
+          {tableData
+            .reduce(
+              (sum, item) =>
+                sum +
+                Number(item.backendNetAmount || 0) +
+                Number(item.backendTaxAmount || 0),
+              0
+            )
+            .toFixed(2)}
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+{/* ✅ APPROVE CHECKBOX */}
+
+<div className="text-center mt-4">
+  <label
+    className="fw-bold"
+    style={{ fontSize: "18px", cursor: "pointer" }}
+  >
+    <input
+      type="checkbox"
+      className="form-check-input me-2"
+      checked={masterBillCheck === true}
+      onChange={(e) =>
+        handleMasterBillCheck(e.target.checked)
+      }
+      style={{
+        width: "20px",
+        height: "20px"
+      }}
+    />
+    Approve This Bill
+  </label>
+</div>
+
+{/* ✅ BUTTONS */}
+
+<div className="d-flex justify-content-center gap-3 mt-4">
+  <button
+  type="button"
+  onClick={handleSave}
+  disabled={saveLoading}
+  className="btn btn-primary px-5 py-2"
+  style={{
+    borderRadius: "10px",
+    fontSize: "15px",
+    fontWeight: "200",
+    minWidth: "140px"
+  }}
+>
+  {saveLoading ? "Saving..." : "Save"}
+</button>
+  <button
+    className="btn btn-secondary px-5 py-2"
+    style={{
+      borderRadius: "10px",
+      fontSize: "15px",
+      fontWeight: "200",
+      minWidth: "140px"
+    }}
+  >
+    Reset
+  </button>
+</div>
       </div>
 
       {/* </div> */}

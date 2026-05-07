@@ -60,6 +60,11 @@ export const API_ENDPOINTS = {
   DeactivateEmployee: `${BASE_URL}/HrmOrgInfo/DeactivateEmployee`,
   UpdateEmployeeStatus: `${BASE_URL}/HrmOrgInfo/UpdateEmployeeStatus`,
   GetemployeeAttendance: `${BASE_URL}/HrmOrgInfo/GetEmployeeAttendance`,
+  // ================= ATTENDANCE API =================
+
+GetEmployeesByDateRange: `${BASE_URL}/HrmOrgInfo/GetEmployeesByDateRange`,
+SaveEmployeeAttendance: `${BASE_URL}/HrmOrgInfo/SaveEmployeeAttendance`,
+DeactivateAttendance: `${BASE_URL}/HrmOrgInfo/DeactivateAttendance`,
   HRMAdminReg: `${BASE_URL}/HRMAdminRegAPI/HasChiefAdmin`,
 StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   //------------------------Account APIs----------------------------------//

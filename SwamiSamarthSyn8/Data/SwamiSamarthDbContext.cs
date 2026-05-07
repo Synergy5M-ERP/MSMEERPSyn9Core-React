@@ -18,6 +18,7 @@ public partial class SwamiSamarthDbContext : DbContext
     {
     }
     //---------Accounts-------//
+    public virtual DbSet<Master_VendorSubCategory> Master_VendorSubCategory { get; set; }
 
     public virtual DbSet<AccountDebitNote> AccountDebitNote { get; set; }
     public virtual DbSet<AccountDebitNoteDetails> AccountDebitNoteDetails { get; set; }

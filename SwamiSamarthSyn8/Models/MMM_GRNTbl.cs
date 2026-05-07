@@ -72,8 +72,12 @@ public partial class MMM_GRNTbl
 
     [StringLength(50)]
     public string? PO_No { get; set; }
-
+    [StringLength(500)]
+    public string? SToVendorcode { get; set; }
     public DateOnly? Payment_Due_On { get; set; }
+    public string? DebitNoteNo { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime? InvIssueDate { get; set; }
 
     public DateOnly? QC_Clearance_Date { get; set; }
 

@@ -243,13 +243,13 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                                   PONumber = g.PO_No,
                                   InvoiceNumber = g.Invoice_NO,
                                   InvoiceDate = g.Invoice_Date,
-                                  TotalAmount = a.Total_Amount,
+                                  TotalAmount = a.TotalAmount,
 
                                   PaidAmount = p?.PaidAmount ?? 0,
 
                                   BalanceAmount = (p != null && p.BalanceAmount > 0)
                                       ? p.BalanceAmount
-                                      : a.Total_Amount
+                                      : a.TotalAmount
                               })
                               .OrderByDescending(x => x.AccountGRNId)
                               .ToList();

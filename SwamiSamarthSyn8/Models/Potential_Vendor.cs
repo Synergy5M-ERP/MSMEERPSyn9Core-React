@@ -94,5 +94,9 @@ public partial class Potential_Vendor
     [StringLength(50)]
     public string? PAN_No { get; set; }
     [NotMapped]
-    public string Vendor_Categories { get; set; }
+    public string? Vendor_Categories { get; set; }
+    public string? GLCode { get; set; }
+    public string? LedgerName { get; set; }
+    public int? VendorCategoryId { get; set; }
+    public int? VendorSubCategoryId { get; set; }
 }

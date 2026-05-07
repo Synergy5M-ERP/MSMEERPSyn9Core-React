@@ -28,7 +28,10 @@ public class AccountGRN
     public bool? ApprovedGRN { get; set; }
 
     //[Column("Total_Amount")]
-    public decimal? Total_Amount { get; set; }
+    public decimal? TotalAmount { get; set; }
+    public decimal? TotalNetAmount { get; set; }
+    public decimal? TDSAmount { get; set; }
+    public decimal? NetPayable { get; set; }
 
     public decimal? SGSTAmount { get; set; }
 

@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SwamiSamarthSyn8.Models.Accounts
+namespace SwamiSamarthSyn8.Models
 {
-    [Table("Master_VendorCategory")]
-    public class Master_VendorCategory
+    public partial class Master_VendorSubCategory
     {
         [Key]
         public int VendorSubCategoryId { get; set; }

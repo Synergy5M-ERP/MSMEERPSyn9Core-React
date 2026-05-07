@@ -37,35 +37,74 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             return Ok(new { success = true, data = sellers });
         }
 
-        
         [HttpGet("GetInvoicesBySeller")]
         public async Task<IActionResult> GetInvoicesBySeller([FromQuery] string sellerName)
         {
-            if (string.IsNullOrEmpty(sellerName))
-                return BadRequest(new { success = false, message = "Seller name is required" });
-
-            var invoices = await _swamiContext.MMM_GRNTbl
-                .Where(g => g.Supplier_Name == sellerName
-                            && g.QC_Clearance_Date != null
-                            && g.Invoice_Date != null
-                            && g.QC_Clearance_Date >= g.Invoice_Date) // 🔥 CONDITION
-                .OrderBy(g => g.Invoice_Date)   // better sorting
-                .Select(g => new
+            try
+            {
+                if (string.IsNullOrEmpty(sellerName))
                 {
-                    g.Id,
-                    invoiceNumber = g.Invoice_NO,
-                    invoiceDate = g.Invoice_Date,
-                    qcDate = g.QC_Clearance_Date
-                })
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Seller name is required"
+                    });
+                }
+
+                var invoices = await (
+                    from g in _swamiContext.MMM_GRNTbl
+
+                    where g.Supplier_Name == sellerName
+                          && g.QC_Clearance_Date != null
+                          && !string.IsNullOrEmpty(g.Invoice_NO)
+
+                    join a in _swamiContext.AccountGRN
+                    on new
+                    {
+                        Supplier = g.Supplier_Name,
+                        Invoice = g.Invoice_NO
+                    }
+                    equals new
+                    {
+                        Supplier = a.Description,
+                        Invoice = a.InvoiceNumber
+                    }
+                    into gj
+
+                    from sub in gj.DefaultIfEmpty()
+
+                        // ✅ EXCLUDE APPROVED GRN
+                    where sub == null || sub.ApprovedGRN == false
+
+                    select new
+                    {
+                        g.Id,
+                        invoiceNumber = g.Invoice_NO,
+                        invoiceDate = g.Invoice_Date,
+                        qcDate = g.QC_Clearance_Date
+                    }
+
+                )
+                .Distinct()
+                .OrderBy(x => x.invoiceNumber)
                 .ToListAsync();
 
-            return Ok(new
+                return Ok(new
+                {
+                    success = true,
+                    data = invoices
+                });
+            }
+            catch (Exception ex)
             {
-                success = true,
-                data = invoices
-            });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
-       
+
         [HttpGet("GetPODetailsByGRN")]
         public async Task<IActionResult> GetPODetailsByGRN([FromQuery] string grnNumber)
         {
@@ -97,14 +136,23 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         }
 
 
-        // ✔ GET FULL GRN DETAILS (Including PO No & PO Date)
+        // ✔ GET FULL GRN DETAILS WITH TDS + NET PAYABLE
         [HttpGet("GetGRNDetails")]
         public async Task<IActionResult> GetGRNDetails([FromQuery] string invoice)
         {
             if (string.IsNullOrEmpty(invoice))
-                return BadRequest(new { success = false, message = "Invoice number is required" });
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invoice number is required"
+                });
+            }
 
-            // ================= HEADER =================
+            // =========================
+            // HEADER DETAILS
+            // =========================
+
             var header = await _swamiContext.MMM_GRNTbl
                 .Where(g => g.Invoice_NO == invoice)
                 .Select(g => new
@@ -119,14 +167,27 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     invoiceDate = g.Invoice_Date,
                     vehicleNo = g.Vehicle_No,
                     transporterName = g.Transporter,
-                    paymentDue = g.Payment_Due_On
+                    paymentDue = g.Payment_Due_On,
+                    qcDate = g.QC_Clearance_Date,
+                    vendorCode = g.SToVendorcode,
+                    DebitNoteNo = g.DebitNoteNo,
+                    DebitDate = g.InvIssueDate
                 })
                 .FirstOrDefaultAsync();
 
             if (header == null)
-                return NotFound(new { success = false, message = "Invoice not found" });
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Invoice not found"
+                });
+            }
 
-            // ================= PO DETAILS =================
+            // =========================
+            // PO DETAILS
+            // =========================
+
             var poDetails = await _swamiContext.MMM_GRNProductTbl
                 .Where(p => p.PO_No == header.poNumber)
                 .Select(p => new
@@ -136,39 +197,232 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 })
                 .FirstOrDefaultAsync();
 
-            // ================= ITEMS =================
-            var items = await _swamiContext.MMM_GRNProductTbl
+            // =========================
+            // GET VENDOR DETAILS
+            // =========================
+
+            var vendor = await _swamiContext.Potential_Vendor
+                .FirstOrDefaultAsync(v => v.Vendor_Code == header.vendorCode);
+
+            decimal tdsRate = 0;
+            decimal thresholdLimit = 0;
+            string vendorType = "";
+
+            if (vendor != null)
+            {
+                // ================= SUB CATEGORY =================
+
+                if (vendor.VendorSubCategoryId != null)
+                {
+                    var subCategory = await _swamiContext.Master_VendorSubCategory
+                        .FirstOrDefaultAsync(x =>
+                            x.VendorSubCategoryId == vendor.VendorSubCategoryId);
+
+                    if (subCategory != null)
+                    {
+                        decimal.TryParse(
+                            Convert.ToString(subCategory.TDSRate),
+                            out tdsRate
+                        );
+
+                        decimal.TryParse(
+                            Convert.ToString(subCategory.ThreshouldLimit),
+                            out thresholdLimit
+                        );
+
+                        vendorType = "SubCategory";
+                    }
+                }
+
+                // ================= CATEGORY =================
+
+                else if (vendor.VendorCategoryId != null)
+                {
+                    var category = await _swamiContext.Master_VendorCategory
+                        .FirstOrDefaultAsync(x =>
+                            x.VendorCategoryId == vendor.VendorCategoryId);
+
+                    if (category != null)
+                    {
+                        decimal.TryParse(
+                            Convert.ToString(category.TDSRate),
+                            out tdsRate
+                        );
+
+                        decimal.TryParse(
+                            Convert.ToString(category.ThreshouldLimit),
+                            out thresholdLimit
+                        );
+
+                        vendorType = "Category";
+                    }
+                }
+            }
+
+            // =========================
+            // TOTAL NET AMOUNT OF SAME VENDOR
+            // =========================
+
+            var vendorProducts = await (
+                from grn in _swamiContext.MMM_GRNTbl
+                join prod in _swamiContext.MMM_GRNProductTbl
+                    on grn.Id equals prod.G_Id
+                where grn.SToVendorcode == header.vendorCode
+                select prod
+            ).ToListAsync();
+
+            decimal totalNetAmount = 0;
+
+            foreach (var item in vendorProducts)
+            {
+                decimal netAmt = 0;
+
+                decimal.TryParse(
+                    Convert.ToString(item.NetAmount),
+                    out netAmt
+                );
+
+                totalNetAmount += netAmt;
+            }
+
+            // =========================
+            // CHECK TDS APPLICABLE
+            // =========================
+
+            bool isTdsApplicable = totalNetAmount > thresholdLimit;
+
+            // =========================
+            // ITEMS DETAILS
+            // =========================
+
+            var productList = await _swamiContext.MMM_GRNProductTbl
                 .Where(i => i.G_Id == header.grnId)
-                .Select(i => new
+                .ToListAsync();
+
+            var items = productList.Select(i =>
+            {
+                decimal netAmount = 0;
+                decimal invNetAmount = 0;
+                decimal totalValue = 0;
+                decimal invTotalItemVal = 0;
+
+                decimal.TryParse(
+                    Convert.ToString(i.NetAmount),
+                    out netAmount
+                );
+
+                decimal.TryParse(
+                    Convert.ToString(i.InvNetamt),
+                    out invNetAmount
+                );
+
+                decimal.TryParse(
+                    Convert.ToString(i.Total_Value),
+                    out totalValue
+                );
+
+                decimal.TryParse(
+                    Convert.ToString(i.InvTotalItemVal),
+                    out invTotalItemVal
+                );
+
+                // ================= TAXABLE AMOUNT =================
+
+                decimal taxableAmount = netAmount - invNetAmount;
+
+                if (taxableAmount < 0)
+                {
+                    taxableAmount = 0;
+                }
+
+                // ================= TDS AMOUNT =================
+
+                decimal tdsAmount = 0;
+
+                if (isTdsApplicable)
+                {
+                    tdsAmount = taxableAmount * tdsRate / 100;
+                }
+
+                // ================= NET PAYABLE =================
+
+                decimal netPayable =
+                    totalValue
+                    - invTotalItemVal
+                    - tdsAmount;
+
+                return new
                 {
                     i.G_Id,
+
                     itemName = i.Item_Name,
                     grade = i.Item_Descrpition,
                     itemCode = i.Item_Code,
+
                     receivedQty = i.Received_Qty,
                     acceptedQty = i.Accepted_Qty,
                     rejectedQty = i.Rejected_Qty,
+
                     rate = i.RatePerUnit,
                     taxType = i.TaxType,
                     taxRate = i.TaxRate,
-                    taxAmount = i.TaxAmount,
-                    netAmount = i.NetAmount,
-                    totalTaxValue = i.Total_Value,
-                    cgst = i.CGSTtaxrate,
-                    sgst = i.SGSTtaxrate,
-                    igst = i.IGSTtaxrate
-                })
-                .ToListAsync();
 
-            // ================= RESPONSE =================
+                    taxAmount = i.TaxAmount,
+                    netAmount = netAmount,
+                    totalTaxValue = totalValue,
+
+                    cgst = i.Cgst_Tax_Amt,
+                    sgst = i.Sgst_Tax_Amt,
+                    igst = i.Igst_Tax_Amt,
+
+                    digst = i.InvIgstAmt,
+                    dcgst = i.InvcgstAmt,
+                    dsgst = i.InvsgstAmt,
+
+                    dNetAmt = invNetAmount,
+                    dTotalTax = i.InvTotalTaxValue,
+                    dTotalItemValue = invTotalItemVal,
+
+                    taxableAmount = taxableAmount,
+
+                    tdsRate = tdsRate,
+
+                    tdsAmount = Math.Round(tdsAmount, 2),
+
+                    netPayable = Math.Round(netPayable, 2)
+                };
+            }).ToList();
+
+            // =========================
+            // TOTAL TDS
+            // =========================
+
+            decimal totalTdsAmount =
+                items.Sum(x => x.tdsAmount);
+
+            // =========================
+            // RESPONSE
+            // =========================
+
             return Ok(new
             {
                 success = true,
+
                 data = new
                 {
                     header,
                     items,
-                    poDetails
+                    poDetails,
+
+                    tdsDetails = new
+                    {
+                        vendorType,
+                        tdsRate,
+                        thresholdLimit,
+                        totalNetAmount,
+                        totalTdsAmount,
+                        isTdsApplicable
+                    }
                 }
             });
         }
@@ -190,11 +444,14 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     InvoiceNumber = request.InvoiceNumber,
                     Description = request.Description,
 
-                    Total_Amount = request.TotalAmount,
-                    SGSTAmount = request.SGSTAmount,
-                    CGSTAmount = request.CGSTAmount,
-                    IGSTAmount = request.IGSTAmount,
 
+                    TotalNetAmount = request.TotalNetAmount,
+                    CGSTAmount = request.CGSTAmount,
+                    SGSTAmount = request.SGSTAmount,
+                    IGSTAmount = request.IGSTAmount,
+                    TotalAmount = request.TotalAmount,
+                    TDSAmount = request.TDSAmount,
+                    NetPayable = request.NetPayable,
                     CheckGRN = true,
                     ApprovedGRN = false,
 
@@ -354,7 +611,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     .Select(x => new
                     {
                         x.GRNNumber,
-                        x.Total_Amount,
+                        x.TotalAmount,
                         x.VendorId,
                         x.AccountGRNId
                     })
@@ -452,7 +709,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     if (dbGRN != null)
                     {
                         dbGRN.ApprovedGRN = true;
-                        dbGRN.Total_Amount = grnDto.TotalAmount;
+                        dbGRN.TotalAmount = grnDto.TotalAmount;
                         dbGRN.IsActive = true;
                         dbGRN.UpdatedDate = DateTime.Now;
                     }
@@ -803,7 +1060,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     return NotFound(new { success = false, message = "GRN not found" });
 
                 record.ApprovedGRN = true;
-                record.Total_Amount = totalAmount;
+                record.TotalAmount = totalAmount;
                 record.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
 
                 await _msmeContext.SaveChangesAsync();
@@ -1061,37 +1318,37 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
             if (subledger != null)
                 subledger.ClosingBal += credit;
         }
-        [HttpGet("Vendorcategories")]
-        public async Task<IActionResult> GetCategories()
-        {
-            try
-            {
-                var categories = await _swamiContext.Master_VendorCategory
-                    .Where(x => x.IsActive == true)
-                    .Select(x => new
-                    {
-                        id = x.VendorCategoryId,
-                        name = x.VendorCategory
-                    })
-                    .ToListAsync();
+        //[HttpGet("Vendorcategories")]
+        //public async Task<IActionResult> GetCategories()
+        //{
+        //    try
+        //    {
+        //        var categories = await _swamiContext.Master_VendorCategory
+        //            .Where(x => x.IsActive == true)
+        //            .Select(x => new
+        //            {
+        //                id = x.VendorCategoryId,
+        //                name = x.VendorCategory
+        //            })
+        //            .ToListAsync();
 
-                return Ok(new
-                {
-                    success = true,
-                    data = categories
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching vendor categories");
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            data = categories
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error fetching vendor categories");
 
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = "Error fetching categories"
-                });
-            }
-        }
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = "Error fetching categories"
+        //        });
+        //    }
+        //}
         [HttpGet("salesbuyers")]
         public async Task<IActionResult> GetSalesBuyers()
         {

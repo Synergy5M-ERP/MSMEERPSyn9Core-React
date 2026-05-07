@@ -41,10 +41,12 @@ public partial class MMM_GRNProductTbl
     [StringLength(200)]
     [Unicode(false)]
     public string? short_Qty { get; set; }
+    public decimal? InvTotalItemVal { get; set; }
 
     [StringLength(200)]
     [Unicode(false)]
     public string? Excess_Qty { get; set; }
+    public decimal? InvNetamt { get; set; }
 
     [StringLength(200)]
     [Unicode(false)]
@@ -124,6 +126,11 @@ public partial class MMM_GRNProductTbl
     [StringLength(500)]
     [Unicode(false)]
     public string? Sgst_Tax_Amt { get; set; }
+    public decimal? InvIgstAmt { get; set; }
+
+    public decimal? InvsgstAmt { get; set; }
+
+    public decimal? InvcgstAmt { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]

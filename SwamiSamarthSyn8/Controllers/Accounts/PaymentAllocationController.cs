@@ -94,7 +94,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         [HttpGet("GetLedger")]
         public IActionResult GetLedger()
         {
-            var ledger = _msmeContext.AccountLedger
+            var ledger = _swamiContext.AccountLedger
                 .Select(l => new
                 {
                     l.AccountLedgerId,
@@ -121,12 +121,42 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
         [HttpGet("GetLedgerBalance")]
         public IActionResult GetLedgerBalance(int ledger)
         {
-            var balance = _msmeContext.AccountSubLedger
-                .Where(l => l.AccountLedgerSubid == ledger)
-                .Select(l => l.ClosingBal)
-                .FirstOrDefault();
+            try
+            {
+                var ledgerData = _swamiContext.AccountSubLedger
+                    .Where(x => x.AccountLedgerSubid == ledger)
+                    .Select(x => new
+                    {
+                        x.AccountLedgerSubid,
+                        x.AccountLedgerSubName,
+                        x.ClosingBal
+                    })
+                    .FirstOrDefault();
 
-            return Ok(new { success = true, balance = balance });
+                if (ledgerData == null)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        balance = 0
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    ledgerName = ledgerData.AccountLedgerSubName,
+                    balance = ledgerData.ClosingBal
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
         [HttpPost("SavePaymentAllocation")]
         public async Task<IActionResult> SavePaymentAllocation(

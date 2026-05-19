@@ -1,9 +1,9 @@
 
 // const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
-const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
+//const BASE_URL = "https://msmeerpsyn9-core.azurewebsites.net/api";
 
 
-//const BASE_URL = "https://localhost:7145/api";
+const BASE_URL = "https://localhost:7145/api";
 
 
 // const BASE_URL = "https://localhost:7145/api";
@@ -74,6 +74,7 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   SubVoucherType: `${BASE_URL}/AccountSubVoucherType/`,
 
   //------------------------Account APIs----------------------------------
+ 
   AccountLedger: `${BASE_URL}/AccountLedger/`,
   AccountSubLedger: `${BASE_URL}/AccountSubLedger/`,
   VendorCategory: `${BASE_URL}/VendorCategory`,
@@ -157,8 +158,10 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   SavePaymentAllocation: `${BASE_URL}/PaymentAllocation/SavePaymentAllocation`,
   GetNonGrnBank: `${BASE_URL}/PaymentAllocation/GetNonGrnBank`,
   GetLedger: `${BASE_URL}/PaymentAllocation/GetLedger`,
-  GetSubLedger: `${BASE_URL}/PaymentAllocation/GetSubLedger`,
-  GetTransporter: `${BASE_URL}/GRN/GetTransporter`,
+ GetSubLedger: `${BASE_URL}/PaymentAllocation/GetSubLedger`,
+
+GetLedgerBalance: `${BASE_URL}/PaymentAllocation/GetLedgerBalance`, 
+ GetTransporter: `${BASE_URL}/GRN/GetTransporter`,
     GetTransporterDetails: `${BASE_URL}/GRN/GetTransporterDetails`,
     SaveTransportrationGRN: `${BASE_URL}/GRN/SaveTransportrationGRN`,
     GetApproveTransporter: `${BASE_URL}/GRN/GetApproveTransporter`,

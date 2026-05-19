@@ -9,31 +9,105 @@ const PaymentAllocationNonGrn = () => {
 
   const [date, setDate] = useState(getToday());
   const [dueDate, setDueDate] = useState("");
-  
+  const [balance, setBalance] = useState(0);
+const [allocated, setAllocated] = useState(0);
   const [subLedger, setSubLedger] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [subLedgers, setSubLedgers] = useState([]);
   const [banks, setBanks] = useState([]);
+  const [cashLedgers, setCashLedgers] = useState([]);
+const [cashLedgerId, setCashLedgerId] = useState("");
+  const [paymentType, setPaymentType] = useState("Bank");
   useEffect(() => {
   fetchSubLedger();   // 🔥 THIS IS MISSING
 }, []);
-const fetchSubLedger = async () => {
+const fetchCashLedger = async () => {
+
   try {
-    const res = await fetch(
-      `${API_ENDPOINTS.GetSubLedger}`
-    );
+
+    const res = await fetch(API_ENDPOINTS.GetLedger);
 
     const data = await res.json();
 
     if (data.success) {
-      setSubLedgers(data.data);
+
+      setCashLedgers(data.data || []);
+
+      // ✅ default select Cash On Hand
+
+      const defaultCash = data.data.find(
+        x => x.accountLedgerName === "Cash On Hand"
+      );
+
+      if (defaultCash) {
+
+        setCashLedgerId(defaultCash.accountLedgerId);
+
+      }
+
     }
 
   } catch (err) {
-    console.error("SubLedger load error", err);
+
+    console.error("Cash Ledger Error", err);
+
   }
+
+};
+const fetchSubLedger = async () => {
+
+  try {
+
+    const res = await fetch(API_ENDPOINTS.GetSubLedger);
+
+    const data = await res.json();
+
+    setSubLedgers(data.data || []);
+
+  } catch (err) {
+
+    console.error("SubLedger load error", err);
+
+  }
+
+};
+const fetchLedgerBalance = async (ledgerId) => {
+
+  if (!ledgerId) {
+
+    setBalance(0);
+    return;
+
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API_ENDPOINTS.GetLedgerBalance}?ledger=${ledgerId}`
+    );
+
+    const data = await res.json();
+
+    console.log("Balance API Response:", data);
+
+    if (data.success) {
+
+      setBalance(Number(data.balance || 0));
+
+    } else {
+
+      setBalance(0);
+
+    }
+
+  } catch (err) {
+
+    console.error("Balance API Error", err);
+
+  }
+
 };
 const fetchBank = async (supplier) => {
 
@@ -116,20 +190,29 @@ const fetchBank = async (supplier) => {
 }, []);
 
   // 🔹 PAID AMOUNT CHANGE
-  const handlePaidChange = (index, value) => {
+ const handlePaidChange = (index, value) => {
 
-    const newRows = [...rows];
+  const newRows = [...rows];
 
-    const paid = Number(value) || 0;
+  const paid = Number(value) || 0;
 
-    newRows[index].paidAmount = paid;
+  newRows[index].paidAmount = paid;
 
-    newRows[index].balanceAmount =
-      newRows[index].totalAmount - paid;
+  newRows[index].balanceAmount =
+    newRows[index].totalAmount - paid;
 
-    setRows(newRows);
+  setRows(newRows);
 
-  };
+  // ✅ allocated total
+
+  const totalAllocated = newRows.reduce(
+    (sum, row) => sum + Number(row.paidAmount || 0),
+    0
+  );
+
+  setAllocated(totalAllocated);
+
+};
 
   return (
     <>
@@ -140,77 +223,227 @@ const fetchBank = async (supplier) => {
         <div className="card shadow-sm">
 
           <div className="card-body">
+<div className="d-flex align-items-center gap-4 mb-3">
 
-<div className="card-header bg-success text-white">
-            <h5 className="mb-0">Payment Allocation Non-GRN</h5>
-          </div>
-            <div className="row g-3 align-items-end">
+  {/* CASH FIRST */}
 
-              <div className="col-md-2">
-                <label className="form-label fw-bold">Date</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
+  <div className="form-check">
 
-            
+    <input
+      className="form-check-input"
+      type="radio"
+      name="paymentType"
+      id="cash"
+      value="Cash"
+      checked={paymentType === "Cash"}
+      onChange={(e) => {
 
-              <div className="col-md-2">
-                <label className="form-label fw-bold">Sub Ledger</label>
-               <select
-  className="form-select"
-  value={subLedger}
-  onChange={(e) => setSubLedger(e.target.value)}
->
-  <option value="">Select Sub Ledger</option>
+        setPaymentType(e.target.value);
 
-  {subLedgers.map((s) => (
-    <option key={s.accountLedgerSubid} value={s.accountLedgerSubid}>
-      {s.accountLedgerSubName}
-    </option>
-  ))}
+        // ✅ clear bank values
+        setSubLedger("");
+        setBalance(0);
 
-</select>
-              </div>
+        // ✅ load cash ledger
+        fetchCashLedger();
 
-              <div className="col-md-3">
-                <label className="form-label fw-bold">Balance Details</label>
-                <div className="alert alert-danger p-2 mb-0">
-                  Balance ₹0.00 | Allocated ₹0.00
-                </div>
-              </div>
+      }}
+    />
 
-              <div className="col-md-2">
-                <label className="form-label fw-bold">Select Due Date</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
+    <label
+      className="form-check-label fw-bold"
+      htmlFor="cash"
+    >
+      Cash
+    </label>
 
-              <div className="col-md-1">
-                <label className="form-label fw-bold">Pages</label>
-                <select
-                  className="form-select"
-                  value={pageSize}
-                  onChange={(e) => setPageSize(e.target.value)}
-                >
-                  <option>5</option>
-                  <option>10</option>
-                  <option>25</option>
-                  <option>50</option>
-                  <option>100</option>
-                </select>
-              </div>
+  </div>
 
-            </div>
+  {/* BANK SECOND */}
 
-            {/* TABLE */}
+  <div className="form-check">
+
+    <input
+      className="form-check-input"
+      type="radio"
+      name="paymentType"
+      id="bank"
+      value="Bank"
+      checked={paymentType === "Bank"}
+      onChange={(e) => {
+
+        setPaymentType(e.target.value);
+
+        // ✅ clear cash ledger
+        setCashLedgerId("");
+
+      }}
+    />
+
+    <label
+      className="form-check-label fw-bold"
+      htmlFor="bank"
+    >
+      Bank
+    </label>
+
+  </div>
+
+</div>
+           <div className="row g-3 align-items-end">
+
+  {/* DATE */}
+
+  <div className="col-md-2">
+    <label className="form-label fw-bold">Date</label>
+
+    <input
+      type="date"
+      className="form-control"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+    />
+  </div>
+
+  {/* CASH LEDGER */}
+
+  <div className="col-md-2">
+
+    <label className="form-label fw-bold">
+      Cash Ledger
+    </label>
+
+    <select
+      className="form-select"
+      value={cashLedgerId}
+      disabled={paymentType !== "Cash"}
+      onChange={(e) =>
+        setCashLedgerId(e.target.value)
+      }
+    >
+
+      <option value="">
+        Select Cash Ledger
+      </option>
+
+      {cashLedgers.map((l) => (
+
+        <option
+          key={l.accountLedgerId}
+          value={l.accountLedgerId}
+        >
+          {l.accountLedgerName}
+        </option>
+
+      ))}
+
+    </select>
+
+  </div>
+
+  {/* BANK SUB LEDGER */}
+
+  <div className="col-md-2">
+
+    <label className="form-label fw-bold">
+      Bank Sub Ledger
+    </label>
+
+    <select
+      className="form-select"
+      value={subLedger}
+      disabled={paymentType !== "Bank"}
+      onChange={(e) => {
+
+        const ledgerId = e.target.value;
+
+        setSubLedger(ledgerId);
+
+        // ✅ CALL BALANCE API
+        fetchLedgerBalance(ledgerId);
+
+      }}
+    >
+
+      <option value="">
+        Select Sub Ledger
+      </option>
+
+      {subLedgers.map((s) => (
+
+        <option
+          key={s.accountLedgerSubid}
+          value={s.accountLedgerSubid}
+        >
+          {s.accountLedgerSubName}
+        </option>
+
+      ))}
+
+    </select>
+
+  </div>
+
+  {/* BALANCE */}
+
+  <div className="col-md-3">
+
+    <label className="form-label fw-bold">
+      Balance Details
+    </label>
+
+    <div className="alert alert-danger p-2 mb-0">
+
+      Balance ₹{Number(balance).toFixed(2)}
+      {" | "}
+      Allocated ₹{Number(allocated).toFixed(2)}
+
+    </div>
+
+  </div>
+
+  {/* DUE DATE */}
+
+  <div className="col-md-2">
+
+    <label className="form-label fw-bold">
+      Select Due Date
+    </label>
+
+    <input
+      type="date"
+      className="form-control"
+      value={dueDate}
+      onChange={(e) => setDueDate(e.target.value)}
+    />
+
+  </div>
+
+  {/* PAGE SIZE */}
+
+  <div className="col-md-1">
+
+    <label className="form-label fw-bold">
+      Pages
+    </label>
+
+    <select
+      className="form-select"
+      value={pageSize}
+      onChange={(e) => setPageSize(e.target.value)}
+    >
+
+      <option>5</option>
+      <option>10</option>
+      <option>25</option>
+      <option>50</option>
+      <option>100</option>
+
+    </select>
+
+  </div>
+
+</div>
 
             <div className="table-responsive mt-4">
 

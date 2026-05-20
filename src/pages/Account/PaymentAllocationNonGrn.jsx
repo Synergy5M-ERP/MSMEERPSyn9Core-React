@@ -204,7 +204,7 @@ const fetchBank = async (supplier) => {
   setRows(newRows);
 
   // ✅ allocated total
-
+  // ✅ allocated total
   const totalAllocated = newRows.reduce(
     (sum, row) => sum + Number(row.paidAmount || 0),
     0

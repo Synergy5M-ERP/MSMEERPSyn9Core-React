@@ -15,6 +15,8 @@ const [subLedgers, setSubLedgers] = useState([]);
 const [subLedger, setSubLedger] = useState("");
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [rows, setRows] = useState([]);
+  const [allocated, setAllocated] = useState(0);
+    const [balance, setBalance] = useState(0);
   
   // ✅ Track original vs modified data
   const [originalRows, setOriginalRows] = useState([]);
@@ -40,7 +42,14 @@ const [subLedger, setSubLedger] = useState("");
   }, [rows, originalRows]);
 
 
-    
+   useEffect(() => {
+  if (subLedger) {
+    fetchLedgerBalance(subLedger);
+  } else {
+    setBalance(0);
+    setAllocated(0);
+  }
+}, [subLedger]); 
 const fetchSubLedger = async () => {
   try {
     const res = await fetch(API_ENDPOINTS.GetSubLedger);
@@ -145,31 +154,60 @@ const mapped = sortedItems.map((r) => {
 
     fetchPayments();
   }, [page, pageSize, baseActualBal]);
+const fetchLedgerBalance = async (ledgerId) => {
+  if (!ledgerId) {
+    setBalance(0);
+    return;
+  }
 
+  try {
+    const res = await fetch(
+      `${API_ENDPOINTS.GetLedgerBalance}?ledger=${ledgerId}`
+    );
+
+    const data = await res.json();
+
+    console.log("Balance API Response:", data);
+
+    if (data.success) {
+      setBalance(Number(data.balance || 0));
+      setBaseActualBal(Number(data.balance || 0)); // ✅ IMPORTANT FIX
+    } else {
+      setBalance(0);
+      setBaseActualBal(0);
+    }
+  } catch (err) {
+    console.error("Balance API Error", err);
+  }
+};
   // ✅ Enhanced handlePaidChange with toast
 const handlePaidChange = (accountGRNId, value) => {
-  const numeric = Number(value);
-  const paidVal = Number.isNaN(numeric) || numeric < 0 ? 0 : numeric;
+  const paidVal = Math.max(0, Number(value) || 0);
 
-  setRows(prevRows => {
-    const updated = prevRows.map(row => {
+  setRows((prevRows) => {
+    const updated = prevRows.map((row) => {
       if (row.accountGRNId !== accountGRNId) return row;
 
-      // ✅ Here we calculate balance considering already paid amount
-      const totalPaidSoFar = paidVal; // overwrite paidAmount with typed value
-      const newBalance = row.totalAmount - totalPaidSoFar;
+      const total = Number(row.totalAmount) || 0;
+      const safePaid = Math.min(paidVal, total);
 
       return {
         ...row,
-        paidAmount: totalPaidSoFar,
-        balanceAmount: newBalance,
-        isChecked: newBalance === 0
+        paidAmount: safePaid,
+        balanceAmount: total - safePaid,
+        isChecked: safePaid === total
       };
     });
 
-    const totalPaid = updated.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
-    setActualBal(Math.max(0, baseActualBal - totalPaid));
+    const allocatedTotal = updated.reduce(
+      (sum, r) => sum + (Number(r.paidAmount) || 0),
+      0
+    );
+
+    setAllocated(allocatedTotal); // ✅ FIXED
+    setActualBal(Math.max(0, baseActualBal - allocatedTotal));
     setIsDirty(true);
+
     return updated;
   });
 };
@@ -317,9 +355,7 @@ debugger;
       />
       <div className="container my-4">
         <div className="card shadow-sm">
-          <div className="card-header bg-success text-white">
-            <h5 className="mb-0">Payment Allocation</h5>
-          </div>
+         
 
           <div className="card-body">
             {/* Filters */}
@@ -340,10 +376,12 @@ debugger;
                 </div>
  <div className="col-md-2">
                 <label className="form-label fw-bold">Sub Ledger</label>
-                <select
+               <select
   className="form-select"
   value={subLedger}
-  onChange={(e) => setSubLedger(e.target.value)}
+  onChange={(e) => {
+    setSubLedger(e.target.value);
+  }}
 >
   <option value="">Select Sub Ledger</option>
 
@@ -355,21 +393,28 @@ debugger;
 
 </select>
               </div>
-                <div className="col-3">
-                  <label className="form-label m-2">Balance Details</label>
-                  <div
-                    className={`alert mb-0 d-flex align-items-center ${
-                      actualBal === 0 ? 'alert-danger' :
-                        actualBal < rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0) * 0.1 ? 'alert-warning' : 'alert-success'
-                    }`}
-                    style={{ height: '40px', paddingTop: '0', paddingBottom: '0' }}
-                  >
-                    <span>
-                      <strong>Balance:</strong> ₹{actualBal.toFixed(2)} |
-                      <strong> Allocated:</strong> ₹{rows.reduce((sum, r) => sum + (r.paidAmount || 0), 0).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+                <div className="col-md-3">
+
+  <label className="form-label fw-bold">
+    Balance Details
+  </label>
+
+  <div className="alert alert-danger p-2 mb-0">
+
+    <strong>
+      Balance ₹
+{(Number(balance || 0) - Number(allocated || 0)).toFixed(2)}    </strong>
+
+    {" | "}
+
+    <strong>
+      Allocated ₹
+      {Number(allocated).toFixed(2)}
+    </strong>
+
+  </div>
+
+</div>
                 <div className="col-1">
                   <label className="form-label m-2">Pages:</label>
                   <select

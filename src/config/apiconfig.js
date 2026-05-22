@@ -156,6 +156,8 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   GetApprovedGrnPaymentAllocation: `${BASE_URL}/PaymentAllocation/GetApprovedGrnPaymentAllocation`,
 
   SavePaymentAllocation: `${BASE_URL}/PaymentAllocation/SavePaymentAllocation`,
+    SaveNonGrnPaymentAllocation: `${BASE_URL}/PaymentAllocation/SaveNonGrnPaymentAllocation`,
+
   GetNonGrnBank: `${BASE_URL}/PaymentAllocation/GetNonGrnBank`,
   GetLedger: `${BASE_URL}/PaymentAllocation/GetLedger`,
  GetSubLedger: `${BASE_URL}/PaymentAllocation/GetSubLedger`,

@@ -37,6 +37,33 @@ const [selectedInvoice, setSelectedInvoice] = useState("");
   debitNoteDate: "",
 
   });
+  const rejectionTotals = tableData.reduce(
+  (acc, item) => {
+    const dNetAmt = Number(item.dNetAmt || item.backendRejectedNet || 0);
+    const dcgst = Number(item.dcgst || 0);
+    const dsgst = Number(item.dsgst || 0);
+    const digst = Number(item.digst || 0);
+    const dTotalTax = Number(item.dTotalTax || 0);
+    const dTotalValue = Number(item.dTotalItemValue || 0);
+
+    acc.totalDNetAmt += dNetAmt;
+    acc.totalDCGST += dcgst;
+    acc.totalDSGST += dsgst;
+    acc.totalDIGST += digst;
+    acc.totalDTaxAmount += dTotalTax;
+    acc.totalDValue += dTotalValue;
+
+    return acc;
+  },
+  {
+    totalDNetAmt: 0,
+    totalDCGST: 0,
+    totalDSGST: 0,
+    totalDIGST: 0,
+    totalDTaxAmount: 0,
+    totalDValue: 0,
+  }
+);
 const loadInvoiceNumbers = async (sellerName) => {
 
   if (!sellerName) {
@@ -988,113 +1015,87 @@ Invoice Number
     </tbody>
 
     {/* ✅ FOOTER TOTALS */}
-    <tfoot>
-      <tr
-        style={{
-          background: "#f5f5f5",
-          fontWeight: "700",
-          fontSize: "16px"
-        }}
-      >
-        <td colSpan={2}>TOTAL</td>
+<tfoot>
+  {/* ================= MAIN TOTAL ================= */}
+  <tr
+    style={{
+      background: "#f5f5f5",
+      fontWeight: "700",
+      fontSize: "15px",
+    }}
+  >
+    <td colSpan={2}>TOTAL</td>
 
-        {/* NET TOTAL */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum + Number(item.backendNetAmount || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+    {(() => {
+      const totalNet = tableData.reduce(
+        (sum, item) => sum + Number(item.backendNetAmount || 0),
+        0
+      );
 
-        {/* CGST TOTAL */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum + Number(item.cgst || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+      const totalCGST = tableData.reduce(
+        (sum, item) => sum + Number(item.cgst || 0),
+        0
+      );
 
-        {/* SGST TOTAL */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum + Number(item.sgst || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+      const totalSGST = tableData.reduce(
+        (sum, item) => sum + Number(item.sgst || 0),
+        0
+      );
 
-        {/* IGST TOTAL */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum + Number(item.igst || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+      const totalIGST = tableData.reduce(
+        (sum, item) => sum + Number(item.igst || 0),
+        0
+      );
 
-        {/* TOTAL TAX */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum + Number(item.backendTaxAmount || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+      const totalTax = tableData.reduce(
+        (sum, item) => sum + Number(item.backendTaxAmount || 0),
+        0
+      );
 
-        {/* GRAND TOTAL */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum +
-                Number(item.backendNetAmount || 0) +
-                Number(item.backendTaxAmount || 0),
-              0
-            )
-            .toFixed(2)}
-          <br />
-          0.00
-        </td>
+      const grandTotal = tableData.reduce(
+        (sum, item) =>
+          sum +
+          Number(item.backendNetAmount || 0) +
+          Number(item.backendTaxAmount || 0),
+        0
+      );
 
-        {/* TDS */}
-        <td>0.00</td>
+      return (
+        <>
+          <td>{totalNet.toFixed(2)}</td>
+          <td>{totalCGST.toFixed(2)}</td>
+          <td>{totalSGST.toFixed(2)}</td>
+          <td>{totalIGST.toFixed(2)}</td>
+          <td>{totalTax.toFixed(2)}</td>
+          <td>{grandTotal.toFixed(2)}</td>
+          <td>0.00</td>
+          <td>{grandTotal.toFixed(2)}</td>
+        </>
+      );
+    })()}
+  </tr>
 
-        {/* NET PAYABLE */}
-        <td>
-          {tableData
-            .reduce(
-              (sum, item) =>
-                sum +
-                Number(item.backendNetAmount || 0) +
-                Number(item.backendTaxAmount || 0),
-              0
-            )
-            .toFixed(2)}
-        </td>
-      </tr>
-    </tfoot>
+  {/* ================= REJECTION TOTAL ================= */}
+  <tr
+    style={{
+      background: "#ffe0e0",
+      fontWeight: "600",
+      fontSize: "13px",
+    }}
+  >
+    <td colSpan={2}>REJECTION TOTAL</td>
+
+    <td>{rejectionTotals.totalDNetAmt.toFixed(2)}</td>
+    <td>{rejectionTotals.totalDCGST.toFixed(2)}</td>
+    <td>{rejectionTotals.totalDSGST.toFixed(2)}</td>
+    <td>{rejectionTotals.totalDIGST.toFixed(2)}</td>
+    <td>{rejectionTotals.totalDTaxAmount.toFixed(2)}</td>
+    <td>{rejectionTotals.totalDValue.toFixed(2)}</td>
+
+    <td>0.00</td>
+    <td>0.00</td>
+  </tr>
+</tfoot>
   </table>
 </div>
 

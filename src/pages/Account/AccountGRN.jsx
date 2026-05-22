@@ -6,17 +6,20 @@ import ApproveNonGRN from "./ApproveNonGRN";
 // Import the new components
 import TransporterGRN from "./TransporterGRN";
 import TransporterApprove from "./TransporterApprove";
-
+import AccountDebitApproval from "./AccountDebitApproval";
 function AccountGRN() {
   const [selectedPage, setSelectedPage] = useState("checkGRN");
 
   const radioOptions = [
     { id: "checkGRN", label: "Bill Passing(GRN)" },
     { id: "approveGRN", label: "Bill Approve(GRN)" },
+          { id: "debitApproval", label: "Debit Note Approval" },
+
     { id: "checkNonGRN", label: "Bill Passing(NonGRN)" },
     { id: "approveNonGRN", label: "Bill Approve(NonGRN)" },
     { id: "transporterGRN", label: "Bill Passing(Transporter)" },
     { id: "transporterApprove", label: "Bill Approve(Transporter)" },
+
   ];
 
   return (
@@ -42,6 +45,8 @@ function AccountGRN() {
       <div className="content-area">
         {selectedPage === "checkGRN" && <CheckPayable />}
         {selectedPage === "approveGRN" && <ApprovedPayable />}
+          {selectedPage === "debitApproval" && <AccountDebitApproval />}
+
         {selectedPage === "checkNonGRN" && <CheckNonGRN />}
         {selectedPage === "approveNonGRN" && <ApproveNonGRN />}
         {selectedPage === "transporterGRN" && <TransporterGRN />}

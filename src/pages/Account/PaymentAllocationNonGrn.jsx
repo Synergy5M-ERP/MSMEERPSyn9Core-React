@@ -141,29 +141,33 @@ const fetchBank = async (supplier) => {
 
       if (result.success) {
 
-        const mapped = result.data.map((item) => ({
+      const mapped = result.data.map((item) => ({
+nonGrnInvoiceId:
+  item.nonGrnInvoiceId ??
+  item.NonGrnInvoiceId ??
+  item.accountNonGRNInvoiceId ??
+  item.AccountNonGRNInvoiceId,
+  vendorId: item.vendorId || item.VendorId,                        // ✅ ADD THIS
+  vendorName: item.supplier_Name,
 
-          vendorName: item.supplier_Name,
-          invoiceNo: item.invoice_NO,
-          invoiceDate: item.invoice_Date
-            ? item.invoice_Date.split("T")[0]
-            : "",
+  invoiceNo: item.invoice_NO,
+  invoiceDate: item.invoice_Date
+    ? item.invoice_Date.split("T")[0]
+    : "",
 
-          totalAmount: Number(item.total_Amount || 0),
+  totalAmount: Number(item.total_Amount || 0),
 
-          dueDate: item.due_Date
-            ? item.due_Date.split("T")[0]
-            : "",
+  dueDate: item.due_Date
+    ? item.due_Date.split("T")[0]
+    : "",
 
-          paidAmount: 0,
+  paidAmount: 0,
+  balanceAmount: Number(item.balanceAmount || item.total_Amount || 0),
 
-          balanceAmount: Number(item.balanceAmount || item.total_Amount || 0),
-
-          bankName: "",
-          rtgsNo: "",
-          rtgsDate: ""
-
-        }));
+  bankName: "",
+  rtgsNo: "",
+  rtgsDate: ""
+}));
 
         setRows(mapped);
 
@@ -189,31 +193,145 @@ const fetchBank = async (supplier) => {
 
 }, []);
 
-  // 🔹 PAID AMOUNT CHANGE
- const handlePaidChange = (index, value) => {
+const handlePaidChange = (index, value) => {
 
-  const newRows = [...rows];
+  const updatedRows = [...rows];
 
-  const paid = Number(value) || 0;
+  const total =
+    Number(updatedRows[index].totalAmount) || 0;
 
-  newRows[index].paidAmount = paid;
+  let paid = Number(value) || 0;
 
-  newRows[index].balanceAmount =
-    newRows[index].totalAmount - paid;
+  // validation
+  if (paid > total) {
 
-  setRows(newRows);
+    alert("Paid amount cannot exceed total amount");
 
-  // ✅ allocated total
-  // ✅ allocated total
-  const totalAllocated = newRows.reduce(
-    (sum, row) => sum + Number(row.paidAmount || 0),
+    paid = 0;
+  }
+
+  updatedRows[index].paidAmount = paid;
+
+  updatedRows[index].balanceAmount =
+    total - paid;
+
+  setRows(updatedRows);
+
+  // total allocated
+  const allocatedTotal = updatedRows.reduce(
+    (sum, row) =>
+      sum + Number(row.paidAmount || 0),
     0
   );
 
-  setAllocated(totalAllocated);
+  setAllocated(allocatedTotal);
+};
+const handleSave = async () => {
+
+  try {
+
+    const selectedRows = rows.filter(
+      x => Number(x.paidAmount) > 0
+    );
+
+    if (selectedRows.length === 0) {
+
+      alert("Please enter paid amount");
+      return;
+
+    }
+
+    // ✅ CORRECT PAYLOAD
+    const payload = {
+
+      Date: date,
+
+      CreatedBy: "Admin",
+
+     Payments: selectedRows.map((row) => ({
+  NonGrnInvoiceId: row.nonGrnInvoiceId,   // ✅ FIX
+  VendorId: row.vendorId,                 // ✅ FIX
+
+  VendorName: row.vendorName,
+  InvoiceNo: row.invoiceNo,
+  InvoiceDate: row.invoiceDate,
+
+  TotalAmount: Number(row.totalAmount || 0),
+  PaidAmount: Number(row.paidAmount || 0),
+  BalanceAmount: Number(row.balanceAmount || 0),
+
+  CGST: Number(row.cgst || 0),
+  SGST: Number(row.sgst || 0),
+  IGST: Number(row.igst || 0),
+
+  RTGSNo: row.rtgsNo || "",
+  RTGSDate: row.rtgsDate || date,
+
+  SubLedgerId:
+    paymentType === "Bank" ? Number(subLedger) : null,
+
+  BankId:
+    paymentType === "Bank" ? Number(subLedger) : null,
+
+  CashLedgerId:
+    paymentType === "Cash" ? Number(cashLedgerId) : null,
+
+  Source: paymentType
+}))
+    };
+
+    console.log(
+      "SAVE PAYLOAD",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const res = await fetch(
+      API_ENDPOINTS.SaveNonGrnPaymentAllocation,
+      {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(payload)
+
+      }
+    );
+
+    // ✅ IMPORTANT
+    const text = await res.text();
+
+    console.log("API RESPONSE:", text);
+
+    let result = {};
+
+    try {
+      result = JSON.parse(text);
+    } catch {
+      result = { message: text };
+    }
+
+    if (res.ok) {
+
+      alert("Saved Successfully");
+
+    } else {
+
+      alert(result.message || "Save Failed");
+
+    }
+
+  } catch (err) {
+
+    console.error("Save Error", err);
+
+    alert("Error while saving");
+
+  }
 
 };
-
   return (
     <>
       <ToastContainer />
@@ -386,23 +504,27 @@ const fetchBank = async (supplier) => {
 
   {/* BALANCE */}
 
-  <div className="col-md-3">
+{/* BALANCE */}
 
-    <label className="form-label fw-bold">
-      Balance Details
-    </label>
+<div className="col-md-3">
 
-    <div className="alert alert-danger p-2 mb-0">
+  <label className="form-label fw-bold">
+    Balance Details
+  </label>
 
-      Balance ₹{Number(balance).toFixed(2)}
-      {" | "}
-      Allocated ₹{Number(allocated).toFixed(2)}
+  <div className="alert alert-danger p-2 mb-0">
 
-    </div>
+    Balance ₹
+    {(Number(balance) - Number(allocated)).toFixed(2)}
+
+    {" | "}
+
+    Allocated ₹
+    {Number(allocated).toFixed(2)}
 
   </div>
 
-  {/* DUE DATE */}
+</div>{/* DUE DATE */}
 
   <div className="col-md-2">
 
@@ -562,13 +684,17 @@ const fetchBank = async (supplier) => {
 
             <div className="d-flex justify-content-center gap-3 mt-4 p-3 bg-light">
 
+
               <button className="btn btn-secondary px-4">
                 Cancel
               </button>
 
-              <button className="btn btn-success px-4">
-                Save
-              </button>
+             <button
+  className="btn btn-success px-4"
+  onClick={handleSave}
+>
+  Save
+</button>
 
             </div>
 

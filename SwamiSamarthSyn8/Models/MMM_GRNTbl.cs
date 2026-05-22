@@ -15,6 +15,7 @@ public partial class MMM_GRNTbl
     [StringLength(300)]
     [Unicode(false)]
     public string? GRN_NO { get; set; }
+    public string? GRNVendorCode { get; set; }
 
     public DateOnly? GRN_Date { get; set; }
 
@@ -79,7 +80,8 @@ public partial class MMM_GRNTbl
     [Column(TypeName = "date")]
     public DateTime? InvIssueDate { get; set; }
 
-    public DateOnly? QC_Clearance_Date { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime? QC_Clearance_Date { get; set; }
 
     [InverseProperty("G_IdNavigation")]
     public virtual ICollection<MMM_GRNProductTbl> MMM_GRNProductTbls { get; set; } = new List<MMM_GRNProductTbl>();

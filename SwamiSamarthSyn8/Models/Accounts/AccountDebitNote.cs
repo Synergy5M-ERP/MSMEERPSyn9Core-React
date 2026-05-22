@@ -5,10 +5,17 @@
         public int AccountDebitNoteId { get; set; }
         public string Category { get; set; }
         public int VendorId { get; set; }
-        public int InvocieNoId { get; set; }
-        public string DebitNoteNo { get; set; }
+        public string? InvoiceNo { get; set; }
+        public string? DebitNoteNo { get; set; }
         public DateTime DebitNoteDate { get; set; }
         public DateTime PaymentDueDate { get; set; }
+        public decimal? SGSTAmount { get; set; }
+
+        public decimal? CGSTAmount { get; set; }
+
+        public decimal? IGSTAmount { get; set; }
+        public decimal? TotalNetAmount { get; set; }
+
         public decimal TotalAmount { get; set; }
         public decimal TotalTaxAmount { get; set; }
         public decimal GrandAmount { get; set; }

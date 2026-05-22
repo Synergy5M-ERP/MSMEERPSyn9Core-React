@@ -85,7 +85,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                 {
                     Category = model.Category,
                     VendorId = model.VendorId,
-                    InvocieNoId = model.InvocieNoId,
+                  //  InvocieNoId = model.InvocieNoId,
                     DebitNoteNo = model.DebitNoteNo,
                     DebitNoteDate = model.DebitNoteDate,
                     PaymentDueDate = model.PaymentDueDate,

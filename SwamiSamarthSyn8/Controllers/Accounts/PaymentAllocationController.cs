@@ -200,8 +200,9 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                         RTGSNo = payment.RTGSNo ?? "",
                         RTGSAmount = payment.PaidAmount,
                         RTGSDate = payment.RTGSDate ?? request.Date,
-
                         Description = $"Payment against GRN {grn.GRNNumber}",
+                        Source = payment.Source,
+
                         IsActive = true
                     };
 
@@ -447,6 +448,104 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     message = ex.Message,
                     stack = ex.StackTrace   // 🔥 will show exact line
 
+                });
+            }
+        }
+        [HttpPost("SaveNonGrnPaymentAllocation")]
+        public async Task<IActionResult> SaveNonGrnPaymentAllocation(
+    [FromBody] PaymentAllocationRequest request)
+        {
+            if (request?.Payments == null || !request.Payments.Any())
+                return BadRequest("No payment data received");
+
+            using var transaction = await _msmeContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var payment in request.Payments)
+                {
+                    // ===============================
+                    // ✅ NON-GRN INVOICE FETCH
+                    // ===============================
+                    var invoice = await _msmeContext.AccountNonGRNInvoice
+      .FirstOrDefaultAsync(x => x.InvoiceNo == payment.InvoiceNo);
+                    if (invoice == null)
+                        return BadRequest($"Invoice not found: {payment.NonGrnInvoiceId}");
+
+                    // ===============================
+                    // ✅ BALANCE CALCULATION
+                    // ===============================
+                    var lastPayment = await _msmeContext.AccountPaymentAllocation
+                        .Where(x => x.InvoiceNo == invoice.InvoiceNo)
+                        .OrderByDescending(x => x.PaymentAllocateId)
+                        .FirstOrDefaultAsync();
+
+                    var openingBalance = invoice.TotalAmount;
+
+                    var newBalance =
+                        (lastPayment?.BalanceAmount ?? openingBalance) - payment.PaidAmount;
+
+                    // ===============================
+                    // ✅ CREATE PAYMENT ALLOCATION
+                    // ===============================
+                    var allocation = new AccountPaymentAllocation
+                    {
+                        InvoiceNo = invoice.InvoiceNo,
+                        InvoiceDate = invoice.InvoiceDate,
+
+                        VendorId = payment.VendorId,
+
+                        TotalAmount = payment.TotalAmount,
+                        PaidAmount = payment.PaidAmount,
+                        BalanceAmount = (decimal)newBalance,
+
+                        CGST = payment.CGST,
+                        SGST = payment.SGST,
+                        IGST = payment.IGST,
+
+                        TotalTaxAmount = payment.CGST + payment.SGST + payment.IGST,
+
+                        RTGSNo = payment.RTGSNo ?? "",
+                        RTGSDate = payment.RTGSDate ?? request.Date,
+                        RTGSAmount = payment.PaidAmount,
+
+                        SubLedgerId = payment.SubLedgerId,
+                        BankId = payment.BankId,
+
+                        Source = payment.Source,
+                        Date = request.Date,
+                        //CreatedBy = allocation.CreatedBy,
+                        CreatedDate = DateTime.Now,
+
+                        IsActive = true
+                    };
+
+                    _msmeContext.AccountPaymentAllocation.Add(allocation);
+
+                    // ===============================
+                    // ✅ UPDATE INVOICE STATUS
+                    // ===============================
+                    allocation.UpdatedDate = DateTime.Now;
+
+                }
+
+                await _msmeContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Non-GRN Payment Allocation Saved Successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
                 });
             }
         }

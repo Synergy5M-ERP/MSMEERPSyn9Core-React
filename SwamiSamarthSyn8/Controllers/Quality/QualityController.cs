@@ -357,7 +357,7 @@ namespace SwamiSamarthSyn8.Controllers.Quality
                     var grn = db.MMM_GRNTbl.FirstOrDefault(g => g.Id == product.G_Id);
                     if (grn != null)
                     {
-                        grn.QC_Clearance_Date = DateOnly.FromDateTime(DateTime.Today);
+                        grn.QC_Clearance_Date = DateTime.Today;
                     }
 
                     // 5. Save

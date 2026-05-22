@@ -30,10 +30,11 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public bool IsActive { get; set; }
         public bool? IsBalanceNil { get; set; }
 
-        public string? InvoiceNo { get; set; }
-
-        [Column(TypeName = "date")]
+        [Column("InvoiceDate")]
         public DateTime? InvoiceDate { get; set; }
+
+        [Column("InvoiceNo")]
+        public string? InvoiceNo { get; set; }
         public DateTime? Date { get; set; }
 
         public int? SubLedgerId { get; set; }
@@ -41,12 +42,13 @@ namespace SwamiSamarthSyn8.Models.Accounts
         public int? BankId { get; set; }
 
         public string? VendorCode { get; set; }
-        public int? CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public bool IsVoucherDone { get; set; }
         public string? GST_No { get; set; }
+        public string? Source { get; set; }
 
      
         public bool? IsGSTRecoDone { get; set; }

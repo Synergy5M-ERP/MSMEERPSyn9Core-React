@@ -133,7 +133,9 @@ StaffSalary: `${BASE_URL}/HrmOrgInfo/staff-salary`,
   GetGRNsBySeller: `${BASE_URL}/GRN/GetGRNsBySeller`, // ✅ add this
   GetgrnSellers: `${BASE_URL}/GRN/GetgrnSellers`,
   SaveMultipleGRN: `${BASE_URL}/GRN/SaveMultipleGRN`,
-
+// ✅ ADD THESE 2 lines near other GRN endpoints
+GetApprovePayables: `${BASE_URL}/GRN/ApproveDebitNote`,   // GET
+ApproveDebitNote:   `${BASE_URL}/GRN/ApproveDebitNote`,   // POST
   GetGRNDetails: `${BASE_URL}/GRN/GetGRNDetails`,
   SaveGRN: `${BASE_URL}/GRN/SaveGRN`,
   Vendorcategories: `${BASE_URL}/GRN/Vendorcategories`,

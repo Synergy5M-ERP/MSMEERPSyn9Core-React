@@ -30,37 +30,37 @@ const AccountDebitApproval = () => {
 
   // 🔹 APPROVE DEBIT NOTE (AJAX REPLACEMENT)
   const handleApprove = async (item) => {
-    const confirm = window.confirm(
-      "Are you sure you want to approve this GRN?"
-    );
+  const confirmApprove = window.confirm(
+    "Are you sure you want to approve this GRN?"
+  );
 
-    if (!confirm) return;
+  if (!confirmApprove) return;
 
-    try {
-      const res = await fetch(API_ENDPOINTS.ApproveDebitNote, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          DebitNoteNo: item.debitNoteNo,
-          totalAmount: item.netPayable,
-        }),
-      });
+  try {
+    const res = await fetch(API_ENDPOINTS.ApproveDebitNote, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        DebitNoteNo: item.debitNoteNo,
+        TotalAmount: item.totalAmount,
+      }),
+    });
 
-      const result = await res.json();
+    const result = await res.json();
 
-      if (result.success) {
-        alert("GRN Approved Successfully!");
-        fetchData(); // refresh table
-      } else {
-        alert(result.message || "Approval failed");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
+    if (result.success) {
+      alert("GRN Approved Successfully!");
+      fetchData();
+    } else {
+      alert(result.message || "Approval failed");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div className="table-container main-content">

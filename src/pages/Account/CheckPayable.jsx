@@ -118,10 +118,7 @@ const loadInvoiceNumbers = async (sellerName) => {
       toast.error("Invoice Date is required");
       return false;
     }
-    if (!formData.poNumber?.trim()) {
-      toast.error("PO Number is required");
-      return false;
-    }
+    
     if (!formData.poDate) {
       toast.error("PO Date is required");
       return false;
@@ -206,117 +203,170 @@ const fetchAllDropdowns = async () => {
 
   // --- 1. Adjust fetchGRNTableData to ADD items from multiple GRNs ---
 
- const fetchGRNTableData = async (invoiceNumber) => {
-  if (!invoiceNumber) return;
+const fetchGRNTableData = async (invoiceNumber) => {
+
+  if (!invoiceNumber) {
+    toast.error("Invoice number missing");
+    return;
+  }
 
   try {
+
     setLoading(true);
 
-    const res = await fetch(
-      `${API_ENDPOINTS.GetGRNDetails}?invoice=${invoiceNumber}`
-    );
+  const url =
+`${API_ENDPOINTS.GetGRNDetails}?invoice=${encodeURIComponent(invoiceNumber)}`;
+
+    console.log("API URL =>", url);
+
+    const res = await fetch(url);
+
+    console.log("HTTP STATUS =>", res.status);
 
     const data = await safeJson(res);
 
-    if (!data.success || !data.data?.items) {
-      toast.warning("No items found for this invoice");
+    console.log("FULL API RESPONSE =>", data);
+
+    // =========================
+    // API FAILED
+    // =========================
+
+    if (!data.success) {
+
+      toast.error(data.message || "API failed");
+
+      setTableData([]);
+
       return;
     }
 
-   const newItems = data.data.items.map((item, index) => {
- 
-  console.log("TAX VALUES FROM API:", item.cgst, item.sgst, item.igst);
+    // =========================
+    // NO ITEMS
+    // =========================
 
-  let cgst = parseFloat(item.cgst) || 0;
-let sgst = parseFloat(item.sgst) || 0;
-let igst = parseFloat(item.igst) || 0;
-  return {
-    id: item.g_Id || `${invoiceNumber}-${item.itemName}-${index}`,
-    itemName: item.itemName || "",
-    grade: item.grade || "",
-    itemCode: item.itemCode || "",
-    receivedQty: Number(item.receivedQty) || 0,
-    approvedQty: Number(item.acceptedQty) || 0,
-    damagedQty: Number(item.rejectedQty) || 0,
-    rate: Number(item.rate) || 0,
+    if (!data.data || !Array.isArray(data.data.items)) {
 
-    cgst,
-    sgst,
-    igst,
+      toast.warning("Items array missing");
 
-    backendTaxAmount: Number(item.taxAmount) || 0,
-    backendNetAmount: Number(item.netAmount) || 0
-  };
-});
+      setTableData([]);
 
-    // ✅ calculate totals
-    const itemsWithTotals = newItems.map((row) => {
+      return;
+    }
 
-      const receivedQty = parseFloat(row.receivedQty) || 0;
-      const rate = parseFloat(row.rate) || 0;
+    if (data.data.items.length === 0) {
 
-      const totalItemValue = receivedQty * rate;
-      const taxAmount = Number(row.backendTaxAmount) || 0;
+      toast.warning("No items found for this invoice");
+
+      setTableData([]);
+
+      return;
+    }
+
+    // =========================
+    // MAP ITEMS
+    // =========================
+
+    const newItems = data.data.items.map((item, index) => {
 
       return {
-        ...row,
-        totalItemValue,
-        taxAmount,
-        billItemValue: totalItemValue + taxAmount
+
+        id: item.g_Id || `${invoiceNumber}-${index}`,
+
+        itemName: item.itemName || "",
+        grade: item.grade || "",
+        itemCode: item.itemCode || "",
+
+        receivedQty: Number(item.receivedQty) || 0,
+        approvedQty: Number(item.acceptedQty) || 0,
+        damagedQty: Number(item.rejectedQty) || 0,
+
+        rate: Number(item.rate) || 0,
+
+        cgst: Number(item.cgst) || 0,
+        sgst: Number(item.sgst) || 0,
+        igst: Number(item.igst) || 0,
+
+        backendTaxAmount: Number(item.taxAmount) || 0,
+        backendNetAmount: Number(item.netAmount) || 0,
+
+        taxableAmount: Number(item.taxableAmount) || 0,
+        tdsRate: Number(item.tdsRate) || 0,
+        tdsAmount: Number(item.tdsAmount) || 0,
+        netPayable: Number(item.netPayable) || 0,
+
+        dNetAmt: Number(item.dNetAmt) || 0,
+        dcgst: Number(item.dcgst) || 0,
+        dsgst: Number(item.dsgst) || 0,
+        digst: Number(item.digst) || 0,
+        dTotalTax: Number(item.dTotalTax) || 0,
+        dTotalItemValue: Number(item.dTotalItemValue) || 0,
+
+        billCheck: false
       };
     });
 
-    setTableData(prevData => {
+    console.log("MAPPED ITEMS =>", newItems);
 
-      const existingIds = new Set(prevData.map(item => item.id));
+    setTableData(newItems);
 
-      const merged = [...prevData];
-
-      for (const item of itemsWithTotals) {
-        if (!existingIds.has(item.id)) {
-          merged.push(item);
-        }
-      }
-
-      updateGrandTotals(merged);
-
-      return merged;
-    });
+    // =========================
+    // HEADER
+    // =========================
 
     const header = data.data.header;
 
     setFormData(fd => ({
       ...fd,
-      ...(header
-        ? {
-            grnNumber: header.grnNumber || "",
-            grnDate: header.grnDate
-              ? header.grnDate.split("T")[0]
-              : "",
-            poNumber: header.poNumber || "",
-            poDate: data.data.poDetails?.purchaseDate
-              ? data.data.poDetails.purchaseDate.split("T")[0]
-              : "",
-            invoiceNumber: header.invoiceNumber || "",
-            invoiceDate: header.invoiceDate
-              ? header.invoiceDate.split("T")[0]
-              : "",
-            vehicleNo: header.vehicleNo || "",
-            TransporterName: header.transporterName || "",
-            paymentDue: header.paymentDue
-              ? header.paymentDue.split("T")[0]
-              : "",
-            status: "Received"
-          }
-        : {})
+
+      grnNumber: header?.grnNumber || "",
+
+      grnDate: header?.grnDate
+        ? header.grnDate.split("T")[0]
+        : "",
+
+      poNumber: header?.poNumber || "",
+
+      poDate: data.data.poDetails?.purchaseDate
+        ? data.data.poDetails.purchaseDate.split("T")[0]
+        : "",
+
+      invoiceNumber: header?.invoiceNumber || "",
+
+      invoiceDate: header?.invoiceDate
+        ? header.invoiceDate.split("T")[0]
+        : "",
+
+      vehicleNo: header?.vehicleNo || "",
+
+      TransporterName: header?.transporterName || "",
+
+      paymentDue: header?.paymentDue
+        ? header.paymentDue.split("T")[0]
+        : "",
+
+      debitNumber: header?.DebitNoteNo || "",
+
+      debitNoteDate: header?.DebitDate
+        ? header.DebitDate.split("T")[0]
+        : "",
+
+      status: "Received"
     }));
 
-    setEnteredGrnNumber(invoiceNumber);
-
+toast.success("GRN loaded successfully", {
+  autoClose: 3000,
+  closeOnClick: true,
+  draggable: true,
+  closeButton: true,
+});
   } catch (err) {
-    console.error(err);
+
+    console.error("FETCH ERROR =>", err);
+
     toast.error("Unable to load GRN data");
+
   } finally {
+
     setLoading(false);
   }
 };
@@ -335,172 +385,130 @@ const handleMasterBillCheck = useCallback((checked) => {
   // --- 2. Save all tableData items, checked or not ---
 
   // ✅ COMPLETE handleSave WITH AUTO-CLEAR AFTER SUCCESS
-  const handleSave = async () => {
-    if (!validateForm()) return;
+ const handleSave = async () => {
+  if (!validateForm()) return;
 
-    const TOAST_ID = "saving-grn";
+  const TOAST_ID = "saving-grn";
 
-    // Show loading toast
-    toast.loading("Saving GRN data...", {
-      toastId: TOAST_ID,
-      closeOnClick: false,
-      draggable: false,
+  toast.loading("Saving GRN data...", {
+    toastId: TOAST_ID,
+    closeOnClick: false,
+    draggable: false,
+  });
+
+  const payload = {
+    AccountGRN: {
+      GRNNumber:     formData.grnNumber     || "",
+      InvoiceNumber: formData.invoiceNumber || "",
+      Description:   formData.sellerName    || "Payable GRN",
+      CheckGRN:      masterBillCheck === true,
+
+      TotalNetAmount: tableData.reduce((sum, item) => sum + Number(item.backendNetAmount || 0), 0),
+      CGSTAmount:     tableData.reduce((sum, item) => sum + Number(item.cgst || 0), 0),
+      SGSTAmount:     tableData.reduce((sum, item) => sum + Number(item.sgst || 0), 0),
+      IGSTAmount:     tableData.reduce((sum, item) => sum + Number(item.igst || 0), 0),
+      TotalAmount:    tableData.reduce((sum, item) => sum + Number(item.backendNetAmount || 0) + Number(item.backendTaxAmount || 0), 0),
+      TDSAmount:      tableData.reduce((sum, item) => sum + Number(item.tdsAmount || 0), 0),
+      NetPayable:     tableData.reduce((sum, item) => sum + Number(item.netPayable || 0), 0),
+    },
+
+    AccountDebitNote: formData.debitNumber
+      ? {
+          DebitNoteNo:    formData.debitNumber   || null,
+          DebitNoteDate:  formData.debitNoteDate || null,
+          CGSTAmount:     rejectionTotals.totalDCGST,
+          SGSTAmount:     rejectionTotals.totalDSGST,
+          IGSTAmount:     rejectionTotals.totalDIGST,
+          TotalNetAmount: rejectionTotals.totalDNetAmt,
+          TotalAmount:    rejectionTotals.totalDValue,
+        }
+      : null,
+  };
+
+  console.log("💾 Sending payload:", JSON.stringify(payload, null, 2));
+
+  try {
+    setSaveLoading(true);
+
+    const response = await fetch(API_ENDPOINTS.SaveGRN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
 
-    // ✅ FIXED PAYLOAD - Matches backend model exactly
-   const payload = {
-  VendorId: Number(formData.vendorId) || 0,
-  SellerName: formData.sellerName,
-  grnNumber: formData.grnNumber,
-  grnDate: formData.grnDate,
-  poNumber: formData.poNumber,
-  poDate: formData.poDate,
-  invoiceNumber: formData.invoiceNumber,
-  invoiceDate: formData.invoiceDate,
-  vehicleNo: formData.vehicleNo,
-  TransporterName: formData.TransporterName,
-  paymentDue: formData.paymentDue,
-  status: formData.status || "Received",
+    const result = await safeJson(response);
 
-  // ✅ NEW FIELDS
-  TotalNetAmount: tableData.reduce(
-    (sum, item) => sum + Number(item.backendNetAmount || 0),
-    0
-  ),
+    if (!response.ok) {
+      let errorMsg = `HTTP ${response.status}`;
 
-  CGSTAmount: tableData.reduce(
-    (sum, item) => sum + Number(item.cgst || 0),
-    0
-  ),
-
-  SGSTAmount: tableData.reduce(
-    (sum, item) => sum + Number(item.sgst || 0),
-    0
-  ),
-
-  IGSTAmount: tableData.reduce(
-    (sum, item) => sum + Number(item.igst || 0),
-    0
-  ),
-
-  TotalAmount: tableData.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.backendNetAmount || 0) +
-      Number(item.backendTaxAmount || 0),
-    0
-  ),
-
-  TDSAmount: 0,
-
-  NetPayable: tableData.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.backendNetAmount || 0) +
-      Number(item.backendTaxAmount || 0),
-    0
-  ),
-
-  BillStatus: "Pending",
-  Description: formData.sellerName || "Payable GRN",
-
-  Items: tableData.map(item => ({
-    Description: `${item.itemName}`,
-    itemName: item.itemName,
-    grade: item.grade,
-    itemCode: item.itemCode,
-    receivedQty: parseFloat(item.receivedQty) || 0,
-    approvedQty: parseFloat(item.approvedQty) || 0,
-    damagedQty: parseFloat(item.damagedQty) || 0,
-    unit: item.receivedUnit || "pcs",
-    TaxType: item.taxType || "",
-    cgst: parseFloat(item.cgst) || 0,
-    sgst: parseFloat(item.sgst) || 0,
-    igst: parseFloat(item.igst) || 0,
-    rate: parseFloat(item.rate) || 0,
-
-    TotalAmount: Number(item.backendNetAmount) || 0,
-    TotalTaxAmount: Number(item.backendTaxAmount) || 0,
-
-    billItemValue:
-      Number(item.backendNetAmount || 0) +
-      Number(item.backendTaxAmount || 0),
-
-    billCheck: item.billCheck === true,
-    TransporterName: formData.TransporterName || ""
-  }))
-};
-
-    console.log("💾 Sending payload to backend:", payload);
-
-    try {
-      setSaveLoading(true);
-
-      const response = await fetch(API_ENDPOINTS.SaveGRN, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await safeJson(response);
-
-      if (!response.ok) {
-        // Detailed error parsing
-        let errorMsg = `HTTP ${response.status}`;
-
-        if (result?.errors) {
-          const errorsArr = [];
-          for (const [field, msgs] of Object.entries(result.errors)) {
-            errorsArr.push(`${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`);
-          }
-          errorMsg += ` - ${errorsArr.join('; ')}`;
-        } else {
-          errorMsg += `: ${result?.message || result?.error || 'Validation failed'}`;
+      if (result?.errors) {
+        const errorsArr = [];
+        for (const [field, msgs] of Object.entries(result.errors)) {
+          errorsArr.push(`${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`);
         }
-
-        toast.update(TOAST_ID, {
-          render: errorMsg,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-        console.error("❌ Save error:", result);
-        return;
+        errorMsg += ` — ${errorsArr.join("; ")}`;
+      } else {
+        errorMsg += `: ${result?.message || result?.error || "Validation failed"}`;
       }
 
-      // ✅ SUCCESS - Show confirmation + AUTO CLEAR FORM
-      const successMsg = `✅ Saved ${tableData.length} items successfully!`;
+      // ✅ Update AND auto-close error toast
       toast.update(TOAST_ID, {
-        render: successMsg,
-        type: "success",
-        isLoading: false,
-        autoClose: 2000, // Short delay before auto-clear
-      });
-
-      // ✅ AUTO-CLEAR EVERYTHING AFTER 2 SECONDS (after toast shows)
-      setTimeout(() => {
-        clearForm();
-        toast.info("🆕 Form cleared - ready for new data!", {
-          toastId: "form-cleared",
-          autoClose: 2000
-        });
-      }, 2200); // Slightly longer than toast duration
-
-    } catch (error) {
-      console.error("🌐 Network error:", error);
-      toast.update(TOAST_ID, {
-        render: "🌐 Network error! Please check your connection.",
+        render: errorMsg,
         type: "error",
         isLoading: false,
-        autoClose: 4000,
+        autoClose: 5000,       // ✅ MUST set this
+        closeOnClick: true,    // ✅ allow click to close
+        draggable: true,       // ✅ allow drag to close
       });
-    } finally {
-      setSaveLoading(false);
+
+      console.error("❌ Save error:", result);
+      return;
     }
-  };
+
+    // ✅ Update AND auto-close success toast
+    toast.update(TOAST_ID, {
+      render: "✅ GRN saved successfully!",
+      type: "success",
+      isLoading: false,
+      autoClose: 2000,         // ✅ MUST set this
+      closeOnClick: true,      // ✅ allow click to close
+      draggable: true,
+    });
+
+    setTimeout(() => {
+      clearForm();
+      setSelectedInvoice("");
+      toast.info("🆕 Form cleared - ready for new data!", {
+        toastId: "form-cleared",
+        autoClose: 2000,
+      });
+    }, 2200);
+
+  } catch (error) {
+    console.error("🌐 Network error:", error);
+
+    // ✅ Update AND auto-close network error toast
+    toast.update(TOAST_ID, {
+      render: "🌐 Network error! Please check your connection.",
+      type: "error",
+      isLoading: false,
+      autoClose: 4000,         // ✅ MUST set this
+      closeOnClick: true,
+      draggable: true,
+    });
+
+  } finally {
+    setSaveLoading(false);
+
+    // ✅ SAFETY NET — dismiss if still showing after 6 seconds
+    setTimeout(() => {
+      toast.dismiss(TOAST_ID);
+    }, 6000);
+  }
+};
 
   // ✅ NEW: CLEAR FORM FUNCTION
   const clearForm = () => {
@@ -555,41 +563,21 @@ const handleChange = (e) => {
   }
 
   // 🔹 Invoice Change (LOAD GRN DATA)
-  if (name === "invoiceNumber") {
+if (name === "invoiceNumber") {
 
-    setSelectedInvoice(value);
+  setSelectedInvoice(value);
 
-    const selectedInvoiceObj = invoiceNumbers.find(
-      inv => inv.id === Number(value)
-    );
+  setFormData(fd => ({
+    ...fd,
+    invoiceNumber: value
+  }));
 
-    setFormData(fd => ({
-      ...fd,
-      invoiceNumber: selectedInvoiceObj?.invoiceNumber || ""
+  console.log("Selected Invoice:", value);
 
-    }));
+  fetchGRNTableData(value);
 
-    // 🔹 Load GRN Details + Items
-fetchGRNTableData(selectedInvoiceObj?.invoiceNumber);
-    return;
-  }
-
-  // 🔹 GRN Change (if you still use GRN dropdown)
-  if (name === "grnNumber") {
-
-    const grnId = value;
-
-    setSelectedGrn(grnId);
-
-    setFormData(fd => ({
-      ...fd,
-      grnNumber: grnId
-    }));
-
-    fetchGRNTableData(grnId);
-
-    return;
-  }
+  return;
+}
 
   // 🔹 Default Field Change
   setFormData(fd => ({
@@ -736,7 +724,15 @@ fetchGRNTableData(selectedInvoiceObj?.invoiceNumber);
 
   return (
     <div>
-      <ToastContainer position="top-center" theme="colored" />
+      <ToastContainer
+  position="top-center"
+  theme="colored"
+  autoClose={3000}
+  closeOnClick={true}
+  draggable={true}
+  closeButton={true}
+  pauseOnHover={true}
+/>
       {/* <div style={{ background: "white", padding: "25px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}> */}
 
       <div style={{ background: "white", padding: "25px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
@@ -777,10 +773,13 @@ Invoice Number
 
 <option value="">Select Invoice</option>
 
-{invoiceNumbers.map(inv => (
-<option key={inv.id} value={inv.id}>
-{inv.invoiceNumber}
-</option>
+{invoiceNumbers.map((inv, index) => (
+  <option
+    key={index}
+    value={inv.invoiceNumber}
+  >
+    {inv.invoiceNumber}
+  </option>
 ))}
 
 </select>

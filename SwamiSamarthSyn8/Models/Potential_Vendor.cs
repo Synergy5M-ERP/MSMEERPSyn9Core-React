@@ -13,90 +13,47 @@ public partial class Potential_Vendor
     [Key]
     public int Id { get; set; }
 
-    [StringLength(500)]
     public string? Vendor_Code { get; set; }
-
-    [StringLength(500)]
     public string? industry { get; set; }
-
-    [StringLength(500)]
     public string? Category { get; set; }
-
-    [StringLength(500)]
     public string? Sub_Category { get; set; }
-
-    [StringLength(500)]
     public string? Source { get; set; }
-
-    [StringLength(500)]
     public string? Continent { get; set; }
-
-    [StringLength(500)]
     public string? Country { get; set; }
 
     [Column("State/Province")]
-    [StringLength(500)]
     public string? State_Province { get; set; }
 
-    [StringLength(500)]
     public string? City { get; set; }
-
-    [StringLength(500)]
     public string? Company_Name { get; set; }
-
-    [StringLength(500)]
     public string? Address { get; set; }
-
-    public String? Pin { get; set; }
-
-    [StringLength(500)]
+    public string? Address1 { get; set; }      // ✅ ADD
+    public string? Pin { get; set; }
     public string? Contact_Person { get; set; }
-
-    [StringLength(500)]
     public string? Email { get; set; }
-
-    [StringLength(255)]
     public string? Contact_Number { get; set; }
-
-    [StringLength(255)]
     public string? Landline { get; set; }
-
-    [StringLength(500)]
     public string? GST_Number { get; set; }
-
-    [StringLength(500)]
     public string? Website { get; set; }
-
-    [StringLength(500)]
     public string? CurrentAcNo { get; set; }
-
-    [StringLength(500)]
     public string? Branch { get; set; }
-
-    [StringLength(500)]
     public string? Bank_Name { get; set; }
-
-    [StringLength(500)]
     public string? IFSC_No { get; set; }
-
-    [StringLength(500)]
     public string? CIN_No { get; set; }
-
-    [StringLength(500)]
     public string? MSME_No { get; set; }
-
-    [StringLength(500)]
     public string? State_Code { get; set; }
-
-    [StringLength(50)]
     public string? Std_Payment_Days { get; set; }
-
-    [StringLength(50)]
-    public string? PAN_No { get; set; }
-    [NotMapped]
-    public string? Vendor_Categories { get; set; }
+    public string? PAN_No { get; set; }         // ✅ IMPORTANT — used in TDS logic
     public string? GLCode { get; set; }
     public string? LedgerName { get; set; }
+    public string? TDSSection { get; set; }     // ✅ ADD
+
     public int? VendorCategoryId { get; set; }
     public int? VendorSubCategoryId { get; set; }
+    public bool? IsTDSApplicable { get; set; }
+    public decimal? TDSRate { get; set; }
+    public decimal? TDSLimit { get; set; }
+
+    [NotMapped]
+    public string? Vendor_Categories { get; set; }
 }

@@ -24,6 +24,8 @@ namespace SwamiSamarthSyn8.Models
         public string? CrDr { get; set; }
         public string? NONGRNInvColumnName { get; set; }
         public string? TransportColumnName { get; set; }
+        public string? CreditDebitNoteColumn { get; set; }
+        public string? CreditDebitNoteCrDr { get; set; }
         public virtual ICollection<AccountSubLedger> AccountSubLedgers { get; set; }
 
     }

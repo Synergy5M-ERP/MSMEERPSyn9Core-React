@@ -24,6 +24,7 @@
         public int UpdatedBy { get; set; }
         public DateTime UpdatedDate { get; set; }
         public bool IsActive { get; set; }
+        public bool? ApprovedDebitNote { get; set; }  // ✅ ADD THIS
 
         public List<AccountDebitNoteDetails> DebiitNoteEntries { get; set; }
     }

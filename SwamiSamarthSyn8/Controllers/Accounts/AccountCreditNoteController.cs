@@ -95,7 +95,7 @@ namespace SwamiSamarthSyn8.Controllers.Accounts
                     return BadRequest(new { success = false, message = "Category is required" });
 
                 var vendors = await _context.Potential_Vendor
-                    .Where(v => v.Vendor_Categories == category)
+                    .Where(v => v.Category == category)
                     .Select(v => new
                     {
                         vendorId = v.Id,
